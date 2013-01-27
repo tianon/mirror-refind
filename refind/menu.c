@@ -904,11 +904,12 @@ static VOID PaintAll(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, UINTN
          DrawMainMenuEntry(Screen->Entries[i], (i == State->CurrentSelection) ? TRUE : FALSE, itemPosX[i], row1PosY);
       }
    }
-   if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL))
+   if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL)) {
       DrawTextWithTransparency(L"", 0, textPosY);
       DrawTextWithTransparency(Screen->Entries[State->CurrentSelection]->Title,
                                (UGAWidth - egComputeTextWidth(Screen->Entries[State->CurrentSelection]->Title)) >> 1,
                                textPosY);
+   }
 
    if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
       DrawTextWithTransparency(Screen->Hint1, (UGAWidth - egComputeTextWidth(Screen->Hint1)) / 2,
