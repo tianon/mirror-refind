@@ -134,7 +134,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.6.4");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.6.5");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012 Roderick W. Smith");
@@ -1008,7 +1008,6 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
     struct LOADER_LIST      *LoaderList = NULL, *NewLoader;
     BOOLEAN                 FoundFallbackDuplicate = FALSE;
 
-//    Print(L"Entering ScanLoaderDir(), scanning '%s' for pattern '%s'\n", Path, Pattern);
     if ((!SelfDirPath || !Path || ((StriCmp(Path, SelfDirPath) == 0) && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
            (StriCmp(Path, SelfDirPath) != 0)) &&
            (ShouldScan(Volume, Path))) {
@@ -1054,7 +1053,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
           CheckError(Status, FileName);
        } // if (Status != EFI_NOT_FOUND)
     } // if not scanning our own directory
-//    PauseForKey();
+
     return FoundFallbackDuplicate;
 } /* static VOID ScanLoaderDir() */
 
@@ -1477,8 +1476,6 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
     CHAR16                  ShortcutLetter = 0;
     CHAR16 *LegacyDescription = BdsOption->Description;
 
-//    ScanVolume(Volume);
-
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
     Entry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
@@ -1490,7 +1487,6 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
     Entry->LoadOptions     = (DiskType == BBS_CDROM) ? L"CD" :
                              ((DiskType == BBS_USB) ? L"USB" : L"HD");
     Entry->me.BadgeImage   = GetDiskBadge(DiskType);
-//    Entry->me.BadgeImage   = Volume->VolBadgeImage;
     Entry->BdsOption       = BdsOption;
     Entry->Enabled         = TRUE;
 
@@ -1600,7 +1596,7 @@ static VOID ScanLegacyVolume(REFIT_VOLUME *Volume, UINTN VolumeIndex) {
       // check for other bootable entries on the same disk
       for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
          if (VolumeIndex2 != VolumeIndex && Volumes[VolumeIndex2]->HasBootCode &&
-            Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO)
+             Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO)
             ShowVolume = FALSE;
       }
    }

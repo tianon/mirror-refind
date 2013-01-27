@@ -286,6 +286,26 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
     return NewImage;
 } // EG_IMAGE *egLoadIcon()
 
+// Returns an icon of any type from the specified subdirectory using the specified
+// base name. All directory references are relative to BaseDir. For instance, if
+// SubdirName is "myicons" and BaseName is "os_linux", this function will return
+// an image based on "myicons/os_linux.icns" or "myicons/os_linux.png", in that
+// order of preference. Returns NULL if no such file is a valid icon file.
+EG_IMAGE * egLoadIconAnyType(IN EFI_FILE *BaseDir, IN CHAR16 *SubdirName, IN CHAR16 *BaseName, IN UINTN IconSize) {
+   EG_IMAGE *Image = NULL;
+   CHAR16 *Extension;
+   CHAR16 FileName[256];
+   UINTN i = 0;
+
+   while (((Extension = FindCommaDelimited(ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
+      SPrint(FileName, 255, L"%s\\%s.%s", SubdirName, BaseName, Extension);
+      Image = egLoadIcon(BaseDir, FileName, IconSize);
+      MyFreePool(Extension);
+   } // while()
+
+   return Image;
+} // EG_IMAGE *egLoadIconAnyType()
+
 // Returns an icon with any extension in ICON_EXTENSIONS from either the directory
 // specified by GlobalConfig.IconsDir or DEFAULT_ICONS_DIR. The input BaseName
 // should be the icon name without an extension. For instance, if BaseName is
@@ -295,30 +315,16 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
 // order of preference. Returns NULL if no such icon can be found. All file
 // references are relative to SelfDir.
 EG_IMAGE * egFindIcon(IN CHAR16 *BaseName, IN UINTN IconSize) {
-   CHAR16 *LoadDir, *Extension;
-   CHAR16 FileName[256];
-   UINTN i;
    EG_IMAGE *Image = NULL;
 
-   if (GlobalConfig.IconsDir != NULL)
-      LoadDir = GlobalConfig.IconsDir;
-   else
-      LoadDir = StrDuplicate(DEFAULT_ICONS_DIR);
+   if (GlobalConfig.IconsDir != NULL) {
+      Image = egLoadIconAnyType(SelfDir, GlobalConfig.IconsDir, BaseName, IconSize);
+   }
 
-   while ((LoadDir != NULL) && (Image == NULL)) {
-      i = 0;
-      while (((Extension = FindCommaDelimited(ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
-         SPrint(FileName, 255, L"%s\\%s.%s", LoadDir, BaseName, Extension);
-         Image = egLoadIcon(SelfDir, FileName, IconSize);
-         MyFreePool(Extension);
-      } // while()
-      if (LoadDir == GlobalConfig.IconsDir) {
-         LoadDir = StrDuplicate(DEFAULT_ICONS_DIR);
-      } else {
-         MyFreePool(LoadDir);
-         LoadDir = NULL;
-      } // if/else
-   } // while()
+   if (Image == NULL) {
+      Image = egLoadIconAnyType(SelfDir, DEFAULT_ICONS_DIR, BaseName, IconSize);
+   }
+
    return Image;
 } // EG_IMAGE * egFindIcon()
 

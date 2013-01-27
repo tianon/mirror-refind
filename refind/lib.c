@@ -852,9 +852,9 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
     // get custom volume icon if present
     if (!Volume->VolBadgeImage)
-       Volume->VolBadgeImage = LoadIcns(Volume->RootDir, VOLUME_BADGE_NAMES, 32);
+       Volume->VolBadgeImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeBadge", 32);
     if (!Volume->VolIconImage)
-       Volume->VolIconImage = LoadIcns(Volume->RootDir, VOLUME_ICON_NAMES, 128);
+       Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", 128);
 } // ScanVolume()
 
 static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_INFO *MbrEntry)
