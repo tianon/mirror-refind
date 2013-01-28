@@ -7,9 +7,7 @@
 #include <global.h>
 #include "../include/refit_call_wrapper.h"
 
-#include "console.h"
 #include "simple_file.h"
-//#include "efiauthenticated.h"
 #include "execute.h"    /* for generate_path() */
 
 static EFI_GUID IMAGE_PROTOCOL = LOADED_IMAGE_PROTOCOL;
