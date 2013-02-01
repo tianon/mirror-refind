@@ -48,6 +48,7 @@
 #include "screen.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/RemovableMedia.h"
+//#include "../include/UsbMass.h"
 
 #ifdef __MAKEWITH_GNUEFI
 #define EfiReallocatePool ReallocatePool
@@ -92,9 +93,6 @@ UINTN            VolumesCount = 0;
 // and identify its boot loader, and hence probable BIOS-mode OS installation
 #define SAMPLE_SIZE 69632 /* 68 KiB -- ReiserFS superblock begins at 64 KiB */
 
-// Default names for volume badges (mini-icon to define disk type) and icons
-#define VOLUME_BADGE_NAMES L".VolumeBadge.icns,.VolumeBadge.png"
-#define VOLUME_ICON_NAMES L".VolumeIcon.icns,.VolumeIcon.png"
 
 // functions
 

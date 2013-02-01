@@ -1,6 +1,14 @@
 0.6.7 (?/??/2013):
 ------------------
 
+- Fixed bug that caused rEFInd to present an entry for itself as a
+  Microsoft OS if it was launched as EFI/Microsoft/Boot/bootmgfw.efi.
+
+- Fixed bug that caused dont_scan_volumes option to be added to
+  also_scan_dirst list.
+
+- Fixed dont_scan_volumes so that it works with OS X boot loaders.
+
 - Fixed broken mixing of PNG and ICNS icons when using a user-specified
   icons directory -- previously, an ICNS file in the default directory
   would override a PNG file in the user-specified directory.

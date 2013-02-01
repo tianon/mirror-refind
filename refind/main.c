@@ -134,7 +134,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.6.6");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.6.7");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012 Roderick W. Smith");
@@ -904,15 +904,18 @@ static VOID CleanUpLoaderList(struct LOADER_LIST *LoaderList) {
 
 // Returns FALSE if the specified file/volume matches the GlobalConfig.DontScanDirs
 // or GlobalConfig.DontScanVolumes specification, or if Path points to a volume
-// other than the one specified by Volume. Returns TRUE if none of these conditions
-// is met -- that is, if the path is eligible for scanning. Also reduces *Path to a
-// path alone, with no volume specification.
+// other than the one specified by Volume, or if the specified path is SelfDir.
+// Returns TRUE if none of these conditions is met -- that is, if the path is
+// eligible for scanning.
 static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
    CHAR16   *VolName = NULL, *DontScanDir;
    UINTN    i = 0, VolNum;
    BOOLEAN  ScanIt = TRUE;
 
    if (IsIn(Volume->VolName, GlobalConfig.DontScanVolumes))
+      return FALSE;
+
+   if ((StriCmp(Path, SelfDirPath) == 0) && (Volume->DeviceHandle == SelfVolume->DeviceHandle))
       return FALSE;
 
    while ((DontScanDir = FindCommaDelimited(GlobalConfig.DontScanDirs, i++)) && ScanIt) {
@@ -941,7 +944,7 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
 // FALSE if the file is not identical to the fallback file OR if the file
 // IS the fallback file. Intended for use in excluding the fallback boot
 // loader when it's a duplicate of another boot loader.
-BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
+static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
    CHAR8           *FileContents, *FallbackContents;
    EFI_FILE_HANDLE FileHandle, FallbackHandle;
    EFI_FILE_INFO   *FileInfo, *FallbackInfo;
@@ -1062,7 +1065,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
    REFIT_DIR_ITER          EfiDirIter;
    EFI_FILE_INFO           *EfiDirEntry;
    CHAR16                  FileName[256], *Directory, *MatchPatterns, *VolName = NULL;
-   UINTN                   i, Length, VolNum;
+   UINTN                   i, Length;
    BOOLEAN                 ScanFallbackLoader = TRUE;
 
 //   Print(L"Entering ScanEfiFiles(), GlobalConfig.ScanAllLinux = %s\n", GlobalConfig.ScanAllLinux ? L"TRUE" : L"FALSE");
@@ -1073,7 +1076,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
 
    if ((Volume->RootDir != NULL) && (Volume->VolName != NULL)) {
       // check for Mac OS X boot loader
-      if (!IsIn(L"System\\Library\\CoreServices", GlobalConfig.DontScanDirs)) {
+      if (ShouldScan(Volume, L"System\\Library\\CoreServices")) {
          StrCpy(FileName, MACOSX_LOADER_PATH);
          if (FileExists(Volume->RootDir, FileName) && !IsIn(L"boot.efi", GlobalConfig.DontScanFiles)) {
             AddLoaderEntry(FileName, L"Mac OS X", Volume);
@@ -1088,11 +1091,11 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             if (DuplicatesFallback(Volume, FileName))
                ScanFallbackLoader = FALSE;
          }
-      } // if Mac directory not in GlobalConfig.DontScanDirs list
+      } // if should scan Mac directory
 
       // check for Microsoft boot loader/menu
       StrCpy(FileName, L"EFI\\Microsoft\\Boot\\Bootmgfw.efi");
-      if (FileExists(Volume->RootDir, FileName) && !IsIn(L"EFI\\Microsoft\\Boot", GlobalConfig.DontScanDirs) &&
+      if (FileExists(Volume->RootDir, FileName) && ShouldScan(Volume, L"EFI\\Microsoft\\Boot") &&
           !IsIn(L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
          AddLoaderEntry(FileName, L"Microsoft EFI boot", Volume);
          if (DuplicatesFallback(Volume, FileName))
@@ -1119,24 +1122,18 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       // Scan user-specified (or additional default) directories....
       i = 0;
       while ((Directory = FindCommaDelimited(GlobalConfig.AlsoScan, i++)) != NULL) {
-         VolNum = VOL_DONTSCAN;
          SplitVolumeAndFilename(&Directory, &VolName);
          CleanUpPathNameSlashes(Directory);
          Length = StrLen(Directory);
-         if (VolName && (Length > 0) && (StrLen(VolName) > 2) && (VolName[0] == L'f') && (VolName[1] == L's') &&
-             (VolName[2] >= L'0') && (VolName[2] <= L'9'))
-            VolNum = Atoi(VolName + 2);
-         if ((Length > 0) && ((VolName == NULL) || (StriCmp(VolName, Volume->VolName) == 0) || (Volume->VolNumber == VolNum)))
-            if (ScanLoaderDir(Volume, Directory, MatchPatterns))
-               ScanFallbackLoader = FALSE;
+         if ((Length > 0) && ScanLoaderDir(Volume, Directory, MatchPatterns))
+            ScanFallbackLoader = FALSE;
          MyFreePool(Directory);
          MyFreePool(VolName);
       } // while
 
       // If not a duplicate & if it exists & if it's not us, create an entry
       // for the fallback boot loader
-      if (ScanFallbackLoader && FileExists(Volume->RootDir, FALLBACK_FULLNAME) &&
-          ((StriCmp(SelfDirPath, L"EFI\\BOOT") != 0) || (Volume->DeviceHandle != SelfVolume->DeviceHandle))) {
+      if (ScanFallbackLoader && FileExists(Volume->RootDir, FALLBACK_FULLNAME) && ShouldScan(Volume, L"EFI\\BOOT")) {
          AddLoaderEntry(FALLBACK_FULLNAME, L"Fallback boot loader", Volume);
       }
    } // if

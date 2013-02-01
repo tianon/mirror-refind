@@ -80,6 +80,7 @@ typedef struct {
 
 #define CONFIG_FILE_NAME         L"refind.conf"
 #define DONT_SCAN_FILES L"shim.efi,MokManager.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi"
+#define DONT_SCAN_VOLUMES L"Recovery HD"
 #define ALSO_SCAN_DIRS L"boot"
 
 EFI_STATUS ReadFile(IN EFI_FILE_HANDLE BaseDir, CHAR16 *FileName, REFIT_FILE *File, UINTN *size);

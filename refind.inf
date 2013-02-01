@@ -47,6 +47,7 @@
   libeg/image.c
   libeg/load_bmp.c
   libeg/load_icns.c
+  libeg/lodepng.c
   libeg/screen.c
   libeg/text.c
 

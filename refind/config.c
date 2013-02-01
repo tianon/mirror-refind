@@ -361,6 +361,8 @@ VOID ReadConfig(CHAR16 *FileName)
        GlobalConfig.DontScanDirs = SelfPath;
        MyFreePool(GlobalConfig.DontScanFiles);
        GlobalConfig.DontScanFiles = StrDuplicate(DONT_SCAN_FILES);
+       MyFreePool(GlobalConfig.DontScanVolumes);
+       GlobalConfig.DontScanVolumes = StrDuplicate(DONT_SCAN_VOLUMES);
     } // if
 
     if (!FileExists(SelfDir, FileName)) {
@@ -424,7 +426,6 @@ VOID ReadConfig(CHAR16 *FileName)
             HandleStrings(TokenList, TokenCount, &(GlobalConfig.AlsoScan));
 
         } else if ((StriCmp(TokenList[0], L"don't_scan_volumes") == 0) || (StriCmp(TokenList[0], L"dont_scan_volumes") == 0)) {
-           HandleStrings(TokenList, TokenCount, &(GlobalConfig.AlsoScan));
            // Note: Don't use HandleStrings() because it modifies slashes, which might be present in volume name
            MyFreePool(GlobalConfig.DontScanVolumes);
            GlobalConfig.DontScanVolumes = NULL;

@@ -251,7 +251,7 @@ timeout 20
 <tr>
    <td><tt>dont_scan_volumes</tt> or <tt>don't_scan_volumes</tt></td>
    <td>filesystem label(s)</td>
-   <td>Adds the specified volume or volumes to a volume "blacklist"&mdash;these filesystems are <i>not</i> scanned for EFI boot loaders. This may be useful to keep unwanted EFI boot entries, such as for a Macintosh recovery partition, from appearing on the main list of boot loaders.</td>
+   <td>Adds the specified volume or volumes to a volume "blacklist"&mdash;these filesystems are <i>not</i> scanned for EFI boot loaders. This may be useful to keep unwanted EFI boot entries, such as for a Macintosh recovery partition, from appearing on the main list of boot loaders. The default value is <tt>Recovery HD</tt>, to keep the Mac recovery volume from appearing. (It should get its own tools icon instead&mdash;see the <tt>showtools</tt> token.)</td>
 </tr>
 <tr>
    <td><tt>dont_scan_dirs</tt> or <tt>don't_scan_dirs</tt></td>

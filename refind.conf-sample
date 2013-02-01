@@ -195,7 +195,7 @@ timeout 20
 # label, which you can obtain in an EFI shell by typing "vol", from
 # Linux by typing "blkid /dev/{devicename}", or by examining the
 # disk's label in various OSes' file browsers.
-# The default is an empty list (all volumes are scanned).
+# The default is "Recovery HD".
 #
 #dont_scan_volumes "Recovery HD"
 
