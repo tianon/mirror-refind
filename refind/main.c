@@ -82,8 +82,6 @@
 #define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
 #endif
 
-#define MOK_NAMES               L"\\EFI\\tools\\MokManager.efi,\\EFI\\fedora\\MokManager.efi,\\EFI\\redhat\\MokManager.efi,\\EFI\\ubuntu\\MokManager.efi,\\EFI\\suse\\MokManager"
-
 // Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
 // L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive
 // comparison when it should do a case-insensitive comparison, so I'm doubling this up. It does
@@ -134,7 +132,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.6.7");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.7");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012 Roderick W. Smith");
@@ -175,6 +173,27 @@ static VOID AboutrEFInd(VOID)
 
     RunMenu(&AboutMenu, NULL);
 } /* VOID AboutrEFInd() */
+
+static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
+   if (Name == NULL)
+      Name = L"the loader";
+
+   refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
+   Print(L"Secure Boot validation failure loading %s!\n", Name);
+   refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
+   if (Verbose && secure_mode()) {
+      Print(L"\nThis computer is configured with Secure Boot active, but\n%s has failed validation.\n", Name);
+      Print(L"\nYou can:\n * Launch another boot loader\n");
+      Print(L" * Disable Secure Boot in your firmware\n");
+      Print(L" * Sign %s with a machine owner key (MOK)\n", Name);
+      Print(L" * Use a MOK utility (often present on the second row) to add a MOK with which\n");
+      Print(L"   %s has already been signed.\n", Name);
+      Print(L" * Use a MOK utility to register %s (\"enroll its hash\") without\n", Name);
+      Print(L"   signing it.\n");
+      Print(L"\nSee http://www.rodsbooks.com/refind/secureboot.html for more information\n");
+      PauseForKey();
+   } // if
+} // VOID WarnSecureBootError()
 
 // Launch an EFI binary.
 static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
@@ -229,6 +248,10 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
        if (ReturnStatus != EFI_NOT_FOUND) {
           break;
        }
+    }
+    if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
+       WarnSecureBootError(ImageTitle, Verbose);
+       goto bailout;
     }
     SPrint(ErrorInfo, 255, L"while loading %s", ImageTitle);
     if (CheckError(Status, ErrorInfo)) {
@@ -1932,12 +1955,17 @@ static VOID ScanForBootloaders(VOID) {
 // Add the second-row tags containing built-in and external tools (EFI shell,
 // reboot, etc.)
 static VOID ScanForTools(VOID) {
-   CHAR16 *FileName = NULL, Description[256];
+   CHAR16 *FileName = NULL, *MokLocations, *MokName, *PathName, Description[256];
    REFIT_MENU_ENTRY *TempMenuEntry;
-   UINTN i, j, VolumeIndex;
+   UINTN i, j, k, VolumeIndex;
+
+   MokLocations = StrDuplicate(MOK_LOCATIONS);
+   if (MokLocations != NULL)
+      MergeStrings(&MokLocations, SelfDirPath, L',');
 
    for (i = 0; i < NUM_TOOLS; i++) {
       switch(GlobalConfig.ShowTools[i]) {
+         // NOTE: Be sure that FileName is NULL at the end of each case.
          case TAG_SHUTDOWN:
             TempMenuEntry = CopyMenuEntry(&MenuEntryShutdown);
             TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_SHUTDOWN);
@@ -1960,23 +1988,23 @@ static VOID ScanForTools(VOID) {
             break;
          case TAG_SHELL:
             j = 0;
-            MyFreePool(FileName);
             while ((FileName = FindCommaDelimited(SHELL_NAMES, j++)) != NULL) {
                if (FileExists(SelfRootDir, FileName)) {
                   AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"EFI Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
                                'S', FALSE);
                }
+               MyFreePool(FileName);
             } // while
             break;
          case TAG_GPTSYNC:
-            MyFreePool(FileName);
             FileName = StrDuplicate(L"\\efi\\tools\\gptsync.efi");
             if (FileExists(SelfRootDir, FileName)) {
                AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"Make Hybrid MBR", BuiltinIcon(BUILTIN_ICON_TOOL_PART), 'P', FALSE);
             }
+            MyFreePool(FileName);
+            FileName = NULL;
             break;
          case TAG_APPLE_RECOVERY:
-            MyFreePool(FileName);
             FileName = StrDuplicate(L"\\com.apple.recovery.boot\\boot.efi");
             for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, FileName))) {
@@ -1985,29 +2013,31 @@ static VOID ScanForTools(VOID) {
                                BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE), 'R', TRUE);
                }
             } // for
+            MyFreePool(FileName);
+            FileName = NULL;
             break;
          case TAG_MOK_TOOL:
             j = 0;
-            MyFreePool(FileName);
-            while ((FileName = FindCommaDelimited(MOK_NAMES, j++)) != NULL) {
-               if (FileExists(SelfRootDir, FileName)) {
-                  SPrint(Description, 255, L"MOK Key Manager at %s", FileName);
-                  AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, Description,
-                               BuiltinIcon(BUILTIN_ICON_TOOL_MOK_TOOL), 'S', FALSE);
-               }
-            } // while
-            if (FileExists(SelfDir, L"MokManager.efi")) {
+            while ((FileName = FindCommaDelimited(MokLocations, j++)) != NULL) {
+               k = 0;
+               while ((MokName = FindCommaDelimited(MOK_NAMES, k++)) != NULL) {
+                  PathName = StrDuplicate(FileName);
+                  MergeStrings(&PathName, MokName, (StriCmp(PathName, L"\\") == 0) ? 0 : L'\\');
+                  for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+                     if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, PathName))) {
+                        SPrint(Description, 255, L"MOK utility at %s on %s", PathName, Volumes[VolumeIndex]->VolName);
+                        AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, PathName, Description,
+                                     BuiltinIcon(BUILTIN_ICON_TOOL_MOK_TOOL), 'S', FALSE);
+                     } // if
+                  } // for
+                  MyFreePool(PathName);
+                  MyFreePool(MokName);
+               } // while MOK_NAMES
                MyFreePool(FileName);
-               FileName = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
-               MergeStrings(&FileName, L"\\MokManager.efi", 0);
-               SPrint(Description, 255, L"MOK Key Manager at %s", FileName);
-               AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, Description,
-                            BuiltinIcon(BUILTIN_ICON_TOOL_MOK_TOOL), 'S', FALSE);
-            }
+            } // while MokLocations
+
             break;
       } // switch()
-      MyFreePool(FileName);
-      FileName = NULL;
    } // for
 } // static VOID ScanForTools
 

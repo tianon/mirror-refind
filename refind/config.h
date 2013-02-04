@@ -79,7 +79,8 @@ typedef struct {
 #define HIDEUI_FLAG_ALL       ((0xffff))
 
 #define CONFIG_FILE_NAME         L"refind.conf"
-#define DONT_SCAN_FILES L"shim.efi,MokManager.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi"
+// Note: Below is combined with MOK_NAMES to make default
+#define DONT_SCAN_FILES L"shim.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi"
 #define DONT_SCAN_VOLUMES L"Recovery HD"
 #define ALSO_SCAN_DIRS L"boot"
 

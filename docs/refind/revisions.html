@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 1/26/2013</p>
+<p>Last Web page update: 2/3/2013</p>
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -91,6 +91,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.6.7 (2/3/2013)</b>&mdash;This version fixes a few bugs and adds some minor features relating to Secure Boot. Bug fixes include keeping rEFInd out of its own menu when it's launched as <tt>EFI/Microsoft/Boot/bootmgfw.efi</tt>; keeping the <tt>dont_scan_volumes</tt> option out of the <tt>also_scan_dirs</tt> list; a fix for <tt>dont_scan_volumes</tt> so that it applies to the OS X boot loader; and a fix for a bug that caused PNG files in a user-specified icons directory to be ignored if an ICNS file was available in the standard icons directory. New features include support for the Linux Foundation's <tt>HashTool.efi</tt> as a MOK utility, scanning for MOK utilities on all volumes, and a more verbose error message when a Secure Boot authentication failure occurs.</li>
 
 <li><b>0.6.6 (1/26/2013)</b>&mdash;This version includes two new features and a number of minor bug fixes. The first new feature is support for changing rEFInd's font via the <tt>font</tt> token in <tt>refind.conf</tt>. You're limited to monospace fonts that are encoded as PNG files; you can't use variable-width fonts or normal font files like TrueType fonts. The fonts support only ASCII characters. See the <a href="themes.html#fonts">fonts section on the Theming rEFInd page</a> for details. I've also changed the default font to a slightly larger one that's anti-aliased. The second new feature is that rEFInd now detects when the <tt>EFI/BOOT/bootx64.efi</tt> (or <tt>EFI/BOOT/bootia32.efi</tt> on 32-bit systems) boot loader is a duplicate of another boot loader, and automatically excludes it from the OS list. This is useful on systems that boot with Windows, since Windows tends to install its boot loader twice, once using the <tt>EFI/BOOT/bootx64.efi</tt> filename. Bug fixes are described in the <tt>NEWS.txt</tt> file, and include fixes for bugs that prevented manual boot stanzas in included configuration files from being detected; that caused an <tt>ASSERT</tt> error to appear on the screen on some systems if <tt>default_selection</tt> was not set; the caused <tt>Binary is whitelisted</tt> messages to persist on the screen when loading signed EFI drivers with Secure Boot active; that caused rEFInd to ignore <tt>icon</tt> tokens in <tt>refind.conf</tt> manual boot stanzas; and that caused the <tt>install.sh</tt> script to fail to update drivers when rEFInd was installed to <tt>EFI/BOOT</tt>.</li>
 

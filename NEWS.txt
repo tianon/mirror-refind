@@ -1,11 +1,22 @@
-0.6.7 (?/??/2013):
-------------------
+0.6.7 (2/3/2013):
+-----------------
+
+- Added a more explicit error message summarizing options when a launch of
+  a program results in a Secure Boot failure.
+
+- Changed MOK tool detection to scan all volumes, not just the rEFInd
+  home volume. This is desirable because the Linux Foundation's HashTool
+  can only scan its own volume, making it desirable to place copies of this
+  program on every volume that holds EFI boot loader binaries.
+
+- Added support for launching the Linux Foundation HashTool as a means of
+  managing MOKs (or MOK hashes, at any rate).
 
 - Fixed bug that caused rEFInd to present an entry for itself as a
   Microsoft OS if it was launched as EFI/Microsoft/Boot/bootmgfw.efi.
 
 - Fixed bug that caused dont_scan_volumes option to be added to
-  also_scan_dirst list.
+  also_scan_dirs list.
 
 - Fixed dont_scan_volumes so that it works with OS X boot loaders.
 

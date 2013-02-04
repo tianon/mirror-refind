@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 11/13/2012; last Web page update:
-1/26/2013, referencing rEFInd 0.6.6</p>
+2/3/2013, referencing rEFInd 0.6.7</p>
 
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -125,6 +125,8 @@ described on this page currently supports only <i>x</i>86-64, not
 <i>x</i>86 or ARM.</p>
 
 <p>Through 2012, it became obvious that Secure Boot would be a feature that was controlled, to a large extent, by Microsoft. This is because Microsoft requires that non-server computers that display Windows 8 logos ship with Secure Boot enabled. As a practical matter, this also means that such computers ship with Microsoft's keys in their firmware. In the absence of an industry-standard body to manage the signing of Secure Boot keys, this means that Microsoft's key is the only one that's more-or-less guaranteed to be installed on the computer, thus blocking the ability to boot any OS that lacks a boot path through Microsoft's signing key.</p>
+
+<p class="sidebar"><b>Note:</b> The <a href="http://www.linuxfoundation.org">Linux Foundation</a> is on the verge of releasing a signed version of their <a href="http://www.linuxfoundation.org/news-media/blogs/browse/2012/10/linux-foundation-uefi-secure-boot-system-open-source">PreBootloader,</a> which will function something like shim; however, where shim requires signing all binaries that don't already have valid Secure Boot keys and managing a small number of keys, PreBootloader requires registering every authorized binary. I'll update this documentation when PreBootloader is released in a signed form.</p>
 
 <p>Fortunately, Microsoft will sign third-party binaries with their key&mdash;or more precisely, with a key that Microsoft uses to sign third-party binaries. (Microsoft uses another key to sign its own binaries, and some devices, such as the Microsoft Surface tablet, lack the third-party Microsoft key.) A payment of $99 to Verisign enables a software distributor to sign as many binaries as desired. Red Hat (Fedora), Novell (SUSE), and Canonical (Ubuntu) have all announced plans to take advantage of this system. Unfortunately, using a third-party signing service is an awkward solution for open source software. In fact, for this very reason Red Hat has developed a program that it calls <i>shim</i> that essentially shifts the Secure Boot "train" from Microsoft's proprietary "track" to one that's more friendly to open source authors. Shim is signed by Microsoft and redirects the boot process to another boot loader that can be signed with keys that the distribution maintains and that are built into shim. Fedora 18 also uses this system. SUSE has announced that it will use the same system, as does Ubuntu with version 12.10 and later. SUSE has contributed to the shim approach by providing expansions to shim that support a set of keys that users can maintain themselves. These keys are known as Machine Owner Keys (MOKs), and managing them is described later, in <a href="#mok">Managing MOKs.</a> To reiterate, then, there are potentially three ways to sign a binary that will get it launched on a computer that uses shim:</p>
 
@@ -350,14 +352,10 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     have to wait for future shim developments if you want to use Secure
     Boot on <i>x</i>86 or ARM computers.</li>
 
-<li>I currently lack a Windows 8 installation with which to test, so I can't
-    even be 100% positive that rEFInd will launch Windows 8 in Secure Boot
-    ode. (It should, though, since it can launch other boot loaders that have
-    been signed with Microsoft's keys.) In theory, signing Microsoft's boot
-    loader with a MOK should work. This might be handy if you want to replace
-    your computer's built-in keys with your own but still boot Windows&mdash;but
-    be aware that if Windows replaces its boot loader, it will then stop
-    working.</li>
+<li>In theory, signing Microsoft's boot loader with a MOK should work. This
+    might be handy if you want to replace your computer's built-in keys
+    with your own but still boot Windows&mdash;but be aware that if Windows
+    replaces its boot loader, it will then stop working.</li>
 
 </ul>
 

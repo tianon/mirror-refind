@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-1/26/2013, referencing rEFInd 0.6.6</p>
+2/3/2013, referencing rEFInd 0.6.7</p>
 
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -108,7 +108,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="#icons">Icons</a></li>
 
-<li class="tight"><a href="#icon_backgrounds">Icon Backgrounds</a></li>
+<li class="tight"><a href="#icon_backgrounds">Icon Selection Backgrounds</a></li>
 
 <li class="tight"><a href="#fonts">Fonts</a></li>
 
@@ -130,7 +130,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li><b>Icons</b>&mdash;rEFInd uses icons for its OSes and utilities. The vast majority of these icons are loaded from disk files and so are easily replaced without adjusting the <tt>refind.conf</tt> file. Alternatively, you can specify a new icons directory with the <tt>icons_dir</tt> token in <tt>refind.conf</tt>.</li>
 
-<li><b>Icon backgrounds</b>&mdash;When an icon is selected, it's merged with a slightly larger selection icon, which you can change by specifying a new file with the <tt>selection_big</tt> and <tt>selection_small</tt> tokens in <tt>refind.conf</tt>.</li>
+<li><b>Icon selection backgrounds</b>&mdash;When an icon is selected, it's merged with a slightly larger selection icon, which you can change by specifying a new file with the <tt>selection_big</tt> and <tt>selection_small</tt> tokens in <tt>refind.conf</tt>.</li>
 
 <li><b>fonts</b>&mdash;rEFInd uses a 14-point monospaced serif font by default. If you don't like this font, you can change it to another monospaced font by using the <tt>font</tt> token in <tt>refind.conf</tt>; however, the font file is a simple PNG image of the font's characters, which limits rEFInd's font capabilities.</li>
 
@@ -175,7 +175,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 </ul>
 
 <a name="icon_backgrounds">
-<h2>Icon Backgrounds</h2>
+<h2>Icon Selection Backgrounds</h2>
 </a>
 
 <p>rEFInd identifies the current selection by displaying a partially-transparent icon "between" the OS or tool icon and the background image. The default icon works reasonably well on both solid and image backgrounds, but if you like, you can customize it by creating new icons in PNG or in Microsoft's <a href="http://en.wikipedia.org/wiki/BMP_file_format">BMP format</a>. You should create both 144x144 and 64x64 images and tell rEFInd about them by using the <tt>selection_big</tt> and <tt>selection_small</tt> tokens, respectively, in <tt>refind.conf</tt>. If you omit the large icon, rEFInd will stretch the small icon to fit the larger space; if you omit the small icon, rEFInd will use the default small icon. Because BMP doesn't support transparency (alpha channels), you must use the PNG format if you want your selection background to show the underlying image beneath it. (You can create the illusion of transparency on a solid background by matching the colors, though.)</p>
@@ -200,7 +200,7 @@ $ <tt class="userinput">./mkfont.sh Liberation-Mono-Italic 14 -1 liberation-mono
 
 <ul>
 
-<li><b>The font name</b>&mdash;Type <tt class="userinput">convert -list font | less</tt> to obtain a list of fonts available on your computer. Note, however, that rEFInd requires <tt>monospaced</tt> (fixed-width) fonts, and most of the fonts installed on most computers are variable-width.</li>
+<li><b>The font name</b>&mdash;Type <tt class="userinput">convert -list font | less</tt> to obtain a list of fonts available on your computer. Note, however, that rEFInd requires <i>monospaced</i> (fixed-width) fonts, and most of the fonts installed on most computers are variable-width.</li>
 
 <li><b>The font size in points</b></li>
 
@@ -218,7 +218,7 @@ BMP format doesn't support an alpha layer, which is required for proper
 transparency). They must contain glyphs for the 95 characters between ASCII
 32 (space) and ASCII 126 (tilde, ~), inclusive, plus a 96th glyph that
 rEFInd displays for out-of-range characters. To work properly, the
-characters must be evenly spaced and the PNG image area must be a multiple
+characters must be evenly spaced and the PNG image must be a multiple
 of 96 pixels wide, with divisions at appropriate points. In theory, you
 should be able to take a screen shot of a program displaying the relevant
 characters and then crop it to suit your needs. In practice, this is likely

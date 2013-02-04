@@ -361,6 +361,7 @@ VOID ReadConfig(CHAR16 *FileName)
        GlobalConfig.DontScanDirs = SelfPath;
        MyFreePool(GlobalConfig.DontScanFiles);
        GlobalConfig.DontScanFiles = StrDuplicate(DONT_SCAN_FILES);
+       MergeStrings(&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
        MyFreePool(GlobalConfig.DontScanVolumes);
        GlobalConfig.DontScanVolumes = StrDuplicate(DONT_SCAN_VOLUMES);
     } // if

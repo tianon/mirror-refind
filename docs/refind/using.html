@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-1/26/2013, referencing rEFInd 0.6.6</p>
+2/3/2013, referencing rEFInd 0.6.7</p>
 
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -102,7 +102,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <ul>
 
-<li class="tight"><a href="#basic">Using Basic rEFInd Features</li>
+<li class="tight"><a href="#basic">Using Basic rEFInd Features</a></li>
+
+<li class="tight"><a href="#boot_options">Adjusting Boot Options</a></li>
 
 <li class="tight"><a href="#keyboard">Using Keyboard Shortcuts</a></li>
 
@@ -124,7 +126,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     height="550" alt="rEFInd presents a GUI menu for selecting your boot
     OS." border=2 /></center> <br />
 
-<p>If you don't press any key before the timeout (shown on the last line) expires, the default boot loader will launch. This is normally the first item in the menu, but you can adjust the default by editing the configuration file. (In this example, it's the Linux Mint loader, which is further identified by text above the timeout as <i>vmlinuz-3.5.0-17-generic from LINUXMINT.</i>)</p>
+<p>If you don't press any key before the timeout (shown below the icons and description line) expires, the default boot loader will launch. This is normally the first item in the menu, but you can adjust the default by editing the configuration file. (In this example, it's the Linux Mint loader, which is further identified by text above the timeout as <i>vmlinuz-3.5.0-17-generic from LINUXMINT.</i>)</p>
 
 <p>This display is dominated by the central set of OS <i>tags</i> (icons), which in this example includes tags for OS X, Windows, Mint, and an unkown boot loader. All but the last of these are on hard disks, but the unknown boot loader is on an optical disc, as revealed by the small icons (known as <i>badges</i>) in the lower-right corner of the OS icons.</p>
 
@@ -169,7 +171,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     single-boot basis." border=2></center> <br />
 
  
-<p>If your computer supports Secure Boot, you may find that some of your OSes and tools won't work; they'll produce <tt>Access Denied</tt> error messages. You can overcome this problem by creating a signing key, signing your binaries with it, and adding the public version of that key to your machine owner key (MOK) list. This process is described on the <a href="secureboot.html">Managing Secure Boot</a> page.</p>
+<p>If your computer supports Secure Boot, you may find that some of your OSes and tools won't work; they'll produce <tt>Secure Boot validation failure</tt> error messages. You can overcome this problem by creating a signing key, signing your binaries with it, and adding the public version of that key to your machine owner key (MOK) list. This process is described on the <a href="secureboot.html">Managing Secure Boot</a> page.</p>
 
 <a name="keyboard">
 <h2>Using Keyboard Shortcuts</h2>
