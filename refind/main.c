@@ -132,7 +132,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.7");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.7.1");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012 Roderick W. Smith");
@@ -751,9 +751,9 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
    // locate a custom icon for the loader
    // Anything found here takes precedence over the "hints" in the OSIconName variable
    if (!Entry->me.Image)
-      Entry->me.Image = egFindIcon(NoExtension, 128);
+      Entry->me.Image = egLoadIconAnyType(Volume->RootDir, PathOnly, NoExtension, 128);
    if (!Entry->me.Image)
-      Entry->me.Image = Volume->VolIconImage;
+      Entry->me.Image = egCopyImage(Volume->VolIconImage);
 
    // Begin creating icon "hints" by using last part of directory path leading
    // to the loader

@@ -1,3 +1,8 @@
+0.6.8 (?/?/2013):
+-----------------
+
+- Fixed bug that caused icons named after boot loaders to not be used.
+
 0.6.7 (2/3/2013):
 -----------------
 
