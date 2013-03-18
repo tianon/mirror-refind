@@ -1,5 +1,14 @@
-0.6.8 (?/?/2013):
------------------
+0.6.8 (3/18/2013):
+------------------
+
+- Added workaround for presumed EFI bug that was causing "Invalid
+  Parameter" errors when scanning for boot loaders on some computers.
+
+- Added search for an EFI shell called shell.efi in the root directory
+  (previously this name was only accepted in EFI\tools).
+
+- Fixed bug in install.sh that caused it to fail on some systems (Fedora
+  18, for instance) because of a problem identifying the ESP.
 
 - Fixed bug that caused icons named after boot loaders to not be used.
 

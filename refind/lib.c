@@ -1151,13 +1151,15 @@ EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry,
             LastBufferSize = BufferSize;
         }
         if (EFI_ERROR(Status)) {
-            FreePool(Buffer);
+            MyFreePool(Buffer);
+            Buffer = NULL;
             break;
         }
 
         // check for end of listing
         if (BufferSize == 0) {    // end of directory listing
-            FreePool(Buffer);
+            MyFreePool(Buffer);
+            Buffer = NULL;
             break;
         }
 
@@ -1273,7 +1275,6 @@ BOOLEAN DirIterNext(IN OUT REFIT_DIR_ITER *DirIter, IN UINTN FilterMode, IN CHAR
             while (KeepGoing && (OnePattern = FindCommaDelimited(FilePattern, i++)) != NULL) {
                if (MetaiMatch(DirIter->LastFileInfo->FileName, OnePattern))
                    KeepGoing = FALSE;
-//               Print(L"%s did%s match %s\n", DirIter->LastFileInfo->FileName, KeepGoing ? L" not" : L"", OnePattern);
             } // while
             // else continue loop
         } else

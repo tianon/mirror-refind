@@ -85,9 +85,10 @@ EG_IMAGE * egCreateFilledImage(IN UINTN Width, IN UINTN Height, IN BOOLEAN HasAl
 
 EG_IMAGE * egCopyImage(IN EG_IMAGE *Image)
 {
-    EG_IMAGE        *NewImage;
+    EG_IMAGE        *NewImage = NULL;
 
-    NewImage = egCreateImage(Image->Width, Image->Height, Image->HasAlpha);
+    if (Image != NULL)
+       NewImage = egCreateImage(Image->Width, Image->Height, Image->HasAlpha);
     if (NewImage == NULL)
         return NULL;
 

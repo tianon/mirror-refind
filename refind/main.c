@@ -66,17 +66,17 @@
 
 #define MACOSX_LOADER_PATH      L"System\\Library\\CoreServices\\boot.efi"
 #if defined (EFIX64)
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shellx64.efi"
+#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shell.efi,\\shellx64.efi"
 #define DRIVER_DIRS             L"drivers,drivers_x64"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
 #elif defined (EFI32)
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellia32.efi,\\shellia32.efi"
+#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellia32.efi,\\shell.efi,\\shellia32.efi"
 #define DRIVER_DIRS             L"drivers,drivers_ia32"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #define FALLBACK_BASENAME       L"bootia32.efi"
 #else
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi"
+#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\shell.efi"
 #define DRIVER_DIRS             L"drivers"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" /* Not really correct */
 #define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
@@ -110,7 +110,7 @@ static REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL
                                             L"Insert or F2 for more options; Esc to refresh" };
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
-REFIT_CONFIG GlobalConfig = { FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0,
+REFIT_CONFIG GlobalConfig = { FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
                               NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               {TAG_SHELL, TAG_APPLE_RECOVERY, TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, 0, 0, 0, 0, 0 }};
 
@@ -132,7 +132,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.7.1");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.8");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012 Roderick W. Smith");
@@ -1064,21 +1064,27 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
           } // if
           MyFreePool(Extension);
        } // while
+
        NewLoader = LoaderList;
        while (NewLoader != NULL) {
           AddLoaderEntry(NewLoader->FileName, NULL, Volume);
           NewLoader = NewLoader->NextEntry;
        } // while
+
        CleanUpLoaderList(LoaderList);
        Status = DirIterClose(&DirIter);
-       if (Status != EFI_NOT_FOUND) {
+       // NOTE: EFI_INVALID_PARAMETER really is an error that should be reported;
+       // but I've gotten reports from users who are getting this error occasionally
+       // and I can't find anything wrong or reproduce the problem, so I'm putting
+       // it down to buggy EFI implementations and ignoring that particular error....
+       if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
           if (Path)
              SPrint(FileName, 255, L"while scanning the %s directory", Path);
           else
              StrCpy(FileName, L"while scanning the root directory");
           CheckError(Status, FileName);
        } // if (Status != EFI_NOT_FOUND)
-    } // if not scanning our own directory
+    } // if not scanning a blacklisted directory
 
     return FoundFallbackDuplicate;
 } /* static VOID ScanLoaderDir() */
@@ -1091,11 +1097,9 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
    UINTN                   i, Length;
    BOOLEAN                 ScanFallbackLoader = TRUE;
 
-//   Print(L"Entering ScanEfiFiles(), GlobalConfig.ScanAllLinux = %s\n", GlobalConfig.ScanAllLinux ? L"TRUE" : L"FALSE");
    MatchPatterns = StrDuplicate(LOADER_MATCH_PATTERNS);
    if (GlobalConfig.ScanAllLinux)
       MergeStrings(&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
-//   Print(L"MatchPatterns = '%s'\n", MatchPatterns);
 
    if ((Volume->RootDir != NULL) && (Volume->VolName != NULL)) {
       // check for Mac OS X boot loader

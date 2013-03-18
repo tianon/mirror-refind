@@ -65,7 +65,7 @@ mkdosfs -n "ElTorito" refind-bin-$Version.img
 mcopy -irefind-bin-$Version.img -s EFI shell*.efi ::/
 
 # Make the ISO-9660 image file....
-mkisofs -A "Bootable rEFInd" -V "rEFInd $Version" -volset "rEFInd $Version" \
+mkisofs -A "Bootable rEFInd" -V "rEFInd_$Version" -volset "rEFInd_$Version" \
     -J -r -v -x ./lost+found -o ../../refind-cd-$Version.iso \
     -eltorito-alt-boot -efi-boot refind-bin-$Version.img \
     -no-emul-boot ./

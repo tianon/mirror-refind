@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 2/3/2013</p>
+<p>Last Web page update: 3/18/2013</p>
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -91,6 +91,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.6.8 (3/18/2013)</b>&mdash;This version fixes a few obscure bugs but adds only one minor new feature. Most notably, it fixes a problem that caused "Invalid Parameter" errors to appear when scanning for boot loaders on some systems; fixes a bug that caused icons defined in files named after boot loaders to not appear; and fixes a bug in the <tt>install.sh</tt> script that caused the script to fail on some systems. It also enables you to name a shell <tt>shell.efi</tt> in the root directory (previously only <tt>shell_<i>arch</i>.efi</tt> worked in the root directory, although <tt>shell.efi</tt> worked in the <tt>EFI/tools</tt> directory).</li>
 
 <li><b>0.6.7 (2/3/2013)</b>&mdash;This version fixes a few bugs and adds some minor features relating to Secure Boot. Bug fixes include keeping rEFInd out of its own menu when it's launched as <tt>EFI/Microsoft/Boot/bootmgfw.efi</tt>; keeping the <tt>dont_scan_volumes</tt> option out of the <tt>also_scan_dirs</tt> list; a fix for <tt>dont_scan_volumes</tt> so that it applies to the OS X boot loader; and a fix for a bug that caused PNG files in a user-specified icons directory to be ignored if an ICNS file was available in the standard icons directory. New features include support for the Linux Foundation's <tt>HashTool.efi</tt> as a MOK utility, scanning for MOK utilities on all volumes, and a more verbose error message when a Secure Boot authentication failure occurs.</li>
 

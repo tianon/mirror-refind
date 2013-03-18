@@ -229,6 +229,7 @@ typedef struct {
    UINTN       GraphicsFor;
    UINTN       LegacyType;
    UINTN       ScanDelay;
+   UINTN       ScreensaverTime;
    CHAR16      *BannerFileName;
    EG_IMAGE    *ScreenBackground;
    CHAR16      *SelectionSmallFileName;

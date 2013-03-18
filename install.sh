@@ -29,6 +29,7 @@
 #
 # Revision history:
 #
+# 0.6.8   -- Bug fix: ESP scan now uses "uniq".
 # 0.6.6   -- Bug fix: Upgrade drivers when installed to EFI/BOOT. Also enable
 #            copying shim.efi and MokManager.efi over themselves.
 # 0.6.4   -- Copies ext2 driver rather than ext4 driver for ext2/3fs
@@ -594,7 +595,7 @@ FindLinuxESP() {
    fi
    InstallDir=`echo $EspLine | cut -d " " -f 6`
    if [[ -n $InstallDir ]] ; then
-      EspFilesystem=`grep $InstallDir /etc/mtab | cut -d " " -f 3`
+      EspFilesystem=`grep $InstallDir /etc/mtab | uniq | cut -d " " -f 3`
    fi
    if [[ $EspFilesystem != 'vfat' ]] ; then
       echo "$RootDir/boot/efi doesn't seem to be on a VFAT filesystem. The ESP must be"

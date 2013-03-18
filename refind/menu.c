@@ -412,8 +412,9 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             } else if (HaveTimeout) {
                 refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
                 TimeoutCountdown--;
-            } else
+            } else {
                 refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &index);
+            }
             continue;
         }
         if (HaveTimeout) {

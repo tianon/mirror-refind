@@ -497,6 +497,9 @@ VOID ReadConfig(CHAR16 *FileName)
            else
               GlobalConfig.RequestedScreenHeight = 0;
 
+        } else if (StriCmp(TokenList[0], L"screensaver") == 0) {
+           HandleInt(TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
+
         } else if (StriCmp(TokenList[0], L"use_graphics_for") == 0) {
            GlobalConfig.GraphicsFor = 0;
            for (i = 1; i < TokenCount; i++) {
