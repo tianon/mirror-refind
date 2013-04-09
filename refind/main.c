@@ -132,7 +132,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.8");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.8.1");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012 Roderick W. Smith");
@@ -985,6 +985,7 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
       FileInfo = LibFileInfo(FileHandle);
       FileSize = FileInfo->FileSize;
    } else {
+      refit_call1_wrapper(FileHandle->Close, FileHandle);
       return FALSE;
    }
 
@@ -1093,7 +1094,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
    EFI_STATUS              Status;
    REFIT_DIR_ITER          EfiDirIter;
    EFI_FILE_INFO           *EfiDirEntry;
-   CHAR16                  FileName[256], *Directory, *MatchPatterns, *VolName = NULL;
+   CHAR16                  FileName[256], *Directory, *MatchPatterns, *VolName = NULL, *SelfPath;
    UINTN                   i, Length;
    BOOLEAN                 ScanFallbackLoader = TRUE;
 
@@ -1157,6 +1158,12 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
          MyFreePool(Directory);
          MyFreePool(VolName);
       } // while
+
+      // Don't scan the fallback loader if it's on the same volume and a duplicate of rEFInd itself....
+      SelfPath = DevicePathToStr(SelfLoadedImage->FilePath);
+      CleanUpPathNameSlashes(SelfPath);
+      if ((Volume->DeviceHandle == SelfLoadedImage->DeviceHandle) && DuplicatesFallback(Volume, SelfPath))
+         ScanFallbackLoader = FALSE;
 
       // If not a duplicate & if it exists & if it's not us, create an entry
       // for the fallback boot loader

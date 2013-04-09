@@ -404,7 +404,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
 
         // read key press (and wait for it if applicable)
         Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
-        if (Status == EFI_NOT_READY) {
+        if (Status != EFI_SUCCESS) {
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
                 MenuExit = MENU_EXIT_TIMEOUT;

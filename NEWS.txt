@@ -1,3 +1,10 @@
+0.6.9 (?/??/2013):
+------------------
+
+- Changed timeout code so that the timeout continues if the keyboard is
+  disconnected. This can help in booting a headless server or a system with
+  a bluetooth or other keyboard that's not recognized by the EFI.
+
 0.6.8 (3/18/2013):
 ------------------
 

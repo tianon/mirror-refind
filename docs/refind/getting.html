@@ -114,7 +114,14 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     optical disc. This zip file package includes both <i>x</i>86 (aka IA32)
     and <i>x</i>86-64 (aka <i>x</i>64, AMD64, or EM64T) versions of rEFInd.
     Which you install depends on your architecture, as described on the <a
-    href="installing.html">Installing rEFInd</a> page.</li>
+    href="installing.html">Installing rEFInd</a> page. Some users of Arch
+    Linux have reported problems booting some specific Arch Linux kernels
+    with rEFInd and some other tools. For them, a <a
+    href="http://sourceforge.net/projects/refind/files/0.6.8/refind-bin-gnuefi-0.6.8.zip/download">variant
+    package</a> exists in which the <i>x</i>86-64 binary was compiled with
+    GNU-EFI rather than the usual TianoCore EDK2. This change helps some
+    users with this problem; but using GNU-EFI also means that this version
+    can't launch BIOS-mode OSes.</li>
 
 <li><b><a
     href="http://sourceforge.net/projects/refind/files/0.6.8/refind-0.6.8-1.x86_64.rpm/download">A
