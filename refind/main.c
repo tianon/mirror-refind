@@ -67,16 +67,19 @@
 #define MACOSX_LOADER_PATH      L"System\\Library\\CoreServices\\boot.efi"
 #if defined (EFIX64)
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shell.efi,\\shellx64.efi"
+#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi"
 #define DRIVER_DIRS             L"drivers,drivers_x64"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
 #elif defined (EFI32)
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellia32.efi,\\shell.efi,\\shellia32.efi"
+#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi"
 #define DRIVER_DIRS             L"drivers,drivers_ia32"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #define FALLBACK_BASENAME       L"bootia32.efi"
 #else
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\shell.efi"
+#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi"
 #define DRIVER_DIRS             L"drivers"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" /* Not really correct */
 #define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
@@ -132,7 +135,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.8.1");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.8.4");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012 Roderick W. Smith");
@@ -975,6 +978,9 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
    EFI_STATUS      Status;
    BOOLEAN         AreIdentical = FALSE;
 
+   if (!FileExists(Volume->RootDir, FileName) || !FileExists(Volume->RootDir, FALLBACK_FULLNAME))
+      return FALSE;
+
    CleanUpPathNameSlashes(FileName);
 
    if (StriCmp(FileName, FALLBACK_FULLNAME) == 0)
@@ -985,7 +991,6 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
       FileInfo = LibFileInfo(FileHandle);
       FileSize = FileInfo->FileSize;
    } else {
-      refit_call1_wrapper(FileHandle->Close, FileHandle);
       return FALSE;
    }
 
@@ -1005,8 +1010,9 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
       FallbackContents = AllocatePool(FallbackSize);
       if (FileContents && FallbackContents) {
          Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &FileSize, FileContents);
-         if (Status == EFI_SUCCESS)
+         if (Status == EFI_SUCCESS) {
             Status = refit_call3_wrapper(FallbackHandle->Read, FallbackHandle, &FallbackSize, FallbackContents);
+         }
          if (Status == EFI_SUCCESS) {
             AreIdentical = (CompareMem(FileContents, FallbackContents, FileSize) == 0);
          } // if
@@ -1015,10 +1021,11 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
       MyFreePool(FallbackContents);
    } // if/else
 
-   refit_call1_wrapper(FileHandle->Close, FileHandle);
+   // BUG ALERT: Some systems (e.g., DUET, some Macs with large displays) crash if the
+   // following two calls are reversed. Go figure....
    refit_call1_wrapper(FileHandle->Close, FallbackHandle);
+   refit_call1_wrapper(FileHandle->Close, FileHandle);
    return AreIdentical;
-
 } // BOOLEAN DuplicatesFallback()
 
 // Scan an individual directory for EFI boot loader files and, if found,
@@ -1167,9 +1174,8 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
 
       // If not a duplicate & if it exists & if it's not us, create an entry
       // for the fallback boot loader
-      if (ScanFallbackLoader && FileExists(Volume->RootDir, FALLBACK_FULLNAME) && ShouldScan(Volume, L"EFI\\BOOT")) {
+      if (ScanFallbackLoader && FileExists(Volume->RootDir, FALLBACK_FULLNAME) && ShouldScan(Volume, L"EFI\\BOOT"))
          AddLoaderEntry(FALLBACK_FULLNAME, L"Fallback boot loader", Volume);
-      }
    } // if
 } // static VOID ScanEfiFiles()
 
@@ -2008,11 +2014,14 @@ static VOID ScanForTools(VOID) {
             } // while
             break;
          case TAG_GPTSYNC:
-            FileName = StrDuplicate(L"\\efi\\tools\\gptsync.efi");
-            if (FileExists(SelfRootDir, FileName)) {
-               AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"Make Hybrid MBR", BuiltinIcon(BUILTIN_ICON_TOOL_PART), 'P', FALSE);
-            }
-            MyFreePool(FileName);
+            j = 0;
+            while ((FileName = FindCommaDelimited(GPTSYNC_NAMES, j++)) != NULL) {
+               if (FileExists(SelfRootDir, FileName)) {
+                  AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"Hybrid MBR tool", BuiltinIcon(BUILTIN_ICON_TOOL_PART),
+                               'P', FALSE);
+               } // if
+               MyFreePool(FileName);
+            } // while
             FileName = NULL;
             break;
          case TAG_APPLE_RECOVERY:

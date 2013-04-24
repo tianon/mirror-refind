@@ -10,6 +10,7 @@ LOADER_DIR=refind
 FS_DIR=filesystems
 LIBEG_DIR=libeg
 MOK_DIR=mok
+GPTSYNC_DIR=gptsync
 EFILIB_DIR=EfiLib
 
 # Build rEFInd, including libeg
@@ -19,6 +20,7 @@ gnuefi:
 	+make -C $(LIBEG_DIR)
 	+make -C $(MOK_DIR)
 	+make -C $(LOADER_DIR)
+	+make -C $(GPTSYNC_DIR) gnuefi
 #	+make -C $(FS_DIR) all_gnuefi
 
 fs:
@@ -32,6 +34,7 @@ tiano:
 	+make AR_TARGET=libeg -C $(LIBEG_DIR) -f Make.tiano
 	+make AR_TARGET=mok -C $(MOK_DIR) -f Make.tiano
 	+make BUILDME=refind DLL_TARGET=refind -C $(LOADER_DIR) -f Make.tiano
+	+make -C $(GPTSYNC_DIR) -f Make.tiano
 
 clean:
 	make -C $(LIBEG_DIR) clean
@@ -39,6 +42,7 @@ clean:
 	make -C $(LOADER_DIR) clean
 	make -C $(EFILIB_DIR) clean
 	make -C $(FS_DIR) clean
+	make -C $(GPTSYNC_DIR) clean
 	rm -f include/*~
 
 # NOTE TO DISTRIBUTION MAINTAINERS:

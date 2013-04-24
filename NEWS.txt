@@ -1,6 +1,17 @@
 0.6.9 (?/??/2013):
 ------------------
 
+- Worked around a suspected firmware bug that caused rEFInd 0.6.6 to 0.6.8
+  to hang at startup on some systems (DUET and some Macs).
+
+- Modified rEFInd to search for gptsync under the names gptsync.efi and
+  gptsync_{arch}.efi, where {arch} is ia32 or x64. (Previous versions
+  searched only for gptsync.efi.)
+
+- Added gptsync program from rEFIt project, but with some changes to
+  improve flexibility and make it less likely that UEFI users will
+  accidentally trash their systems.
+
 - Changed timeout code so that the timeout continues if the keyboard is
   disconnected. This can help in booting a headless server or a system with
   a bluetooth or other keyboard that's not recognized by the EFI.

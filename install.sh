@@ -29,6 +29,7 @@
 #
 # Revision history:
 #
+# 0.6.9   -- Install gptsync on Macs if evidence of Windows found
 # 0.6.8   -- Bug fix: ESP scan now uses "uniq".
 # 0.6.6   -- Bug fix: Upgrade drivers when installed to EFI/BOOT. Also enable
 #            copying shim.efi and MokManager.efi over themselves.
@@ -244,6 +245,16 @@ CopyDrivers() {
    fi
 }
 
+# Copy tools (currently only gptsync, and that only on Macs) to the EFI/tools
+# directory on the ESP. Must be passed a suitable architecture code (ia32
+# or x64).
+CopyTools() {
+   mkdir -p $InstallDir/EFI/tools
+   if [[ $OSName == 'Darwin' ]] ; then
+      cp -f $RefindDir/tools_$1/gptsync_$1.efi $InstallDir/EFI/tools/
+   fi
+} # CopyTools()
+
 # Copy the rEFInd files to the ESP or OS X root partition.
 # Sets Problems=1 if any critical commands fail.
 CopyRefindFiles() {
@@ -267,8 +278,10 @@ CopyRefindFiles() {
       elif [[ $Upgrade == 1 ]] ; then
          if [[ $Platform == 'EFI64' ]] ; then
             CopyDrivers x64
+            CopyTools x64
          else
             CopyDrivers ia32
+            CopyTools ia32
          fi
       fi
       Refind=""
@@ -279,6 +292,7 @@ CopyRefindFiles() {
          Problems=1
       fi
       CopyDrivers x64
+      CopyTools x64
       Refind="refind_x64.efi"
       CopyKeys
       if [[ $ShimSource != "none" ]] ; then
@@ -300,6 +314,7 @@ CopyRefindFiles() {
          Problems=1
       fi
       CopyDrivers ia32
+      CopyTools ia32
       Refind="refind_ia32.efi"
    else
       echo "Unknown platform! Aborting!"
