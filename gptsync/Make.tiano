@@ -1,0 +1,107 @@
+#
+# gptsync/Make.tiano
+# Build control file for gptsync utility, built with TianoCore EDK2
+#
+
+HOSTARCH        = $(shell uname -m | sed s,i[3456789]86,ia32,)
+ARCH            ?= $(HOSTARCH)
+
+# Note: IA64 options are untested; taken from Debian's rEFIt package.
+ifeq ($(ARCH),ia64)
+  # EFI specs allows only lower floating point partition to be used
+  ARCH_C_CFLAGS  = -frename-registers -mfixed-range=f32-f127
+  # TODO: Add ARCHDIR and FILENAME_CODE as appropriate
+endif
+
+ifeq ($(ARCH),ia32)
+  ARCH_C_FLAGS = -m32 -malign-double -DEFI32
+  ARCHDIR = Ia32
+  UC_ARCH = IA32
+  FILENAME_CODE = ia32
+  LD_CODE = elf_i386
+endif
+
+ifeq ($(ARCH),x86_64)
+  ARCH_C_FLAGS = "-DEFIAPI=__attribute__((ms_abi))" -mcmodel=large -m64 -DEFIX64
+  ARCHDIR = X64
+  UC_ARCH = X64
+  FILENAME_CODE = x64
+  LD_CODE = elf_x86_64
+endif
+
+EDK2BASE = /usr/local/UDK2010/MyWorkSpace
+#EDK2BASE = /usr/local/edk2
+
+# Below file defines TARGET (RELEASE or DEBUG) and TOOL_CHAIN_TAG (GCC44, GCC45, or GCC46)
+include $(EDK2BASE)/Conf/target.txt
+
+EFILIB          = $(EDK2BASE)/Build/Mde/$(TARGET)_$(TOOL_CHAIN_TAG)/$(UC_ARCH)/MdePkg/Library
+ALL_EFILIBS     = $(EFILIB)/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib/OUTPUT/BaseDebugPrintErrorLevelLib.lib \
+		  $(EFILIB)/BasePrintLib/BasePrintLib/OUTPUT/BasePrintLib.lib \
+		  $(EFILIB)/BasePcdLibNull/BasePcdLibNull/OUTPUT/BasePcdLibNull.lib \
+		  $(EFILIB)/UefiDebugLibConOut/UefiDebugLibConOut/OUTPUT/UefiDebugLibConOut.lib \
+		  $(EFILIB)/BaseLib/BaseLib/OUTPUT/BaseLib.lib \
+		  $(EFILIB)/BaseMemoryLib/BaseMemoryLib/OUTPUT/BaseMemoryLib.lib \
+		  $(EFILIB)/UefiBootServicesTableLib/UefiBootServicesTableLib/OUTPUT/UefiBootServicesTableLib.lib \
+		  $(EFILIB)/UefiMemoryAllocationLib/UefiMemoryAllocationLib/OUTPUT/UefiMemoryAllocationLib.lib \
+		  $(EFILIB)/UefiDevicePathLib/UefiDevicePathLib/OUTPUT/UefiDevicePathLib.lib \
+		  $(EFILIB)/UefiRuntimeServicesTableLib/UefiRuntimeServicesTableLib/OUTPUT/UefiRuntimeServicesTableLib.lib \
+		  $(EFILIB)/UefiLib/UefiLib/OUTPUT/UefiLib.lib \
+		  $(EFILIB)/UefiApplicationEntryPoint/UefiApplicationEntryPoint/OUTPUT/UefiApplicationEntryPoint.lib
+
+INCLUDE_DIRS    = -I $(EDK2BASE)/MdePkg \
+                  -I $(EDK2BASE)/MdePkg/Include \
+                  -I $(EDK2BASE)/MdePkg/Include/$(ARCHDIR) \
+		  -I $(EDK2BASE)/EdkCompatibilityPkg/Foundation/Framework/Include \
+		  -I $(EDK2BASE)/EdkCompatibilityPkg/Foundation/Library/Dxe/Include \
+		  -I $(EDK2BASE)/MdeModulePkg/ \
+                  -I $(EDK2BASE)/MdeModulePkg/Include \
+                  -I $(EDK2BASE)/IntelFrameworkPkg/Include \
+                  -I $(EDK2BASE)/MdePkg/Include/$(ARCHDIR) \
+		  -I ../libeg \
+		  -I ../include \
+		  -I ..
+
+GPTSYNC_NAMES    = gptsync lib os_efi AutoGen ../EfiLib/BmLib
+OBJS             = $(GPTSYNC_NAMES:=.obj)
+BUILDME          = gptsync_$(FILENAME_CODE).efi
+
+OPTIMFLAGS      = -fno-strict-aliasing -mno-red-zone -Wno-address -Os
+DEBUGFLAGS      = -Wall -Wno-missing-braces -Wno-array-bounds -ffunction-sections -fdata-sections
+CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c -DHOST_EFI_EDK2 -D__MAKEWITH_TIANO
+#CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c -include AutoGen.h -DHOST_EFI_EDK2
+
+prefix          = /usr/bin/
+CC              = $(prefix)gcc
+AS              = $(prefix)as
+LD              = $(prefix)ld
+AR              = $(prefix)ar
+RANLIB          = $(prefix)ranlib
+OBJCOPY         = $(prefix)objcopy
+GENFW           = $(EDK2BASE)/BaseTools/Source/C/bin/GenFw
+
+
+LDSCRIPT = $(EDK2BASE)/BaseTools/Scripts/gcc4.4-ld-script
+
+LDFLAGS         = -nostdlib -n -q --gc-sections --script=$(EDK2BASE)/BaseTools/Scripts/gcc4.4-ld-script \
+                  --entry efi_main -u efi_main -m $(LD_CODE)
+
+%.obj: %.c
+	$(CC) $(ARCH_C_FLAGS) $(CFLAGS) $(INCLUDE_DIRS) -DNO_BUILTIN_VA_FUNCS -c $< -o $@
+	+make -C ../EfiLib -f Make.tiano
+
+ifneq (,$(filter %.efi,$(BUILDME)))
+
+DLL_TARGET = $(subst .efi,.dll,$(BUILDME))
+
+all: $(BUILDME)
+
+$(DLL_TARGET): $(OBJS)
+	$(LD) -o gptsync_$(FILENAME_CODE).dll $(LDFLAGS) --start-group $(ALL_EFILIBS) $(OBJS) --end-group
+
+$(BUILDME): $(DLL_TARGET)
+	$(OBJCOPY) --strip-unneeded $(DLL_TARGET)
+	$(GENFW) -e UEFI_APPLICATION -o $(BUILDME) $(DLL_TARGET)
+
+endif
+
