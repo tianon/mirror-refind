@@ -51,7 +51,7 @@ EFI_BLOCK_IO    *BlockIO = NULL;
 
 // Returns size of disk in blocks
 UINT64 disk_size(VOID) {
-   return (UINT64) BlockIO->Media->LastBlock;
+   return (UINT64) (BlockIO->Media->LastBlock + 1);
 } // UINT64 disk_size()
 
 UINTN read_sector(UINT64 lba, UINT8 *buffer)

@@ -116,6 +116,13 @@ void Print(wchar_t *format, ...);
 
 #endif
 
+#define GPT_KIND_SYSTEM     (0)
+#define GPT_KIND_DATA       (1)
+#define GPT_KIND_BASIC_DATA (2)
+#define GPT_KIND_FATAL      (3)
+
+#define MAX_MBR_LBA  0xFFFFFFFF
+
 //
 // platform-independent types
 //
@@ -159,11 +166,6 @@ typedef struct {
     UINT64  attributes;
     CHAR16  name[36];
 } GPT_ENTRY;
-
-#define GPT_KIND_SYSTEM     (0)
-#define GPT_KIND_DATA       (1)
-#define GPT_KIND_BASIC_DATA (2)
-#define GPT_KIND_FATAL      (3)
 
 typedef struct {
     UINT8   guid[16];

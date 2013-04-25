@@ -86,3 +86,6 @@ Icons and graphics:
 
 * The ALT Linux icon was donated by the ALT Linux developers (see
   http://www.altlinux.com).
+
+* Erik Kemperman provided the rEFInd icon, which is a combination of
+  the common refresh/reload icon and the search/find icon.

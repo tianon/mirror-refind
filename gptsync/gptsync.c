@@ -138,16 +138,16 @@ static UINTN write_mbr(VOID)
             table[i].end_chs[2]   = 0xff;
 
             lba = new_mbr_parts[k].start_lba;
-            if (lba > 0xffffffffULL) {
+            if (lba > MAX_MBR_LBA) {
                 Print(L"Warning: Partition %d starts beyond 2 TiB limit\n", i+1);
-                lba = 0xffffffffULL;
+                lba = MAX_MBR_LBA;
             }
             table[i].start_lba    = (UINT32)lba;
 
             lba = new_mbr_parts[k].end_lba + 1 - new_mbr_parts[k].start_lba;
-            if (lba > 0xffffffffULL) {
+            if (lba > MAX_MBR_LBA) {
                 Print(L"Warning: Partition %d extends beyond 2 TiB limit\n", i+1);
-                lba = 0xffffffffULL;
+                lba = MAX_MBR_LBA;
             }
             table[i].size         = (UINT32)lba;
         }
@@ -214,7 +214,7 @@ static UINTN check_gpt(VOID)
     }
 
     return 0;
-}
+} // VOID check_gpt()
 
 //
 // compare GPT and MBR tables
@@ -260,14 +260,15 @@ static VOID generate_hybrid_mbr(VOID) {
     UINTN i, k, iter, count_active;
     UINT64 first_used_lba;
 
-    i = 0;
     new_mbr_part_count = 1;
-    first_used_lba = 0xFFFFFFFF;
+    first_used_lba = (UINT64) MAX_MBR_LBA + (UINT64) 1;
 
     // Copy partitions in three passes....
     // First, do FAT and NTFS partitions....
+    i = 0;
     do {
         if ((gpt_parts[i].start_lba > 0) && (gpt_parts[i].end_lba > 0) &&
+            (gpt_parts[i].end_lba <= MAX_MBR_LBA) &&
             (gpt_parts[i].gpt_parttype->kind == GPT_KIND_BASIC_DATA) && /* MS Basic Data GPT type code */
             (gpt_parts[i].mbr_type != 0x83)) {                          /* Not containing Linux filesystem */
            copy_gpt_to_new_mbr(i, new_mbr_part_count);
@@ -279,10 +280,13 @@ static VOID generate_hybrid_mbr(VOID) {
         i++;
     } while (i < gpt_part_count && new_mbr_part_count <= 3);
 
-    // Second, do Linux partitions....
-    i = 0;
-    while (i < gpt_part_count && new_mbr_part_count <= 3) {
+    // Second, do Linux partitions. Note that we start from the END of the
+    // partition list, so as to maximize the space covered by the 0xEE
+    // partition if there are several Linux partitions.
+    i = gpt_part_count - 1; // Note that gpt_part_count can't be 0; filtered by check_gpt()
+    while (i >= 0 && new_mbr_part_count <= 3) {
         if ((gpt_parts[i].start_lba > 0) && (gpt_parts[i].end_lba > 0) &&
+            (gpt_parts[i].end_lba <= MAX_MBR_LBA) &&
             ((gpt_parts[i].gpt_parttype->kind == GPT_KIND_DATA) || (gpt_parts[i].gpt_parttype->kind == GPT_KIND_BASIC_DATA)) &&
             (gpt_parts[i].mbr_type == 0x83)) {
            copy_gpt_to_new_mbr(i, new_mbr_part_count);
@@ -291,7 +295,7 @@ static VOID generate_hybrid_mbr(VOID) {
 
            new_mbr_part_count++;
        }
-       i++;
+       i--;
     } // while
 
     // Third, do anything that's left to cover uncovered spaces; but this requires
@@ -300,10 +304,13 @@ static VOID generate_hybrid_mbr(VOID) {
     new_mbr_parts[0].index     = 0;
     new_mbr_parts[0].start_lba = 1;
     new_mbr_parts[0].end_lba   = (disk_size() > first_used_lba) ? (first_used_lba - 1) : disk_size() - 1;
-    new_mbr_parts[0].mbr_type  = 0xee;
+    if (new_mbr_parts[0].end_lba > MAX_MBR_LBA)
+       new_mbr_parts[0].end_lba = MAX_MBR_LBA;
+    new_mbr_parts[0].mbr_type  = 0xEE;
     i = 0;
     while (i < gpt_part_count && new_mbr_part_count <= 3) {
        if ((gpt_parts[i].start_lba > new_mbr_parts[0].end_lba) && (gpt_parts[i].end_lba > 0) &&
+           (gpt_parts[i].end_lba <= MAX_MBR_LBA) &&
            (gpt_parts[i].gpt_parttype->kind != GPT_KIND_BASIC_DATA) &&
            (gpt_parts[i].mbr_type != 0x83)) {
           copy_gpt_to_new_mbr(i, new_mbr_part_count);

@@ -252,6 +252,10 @@ CopyTools() {
    mkdir -p $InstallDir/EFI/tools
    if [[ $OSName == 'Darwin' ]] ; then
       cp -f $RefindDir/tools_$1/gptsync_$1.efi $InstallDir/EFI/tools/
+      if [[ -f $InstallDir/EFI/tools/gptsync.efi ]] ; then
+         mv $InstallDir/EFI/tools/gptsync.efi $InstallDir/EFI/tools/gptsync.efi-disabled
+         echo "Found old gptsync.efi; disabling it by renaming it to gptsync.efi-disabled"
+      fi
    fi
 } # CopyTools()
 

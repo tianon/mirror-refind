@@ -1,6 +1,6 @@
 Summary: EFI boot manager software
 Name: refind
-Version: 0.6.8.4
+Version: 0.6.9
 Release: 1%{?dist}
 Summary: EFI boot manager software
 License: GPLv3
@@ -71,10 +71,14 @@ if [[ -f %{keydir}/refind.key && -x $SBSign ]] ; then
    for File in `ls drivers_%{efiarch}/*_x64.efi` ; do
       $SBSign --key %{keydir}/refind.key --cert %{keydir}/refind.crt --output $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/$File $File
    done
+   mkdir -p $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/tools_%{efiarch}
+   $SBSign --key %{keydir}/refind.key --cert %{keydir}/refind.crt --output $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/tools_%{efiarch}/gptsync_%{efiarch}.efi gptsync/gptsync_%{efiarch}.efi
 else
    install -Dp -m0644 refind/refind*.efi $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
    mkdir -p $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/drivers_%{efiarch}
    cp -a drivers_%{efiarch}/* $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/drivers_%{efiarch}/
+   mkdir -p $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/tools_%{efiarch}
+   install -Dp -m0644 gptsync/gptsync_%{efiarch}.efi $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/tools_%{efiarch}/gptsync_%{efiarch}.efi
 fi
 
 # Copy configuration and support files to /usr/share/refind-%{version}
@@ -150,5 +154,5 @@ fi
 # wiping out the just-updated files.
 
 %changelog
-* Sun Feb 3 2013 R Smith <rodsmith@rodsbooks.com> - 0.6.7
-- Created spec file for 0.6.7 release
+* Sun Feb 3 2013 R Smith <rodsmith@rodsbooks.com> - 0.6.9
+- Created spec file for 0.6.9 release

@@ -1,5 +1,8 @@
-0.6.9 (?/??/2013):
+0.6.9 (4/25/2013):
 ------------------
+
+- Modified default banner to include the new rEFInd icon, provided by Erik
+  Kemperman.
 
 - Worked around a suspected firmware bug that caused rEFInd 0.6.6 to 0.6.8
   to hang at startup on some systems (DUET and some Macs).
