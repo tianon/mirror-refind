@@ -175,7 +175,7 @@ EFI_STATUS egLoadFile(IN EFI_FILE* BaseDir, IN CHAR16 *FileName, OUT UINT8 **Fil
 
 static EFI_GUID ESPGuid = { 0xc12a7328, 0xf81f, 0x11d2, { 0xba, 0x4b, 0x00, 0xa0, 0xc9, 0x3e, 0xc9, 0x3b } };
 
-static EFI_STATUS egFindESP(OUT EFI_FILE_HANDLE *RootDir)
+EFI_STATUS egFindESP(OUT EFI_FILE_HANDLE *RootDir)
 {
     EFI_STATUS          Status;
     UINTN               HandleCount = 0;

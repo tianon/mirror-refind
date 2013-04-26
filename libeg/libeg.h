@@ -112,6 +112,7 @@ EG_IMAGE * egEnsureImageSize(IN EG_IMAGE *Image, IN UINTN Width, IN UINTN Height
 
 EFI_STATUS egLoadFile(IN EFI_FILE* BaseDir, IN CHAR16 *FileName,
                       OUT UINT8 **FileData, OUT UINTN *FileDataLength);
+EFI_STATUS egFindESP(OUT EFI_FILE_HANDLE *RootDir);
 EFI_STATUS egSaveFile(IN EFI_FILE* BaseDir OPTIONAL, IN CHAR16 *FileName,
                       IN UINT8 *FileData, IN UINTN FileDataLength);
 

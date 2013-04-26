@@ -1,3 +1,13 @@
+0.6.10 (?/??/2013):
+-------------------
+
+- Replaced hexadecimal error code with description if an error is
+  encountered when saving a screen shot.
+
+- Enable multiple screen shots: Rather than naming all screen shots
+  "screenshot.bmp", the name is now "screenshot_###.bmp", where "###" is a
+  sequence number, starting with "001".
+
 0.6.9 (4/25/2013):
 ------------------
 

@@ -46,6 +46,7 @@
 #include "../refind/screen.h"
 #include "../refind/lib.h"
 #include "../include/refit_call_wrapper.h"
+#include "libeg.h"
 
 #include <efiUgaDraw.h>
 #include <efiConsoleControl.h>
@@ -477,6 +478,9 @@ VOID egScreenShot(VOID)
     UINT8           *FileData;
     UINTN           FileDataLength;
     UINTN           Index;
+    UINTN           ssNum;
+    CHAR16          Filename[80];
+    EFI_FILE*       BaseDir;
 
     Image = egCopyScreen();
     if (Image == NULL) {
@@ -492,11 +496,20 @@ VOID egScreenShot(VOID)
         goto bailout_wait;
     }
 
+    Status = egFindESP(&BaseDir);
+    if (EFI_ERROR(Status))
+        return;
+
+    // Search for existing screen shot files; increment number to an unused value...
+    ssNum = 001;
+    do {
+       SPrint(Filename, 80, L"screenshot_%03d.bmp", ssNum++);
+    } while (FileExists(BaseDir, Filename));
+
     // save to file on the ESP
-    Status = egSaveFile(NULL, L"screenshot.bmp", FileData, FileDataLength);
+    Status = egSaveFile(BaseDir, Filename, FileData, FileDataLength);
     FreePool(FileData);
-    if (EFI_ERROR(Status)) {
-        Print(L"Error egSaveFile: %x\n", Status);
+    if (CheckError(Status, L"in egSaveFile()")) {
         goto bailout_wait;
     }
 

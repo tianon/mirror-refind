@@ -29,7 +29,7 @@
 #
 # Revision history:
 #
-# 0.6.9   -- Install gptsync on Macs if evidence of Windows found
+# 0.6.9   -- Install gptsync on Macs
 # 0.6.8   -- Bug fix: ESP scan now uses "uniq".
 # 0.6.6   -- Bug fix: Upgrade drivers when installed to EFI/BOOT. Also enable
 #            copying shim.efi and MokManager.efi over themselves.
