@@ -1,18 +1,7 @@
 /*
- * libeg/lodepng.h
- * PNG handling code
- * Slightly modified from LodePNG (see below for copyright and
- * original license).
- * Modifications copyright (c) 2013 by Roderick W. Smith, and
- * distributed under the terms of the GNU GPL v3. See
- * http://lodev.org/lodepng/ for the original code.
- *
- */
+LodePNG version 20130415
 
-/*
-LodePNG version 20121216
-
-Copyright (c) 2005-2012 Lode Vandevenne
+Copyright (c) 2005-2013 Lode Vandevenne
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
@@ -37,10 +26,12 @@ freely, subject to the following restrictions:
 #ifndef LODEPNG_H
 #define LODEPNG_H
 
-//#include <string.h> /*for size_t*/
+#include <string.h> /*for size_t*/
 
-#include "global.h"
-#define size_t UINTN
+// Below two lines required for GNU-EFI (program hangs when run without them,
+// and associated function in lodepng_xtra.c)
+int MyStrlen(const char *InString);
+#define strlen(c) MyStrlen(c)
 
 #ifdef __cplusplus
 #include <vector>
@@ -83,12 +74,18 @@ the custom_zlib field of the compress and decompress settings*/
 // #ifndef LODEPNG_NO_COMPILE_ERROR_TEXT
 // #define LODEPNG_COMPILE_ERROR_TEXT
 // #endif
+/*Compile the default allocators (C's free, malloc and realloc). If you disable this,
+you can define the functions lodepng_free, lodepng_malloc and lodepng_realloc in your
+source files with custom allocators.*/
+// #ifndef LODEPNG_NO_COMPILE_ALLOCATORS
+// #define LODEPNG_COMPILE_ALLOCATORS
+// #endif
 /*compile the C++ version (you can disable the C++ wrapper here even when compiling for C++)*/
-// #ifdef __cplusplus
-// #ifndef LODEPNG_NO_COMPILE_CPP
-// #define LODEPNG_COMPILE_CPP
-// #endif
-// #endif
+#ifdef __cplusplus
+#ifndef LODEPNG_NO_COMPILE_CPP
+#define LODEPNG_COMPILE_CPP
+#endif
+#endif
 
 #ifdef LODEPNG_COMPILE_PNG
 /*The PNG color types (also used for raw).*/
@@ -249,7 +246,7 @@ unsigned encode(const std::string& filename,
 
 #ifdef LODEPNG_COMPILE_ERROR_TEXT
 /*Returns an English description of the numerical error code.*/
-const CHAR16* lodepng_error_text(unsigned code);
+const char* lodepng_error_text(unsigned code);
 #endif /*LODEPNG_COMPILE_ERROR_TEXT*/
 
 #ifdef LODEPNG_COMPILE_DECODER
@@ -317,7 +314,6 @@ Color mode of an image. Contains all information required to decode the pixel
 bits to RGBA colors. This information is the same as used in the PNG file
 format, and is used both for PNG and raw image data in LodePNG.
 */
-
 typedef struct LodePNGColorMode
 {
   /*header (IHDR)*/
@@ -337,7 +333,7 @@ typedef struct LodePNGColorMode
 
   The palette is only supported for color type 3.
   */
-  unsigned char* palette; /*palette in RGBARGBA... order*/
+  unsigned char* palette; /*palette in RGBARGBA... order. When allocated, must be either 0, or have size 1024*/
   size_t palettesize; /*palette size in number of colors (amount of bytes is 4 * palettesize)*/
 
   /*
@@ -395,7 +391,6 @@ size_t lodepng_get_raw_size(unsigned w, unsigned h, const LodePNGColorMode* colo
 
 #ifdef LODEPNG_COMPILE_ANCILLARY_CHUNKS
 /*The information of a Time chunk in PNG.*/
-
 typedef struct LodePNGTime
 {
   unsigned year;    /*2 bytes used (0-65535)*/
@@ -408,7 +403,6 @@ typedef struct LodePNGTime
 #endif /*LODEPNG_COMPILE_ANCILLARY_CHUNKS*/
 
 /*Information about the PNG image, except pixels, width and height.*/
-
 typedef struct LodePNGInfo
 {
   /*header (IHDR), palette (PLTE) and transparency (tRNS) chunks*/
@@ -508,11 +502,12 @@ See the reference manual at the end of this header file to see which color conve
 return value = LodePNG error code (0 if all went ok, an error if the conversion isn't supported)
 The out buffer must have size (w * h * bpp + 7) / 8, where bpp is the bits per pixel
 of the output color type (lodepng_get_bpp)
+The fix_png value makes it ignore out of bound palette indices.
 Note: for 16-bit per channel colors, uses big endian format like PNG does.
 */
 unsigned lodepng_convert(unsigned char* out, const unsigned char* in,
                          LodePNGColorMode* mode_out, LodePNGColorMode* mode_in,
-                         unsigned w, unsigned h);
+                         unsigned w, unsigned h, unsigned fix_png);
 
 
 #ifdef LODEPNG_COMPILE_DECODER
@@ -520,12 +515,12 @@ unsigned lodepng_convert(unsigned char* out, const unsigned char* in,
 Settings for the decoder. This contains settings for the PNG and the Zlib
 decoder, but not the Info settings from the Info structs.
 */
-
 typedef struct LodePNGDecoderSettings
 {
   LodePNGDecompressSettings zlibsettings; /*in here is the setting to ignore Adler32 checksums*/
 
   unsigned ignore_crc; /*ignore CRC checksums*/
+  unsigned fix_png; /*if 1, try to parse some broken PNG images, e.g. with out of bound palette.*/
   unsigned color_convert; /*whether to convert the PNG to the color type you want. Default: yes*/
 
 #ifdef LODEPNG_COMPILE_ANCILLARY_CHUNKS
@@ -543,7 +538,7 @@ void lodepng_decoder_settings_init(LodePNGDecoderSettings* settings);
 typedef enum LodePNGFilterStrategy
 {
   /*every filter at zero*/
-  LFS_ZERO, 
+  LFS_ZERO,
   /*Use filter that gives minumum sum, as described in the official PNG filter heuristic.*/
   LFS_MINSUM,
   /*Use the filter type that gives smallest Shannon entropy for this scanline. Depending
@@ -555,7 +550,7 @@ typedef enum LodePNGFilterStrategy
   */
   LFS_BRUTE_FORCE,
   /*use predefined_filters buffer: you specify the filter type for each scanline*/
-  LFS_PREDEFINED 
+  LFS_PREDEFINED
 } LodePNGFilterStrategy;
 
 /*automatically use color type with less bits per pixel if losslessly possible. Default: LAC_AUTO*/
@@ -582,7 +577,6 @@ typedef enum LodePNGAutoConvert
 
 
 /*Settings for the encoder.*/
-
 typedef struct LodePNGEncoderSettings
 {
   LodePNGCompressSettings zlibsettings; /*settings for the zlib encoder, such as window size, ...*/
@@ -620,7 +614,6 @@ void lodepng_encoder_settings_init(LodePNGEncoderSettings* settings);
 
 #if defined(LODEPNG_COMPILE_DECODER) || defined(LODEPNG_COMPILE_ENCODER)
 /*The settings, state and information for extended encoding and decoding.*/
-
 typedef struct LodePNGState
 {
 #ifdef LODEPNG_COMPILE_DECODER
@@ -882,7 +875,6 @@ unsigned compress(std::vector<unsigned char>& out, const std::vector<unsigned ch
 #endif //LODEPNG_COMPILE_ZLIB
 } //namespace lodepng
 #endif /*LODEPNG_COMPILE_CPP*/
-EG_IMAGE * egDecodePNG(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN IconSize, IN BOOLEAN WantAlpha);
 
 /*
 TODO:
@@ -1320,7 +1312,7 @@ This may mean that, depending on your use case, you may want to convert the big
 endian output of LodePNG to little endian with a for loop. This is certainly not
 always needed, many applications and libraries support big endian 16-bit colors
 anyway, but it means you cannot simply cast the unsigned char* buffer to an
-UINT16* buffer on x86 CPUs.
+unsigned short* buffer on x86 CPUs.
 
 
 7. error values
@@ -1476,15 +1468,17 @@ fopen. If you don't want to see the deprecated warnings, put this on top of lode
 before the inclusions:
 #define _CRT_SECURE_NO_DEPRECATE
 
-With warning level 4 (W4), there may be a lot of warnings about possible loss of data
-due to integer conversions. I'm not planning to resolve these warnings. The gcc compiler
-doesn't give those even with strict warning flags. With warning level 3 in VS 2008
-Express Edition, LodePNG is, other than the fopen warnings, warning-free again since
-version 20120923.
+Other than the above warnings, LodePNG should be warning-free with warning
+level 3 (W3). Warning level 4 (W4) will give warnings about integer conversions.
+I'm not planning to resolve these warnings. To get rid of them, let Visual
+Studio use warning level W3 for lodepng.cpp only: right click lodepng.cpp,
+Properties, C/C++, General, Warning Level: Level 3 (/W3).
 
-Visual Studio may want "stdafx.h" files to be included in each source file. That
-is not standard C++ and will not be added to the stock LodePNG. Try to find a
-setting to disable it for this source file.
+Visual Studio may want "stdafx.h" files to be included in each source file and
+give an error "unexpected end of file while looking for precompiled header".
+That is not standard C++ and will not be added to the stock LodePNG. You can
+disable it for lodepng.cpp only by right clicking it, Properties, C/C++,
+Precompiled Headers, and set it to Not Using Precompiled Headers there.
 
 *) Visual Studio 6.0
 
@@ -1566,6 +1560,12 @@ yyyymmdd.
 Some changes aren't backwards compatible. Those are indicated with a (!)
 symbol.
 
+*) 15 apr 2013: Fixed bug with LAC_ALPHA and color key.
+*) 25 mar 2013: Added an optional feature to ignore some PNG errors (fix_png).
+*) 11 mar 2013 (!): Bugfix with custom free. Changed from "my" to "lodepng_"
+    prefix for the custom allocators and made it possible with a new #define to
+    use custom ones in your project without needing to change lodepng's code.
+*) 28 jan 2013: Bugfix with color key.
 *) 27 okt 2012: Tweaks in text chunk keyword length error handling.
 *) 8 okt 2012 (!): Added new filter strategy (entropy) and new auto color mode.
     (no palette). Better deflate tree encoding. New compression tweak settings.
@@ -1697,5 +1697,5 @@ Domain: gmail dot com.
 Account: lode dot vandevenne.
 
 
-Copyright (c) 2005-2012 Lode Vandevenne
+Copyright (c) 2005-2013 Lode Vandevenne
 */

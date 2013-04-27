@@ -142,6 +142,8 @@ EG_IMAGE * egCopyScreen(VOID);
 VOID egScreenShot(VOID);
 BOOLEAN egSetTextMode(UINT32 RequestedMode);
 
+EG_IMAGE * egDecodePNG(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN IconSize, IN BOOLEAN WantAlpha);
+
 #endif /* __LIBEG_LIBEG_H__ */
 
 /* EOF */

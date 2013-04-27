@@ -9,7 +9,7 @@ VPATH = $(SRCDIR)
 
 LOCAL_CPPFLAGS  = -I$(SRCDIR) -I$(SRCDIR)/../include
 
-OBJS            = screen.o image.o text.o load_bmp.o load_icns.o lodepng.o
+OBJS            = screen.o image.o text.o load_bmp.o load_icns.o lodepng.o lodepng_xtra.o
 TARGET          = libeg.a
 
 all: $(TARGET)

@@ -1,6 +1,9 @@
 0.6.10 (?/??/2013):
 -------------------
 
+- Upgraded LodePNG library from version 20121216 to 20130415 and
+  restructured rEFInd-specific modifications to simplify future upgrades.
+
 - Replaced hexadecimal error code with description if an error is
   encountered when saving a screen shot.
 
