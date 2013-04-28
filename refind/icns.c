@@ -55,6 +55,7 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"func_reset", 48 },
    { NULL, L"func_shutdown", 48 },
    { NULL, L"func_exit", 48 },
+   { NULL, L"func_firmware", 48 },
    { NULL, L"tool_shell", 48 },
    { NULL, L"tool_part", 48 },
    { NULL, L"tool_rescue", 48 },

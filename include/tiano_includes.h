@@ -14,6 +14,7 @@
 #define Atoi StrDecimalToUintn
 #define SPrint UnicodeSPrint
 #define StrDuplicate EfiStrDuplicate
+#define EFI_MAXIMUM_VARIABLE_SIZE           1024
 
 #include <PiDxe.h>
 #include <Base.h>

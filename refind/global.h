@@ -70,7 +70,8 @@
 #define TAG_LEGACY_UEFI    (10)
 #define TAG_APPLE_RECOVERY (11)
 #define TAG_MOK_TOOL       (12)
-#define NUM_TOOLS          (11)
+#define TAG_FIRMWARE       (13)
+#define NUM_TOOLS          (13)
 
 #define NUM_SCAN_OPTIONS 10
 

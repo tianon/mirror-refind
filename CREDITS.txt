@@ -24,7 +24,7 @@ Program (C source code) files:
   VirtualBox (https://www.virtualbox.org) and the Clover boot loader
   project (https://sourceforge.net/projects/cloverefiboot/). The
   filesystem-specific code comes from various sources, including Apple,
-  the Linux kernel, and Christoph Phisterer.
+  the Linux kernel, and Christoph Pfisterer.
 
 * Assorted support code is borrowed from the TianoCore EDK2
   (https://sourceforge.net/projects/tianocore/), which is the reference
@@ -37,7 +37,8 @@ Program (C source code) files:
   OSes on UEFI-based PCs.
 
 * The code for editing boot options (cursor_left(), cursor_right(), and
-  line_edit() in screen.c) is taken from gummiboot.
+  line_edit() in screen.c) is taken from gummiboot
+  (http://freedesktop.org/wiki/Software/gummiboot).
 
 * Stefan Agner (stefan@agner.ch) turned the original ext2fs/ext3fs driver
   into one that can read ext4fs.
@@ -55,7 +56,8 @@ Program (C source code) files:
 
 * The PNG support, in the files libeg/lodepng.c and libeg/lodepng.h, is a
   slightly modified version of LodePNG (http://lodev.org/lodepng/) by Lode
-  Vandevenne.
+  Vandevenne. (The libeg/lodepng_xtra.c file provides some necessary
+  ancillary and interface functions written by me.)
 
 Icons and graphics:
 -------------------

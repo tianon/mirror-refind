@@ -137,9 +137,11 @@ timeout 20
 #  shutdown        - shuts down the computer (a bug causes this to reboot
 #                    EFI systems)
 #  reboot          - a tag to reboot the computer
-# Default is shell,apple_recovery,mok_tool,about,shutdown,reboot
+#  firmware        - a tag to reboot the computer into the firmware's
+#                    user interface (ignored on older computers)
+# Default is shell,apple_recovery,mok_tool,about,shutdown,reboot,firmware
 #
-#showtools shell, mok_tool, about, reboot, exit
+#showtools shell, mok_tool, about, reboot, exit, firmware
 
 # Directories in which to search for EFI drivers. These drivers can
 # provide filesystem support, give access to hard disks on plug-in

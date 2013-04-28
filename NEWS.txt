@@ -1,6 +1,13 @@
 0.6.10 (?/??/2013):
 -------------------
 
+- Added new option to reboot the computer into the firmware's user
+  interface. This option is active by default, or can be set via the
+  "firmware" option to the "showtools" token in refind.conf. It works
+  on only some computers, though; older computers lack this feature, and
+  when rEFInd is told to use this feature on such computers, the directive
+  is quietly ignored.
+
 - Upgraded LodePNG library from version 20121216 to 20130415 and
   restructured rEFInd-specific modifications to simplify future upgrades.
 

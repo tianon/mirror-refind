@@ -463,6 +463,8 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.ShowTools[i - 1] = TAG_APPLE_RECOVERY;
                 } else if (StriCmp(FlagName, L"mok_tool") == 0) {
                    GlobalConfig.ShowTools[i - 1] = TAG_MOK_TOOL;
+                } else if (StriCmp(FlagName, L"firmware") == 0) {
+                   GlobalConfig.ShowTools[i - 1] = TAG_FIRMWARE;
                 } else {
                    Print(L" unknown showtools flag: '%s'\n", FlagName);
                 }

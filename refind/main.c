@@ -61,6 +61,10 @@
 #include "../EfiLib/BdsHelper.h"
 #endif // __MAKEWITH_GNUEFI
 
+#ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
+#define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
+#endif
+
 //
 // variables
 
@@ -105,8 +109,9 @@
 static REFIT_MENU_ENTRY MenuEntryAbout    = { L"About rEFInd", TAG_ABOUT, 1, 0, 'A', NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryReset    = { L"Reboot Computer", TAG_REBOOT, 1, 0, 'R', NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryShutdown = { L"Shut Down Computer", TAG_SHUTDOWN, 1, 0, 'U', NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 0, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryExit     = { L"Exit rEFInd", TAG_EXIT, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryFirmware = { L"Reboot to Firmware User Interface", TAG_FIRMWARE, 1, 0, 0, NULL, NULL, NULL };
 
 static REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL, 0, L"Automatic boot",
                                             L"Use arrow keys to move cursor; Enter to boot;",
@@ -115,7 +120,11 @@ static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0,
 
 REFIT_CONFIG GlobalConfig = { FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
                               NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                              {TAG_SHELL, TAG_APPLE_RECOVERY, TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, 0, 0, 0, 0, 0 }};
+                              { TAG_SHELL, TAG_APPLE_RECOVERY, TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE,
+                                0, 0, 0, 0, 0, 0 }
+                            };
+
+const EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
 // Structure used to hold boot loader filenames and time stamps in
 // a linked list; used to sort entries within a directory.
@@ -135,7 +144,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.9.1");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.9.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -310,6 +319,65 @@ static EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
     DevicePaths[1] = NULL;
     return StartEFIImageList(DevicePaths, LoadOptions, LoadOptionsPrefix, ImageTitle, OSType, ErrorInStep, Verbose);
 } /* static EFI_STATUS StartEFIImage() */
+
+// From gummiboot: Retrieve a raw EFI variable.
+// Returns EFI status
+static EFI_STATUS EfivarGetRaw(const EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *size) {
+   CHAR8 *buf;
+   UINTN l;
+   EFI_STATUS err;
+
+   l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
+   buf = AllocatePool(l);
+   if (!buf)
+      return EFI_OUT_OF_RESOURCES;
+
+   err = uefi_call_wrapper(RT->GetVariable, 5, name, vendor, NULL, &l, buf);
+   if (EFI_ERROR(err) == EFI_SUCCESS) {
+      *buffer = buf;
+      if (size)
+         *size = l;
+   } else
+      MyFreePool(buf);
+   return err;
+} // EFI_STATUS EfivarGetRaw()
+
+// From gummiboot: Set an EFI variable
+static EFI_STATUS EfivarSetRaw(const EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
+   UINT32 flags;
+
+   flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+   if (persistent)
+      flags |= EFI_VARIABLE_NON_VOLATILE;
+
+   return uefi_call_wrapper(RT->SetVariable, 5, name, vendor, flags, size, buf);
+} // EFI_STATUS EfivarSetRaw()
+
+// From gummiboot: Reboot the computer into its built-in user interface
+static EFI_STATUS RebootIntoFirmware(VOID) {
+   CHAR8 *b;
+   UINTN size;
+   UINT64 osind;
+   EFI_STATUS err;
+
+   osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
+
+   err = EfivarGetRaw(&GlobalGuid, L"OsIndications", &b, &size);
+   if (err == EFI_SUCCESS)
+      osind |= (UINT64)*b;
+   MyFreePool(b);
+
+   err = EfivarSetRaw(&GlobalGuid, L"OsIndications", (CHAR8 *)&osind, sizeof(UINT64), TRUE);
+   if (err != EFI_SUCCESS)
+      return err;
+
+   uefi_call_wrapper(RT->ResetSystem, 4, EfiResetCold, EFI_SUCCESS, 0, NULL);
+   Print(L"Error calling ResetSystem: %r", err);
+   PauseForKey();
+//   uefi_call_wrapper(BS->Stall, 1, 3 * 1000 * 1000);
+   return err;
+}
+
 
 //
 // EFI OS loader functions
@@ -1975,6 +2043,8 @@ static VOID ScanForTools(VOID) {
    CHAR16 *FileName = NULL, *MokLocations, *MokName, *PathName, Description[256];
    REFIT_MENU_ENTRY *TempMenuEntry;
    UINTN i, j, k, VolumeIndex;
+   UINT64 osind;
+   CHAR8 *b = 0;
 
    MokLocations = StrDuplicate(MOK_LOCATIONS);
    if (MokLocations != NULL)
@@ -2002,6 +2072,16 @@ static VOID ScanForTools(VOID) {
             TempMenuEntry = CopyMenuEntry(&MenuEntryExit);
             TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_EXIT);
             AddMenuEntry(&MainMenu, TempMenuEntry);
+            break;
+         case TAG_FIRMWARE:
+            if (EfivarGetRaw(&GlobalGuid, L"OsIndicationsSupported", &b, &j) == EFI_SUCCESS) {
+               osind = (UINT64)*b;
+               if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
+                  TempMenuEntry = CopyMenuEntry(&MenuEntryFirmware);
+                  TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_FIRMWARE);
+                  AddMenuEntry(&MainMenu, TempMenuEntry);
+               } // if
+            } // if
             break;
          case TAG_SHELL:
             j = 0;
@@ -2242,6 +2322,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                    BeginTextScreen(L" ");
                    return EFI_SUCCESS;
                 }
+                break;
+
+            case TAG_FIRMWARE: // Reboot into firmware's user interface
+                RebootIntoFirmware();
                 break;
 
         } // switch()
