@@ -38,7 +38,7 @@ To compile rEFInd, you'll need the following:
     a locally-compiled GNU-EFI package, but older and more recent versions
     assume GNU-EFI installation in typical locations for
     distribution-provided packages. The legacy BIOS boot support on
-    UEFI-based PCs doesn't work when GNU-EFI is compiled under GNU-EFI, so
+    UEFI-based PCs doesn't work when rEFInd is compiled under GNU-EFI, so
     as of rEFInd 0.4.6, GNU-EFI is no longer the primary build environment,
     although it's easier to set up on a Linux system.
 
@@ -98,7 +98,7 @@ is a bit unclear about others. Here's how I installed the toolkit:
 
 2) Type "mkdir /usr/local/UDK2010". You can use another directory, but the
    Makefile for rEFInd's EFI drivers assumes this location. You'll need to
-   edit the EDK2BASE line in the Make.common file if you install somewhere
+   edit the EDK2BASE line in the Make.tiano file if you install somewhere
    else.
 
 3) Type "cd /usr/local/UDK2010".
@@ -177,13 +177,15 @@ With your development system set up, you can compile rEFInd as follows:
 4) Type "make gnuefi" to build with GNU-EFI, or either "make" alone or
    "make tiano" to build with TianoCore EDK2. With any luck, rEFInd will
    compile without error, leaving the "refind_ia32.efi" or "refind_x64.efi"
-   file, depending on your platform, in the "refind" subdirectory. If you
-   want to build IA32 binaries on an x86-64 (X64) system, type "ARCH=ia32
-   make". This works only if you're using the TianoCore build kit, and only
-   if you set TARGET_ARCH to either "IA32" or "IA32 X64" in target.txt when
-   you set up the TianoCore toolkit. If you plan to build both
-   architectures, be sure to copy the .efi file for the first build out of
-   the refind subdirectory before building the second architecture.
+   file, depending on your platform, in the "refind" subdirectory. This same
+   step builds the "gptsync_x64.efi" or "gptsync_ia32.efi" program file, in
+   the "gptsync" subdirectory. If you want to build IA32 binaries on an
+   x86-64 (X64) system, type "ARCH=ia32 make". This works only if you're
+   using the TianoCore build kit, and only if you set TARGET_ARCH to either
+   "IA32" or "IA32 X64" in target.txt when you set up the TianoCore toolkit.
+   If you plan to build both architectures, be sure to copy the .efi file
+   for the first build out of the refind subdirectory before building the
+   second architecture.
 
 5) The default build process does NOT build the filesystem drivers. If you
    want to build them, you must type "make fs" in the main rEFInd source

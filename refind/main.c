@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012 Roderick W. Smith
+ * Modifications copyright (c) 2012-2013 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
@@ -326,13 +326,15 @@ static EFI_STATUS EfivarGetRaw(const EFI_GUID *vendor, CHAR16 *name, CHAR8 **buf
    CHAR8 *buf;
    UINTN l;
    EFI_STATUS err;
+   EFI_GUID vendor2;
 
+   CopyMem(&vendor2, vendor, sizeof(EFI_GUID));
    l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
    buf = AllocatePool(l);
    if (!buf)
       return EFI_OUT_OF_RESOURCES;
 
-   err = uefi_call_wrapper(RT->GetVariable, 5, name, vendor, NULL, &l, buf);
+   err = refit_call5_wrapper(RT->GetVariable, name, &vendor2, NULL, &l, buf);
    if (EFI_ERROR(err) == EFI_SUCCESS) {
       *buffer = buf;
       if (size)
@@ -345,12 +347,14 @@ static EFI_STATUS EfivarGetRaw(const EFI_GUID *vendor, CHAR16 *name, CHAR8 **buf
 // From gummiboot: Set an EFI variable
 static EFI_STATUS EfivarSetRaw(const EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
    UINT32 flags;
+   EFI_GUID vendor2;
 
+   CopyMem(&vendor2, vendor, sizeof(EFI_GUID));
    flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
    if (persistent)
       flags |= EFI_VARIABLE_NON_VOLATILE;
 
-   return uefi_call_wrapper(RT->SetVariable, 5, name, vendor, flags, size, buf);
+   return refit_call5_wrapper(RT->SetVariable, name, &vendor2, flags, size, buf);
 } // EFI_STATUS EfivarSetRaw()
 
 // From gummiboot: Reboot the computer into its built-in user interface
@@ -371,7 +375,7 @@ static EFI_STATUS RebootIntoFirmware(VOID) {
    if (err != EFI_SUCCESS)
       return err;
 
-   uefi_call_wrapper(RT->ResetSystem, 4, EfiResetCold, EFI_SUCCESS, 0, NULL);
+   refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
    Print(L"Error calling ResetSystem: %r", err);
    PauseForKey();
 //   uefi_call_wrapper(BS->Stall, 1, 3 * 1000 * 1000);
@@ -1197,7 +1201,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       } // if should scan Mac directory
 
       // check for Microsoft boot loader/menu
-      StrCpy(FileName, L"EFI\\Microsoft\\Boot\\Bootmgfw.efi");
+      StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bootmgfw.efi");
       if (FileExists(Volume->RootDir, FileName) && ShouldScan(Volume, L"EFI\\Microsoft\\Boot") &&
           !IsIn(L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
          AddLoaderEntry(FileName, L"Microsoft EFI boot", Volume);

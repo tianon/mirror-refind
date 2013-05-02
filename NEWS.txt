@@ -1,6 +1,12 @@
 0.6.10 (?/??/2013):
 -------------------
 
+- Added icon for ChromeOS (os_chrome.icns in the icons subdirectory).
+  ChromeOS reportedly boots using the fallback filename, but if a user
+  wants to install rEFInd on a ChromeBook, renaming the original EFI/BOOT
+  directory to EFI/chrome and then installing rEFInd in the fallback
+  filename will bring up this new icon for ChromeOS.
+
 - Added new option to reboot the computer into the firmware's user
   interface. This option is active by default, or can be set via the
   "firmware" option to the "showtools" token in refind.conf. It works

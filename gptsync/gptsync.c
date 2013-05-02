@@ -268,7 +268,7 @@ static VOID generate_hybrid_mbr(VOID) {
     i = 0;
     do {
         if ((gpt_parts[i].start_lba > 0) && (gpt_parts[i].end_lba > 0) &&
-            (gpt_parts[i].end_lba <= MAX_MBR_LBA) &&
+            (gpt_parts[i].end_lba <= MAX_MBR_LBA) &&                    /* Within MBR limits */
             (gpt_parts[i].gpt_parttype->kind == GPT_KIND_BASIC_DATA) && /* MS Basic Data GPT type code */
             (gpt_parts[i].mbr_type != 0x83)) {                          /* Not containing Linux filesystem */
            copy_gpt_to_new_mbr(i, new_mbr_part_count);
@@ -282,7 +282,8 @@ static VOID generate_hybrid_mbr(VOID) {
 
     // Second, do Linux partitions. Note that we start from the END of the
     // partition list, so as to maximize the space covered by the 0xEE
-    // partition if there are several Linux partitions.
+    // partition if there are several Linux partitions before other hybridized
+    // partitions.
     i = gpt_part_count - 1; // Note that gpt_part_count can't be 0; filtered by check_gpt()
     while (i >= 0 && new_mbr_part_count <= 3) {
         if ((gpt_parts[i].start_lba > 0) && (gpt_parts[i].end_lba > 0) &&
@@ -377,7 +378,7 @@ static VOID generate_hybrid_mbr(VOID) {
                     count_active++;
                 }
         }
-    }
+    } // for
 } // VOID generate_hybrid_mbr()
 
 // Examine partitions and decide whether a rewrite is in order.

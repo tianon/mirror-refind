@@ -89,5 +89,10 @@ Icons and graphics:
 * The ALT Linux icon was donated by the ALT Linux developers (see
   http://www.altlinux.com).
 
+* The ChromeOS icon (os_chrome.icns) is a cropped version of the icon from
+  Wikipedia
+  (http://en.wikipedia.org/wiki/File:Google_Chrome_icon_and_wordmark_%282011%29.svg),
+  which in turn is Google's original work.
+
 * Erik Kemperman provided the rEFInd icon, which is a combination of
   the common refresh/reload icon and the search/find icon.
