@@ -8,6 +8,12 @@
 #
 timeout 20
 
+# Screen saver timeout; the screen blanks after the specified number of
+# seconds with no keyboard input. The screen returns after most keypresses
+# (unfortunately, not including modifier keys such as Shift, Control, Alt,
+# or Option). The default is 0, which disables the screen saver.
+#screensaver 300
+
 # Hide user interface elements for personal preference or to increase
 # security:
 #  banner      - the rEFInd title banner (built-in or loaded via "banner")

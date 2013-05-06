@@ -21,11 +21,17 @@ The files in this directory are, in alphabetical order:
 
 - altlinux.cer -- The public key for ALT Linux (http://www.altlinux.com).
 
-- canonical-uefi-ca.der -- Canonical's public key, used to sign Ubuntu
-  boot loaders and kernels.
+- canonical-uefi-ca.crt & canonical-uefi-ca.der -- Canonical's public key,
+  used to sign Ubuntu boot loaders and kernels.
 
-- fedora-ca.cer -- Fedora's public key, used to sign Fedora 18's version of
-  shim and Fedora 18's kernels.
+- fedora-ca.cer & fedora-ca.crt -- Fedora's public key, used to sign Fedora
+  18's version of shim and Fedora 18's kernels.
+
+- openSUSE-UEFI-CA-Certificate.cer & openSUSE-UEFI-CA-Certificate.crt --
+  Public keys used to sign OpenSUSE 12.3.
 
 - refind.cer & refind.crt -- My own (Roderick W. Smith's) public key,
   used to sign refind_x64.efi and the 64-bit rEFInd drivers.
+
+- SLES-UEFI-CA-Certificate.cer & SLES-UEFI-CA-Certificate.crt -- The
+  Public key for SUSE Linux Enterprise Server.

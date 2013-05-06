@@ -90,6 +90,7 @@ VOID DebugPause(VOID);
 #define DebugPause()
 #endif
 VOID EndlessIdleLoop(VOID);
+BOOLEAN ReadAllKeyStrokes(VOID);
 VOID PauseForKey(VOID);
 
 BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where);

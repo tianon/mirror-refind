@@ -1,8 +1,13 @@
-0.6.10 (?/??/2013):
--------------------
+0.6.10 (5/5/2013):
+------------------
+
+- Added support for "screensaver" token. If set to a positive integer, this
+  causes the screen to blank after the specified number of seconds of
+  inactivity. Pressing most keys (unfortunately NOT including Shift, Alt,
+  or Ctrl) will restore the display and restart the screen saver timeout.
 
 - Added icon for ChromeOS (os_chrome.icns in the icons subdirectory).
-  ChromeOS reportedly boots using the fallback filename, but if a user
+  ChromeBooks reportedly boots using the fallback filename, but if a user
   wants to install rEFInd on a ChromeBook, renaming the original EFI/BOOT
   directory to EFI/chrome and then installing rEFInd in the fallback
   filename will bring up this new icon for ChromeOS.

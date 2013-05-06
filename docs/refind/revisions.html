@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 4/25/2013</p>
+<p>Last Web page update: 5/5/2013</p>
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.6.10 (5/5/2013)</b>&mdash;This version adds a number of minor improvements: The ability to create multiple screen shots under a sequence of names rather than using just one name; a new screen saver feature, activated by the <tt>screensaver</tt> token in <tt>refind.conf</tt>; and an option to reboot the computer into the firmware's setup utility on computers that support this feature. I've also added an OS for ChromeOS (<tt>os_chrome.icns</tt>), and I've updated the LodePNG library to the latest version, which might improve rendering of some PNG files.</li>
 
 <li><b>0.6.9 (4/25/2013)</b>&mdash;The most visible change to this version is to the rEFInd banner image, which now includes an icon provided by Erik Kemperman. The biggest change with this version is the inclusion of an updated version of <tt>gptsync</tt>, which is popular on Macs as a means of maintaining the <a href="http://www.rodsbooks.com/gdisk/hybrid.html">hybrid MBR</a> that's required to boot Windows in BIOS mode on that platform. Because hybrid MBRs are ugly and dangerous, though, the rEFInd <tt>install.sh</tt> script installs the program only under OS X, and even then it must be activated by uncommending the <tt>scanfor</tt> line in <tt>refind.conf</tt> and adding <tt>gptsync</tt> to its options list. If you want to use <tt>gptsync</tt> on a PC, you can, but you'll need to copy the program file manually to the ESP's <tt>EFI/tools</tt> directory. Other changes with this version include working around a suspected firmware bug that can cause hangs when rEFInd starts on some systems and changing the timeout code so that rEFInd will launch its default OS even if the computer is started without a keyboard.</li>
 

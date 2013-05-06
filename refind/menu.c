@@ -350,6 +350,21 @@ static VOID IdentifyRows(IN SCROLL_STATE *State, IN REFIT_MENU_SCREEN *Screen) {
       State->MaxVisible = State->FinalRow0 + 1;
 } // static VOID IdentifyRows()
 
+// Blank the screen, wait for a keypress, and restore banner/background.
+// Screen may still require redrawing of text and icons on return.
+// TODO: Support more sophisticated screen savers, such as power-saving
+// mode and dynamic images.
+static VOID SaveScreen(VOID) {
+   UINTN index;
+   EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
+
+   egClearScreen(&Black);
+   refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &index);
+   if (AllowGraphicsMode)
+      SwitchToGraphicsAndClear();
+   ReadAllKeyStrokes();
+} // VOID SaveScreen()
+
 //
 // generic menu function
 //
@@ -363,10 +378,11 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
     INTN ShortcutEntry;
     BOOLEAN HaveTimeout = FALSE;
     UINTN TimeoutCountdown = 0;
-    INTN PreviousTime = -1, CurrentTime;
+    INTN PreviousTime = -1, CurrentTime, TimeSinceKeystroke = 0;
     CHAR16 TimeoutMessage[256];
     CHAR16 KeyAsString[2];
     UINTN MenuExit;
+//     EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
 
     if (Screen->TimeoutSeconds > 0) {
         HaveTimeout = TRUE;
@@ -412,11 +428,23 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             } else if (HaveTimeout) {
                 refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
                 TimeoutCountdown--;
+                TimeSinceKeystroke++;
+            } else if (GlobalConfig.ScreensaverTime > 0) {
+                refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
+                TimeSinceKeystroke++;
+                if (TimeSinceKeystroke > (GlobalConfig.ScreensaverTime * 10)) {
+                   SaveScreen();
+                   State.PaintAll = TRUE;
+                   TimeSinceKeystroke = 0;
+                } // if
             } else {
                 refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &index);
             }
             continue;
-        }
+        } else {
+           TimeSinceKeystroke = 0;
+        } // if/else !read keystroke
+
         if (HaveTimeout) {
             // the user pressed a key, cancel the timeout
             StyleFunc(Screen, &State, MENU_FUNCTION_PAINT_TIMEOUT, L"");
@@ -497,6 +525,21 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
 // text-mode generic style
 //
 
+// Show information lines in text mode.
+static VOID ShowTextInfoLines(IN REFIT_MENU_SCREEN *Screen) {
+   INTN i;
+
+   BeginTextScreen(Screen->Title);
+   if (Screen->InfoLineCount > 0) {
+      refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
+      for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
+         refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 3, 4 + i);
+         refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, Screen->InfoLines[i]);
+      }
+   }
+} // VOID ShowTextInfoLines()
+
+// Do most of the work for text-based menus....
 static VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText)
 {
     INTN i;
@@ -549,16 +592,6 @@ static VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, 
                 // TODO: account for double-width characters
             } // for
 
-            // initial painting
-            BeginTextScreen(Screen->Title);
-            if (Screen->InfoLineCount > 0) {
-                refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-                for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
-                    refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 3, 4 + i);
-                    refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, Screen->InfoLines[i]);
-                }
-            }
-
             break;
 
         case MENU_FUNCTION_CLEANUP:
@@ -570,6 +603,8 @@ static VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, 
 
         case MENU_FUNCTION_PAINT_ALL:
             // paint the whole screen (initially and after scrolling)
+
+            ShowTextInfoLines(Screen);
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (i >= State->FirstVisible && i <= State->LastVisible) {
                     refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 2, MenuPosY + (i - State->FirstVisible));
@@ -816,22 +851,6 @@ static VOID GraphicsMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *Sta
                      Screen->Title[i] = 0;
                } // if
             } // if/else
-
-            DrawText(Screen->Title, FALSE, (StrLen(Screen->Title) + 2) * CharWidth, TitlePosX, EntriesPosY += TextLineHeight());
-            if (Screen->TitleImage) {
-               BltImageAlpha(Screen->TitleImage, EntriesPosX + TITLEICON_SPACING, EntriesPosY + TextLineHeight() * 2,
-                             BackgroundPixel);
-               EntriesPosX += (Screen->TitleImage->Width + TITLEICON_SPACING * 2);
-            }
-            EntriesPosY += (TextLineHeight() * 2);
-            if (Screen->InfoLineCount > 0) {
-                for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
-                    DrawText(Screen->InfoLines[i], FALSE, LineWidth, EntriesPosX, EntriesPosY);
-                    EntriesPosY += TextLineHeight();
-                }
-                EntriesPosY += TextLineHeight();  // also add a blank line
-            }
-
             break;
 
         case MENU_FUNCTION_CLEANUP:
@@ -839,19 +858,35 @@ static VOID GraphicsMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *Sta
             break;
 
         case MENU_FUNCTION_PAINT_ALL:
-            for (i = 0; i <= State->MaxIndex; i++) {
-               DrawText(Screen->Entries[i]->Title, (i == State->CurrentSelection), LineWidth, EntriesPosX,
-                        EntriesPosY + i * TextLineHeight());
-            }
-            if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
-               if ((Screen->Hint1 != NULL) && (StrLen(Screen->Hint1) > 0))
-                  DrawTextWithTransparency(Screen->Hint1, (UGAWidth - egComputeTextWidth(Screen->Hint1)) / 2,
-                                           UGAHeight - (egGetFontHeight() * 3));
-               if ((Screen->Hint2 != NULL) && (StrLen(Screen->Hint2) > 0))
-                  DrawTextWithTransparency(Screen->Hint2, (UGAWidth - egComputeTextWidth(Screen->Hint2)) / 2,
+           ComputeSubScreenWindowSize(Screen, State, &EntriesPosX, &EntriesPosY, &MenuWidth, &MenuHeight, &LineWidth);
+           DrawText(Screen->Title, FALSE, (StrLen(Screen->Title) + 2) * CharWidth, TitlePosX, EntriesPosY += TextLineHeight());
+           if (Screen->TitleImage) {
+              BltImageAlpha(Screen->TitleImage, EntriesPosX + TITLEICON_SPACING, EntriesPosY + TextLineHeight() * 2,
+                            BackgroundPixel);
+              EntriesPosX += (Screen->TitleImage->Width + TITLEICON_SPACING * 2);
+           }
+           EntriesPosY += (TextLineHeight() * 2);
+           if (Screen->InfoLineCount > 0) {
+               for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
+                   DrawText(Screen->InfoLines[i], FALSE, LineWidth, EntriesPosX, EntriesPosY);
+                   EntriesPosY += TextLineHeight();
+               }
+               EntriesPosY += TextLineHeight();  // also add a blank line
+           }
+
+           for (i = 0; i <= State->MaxIndex; i++) {
+              DrawText(Screen->Entries[i]->Title, (i == State->CurrentSelection), LineWidth, EntriesPosX,
+                       EntriesPosY + i * TextLineHeight());
+           }
+           if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
+              if ((Screen->Hint1 != NULL) && (StrLen(Screen->Hint1) > 0))
+                 DrawTextWithTransparency(Screen->Hint1, (UGAWidth - egComputeTextWidth(Screen->Hint1)) / 2,
+                                          UGAHeight - (egGetFontHeight() * 3));
+              if ((Screen->Hint2 != NULL) && (StrLen(Screen->Hint2) > 0))
+                 DrawTextWithTransparency(Screen->Hint2, (UGAWidth - egComputeTextWidth(Screen->Hint2)) / 2,
                                            UGAHeight - (egGetFontHeight() * 2));
-            } // if
-            break;
+           } // if
+           break;
 
         case MENU_FUNCTION_PAINT_SELECTION:
             // redraw selection cursor
