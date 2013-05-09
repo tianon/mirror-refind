@@ -41,6 +41,7 @@
 // config
 //
 
+
 #if defined(EFI32) || defined(EFIX64)
 #define CONFIG_EFI
 #endif

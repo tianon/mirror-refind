@@ -1429,7 +1429,7 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
 CHAR16 *FindExtension(IN CHAR16 *Path) {
    CHAR16     *Extension;
    BOOLEAN    Found = FALSE, FoundSlash = FALSE;
-   UINTN       i;
+   INTN       i;
 
    Extension = AllocateZeroPool(sizeof(CHAR16));
    if (Path) {

@@ -68,7 +68,7 @@ BUILDME          = gptsync_$(FILENAME_CODE).efi
 
 OPTIMFLAGS      = -fno-strict-aliasing -mno-red-zone -Wno-address -Os
 DEBUGFLAGS      = -Wall -Wno-missing-braces -Wno-array-bounds -ffunction-sections -fdata-sections
-CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c -DHOST_EFI_EDK2 -D__MAKEWITH_TIANO
+CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c -DHOST_EFI_EDK2 -D__MAKEWITH_TIANO -std=gnu89
 #CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c -include AutoGen.h -DHOST_EFI_EDK2
 
 prefix          = /usr/bin/

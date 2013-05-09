@@ -285,7 +285,7 @@ static VOID generate_hybrid_mbr(VOID) {
     // partition if there are several Linux partitions before other hybridized
     // partitions.
     i = gpt_part_count - 1; // Note that gpt_part_count can't be 0; filtered by check_gpt()
-    while (i >= 0 && new_mbr_part_count <= 3) {
+    while (i < gpt_part_count && new_mbr_part_count <= 3) { // if too few GPT partitions, i loops around to a huge value
         if ((gpt_parts[i].start_lba > 0) && (gpt_parts[i].end_lba > 0) &&
             (gpt_parts[i].end_lba <= MAX_MBR_LBA) &&
             ((gpt_parts[i].gpt_parttype->kind == GPT_KIND_DATA) || (gpt_parts[i].gpt_parttype->kind == GPT_KIND_BASIC_DATA)) &&
@@ -353,9 +353,9 @@ static VOID generate_hybrid_mbr(VOID) {
         // set active on the first matching partition
         if (count_active == 0) {
             for (i = 0; i < new_mbr_part_count; i++) {
-                if ((iter >= 0 && (new_mbr_parts[i].mbr_type == 0x07 ||    // NTFS
-                                   new_mbr_parts[i].mbr_type == 0x0b ||    // FAT32
-                                   new_mbr_parts[i].mbr_type == 0x0c)) ||  // FAT32 (LBA)
+                if (((new_mbr_parts[i].mbr_type == 0x07 ||    // NTFS
+                      new_mbr_parts[i].mbr_type == 0x0b ||    // FAT32
+                      new_mbr_parts[i].mbr_type == 0x0c)) ||  // FAT32 (LBA)
                     (iter >= 1 && (new_mbr_parts[i].mbr_type == 0x83)) ||  // Linux
                     (iter >= 2 && i > 0)) {
                     new_mbr_parts[i].active = TRUE;
