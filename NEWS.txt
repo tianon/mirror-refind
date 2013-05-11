@@ -1,6 +1,9 @@
 0.6.10 (?/??/2013):
 -------------------
 
+- Added "EFI\opensuse" to the locations searched for MOK utilities, since
+  OpenSUSE now uses that name.
+
 - Renamed "Reboot to Firmware User Interface" to "Reboot to Computer Setup
   Utility" in menu.
 

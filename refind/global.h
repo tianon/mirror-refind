@@ -125,7 +125,7 @@
 #define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi"
 // Directories to search for these MOK-managing programs. Note that SelfDir is
 // searched in addition to these locations....
-#define MOK_LOCATIONS           L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\altlinux"
+#define MOK_LOCATIONS           L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\opensuse,EFI\\altlinux"
 
 //
 // global definitions
