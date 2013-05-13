@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 5/5/2013</p>
+<p>Last Web page update: 5/11/2013</p>
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.6.11 (5/13/2013)</b>&mdash;Two new features may have a noticeable affect for many users: First, rEFInd now ignores symbolic links on filesystems that support them. I've implemented this change because I've been receiving too many reports from users who want to remove redundant or non-functional Linux boot entries caused by symbolic links created by distributions. Although this is possible by editing the <tt>dont_scan_dirs</tt> or <tt>dont_scan_files</tt> options in <tt>refind.conf</tt>, telling users how to do this has become tedious. If you <i>want</i> to use links to create multiple entries for one kernel or boot loader, use hard links instead of symbolic links. The second major user-visible change is that rEFInd now tries to guess the distribution type based on the naming of the kernel file (effective only for Fedora and RHEL) or the contents of the <tt>/etc/os-release</tt> file (effective only if the installation does <i>not</i> have a separate </tt>/boot</tt> partition or if <tt>/etc/os-release</tt> is copied to that location on the partition that holds the kernel). There are several other minor cosmetic issues that some users may notice, including icons for Lubuntu and Kubuntu and a change in the name of the "Reboot to Firmware User Interface" option to "Reboot to Computer Setup Utility." I've also fixed a bug in <tt>gptsync</tt> that could cause it to hang if the disk had too few GPT partitions. Finally, I've improved the <tt>install.sh</tt> script so that it works better from a path with directory names that include spaces.</li>
 
 <li><b>0.6.10 (5/5/2013)</b>&mdash;This version adds a number of minor improvements: The ability to create multiple screen shots under a sequence of names rather than using just one name; a new screen saver feature, activated by the <tt>screensaver</tt> token in <tt>refind.conf</tt>; and an option to reboot the computer into the firmware's setup utility on computers that support this feature. I've also added an OS for ChromeOS (<tt>os_chrome.icns</tt>), and I've updated the LodePNG library to the latest version, which might improve rendering of some PNG files.</li>
 

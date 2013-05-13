@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-5/5/2013, referencing rEFInd 0.6.10</p>
+5/13/2013, referencing rEFInd 0.6.11</p>
 
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -293,7 +293,7 @@ fs0: <tt class="userinput">map -r</tt>
 
 <p>Since the ext2fs and ReiserFS drivers share a common origin, it should come as no surprise that they perform in much the same way no matter which version (rEFIt, Clover, or rEFInd) you use. The NTFS driver from the Clover Tools package is nice and speedy, so if for some reason you need to place a boot loader on an NTFS volume, this driver might be worth tracking down.</p>
 
-<p>Although ext2fs, ext3fs, ext4fs, and ReiserFS are all case-sensitive, these drivers treat them in a case-insensitive way. Symbolic links work, which opens up possibilities for configuration, such as using a single kernel binary for multiple Linux distributions, with a link in one subdirectory pointing to a file in another directory. (If you try this, though, be sure to use <i>relative</i> links, as in <tt>../otherdist/bzImage.efi</tt>, at least if the partition is not Linux's root filesystem.)</p>
+<p>Although ext2fs, ext3fs, ext4fs, and ReiserFS are all case-sensitive, these drivers treat them in a case-insensitive way. Symbolic links work; however, rEFInd 0.6.11 and later ignore symbolic links, since many distributions use them in a way that creates redundant or non-functional entries in the rEFInd menu. You should be able to use hard links if you want to use a single kernel file in multiple ways (say for two distributions).</p>
 
 </ul>
 

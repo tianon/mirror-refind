@@ -1,5 +1,21 @@
-0.6.10 (?/??/2013):
+0.6.11 (5/13/2013):
 -------------------
+
+- New feature: rEFInd now ignores symbolic links to files on filesystems
+  that support them. This prevents the "vmlinuz" symbolic link that some
+  distributions create in the root directory from appearing in the loader
+  list. Note that this does NOT affect symbolic links to directories.
+
+- Added icons for Lubuntu and Kubuntu.
+
+- Improved the install.sh script so that it does a better job dealing with
+  directory names that contain spaces.
+
+- rEFInd now tries to guess the Linux distribution type based on the kernel
+  filename (Fedora and RHEL only) or the "ID" or "NAME" variables in
+  /etc/os-release on the kernel's partition. None of these is guaranteed to
+  work. A fallback of the Tux penguin icon remains in place in case rEFInd
+  can't find anything substantive enough for a guess.
 
 - Added "EFI\opensuse" to the locations searched for MOK utilities, since
   OpenSUSE now uses that name.

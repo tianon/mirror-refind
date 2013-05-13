@@ -124,7 +124,7 @@ REFIT_CONFIG GlobalConfig = { FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 
                                 0, 0, 0, 0, 0, 0 }
                             };
 
-const EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
+EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
 // Structure used to hold boot loader filenames and time stamps in
 // a linked list; used to sort entries within a directory.
@@ -144,7 +144,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.10.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.11");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -322,19 +322,17 @@ static EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
 
 // From gummiboot: Retrieve a raw EFI variable.
 // Returns EFI status
-static EFI_STATUS EfivarGetRaw(const EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *size) {
+static EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *size) {
    CHAR8 *buf;
    UINTN l;
    EFI_STATUS err;
-   EFI_GUID vendor2;
 
-   CopyMem(&vendor2, vendor, sizeof(EFI_GUID));
    l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
    buf = AllocatePool(l);
    if (!buf)
       return EFI_OUT_OF_RESOURCES;
 
-   err = refit_call5_wrapper(RT->GetVariable, name, &vendor2, NULL, &l, buf);
+   err = refit_call5_wrapper(RT->GetVariable, name, vendor, NULL, &l, buf);
    if (EFI_ERROR(err) == EFI_SUCCESS) {
       *buffer = buf;
       if (size)
@@ -345,16 +343,14 @@ static EFI_STATUS EfivarGetRaw(const EFI_GUID *vendor, CHAR16 *name, CHAR8 **buf
 } // EFI_STATUS EfivarGetRaw()
 
 // From gummiboot: Set an EFI variable
-static EFI_STATUS EfivarSetRaw(const EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
+static EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
    UINT32 flags;
-   EFI_GUID vendor2;
 
-   CopyMem(&vendor2, vendor, sizeof(EFI_GUID));
    flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
    if (persistent)
       flags |= EFI_VARIABLE_NON_VOLATILE;
 
-   return refit_call5_wrapper(RT->SetVariable, name, &vendor2, flags, size, buf);
+   return refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
 } // EFI_STATUS EfivarSetRaw()
 
 // From gummiboot: Reboot the computer into its built-in user interface
@@ -811,6 +807,34 @@ static CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Vol
    return (FullOptions);
 } // static CHAR16 * GetMainLinuxOptions()
 
+// Try to guess the name of the Linux distribution & add that name to
+// OSIconName list.
+static VOID GuessLinuxDistribution(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *LoaderPath) {
+   UINTN       FileSize = 0;
+   REFIT_FILE  File;
+   CHAR16**    TokenList;
+   UINTN       TokenCount = 0;
+
+   // If on Linux root fs, /etc/os-release file probably has clues....
+   if (FileExists(Volume->RootDir, L"etc\\os-release") &&
+       (ReadFile(Volume->RootDir, L"etc\\os-release", &File, &FileSize) == EFI_SUCCESS)) {
+      do {
+         TokenCount = ReadTokenLine(&File, &TokenList);
+         if ((TokenCount > 1) && ((StriCmp(TokenList[0], L"ID") == 0) || (StriCmp(TokenList[0], L"NAME") == 0))) {
+            MergeStrings(OSIconName, TokenList[1], L',');
+         } // if
+         FreeTokenLine(&TokenList, &TokenCount);
+      } while (TokenCount > 0);
+      MyFreePool(File.Buffer);
+   } // if
+
+   // Search for clues in the kernel's filename....
+   if (StriSubCmp(L".fc", LoaderPath))
+      MergeStrings(OSIconName, L"fedora", L',');
+   if (StriSubCmp(L".el", LoaderPath))
+      MergeStrings(OSIconName, L"redhat", L',');
+} // VOID GuessLinuxDistribution()
+
 // Sets a few defaults for a loader entry -- mainly the icon, but also the OS type
 // code and shortcut letter. For Linux EFI stub loaders, also sets kernel options
 // that will (with luck) work fairly automatically.
@@ -862,6 +886,7 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
 
    // detect specific loaders
    if (StriSubCmp(L"bzImage", LoaderPath) || StriSubCmp(L"vmlinuz", LoaderPath)) {
+      GuessLinuxDistribution(&OSIconName, Volume, LoaderPath);
       MergeStrings(&OSIconName, L"linux", L',');
       Entry->OSType = 'L';
       if (ShortcutLetter == 0)
@@ -870,6 +895,10 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
       Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
    } else if (StriSubCmp(L"refit", LoaderPath)) {
       MergeStrings(&OSIconName, L"refit", L',');
+      Entry->OSType = 'R';
+      ShortcutLetter = 'R';
+   } else if (StriSubCmp(L"refind", LoaderPath)) {
+      MergeStrings(&OSIconName, L"refind", L',');
       Entry->OSType = 'R';
       ShortcutLetter = 'R';
    } else if (StriCmp(LoaderPath, MACOSX_LOADER_PATH) == 0) {
@@ -1100,6 +1129,38 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
    return AreIdentical;
 } // BOOLEAN DuplicatesFallback()
 
+// Returns FALSE if two measures of file size are identical for a single file,
+// TRUE if not or if the file can't be opened and the other measure is non-0.
+// Despite the function's name, this isn't really a direct test of symbolic
+// link status, since EFI doesn't officially support symlinks. It does seem
+// to be a reliable indicator, though. (OTOH, some disk errors might cause a
+// file to fail to open, which would return a false positive -- but as I use
+// this function to exclude symbolic links from the list of boot loaders,
+// that would be fine, since such boot loaders wouldn't work.)
+static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *Path, EFI_FILE_INFO *DirEntry) {
+   EFI_FILE_HANDLE FileHandle;
+   EFI_FILE_INFO   *FileInfo = NULL;
+   EFI_STATUS      Status;
+   UINTN           FileSize2 = 0;
+   CHAR16          *FileName;
+
+   FileName = StrDuplicate(Path);
+   MergeStrings(&FileName, DirEntry->FileName, L'\\');
+   CleanUpPathNameSlashes(FileName);
+
+   Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
+   if (Status == EFI_SUCCESS) {
+      FileInfo = LibFileInfo(FileHandle);
+      if (FileInfo != NULL)
+         FileSize2 = FileInfo->FileSize;
+   }
+
+   MyFreePool(FileName);
+   MyFreePool(FileInfo);
+
+   return (DirEntry->FileSize != FileSize2);
+} // BOOLEAN IsSymbolicLink()
+
 // Scan an individual directory for EFI boot loader files and, if found,
 // add them to the list. Exception: Ignores FALLBACK_FULLNAME, which is picked
 // up in ScanEfiFiles(). Sorts the entries within the loader directory so that
@@ -1126,6 +1187,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
               StriCmp(Extension, L".png") == 0 ||
               (StriCmp(DirEntry->FileName, FALLBACK_BASENAME) == 0 && (StriCmp(Path, L"EFI\\BOOT") == 0)) ||
               StriSubCmp(L"shell", DirEntry->FileName) ||
+              IsSymbolicLink(Volume, Path, DirEntry) || /* is symbolic link */
               IsIn(DirEntry->FileName, GlobalConfig.DontScanFiles))
                 continue;   // skip this
 
