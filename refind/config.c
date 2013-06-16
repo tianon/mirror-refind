@@ -781,6 +781,65 @@ VOID ScanUserConfigured(CHAR16 *FileName)
    } // if()
 } // VOID ScanUserConfigured()
 
+// Create an options file based on /etc/fstab. The resulting file has two options
+// lines, one of which boots the system with "ro root={rootfs}" and the other of
+// which boots the system with "ro root={rootfs} single", where "{rootfs}" is the
+// filesystem identifier associated with the "/" line in /etc/fstab.
+static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
+   UINTN        TokenCount, i;
+   REFIT_FILE   *Options = NULL, *Fstab = NULL;
+   EFI_STATUS   Status;
+   CHAR16       **TokenList, Line[513], Root[100];
+
+   if (FileExists(Volume->RootDir, L"\\etc\\fstab")) {
+      Options = AllocateZeroPool(sizeof(REFIT_FILE));
+      Fstab = AllocateZeroPool(sizeof(REFIT_FILE));
+      Status = ReadFile(Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
+      if (CheckError(Status, L"while reading /etc/fstab")) {
+         if (Options != NULL)
+            FreePool(Options);
+         if (Fstab != NULL)
+            FreePool(Fstab);
+         Options = NULL;
+         Fstab = NULL;
+      } else { // File read; locate root fs and create entries
+         Options->Encoding = ENCODING_UTF16_LE;
+         Line[0] = '\0';
+         while ((TokenCount = ReadTokenLine(Fstab, &TokenList)) > 0) {
+            if (TokenCount > 2) {
+               Root[0] = '\0';
+               if (StriCmp(TokenList[1], L"\\") == 0) {
+                  SPrint(Root, 99, L"%s", TokenList[0]);
+               } else if (StriCmp(TokenList[2], L"\\") == 0) {
+                  SPrint(Root, 99, L"%s=%s", TokenList[0], TokenList[1]);
+               } // if/elseif/elseif
+               if (Root[0] != L'\0') {
+                  for (i = 0; i < StrLen(Root); i++)
+                     if (Root[i] == '\\')
+                        Root[i] = '/';
+                  SPrint(Line, 512, L"\"Boot with normal options\"    \"ro root=%s\"\n", Root);
+                  MergeStrings((CHAR16 **) &(Options->Buffer), Line, 0);
+                  SPrint(Line, 512, L"\"Boot into single-user mode\"  \"ro root=%s single\"\n", Root);
+                  MergeStrings((CHAR16**) &(Options->Buffer), Line, 0);
+                  Options->BufferSize = StrLen((CHAR16*) Options->Buffer) * sizeof(CHAR16);
+               } // if
+            } // if
+            FreeTokenLine(&TokenList, &TokenCount);
+         } // while
+
+         Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
+         Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
+         Options->Current16Ptr = (CHAR16 *)Options->Buffer;
+         Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
+
+         MyFreePool(Fstab->Buffer);
+         MyFreePool(Fstab);
+      } // if/else file read error
+   } // if /etc/fstab exists
+   return Options;
+} // GenerateOptionsFromEtcFstab()
+
+
 // Read a Linux kernel options file for a Linux boot loader into memory. The LoaderPath
 // and Volume variables identify the location of the options file, but not its name --
 // you pass this function the filename of the Linux kernel, initial RAM disk, or other
@@ -791,12 +850,15 @@ VOID ScanUserConfigured(CHAR16 *FileName)
 // kernel developers decided to use that name for a similar purpose, but with a
 // different file format. Thus, I'm migrating rEFInd to use the name refind_linux.conf,
 // but I want a migration period in which both names are used.
+// If a rEFInd options file can't be found, try to generate minimal options from
+// /etc/fstab on the same volume as the kernel. This typically works only if the
+// kernel is being read from the Linux root filesystem.
 //
 // The return value is a pointer to the REFIT_FILE handle for the file, or NULL if
 // it wasn't found.
 REFIT_FILE * ReadLinuxOptionsFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
    CHAR16       *OptionsFilename, *FullFilename;
-   BOOLEAN      GoOn = TRUE;
+   BOOLEAN      GoOn = TRUE, FileFound = FALSE;
    UINTN        i = 0, size;
    REFIT_FILE   *File = NULL;
    EFI_STATUS   Status;
@@ -809,17 +871,20 @@ REFIT_FILE * ReadLinuxOptionsFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume
          if (FileExists(Volume->RootDir, FullFilename)) {
             File = AllocateZeroPool(sizeof(REFIT_FILE));
             Status = ReadFile(Volume->RootDir, FullFilename, File, &size);
-            GoOn = FALSE;
             if (CheckError(Status, L"while loading the Linux options file")) {
                if (File != NULL)
                   FreePool(File);
                File = NULL;
-               GoOn = TRUE;
-            } // if error
+            } else {
+               GoOn = FALSE;
+               FileFound = TRUE;
+            } // if/else error
          } // if file exists
       } else { // a filename string is NULL
          GoOn = FALSE;
       } // if/else
+      if (!FileFound)
+         File = GenerateOptionsFromEtcFstab(Volume);
       MyFreePool(OptionsFilename);
       MyFreePool(FullFilename);
       OptionsFilename = FullFilename = NULL;

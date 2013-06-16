@@ -1,3 +1,11 @@
+0.6.12 (?/??/2013):
+-------------------
+
+- Added code to determine Linux root filesystem from /etc/fstab file, if
+  it's on the same partition as the kernel and if the refind_linux.conf
+  file is not available. This enables rEFInd to boot Linux without any
+  rEFInd-specific configuration files on some (but not all) systems.
+
 0.6.11 (5/13/2013):
 -------------------
 
