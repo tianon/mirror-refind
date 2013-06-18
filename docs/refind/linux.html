@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/19/2012; last Web page update:
-5/13/2013, referencing rEFInd 0.6.11</p>
+6/18/2013, referencing rEFInd 0.6.12</p>
 
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -186,7 +186,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>If you installed rEFInd 0.6.0 or later with its <tt>install.sh</tt> script from your regular Linux installation, chances are everything's set up; you should be able to reboot and see your Linux kernels as boot options. If you installed manually, from OS X, or from an emergency system, though, you may need to do a couple of things manually:
 
-<ol>
+<ul>
 
 <li>Copy the relevant driver file for your filesystem and architecture to
     the <tt>drivers</tt> or <tt>drivers_<tt class="variable">arch</tt></tt>
@@ -196,9 +196,14 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <li>Create a <tt>refind_linux.conf</tt> file in your <tt>/boot</tt>
     directory. The <tt>mkrlconf.sh</tt> script that comes with rEFInd
     should do this job, or you can do it manually as described <a
-    href="#efistub">later.</a></li>
+    href="#efistub">later.</a> Starting with version 0.6.12, rEFInd can
+    create minimal boot options from <tt>/etc/fstab</tt>, if <tt>/boot</tt>
+    is <i>not</i> a separate partition, so a <tt>refind_linux.conf</tt>
+    file may not be strictly necessary. It remains desirable, though, and
+    is necessary if <tt>/boot</tt> is on a separate partition or if you
+    need unusual kernel options to boot your computer.</li>
 
-</ol>
+</ul>
 
 <p>When you reboot, you should see rEFInd options for your Linux kernels. If they work, your job is done, although you might want to apply some of the tweaks described in the <a href="#longterm">maintenance-free setup</a> section. If you have problems, you may need to adjust the <tt>refind_linux.conf</tt> file, as described in the <a href="#efistub">detailed configuration section.</a></p>
 
@@ -225,7 +230,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <li>Copy the <tt>/boot/refind_linux.conf</tt> file to the same directory to
     which you copied your kernel. If this file doesn't exist, create it by
     running (as <tt>root</tt>) the <tt>mkrlconf.sh</tt> script that came
-    with rEFInd.</li>
+    with rEFInd. This step may not be strictly necessary if <tt>/boot</tt>
+    is an ordinary directory on your root (<tt>/</tt>) partition.</li>
 
 <li>Reboot. You should now see a new entry for launching the Linux kernel
     that you copied. Try the option. If it works, great. If not, you may
@@ -375,6 +381,21 @@ offers another possibility.</p>
     customized for your computer, in <tt>/boot</tt>. This file will work
     without changes on many installations, but you may need to tweak it for
     some.</li>
+
+<li>If rEFInd can't find a <tt>refind_linux.conf</tt> file in the directory
+    that holds the kernel, the program looks for a file called
+    <tt>/etc/fstab</tt> on the partition that holds the kernel. If this
+    standard Linux file is present, rEFInd uses it to identify the root
+    (<tt>/</tt>) filesystem and creates two sets of Linux kernel boot
+    options: One set launches the kernel normally, but with minimal
+    options, and the other set launches the kernel into single-user mode.
+    This step can get a computer to boot without any rEFInd-specific
+    configuration files, aside from <tt>refind.conf</tt> in rEFInd's own
+    directory, but only if <tt>/boot</tt> is not a separate partition. The
+    intent is to facilitate the use of rEFInd as an emergency boot manager
+    or to help users who must install rEFInd from OS X or Windows. Note
+    that rEFInd uses <tt>/etc/fstab</tt> only if <tt>refind_linux.conf</tt>
+    is <i>not</i> found.</li>
 
 </ol>
 

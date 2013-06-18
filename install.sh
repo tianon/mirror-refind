@@ -18,6 +18,7 @@
 #    "--nodrivers" to suppress driver installation (default in Linux is
 #           driver used on /boot; --nodrivers is OS X default)
 #    "--shim {shimfile}" to install a shim.efi file for Secure Boot
+#    "--preloader" is synonymous with "--shim"
 #    "--localkeys" to re-sign x86-64 binaries with a locally-generated key
 #    "--yes" to assume a "yes" response to all prompts
 #
@@ -32,6 +33,7 @@
 #
 # Revision history:
 #
+# 0.6.12  -- Added support for PreLoader as well as for shim
 # 0.6.11  -- Improvements in script's ability to handle directories with spaces
 #            in their names
 # 0.6.9   -- Install gptsync on Macs
@@ -65,6 +67,7 @@ RootDir="/"
 TargetDir=/EFI/refind
 LocalKeysBase="refind_local"
 ShimSource="none"
+ShimType="none"
 TargetShim="default"
 TargetX64="refind_x64.efi"
 TargetIA32="refind_ia32.efi"
@@ -99,7 +102,8 @@ GetParams() {
               ;;
          --localkeys) LocalKeys=1
               ;;
-         --shim) ShimSource="$2"
+         --shim | --preloader) ShimSource="$2"
+              ShimType=`basename $ShimSource`
               shift
               ;;
          --drivers | --alldrivers) InstallDrivers="all"
@@ -179,10 +183,19 @@ CheckForFiles() {
 
    if [[ "$ShimSource" != "none" ]] ; then
       if [[ -f "$ShimSource" ]] ; then
-         TargetX64="grubx64.efi"
-         MokManagerSource=`dirname "$ShimSource"`/MokManager.efi
+         if [[ $ShimType == "shimx64.efi" || $ShimType == "shim.efi" ]] ; then
+            TargetX64="grubx64.efi"
+            MokManagerSource=`dirname "$ShimSource"`/MokManager.efi
+         elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
+            TargetX64="loader.efi"
+            MokManagerSource=`dirname "$ShimSource"`/HashTool.efi
+         else
+            echo "Unknown shim/PreBootloader filename: $ShimType!"
+            echo "Known filenames are shimx64.efi, shim.efi, and PreLoader.efi. Aborting!"
+            exit 1
+         fi
       else
-         echo "The specified shim file, $ShimSource, doesn't exist!"
+         echo "The specified shim/PreBootloader file, $ShimSource, doesn't exist!"
          echo "Aborting installation!"
          exit 1
       fi
@@ -713,7 +726,15 @@ SetVarsForBoot() {
       TargetX64="bootx64.efi"
       TargetIA32="bootia32.efi"
    else
-      TargetX64="grubx64.efi"
+      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" ]] ; then
+         TargetX64="grubx64.efi"
+      elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
+         TargetX64="loader.efi"
+      else
+         echo "Unknown shim/PreBootloader type: $ShimType"
+         echo "Aborting!"
+         exit 1
+      fi
       TargetIA32="bootia32.efi"
       TargetShim="bootx64.efi"
    fi
@@ -725,7 +746,15 @@ SetVarsForMsBoot() {
    if [[ $ShimSource == "none" ]] ; then
       TargetX64="bootmgfw.efi"
    else
-      TargetX64="grubx64.efi"
+      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" ]] ; then
+         TargetX64="grubx64.efi"
+      elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
+         TargetX64="loader.efi"
+      else
+         echo "Unknown shim/PreBootloader type: $ShimType"
+         echo "Aborting!"
+         exit 1
+      fi
       TargetShim="bootmgfw.efi"
    fi
 }

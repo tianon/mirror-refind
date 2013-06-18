@@ -1,6 +1,6 @@
 Summary: EFI boot manager software
 Name: refind
-Version: 0.6.11
+Version: 0.6.12
 Release: 1%{?dist}
 Summary: EFI boot manager software
 License: GPLv3
@@ -127,6 +127,9 @@ cd /usr/share/refind-%{version}
 
 declare VarFile=`ls -d /sys/firmware/efi/vars/SecureBoot* 2> /dev/null`
 declare ShimFile=`find /boot -name shim\.efi 2> /dev/null | head -n 1`
+if [[ ! -n $ShimFile ]] ; then
+   declare ShimFile=`find /boot -name PreLoader\.efi 2> /dev/null | head -n 1`
+fi
 declare SBSign=`which sbsign 2> /dev/null`
 declare OpenSSL=`which openssl 2> /dev/null`
 
@@ -154,5 +157,5 @@ fi
 # wiping out the just-updated files.
 
 %changelog
-* Mon May 13 2013 R Smith <rodsmith@rodsbooks.com> - 0.6.11
-- Created spec file for 0.6.11 release
+* Tue Jun 18 2013 R Smith <rodsmith@rodsbooks.com> - 0.6.12
+- Created spec file for 0.6.12 release

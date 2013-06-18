@@ -1,5 +1,16 @@
-0.6.12 (?/??/2013):
+0.6.12 (6/18/2013):
 -------------------
+
+- Changed the 64-bit EFI shell included in the CD-R and USB flash drive
+  images to a version 2 shell that should support the "bcfg" command.
+
+- Added support for PreBootloader to refind.spec's built-in installation
+  script.
+
+- Added support for the Linux Foundation's PreLoader to install.sh. It's
+  treated just like shim, including using the --shim option (or, now,
+  --preloader); but it searches for and copies HashTool.efi rather than
+  MokManager.efi, and filenames are adjusted appropriately.
 
 - Added code to determine Linux root filesystem from /etc/fstab file, if
   it's on the same partition as the kernel and if the refind_linux.conf
