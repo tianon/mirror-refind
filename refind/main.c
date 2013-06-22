@@ -144,7 +144,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.12");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.6.12.1");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -383,7 +383,7 @@ static EFI_STATUS RebootIntoFirmware(VOID) {
 // EFI OS loader functions
 //
 
-static VOID StartLoader(IN LOADER_ENTRY *Entry)
+static VOID StartLoader(LOADER_ENTRY *Entry)
 {
     UINTN ErrorInStep = 0;
 
@@ -1161,6 +1161,38 @@ static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *Path, EFI_FILE_INFO 
    return (DirEntry->FileSize != FileSize2);
 } // BOOLEAN IsSymbolicLink()
 
+// Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
+static BOOLEAN IsValidLoader(REFIT_VOLUME *Volume, CHAR16 *FileName) {
+#if defined (EFIX64)
+#define EFI_STUB_ARCH   0x8664
+#else
+#define EFI_STUB_ARCH   0x14c
+#endif
+#define FAT_ARCH        0x0ef1fab9 /* ID for Apple "fat" binary */
+    EFI_STATUS      Status;
+    EFI_FILE_HANDLE FileHandle;
+    CHAR8           Header[512];
+    UINTN           Size = sizeof(Header);
+    BOOLEAN         IsValid;
+
+    Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
+    if (EFI_ERROR(Status))
+       return 0;
+
+    Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &Size, Header);
+    refit_call1_wrapper(FileHandle->Close, FileHandle);
+
+    IsValid = !EFI_ERROR(Status) &&
+              Size == sizeof(Header) &&
+              ((Header[0] == 'M' && Header[1] == 'Z' &&
+               (Size = *(UINT32 *)&Header[0x3c]) < 0x180 &&
+               Header[Size] == 'P' && Header[Size+1] == 'E' &&
+               Header[Size+2] == 0 && Header[Size+3] == 0 &&
+               *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
+              (*(UINT32 *)&Header == FAT_ARCH));
+    return IsValid;
+} // BOOLEAN IsValidLoader()
+
 // Scan an individual directory for EFI boot loader files and, if found,
 // add them to the list. Exception: Ignores FALLBACK_FULLNAME, which is picked
 // up in ScanEfiFiles(). Sorts the entries within the loader directory so that
@@ -1196,6 +1228,12 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
           else
              SPrint(FileName, 255, L"\\%s", DirEntry->FileName);
           CleanUpPathNameSlashes(FileName);
+
+          if( /* (!StriSubCmp(L"vmlinuz", DirEntry->FileName) ||
+              !StriSubCmp(L"bzImage", DirEntry->FileName)) && */
+              !IsValidLoader(Volume, FileName))
+             continue;
+
           NewLoader = AllocateZeroPool(sizeof(struct LOADER_LIST));
           if (NewLoader != NULL) {
              NewLoader->FileName = StrDuplicate(FileName);

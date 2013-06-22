@@ -267,7 +267,8 @@ struct fsw_dnode {
     struct DNODESTRUCTNAME *parent; //!< Parent directory dnode
     struct fsw_string name;         //!< Name of this item in the parent directory
 
-    fsw_u32     dnode_id;           //!< Unique id number (usually the inode number)
+    fsw_u64     tree_id;            //!< Unique id number (usually the btrfs subvolume)
+    fsw_u64     dnode_id;           //!< Unique id number (usually the inode number)
     int         type;               //!< Type of the dnode - file, dir, symlink, special
     fsw_u64     size;               //!< Data size in bytes
 
@@ -419,8 +420,11 @@ void         fsw_block_release(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, void
  */
 /*@{*/
 
-fsw_status_t fsw_dnode_create_root(struct VOLSTRUCTNAME *vol, fsw_u32 dnode_id, struct DNODESTRUCTNAME **dno_out);
-fsw_status_t fsw_dnode_create(struct DNODESTRUCTNAME *parent_dno, fsw_u32 dnode_id, int type,
+fsw_status_t fsw_dnode_create_root(struct VOLSTRUCTNAME *vol, fsw_u64 dnode_id, struct DNODESTRUCTNAME **dno_out);
+fsw_status_t fsw_dnode_create(struct DNODESTRUCTNAME *parent_dno, fsw_u64 dnode_id, int type,
+                              struct fsw_string *name, struct DNODESTRUCTNAME **dno_out);
+fsw_status_t fsw_dnode_create_root_with_tree(struct VOLSTRUCTNAME *vol, fsw_u64 tree_id, fsw_u64 dnode_id, struct DNODESTRUCTNAME **dno_out);
+fsw_status_t fsw_dnode_create_with_tree(struct DNODESTRUCTNAME *parent_dno, fsw_u64 tree_id, fsw_u64 dnode_id, int type,
                               struct fsw_string *name, struct DNODESTRUCTNAME **dno_out);
 void         fsw_dnode_retain(struct fsw_dnode *dno);
 void         fsw_dnode_release(struct fsw_dnode *dno);

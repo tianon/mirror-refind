@@ -190,6 +190,21 @@ fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, fsw_u32 
     if (cache_level > MAX_CACHE_LEVEL)
         cache_level = MAX_CACHE_LEVEL;
 
+    if (vol->bcache_size > 0 && vol->bcache == NULL) {
+	/* driver set the initial cache size */
+        status = fsw_alloc(vol->bcache_size * sizeof(struct fsw_blockcache), &vol->bcache);
+	if(status)
+	    return status;
+	for( i = 0; i < vol->bcache_size; i++) {
+            vol->bcache[i].refcount = 0;
+            vol->bcache[i].cache_level = 0;
+            vol->bcache[i].phys_bno = (fsw_u32)FSW_INVALID_BNO;
+            vol->bcache[i].data = NULL;
+	}
+	i = 0;
+	goto miss;
+    }
+
     // check block cache
     for (i = 0; i < vol->bcache_size; i++) {
         if (vol->bcache[i].phys_bno == phys_bno) {
@@ -243,6 +258,7 @@ fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, fsw_u32 
         vol->bcache_size = new_bcache_size;
     }
     vol->bcache[i].phys_bno = (fsw_u32)FSW_INVALID_BNO;
+miss:
 
     // read the data
     if (vol->bcache[i].data == NULL) {
@@ -322,7 +338,7 @@ static void fsw_dnode_register(struct fsw_volume *vol, struct fsw_dnode *dno)
  * behaves in the same way as fsw_dnode_create.
  */
 
-fsw_status_t fsw_dnode_create_root(struct fsw_volume *vol, fsw_u32 dnode_id, struct fsw_dnode **dno_out)
+fsw_status_t fsw_dnode_create_root_with_tree(struct fsw_volume *vol, fsw_u64 tree_id, fsw_u64 dnode_id, struct fsw_dnode **dno_out)
 {
     fsw_status_t    status;
     struct fsw_dnode *dno;
@@ -335,6 +351,7 @@ fsw_status_t fsw_dnode_create_root(struct fsw_volume *vol, fsw_u32 dnode_id, str
     // fill the structure
     dno->vol = vol;
     dno->parent = NULL;
+    dno->tree_id = tree_id;
     dno->dnode_id = dnode_id;
     dno->type = FSW_DNODE_TYPE_DIR;
     dno->refcount = 1;
@@ -347,6 +364,10 @@ fsw_status_t fsw_dnode_create_root(struct fsw_volume *vol, fsw_u32 dnode_id, str
     return FSW_SUCCESS;
 }
 
+fsw_status_t fsw_dnode_create_root(struct fsw_volume *vol, fsw_u64 dnode_id, struct fsw_dnode **dno_out)
+{
+	return fsw_dnode_create_root_with_tree( vol, 0, dnode_id, dno_out);
+}
 /**
  * Create a new dnode representing a file system object. This function is called by
  * the file system driver in response to directory lookup or read requests. Note that
@@ -365,7 +386,7 @@ fsw_status_t fsw_dnode_create_root(struct fsw_volume *vol, fsw_u32 dnode_id, str
  * that must be released by the caller with fsw_dnode_release.
  */
 
-fsw_status_t fsw_dnode_create(struct fsw_dnode *parent_dno, fsw_u32 dnode_id, int type,
+fsw_status_t fsw_dnode_create_with_tree(struct fsw_dnode *parent_dno, fsw_u64 tree_id, fsw_u64 dnode_id, int type,
                               struct fsw_string *name, struct fsw_dnode **dno_out)
 {
     fsw_status_t    status;
@@ -374,7 +395,7 @@ fsw_status_t fsw_dnode_create(struct fsw_dnode *parent_dno, fsw_u32 dnode_id, in
 
     // check if we already have a dnode with the same id
     for (dno = vol->dnode_head; dno; dno = dno->next) {
-        if (dno->dnode_id == dnode_id) {
+        if (dno->dnode_id == dnode_id && dno->tree_id == tree_id) {
             fsw_dnode_retain(dno);
             *dno_out = dno;
             return FSW_SUCCESS;
@@ -390,6 +411,7 @@ fsw_status_t fsw_dnode_create(struct fsw_dnode *parent_dno, fsw_u32 dnode_id, in
     dno->vol = vol;
     dno->parent = parent_dno;
     fsw_dnode_retain(dno->parent);
+    dno->tree_id = tree_id;
     dno->dnode_id = dnode_id;
     dno->type = type;
     dno->refcount = 1;
@@ -403,6 +425,12 @@ fsw_status_t fsw_dnode_create(struct fsw_dnode *parent_dno, fsw_u32 dnode_id, in
 
     *dno_out = dno;
     return FSW_SUCCESS;
+}
+
+fsw_status_t fsw_dnode_create(struct fsw_dnode *parent_dno, fsw_u64 dnode_id, int type,
+                              struct fsw_string *name, struct fsw_dnode **dno_out)
+{
+	return fsw_dnode_create_with_tree(parent_dno, 0, dnode_id, type, name, dno_out);
 }
 
 /**

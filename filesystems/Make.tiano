@@ -14,7 +14,7 @@ ifeq ($(ARCH),ia64)
 endif
 
 ifeq ($(ARCH),ia32)
-  ARCH_C_FLAGS = -m32 -malign-double
+  ARCH_C_FLAGS = -m32 -malign-double -g
   ARCHDIR = Ia32
   UC_ARCH = IA32
   FILENAME_CODE = ia32

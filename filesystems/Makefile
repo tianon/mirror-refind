@@ -8,8 +8,8 @@
 
 INSTALL_DIR = /boot/efi/EFI/refind/drivers
 
-FILESYSTEMS = ext2 ext4 reiserfs iso9660 hfs
-FILESYSTEMS_GNUEFI = ext2_gnuefi ext4_gnuefi reiserfs_gnuefi iso9660_gnuefi hfs_gnuefi
+FILESYSTEMS = ext2 ext4 reiserfs iso9660 hfs btrfs
+FILESYSTEMS_GNUEFI = ext2_gnuefi ext4_gnuefi reiserfs_gnuefi iso9660_gnuefi hfs_gnuefi btrfs_gnuefi
 TEXTFILES = $(FILESYSTEMS:=*.txt)
 
 # Build the drivers with TianoCore EDK2.....
@@ -36,6 +36,10 @@ hfs:
 	rm -f fsw_efi.obj
 	+make DRIVERNAME=hfs -f Make.tiano
 
+btrfs:
+	rm -f fsw_efi.obj
+	+make DRIVERNAME=btrfs -f Make.tiano
+
 # Build the drivers with GNU-EFI....
 
 gnuefi: $(FILESYSTEMS_GNUEFI)
@@ -61,6 +65,10 @@ iso9660_gnuefi:
 hfs_gnuefi:
 	rm -f fsw_efi.o
 	+make DRIVERNAME=hfs -f Make.gnuefi
+
+btrfs_gnuefi:
+	rm -f fsw_efi.o
+	+make DRIVERNAME=btrfs -f Make.gnuefi
 
 # utility rules
 
