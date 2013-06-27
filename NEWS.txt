@@ -1,7 +1,19 @@
-0.6.13 (?/??/2013):
--------------------
+0.7.0 (?/??/2013):
+------------------
 
+- Added a cache to all the filesystem drivers except for ext2fs. This cache
+  greatly improves performance in VirtualBox, and offers modest performance
+  improvements on a few "real" computers. The ext2fs driver loads blocks in
+  a strange non-linear fashion that causes the cache to degrade
+  performance, so I've disabled the cache for ext2fs. (Ext4fs doesn't
+  suffer from this problem.)
 
+- Filter boot loaders based on a test of their validity; keeps out Linux
+  kernels without EFI stub loader code, loaders for the wrong architecture,
+  non-EFI loaders, etc.
+
+- New Btrfs driver, contributed by Samuel Liao based on GRUB 2.00 Btrfs
+  code.
 
 0.6.12 (6/18/2013):
 -------------------

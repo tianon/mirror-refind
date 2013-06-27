@@ -80,7 +80,7 @@ LDFLAGS         = -nostdlib -n -q --gc-sections --script=$(EDK2BASE)/BaseTools/S
                   --entry _ModuleEntryPoint -u _ModuleEntryPoint -m $(LD_CODE)
 
 %.obj: %.c
-	$(CC) $(ARCH_C_FLAGS) $(CFLAGS) $(INCLUDE_DIRS) -DFSTYPE=$(DRIVERNAME) -DNO_BUILTIN_VA_FUNCS -c $< -o $@
+	$(CC) $(ARCH_C_FLAGS) $(CFLAGS) $(INCLUDE_DIRS) -DCACHE=$(CACHE) -DFSTYPE=$(DRIVERNAME) -DNO_BUILTIN_VA_FUNCS -c $< -o $@
 
 ifneq (,$(filter %.efi,$(BUILDME)))
 

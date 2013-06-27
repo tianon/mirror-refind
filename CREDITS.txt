@@ -43,6 +43,9 @@ Program (C source code) files:
 * Stefan Agner (stefan@agner.ch) turned the original ext2fs/ext3fs driver
   into one that can read ext4fs.
 
+* Samuel Liao ported the GRUB 2 Btrfs code into an EFI driver and
+  contributed it to this project.
+
 * Matthew J. Garrett (mjg@redhat.com) wrote the shim boot loader upon which
   rEFInd relies for its Secure Boot functionality. I took a few shim
   functions to help out on the rEFInd side, too; see the mok/mok.c source

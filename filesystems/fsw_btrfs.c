@@ -26,18 +26,18 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#define DPRINT(x...)	Print(x)
+//#define DPRINT(x...)  Print(x)
 
 #include "fsw_core.h"
-#define uint8_t UINT8
-#define uint16_t UINT16
-#define uint32_t UINT32
-#define uint64_t UINT64
-#define int64_t INT64
-#define int32_t INT32
+#define uint8_t fsw_u8
+#define uint16_t fsw_u16
+#define uint32_t fsw_u32
+#define uint64_t fsw_u64
+#define int64_t fsw_s64
+#define int32_t fsw_s32
 
 #ifndef DPRINT
-#define DPRINT(x...)	/* */
+#define DPRINT(x...)    /* */
 #endif
 
 /* no single io/element size over 2G */
@@ -60,6 +60,7 @@
 #include "scandisk.c"
 
 #define BTRFS_DEFAULT_BLOCK_SIZE 4096
+//#define BTRFS_DEFAULT_BLOCK_SIZE 8192
 #define BTRFS_INITIAL_BCACHE_SIZE 1024
 #define GRUB_BTRFS_SIGNATURE "_BHRfS_M"
 
@@ -72,7 +73,7 @@
  *  */
 #define GRUB_BTRFS_LZO_BLOCK_SIZE 4096
 #define GRUB_BTRFS_LZO_BLOCK_MAX_CSIZE (GRUB_BTRFS_LZO_BLOCK_SIZE + \
-	(GRUB_BTRFS_LZO_BLOCK_SIZE / 16) + 64 + 3)
+        (GRUB_BTRFS_LZO_BLOCK_SIZE / 16) + 64 + 3)
 
 /*
  * on disk struct has prefix 'btrfs_', little endian
@@ -101,7 +102,7 @@ struct btrfs_superblock
     uint64_t total_bytes;
     uint64_t bytes_used;
     uint64_t root_dir_objectid;
-#define BTRFS_MAX_NUM_DEVICES	0x10000
+#define BTRFS_MAX_NUM_DEVICES   0x10000
     uint64_t num_devices;
     uint32_t sectorsize;
     uint32_t nodesize;
@@ -233,10 +234,10 @@ struct fsw_btrfs_leaf_descriptor
     unsigned allocated;
     struct
     {
-	uint64_t addr;
-	unsigned iter;
-	unsigned maxiter;
-	int leaf;
+        uint64_t addr;
+        unsigned iter;
+        unsigned maxiter;
+        int leaf;
     } *data;
 };
 
@@ -291,14 +292,14 @@ struct btrfs_extent_data
     uint8_t type;
     union
     {
-	char inl[0];
-	struct
-	{
-	    uint64_t laddr;
-	    uint64_t compressed_size;
-	    uint64_t offset;
-	    uint64_t filled;
-	};
+        char inl[0];
+        struct
+        {
+            uint64_t laddr;
+            uint64_t compressed_size;
+            uint64_t offset;
+            uint64_t filled;
+        };
     };
 } __attribute__ ((__packed__));
 
@@ -326,11 +327,11 @@ static int master_uuid_add(struct fsw_btrfs_volume *vol, struct fsw_btrfs_volume
     struct fsw_btrfs_uuid_list *l;
 
     for (l = master_uuid_list; l; l=l->next)
-	if(uuid_eq(l->master->uuid, vol->uuid)) {
-	    if(master_out)
-		*master_out = l->master;
-	    return 0;
-	}
+        if(uuid_eq(l->master->uuid, vol->uuid)) {
+            if(master_out)
+                *master_out = l->master;
+            return 0;
+        }
 
     l = AllocatePool(sizeof(struct fsw_btrfs_uuid_list));
     l->master = vol;
@@ -343,12 +344,12 @@ static void master_uuid_remove(struct fsw_btrfs_volume *vol) {
     struct fsw_btrfs_uuid_list **lp;
 
     for (lp = &master_uuid_list; *lp; lp=&(*lp)->next)
-	if((*lp)->master == vol) {
-	    struct fsw_btrfs_uuid_list *n = *lp;
-	    *lp = n->next;
-	    FreePool(n);
-	    break;
-	}
+        if((*lp)->master == vol) {
+            struct fsw_btrfs_uuid_list *n = *lp;
+            *lp = n->next;
+            FreePool(n);
+            break;
+        }
 }
 
 static fsw_status_t btrfs_set_superblock_info(struct fsw_btrfs_volume *vol, struct btrfs_superblock *sb)
@@ -366,15 +367,15 @@ static fsw_status_t btrfs_set_superblock_info(struct fsw_btrfs_volume *vol, stru
     vol->sectorshift = 0;
     vol->sectorsize = fsw_u32_le_swap(sb->sectorsize);
     for(i=9; i<20; i++) {
-	if((1UL<<i) == vol->sectorsize) {
-	    vol->sectorshift = i;
-	    break;
-	}
+        if((1UL<<i) == vol->sectorsize) {
+            vol->sectorshift = i;
+            break;
+        }
     }
     if(fsw_u64_le_swap(sb->num_devices) > BTRFS_MAX_NUM_DEVICES)
-	vol->num_devices = BTRFS_MAX_NUM_DEVICES;
+        vol->num_devices = BTRFS_MAX_NUM_DEVICES;
     else
-	vol->num_devices = fsw_u64_le_swap(sb->num_devices);
+        vol->num_devices = fsw_u64_le_swap(sb->num_devices);
     fsw_memcpy(vol->bootstrap_mapping, sb->bootstrap_mapping, sizeof(vol->bootstrap_mapping));
     return FSW_SUCCESS;
 }
@@ -387,7 +388,7 @@ static uint64_t superblock_pos[4] = {
 };
 
 static fsw_status_t fsw_btrfs_read_logical(struct fsw_btrfs_volume *vol,
-	uint64_t addr, void *buf, fsw_size_t size, int rdepth, int cache_level);
+        uint64_t addr, void *buf, fsw_size_t size, int rdepth, int cache_level);
 
 static fsw_status_t btrfs_read_superblock (struct fsw_volume *vol, struct btrfs_superblock *sb_out)
 {
@@ -398,63 +399,63 @@ static fsw_status_t btrfs_read_superblock (struct fsw_volume *vol, struct btrfs_
     fsw_set_blocksize(vol, BTRFS_DEFAULT_BLOCK_SIZE, BTRFS_DEFAULT_BLOCK_SIZE);
     for (i = 0; i < 4; i++)
     {
-	uint8_t *buffer;
-	struct btrfs_superblock *sb;
+        uint8_t *buffer;
+        struct btrfs_superblock *sb;
 
-	/* Don't try additional superblocks beyond device size.  */
-	if (total_blocks <= superblock_pos[i])
-	    break;
+        /* Don't try additional superblocks beyond device size.  */
+        if (total_blocks <= superblock_pos[i])
+            break;
 
-	err = fsw_block_get(vol, superblock_pos[i], 0, (void **)&buffer);
-	if (err == FSW_UNSUPPORTED) {
-	    fsw_block_release(vol, superblock_pos[i], buffer);
-	    break;
-	}
+        err = fsw_block_get(vol, superblock_pos[i], 0, (void **)&buffer);
+        if (err == FSW_UNSUPPORTED) {
+            fsw_block_release(vol, superblock_pos[i], buffer);
+            break;
+        }
 
-	sb = (struct btrfs_superblock *)buffer;
-	if (!fsw_memeq (sb->signature, GRUB_BTRFS_SIGNATURE,
-		    sizeof (GRUB_BTRFS_SIGNATURE) - 1))
-	{
-	    fsw_block_release(vol, superblock_pos[i], buffer);
-	    break;
-	}
-	if (i == 0 || fsw_u64_le_swap (sb->generation) > fsw_u64_le_swap (sb_out->generation))
-	{
-	    fsw_memcpy (sb_out, sb, sizeof (*sb));
-	    total_blocks = fsw_u64_le_swap (sb->this_device.size) >> 12;
-	}
-	fsw_block_release(vol, superblock_pos[i], buffer);
+        sb = (struct btrfs_superblock *)buffer;
+        if (!fsw_memeq (sb->signature, GRUB_BTRFS_SIGNATURE,
+                    sizeof (GRUB_BTRFS_SIGNATURE) - 1))
+        {
+            fsw_block_release(vol, superblock_pos[i], buffer);
+            break;
+        }
+        if (i == 0 || fsw_u64_le_swap (sb->generation) > fsw_u64_le_swap (sb_out->generation))
+        {
+            fsw_memcpy (sb_out, sb, sizeof (*sb));
+            total_blocks = fsw_u64_le_swap (sb->this_device.size) >> 12;
+        }
+        fsw_block_release(vol, superblock_pos[i], buffer);
     }
 
     if ((err == FSW_UNSUPPORTED || !err) && i == 0)
-	return FSW_UNSUPPORTED;
+        return FSW_UNSUPPORTED;
 
     if (err == FSW_UNSUPPORTED)
-	err = FSW_SUCCESS;
+        err = FSW_SUCCESS;
 
     if(err == 0)
-	DPRINT(L"btrfs: UUID: %08x-%08x-%08x-%08x device id: %d\n",
-		sb_out->uuid[0], sb_out->uuid[1], sb_out->uuid[2], sb_out->uuid[3],
-		sb_out->this_device.device_id);
+        DPRINT(L"btrfs: UUID: %08x-%08x-%08x-%08x device id: %d\n",
+                sb_out->uuid[0], sb_out->uuid[1], sb_out->uuid[2], sb_out->uuid[3],
+                sb_out->this_device.device_id);
     return err;
 }
 
 static int key_cmp (const struct btrfs_key *a, const struct btrfs_key *b)
 {
     if (fsw_u64_le_swap (a->object_id) < fsw_u64_le_swap (b->object_id))
-	return -1;
+        return -1;
     if (fsw_u64_le_swap (a->object_id) > fsw_u64_le_swap (b->object_id))
-	return +1;
+        return +1;
 
     if (a->type < b->type)
-	return -1;
+        return -1;
     if (a->type > b->type)
-	return +1;
+        return +1;
 
     if (fsw_u64_le_swap (a->offset) < fsw_u64_le_swap (b->offset))
-	return -1;
+        return -1;
     if (fsw_u64_le_swap (a->offset) > fsw_u64_le_swap (b->offset))
-	return +1;
+        return +1;
     return 0;
 }
 
@@ -464,20 +465,20 @@ static void free_iterator (struct fsw_btrfs_leaf_descriptor *desc)
 }
 
 static fsw_status_t save_ref (struct fsw_btrfs_leaf_descriptor *desc,
-	uint64_t addr, unsigned i, unsigned m, int l)
+        uint64_t addr, unsigned i, unsigned m, int l)
 {
     desc->depth++;
     if (desc->allocated < desc->depth)
     {
-	void *newdata;
-	int oldsize = sizeof (desc->data[0]) * desc->allocated;
-	desc->allocated *= 2;
-	newdata = AllocatePool (sizeof (desc->data[0]) * desc->allocated);
-	if (!newdata)
-	    return FSW_OUT_OF_MEMORY;
-	fsw_memcpy(newdata, desc->data, oldsize);
-	FreePool(desc->data);
-	desc->data = newdata;
+        void *newdata;
+        int oldsize = sizeof (desc->data[0]) * desc->allocated;
+        desc->allocated *= 2;
+        newdata = AllocatePool (sizeof (desc->data[0]) * desc->allocated);
+        if (!newdata)
+            return FSW_OUT_OF_MEMORY;
+        fsw_memcpy(newdata, desc->data, oldsize);
+        FreePool(desc->data);
+        desc->data = newdata;
     }
     desc->data[desc->depth - 1].addr = addr;
     desc->data[desc->depth - 1].iter = i;
@@ -487,203 +488,203 @@ static fsw_status_t save_ref (struct fsw_btrfs_leaf_descriptor *desc,
 }
 
 static int next (struct fsw_btrfs_volume *vol,
-	struct fsw_btrfs_leaf_descriptor *desc,
-	uint64_t * outaddr, fsw_size_t * outsize,
-	struct btrfs_key *key_out)
+        struct fsw_btrfs_leaf_descriptor *desc,
+        uint64_t * outaddr, fsw_size_t * outsize,
+        struct btrfs_key *key_out)
 {
     fsw_status_t err;
     struct btrfs_leaf_node leaf;
 
     for (; desc->depth > 0; desc->depth--)
     {
-	desc->data[desc->depth - 1].iter++;
-	if (desc->data[desc->depth - 1].iter
-		< desc->data[desc->depth - 1].maxiter)
-	    break;
+        desc->data[desc->depth - 1].iter++;
+        if (desc->data[desc->depth - 1].iter
+                < desc->data[desc->depth - 1].maxiter)
+            break;
     }
     if (desc->depth == 0)
-	return 0;
+        return 0;
     while (!desc->data[desc->depth - 1].leaf)
     {
-	struct btrfs_internal_node node;
-	struct btrfs_header head;
-	fsw_memzero(&node, sizeof(node));
+        struct btrfs_internal_node node;
+        struct btrfs_header head;
+        fsw_memzero(&node, sizeof(node));
 
-	err = fsw_btrfs_read_logical (vol, desc->data[desc->depth - 1].iter
-		* sizeof (node)
-		+ sizeof (struct btrfs_header)
-		+ desc->data[desc->depth - 1].addr,
-		&node, sizeof (node), 0, 1);
-	if (err)
-	    return -err;
+        err = fsw_btrfs_read_logical (vol, desc->data[desc->depth - 1].iter
+                * sizeof (node)
+                + sizeof (struct btrfs_header)
+                + desc->data[desc->depth - 1].addr,
+                &node, sizeof (node), 0, 1);
+        if (err)
+            return -err;
 
-	err = fsw_btrfs_read_logical (vol, fsw_u64_le_swap (node.addr),
-		&head, sizeof (head), 0, 1);
-	if (err)
-	    return -err;
+        err = fsw_btrfs_read_logical (vol, fsw_u64_le_swap (node.addr),
+                &head, sizeof (head), 0, 1);
+        if (err)
+            return -err;
 
-	save_ref (desc, fsw_u64_le_swap (node.addr), 0,
-		fsw_u32_le_swap (head.nitems), !head.level);
+        save_ref (desc, fsw_u64_le_swap (node.addr), 0,
+                fsw_u32_le_swap (head.nitems), !head.level);
     }
     err = fsw_btrfs_read_logical (vol, desc->data[desc->depth - 1].iter
-	    * sizeof (leaf)
-	    + sizeof (struct btrfs_header)
-	    + desc->data[desc->depth - 1].addr, &leaf,
-	    sizeof (leaf), 0, 1);
+            * sizeof (leaf)
+            + sizeof (struct btrfs_header)
+            + desc->data[desc->depth - 1].addr, &leaf,
+            sizeof (leaf), 0, 1);
     if (err)
-	return -err;
+        return -err;
     *outsize = fsw_u32_le_swap (leaf.size);
     *outaddr = desc->data[desc->depth - 1].addr + sizeof (struct btrfs_header)
-	+ fsw_u32_le_swap (leaf.offset);
+        + fsw_u32_le_swap (leaf.offset);
     *key_out = leaf.key;
     return 1;
 }
 
-#define depth2cache(x)	((x) >= 4 ? 1 : 5-(x))
+#define depth2cache(x)  ((x) >= 4 ? 1 : 5-(x))
 static fsw_status_t lower_bound (struct fsw_btrfs_volume *vol,
-	const struct btrfs_key *key_in,
-	struct btrfs_key *key_out,
-	uint64_t root,
-	uint64_t *outaddr, fsw_size_t *outsize,
-	struct fsw_btrfs_leaf_descriptor *desc,
-	int rdepth)
+        const struct btrfs_key *key_in,
+        struct btrfs_key *key_out,
+        uint64_t root,
+        uint64_t *outaddr, fsw_size_t *outsize,
+        struct fsw_btrfs_leaf_descriptor *desc,
+        int rdepth)
 {
     uint64_t addr = fsw_u64_le_swap (root);
     int depth = -1;
 
     if (desc)
     {
-	desc->allocated = 16;
-	desc->depth = 0;
-	desc->data = AllocatePool (sizeof (desc->data[0]) * desc->allocated);
-	if (!desc->data)
-	    return FSW_OUT_OF_MEMORY;
+        desc->allocated = 16;
+        desc->depth = 0;
+        desc->data = AllocatePool (sizeof (desc->data[0]) * desc->allocated);
+        if (!desc->data)
+            return FSW_OUT_OF_MEMORY;
     }
 
     /* > 2 would work as well but be robust and allow a bit more just in case.
     */
     if (rdepth > 10)
-	return FSW_VOLUME_CORRUPTED;
+        return FSW_VOLUME_CORRUPTED;
 
     DPRINT (L"btrfs: retrieving %lx %x %lx\n",
-	    key_in->object_id, key_in->type, key_in->offset);
+            key_in->object_id, key_in->type, key_in->offset);
 
     while (1)
     {
-	fsw_status_t err;
-	struct btrfs_header head;
-	fsw_memzero(&head, sizeof(head));
+        fsw_status_t err;
+        struct btrfs_header head;
+        fsw_memzero(&head, sizeof(head));
 
 reiter:
-	depth++;
-	/* FIXME: preread few nodes into buffer. */
-	err = fsw_btrfs_read_logical (vol, addr, &head, sizeof (head),
-		rdepth + 1, depth2cache(rdepth));
-	if (err)
-	    return err;
-	addr += sizeof (head);
-	if (head.level)
-	{
-	    unsigned i;
-	    struct btrfs_internal_node node, node_last;
-	    int have_last = 0;
-	    fsw_memzero (&node_last, sizeof (node_last));
-	    for (i = 0; i < fsw_u32_le_swap (head.nitems); i++)
-	    {
-		err = fsw_btrfs_read_logical (vol, addr + i * sizeof (node),
-			&node, sizeof (node), rdepth + 1, depth2cache(rdepth));
-		if (err)
-		    return err;
+        depth++;
+        /* FIXME: preread few nodes into buffer. */
+        err = fsw_btrfs_read_logical (vol, addr, &head, sizeof (head),
+                rdepth + 1, depth2cache(rdepth));
+        if (err)
+            return err;
+        addr += sizeof (head);
+        if (head.level)
+        {
+            unsigned i;
+            struct btrfs_internal_node node, node_last;
+            int have_last = 0;
+            fsw_memzero (&node_last, sizeof (node_last));
+            for (i = 0; i < fsw_u32_le_swap (head.nitems); i++)
+            {
+                err = fsw_btrfs_read_logical (vol, addr + i * sizeof (node),
+                        &node, sizeof (node), rdepth + 1, depth2cache(rdepth));
+                if (err)
+                    return err;
 
-		DPRINT (L"btrfs: internal node (depth %d) %lx %x %lx\n", depth,
-			node.key.object_id, node.key.type,
-			node.key.offset);
+                DPRINT (L"btrfs: internal node (depth %d) %lx %x %lx\n", depth,
+                        node.key.object_id, node.key.type,
+                        node.key.offset);
 
-		if (key_cmp (&node.key, key_in) == 0)
-		{
-		    err = FSW_SUCCESS;
-		    if (desc)
-			err = save_ref (desc, addr - sizeof (head), i,
-				fsw_u32_le_swap (head.nitems), 0);
-		    if (err)
-			return err;
-		    addr = fsw_u64_le_swap (node.addr);
-		    goto reiter;
-		}
-		if (key_cmp (&node.key, key_in) > 0)
-		    break;
-		node_last = node;
-		have_last = 1;
-	    }
-	    if (have_last)
-	    {
-		err = FSW_SUCCESS;
-		if (desc)
-		    err = save_ref (desc, addr - sizeof (head), i - 1,
-			    fsw_u32_le_swap (head.nitems), 0);
-		if (err)
-		    return err;
-		addr = fsw_u64_le_swap (node_last.addr);
-		goto reiter;
-	    }
-	    *outsize = 0;
-	    *outaddr = 0;
-	    fsw_memzero (key_out, sizeof (*key_out));
-	    if (desc)
-		return save_ref (desc, addr - sizeof (head), -1,
-			fsw_u32_le_swap (head.nitems), 0);
-	    return FSW_SUCCESS;
-	}
-	{
-	    unsigned i;
-	    struct btrfs_leaf_node leaf, leaf_last;
-	    int have_last = 0;
-	    for (i = 0; i < fsw_u32_le_swap (head.nitems); i++)
-	    {
-		err = fsw_btrfs_read_logical (vol, addr + i * sizeof (leaf),
-			&leaf, sizeof (leaf), rdepth + 1, depth2cache(rdepth));
-		if (err)
-		    return err;
+                if (key_cmp (&node.key, key_in) == 0)
+                {
+                    err = FSW_SUCCESS;
+                    if (desc)
+                        err = save_ref (desc, addr - sizeof (head), i,
+                                fsw_u32_le_swap (head.nitems), 0);
+                    if (err)
+                        return err;
+                    addr = fsw_u64_le_swap (node.addr);
+                    goto reiter;
+                }
+                if (key_cmp (&node.key, key_in) > 0)
+                    break;
+                node_last = node;
+                have_last = 1;
+            }
+            if (have_last)
+            {
+                err = FSW_SUCCESS;
+                if (desc)
+                    err = save_ref (desc, addr - sizeof (head), i - 1,
+                            fsw_u32_le_swap (head.nitems), 0);
+                if (err)
+                    return err;
+                addr = fsw_u64_le_swap (node_last.addr);
+                goto reiter;
+            }
+            *outsize = 0;
+            *outaddr = 0;
+            fsw_memzero (key_out, sizeof (*key_out));
+            if (desc)
+                return save_ref (desc, addr - sizeof (head), -1,
+                        fsw_u32_le_swap (head.nitems), 0);
+            return FSW_SUCCESS;
+        }
+        {
+            unsigned i;
+            struct btrfs_leaf_node leaf, leaf_last;
+            int have_last = 0;
+            for (i = 0; i < fsw_u32_le_swap (head.nitems); i++)
+            {
+                err = fsw_btrfs_read_logical (vol, addr + i * sizeof (leaf),
+                        &leaf, sizeof (leaf), rdepth + 1, depth2cache(rdepth));
+                if (err)
+                    return err;
 
-		DPRINT (L"btrfs: leaf (depth %d) %lx %x %lx\n", depth,
-			leaf.key.object_id, leaf.key.type, leaf.key.offset);
+                DPRINT (L"btrfs: leaf (depth %d) %lx %x %lx\n", depth,
+                        leaf.key.object_id, leaf.key.type, leaf.key.offset);
 
-		if (key_cmp (&leaf.key, key_in) == 0)
-		{
-		    fsw_memcpy (key_out, &leaf.key, sizeof (*key_out));
-		    *outsize = fsw_u32_le_swap (leaf.size);
-		    *outaddr = addr + fsw_u32_le_swap (leaf.offset);
-		    if (desc)
-			return save_ref (desc, addr - sizeof (head), i,
-				fsw_u32_le_swap (head.nitems), 1);
-		    return FSW_SUCCESS;
-		}
+                if (key_cmp (&leaf.key, key_in) == 0)
+                {
+                    fsw_memcpy (key_out, &leaf.key, sizeof (*key_out));
+                    *outsize = fsw_u32_le_swap (leaf.size);
+                    *outaddr = addr + fsw_u32_le_swap (leaf.offset);
+                    if (desc)
+                        return save_ref (desc, addr - sizeof (head), i,
+                                fsw_u32_le_swap (head.nitems), 1);
+                    return FSW_SUCCESS;
+                }
 
-		if (key_cmp (&leaf.key, key_in) > 0)
-		    break;
+                if (key_cmp (&leaf.key, key_in) > 0)
+                    break;
 
-		have_last = 1;
-		leaf_last = leaf;
-	    }
+                have_last = 1;
+                leaf_last = leaf;
+            }
 
-	    if (have_last)
-	    {
-		fsw_memcpy (key_out, &leaf_last.key, sizeof (*key_out));
-		*outsize = fsw_u32_le_swap (leaf_last.size);
-		*outaddr = addr + fsw_u32_le_swap (leaf_last.offset);
-		if (desc)
-		    return save_ref (desc, addr - sizeof (head), i - 1,
-			    fsw_u32_le_swap (head.nitems), 1);
-		return FSW_SUCCESS;
-	    }
-	    *outsize = 0;
-	    *outaddr = 0;
-	    fsw_memzero (key_out, sizeof (*key_out));
-	    if (desc)
-		return save_ref (desc, addr - sizeof (head), -1,
-			fsw_u32_le_swap (head.nitems), 1);
-	    return FSW_SUCCESS;
-	}
+            if (have_last)
+            {
+                fsw_memcpy (key_out, &leaf_last.key, sizeof (*key_out));
+                *outsize = fsw_u32_le_swap (leaf_last.size);
+                *outaddr = addr + fsw_u32_le_swap (leaf_last.offset);
+                if (desc)
+                    return save_ref (desc, addr - sizeof (head), i - 1,
+                            fsw_u32_le_swap (head.nitems), 1);
+                return FSW_SUCCESS;
+            }
+            *outsize = 0;
+            *outaddr = 0;
+            fsw_memzero (key_out, sizeof (*key_out));
+            if (desc)
+                return save_ref (desc, addr - sizeof (head), -1,
+                        fsw_u32_le_swap (head.nitems), 1);
+            return FSW_SUCCESS;
+        }
     }
 }
 
@@ -691,12 +692,12 @@ static int btrfs_add_multi_device(struct fsw_btrfs_volume *master, struct fsw_vo
 {
     int i;
     for( i = 0; i < master->n_devices_attached; i++)
-	if(sb->this_device.device_id == master->devices_attached[i].id)
-	    return FSW_UNSUPPORTED;
+        if(sb->this_device.device_id == master->devices_attached[i].id)
+            return FSW_UNSUPPORTED;
 
     slave = clone_dummy_volume(slave);
     if(slave == NULL)
-	    return FSW_OUT_OF_MEMORY;
+            return FSW_OUT_OF_MEMORY;
     fsw_set_blocksize(slave, master->sectorsize, master->sectorsize);
     slave->bcache_size = BTRFS_INITIAL_BCACHE_SIZE;
 
@@ -714,14 +715,14 @@ static int scan_disks_hook(struct fsw_volume *volg, struct fsw_volume *slave) {
     fsw_status_t err;
 
     if(vol->n_devices_attached >= vol->n_devices_allocated)
-	return FSW_UNSUPPORTED;
+        return FSW_UNSUPPORTED;
 
     err = btrfs_read_superblock(slave, &sb);
     if(err)
-	return FSW_UNSUPPORTED;
+        return FSW_UNSUPPORTED;
 
     if(!uuid_eq(vol->uuid, sb.uuid))
-	return FSW_UNSUPPORTED;
+        return FSW_UNSUPPORTED;
 
     return btrfs_add_multi_device(vol, slave, &sb);
 }
@@ -731,251 +732,251 @@ find_device (struct fsw_btrfs_volume *vol, uint64_t id, int do_rescan) {
     int i;
 
     do {
-	for (i = 0; i < vol->n_devices_attached; i++)
-	    if (id == vol->devices_attached[i].id)
-		return vol->devices_attached[i].dev;
+        for (i = 0; i < vol->n_devices_attached; i++)
+            if (id == vol->devices_attached[i].id)
+                return vol->devices_attached[i].dev;
     } while(vol->n_devices_attached < vol->n_devices_allocated &&
-	    do_rescan-- > 0 &&
-	    scan_disks(scan_disks_hook, &vol->g) > 0);
+            do_rescan-- > 0 &&
+            scan_disks(scan_disks_hook, &vol->g) > 0);
     DPRINT(L"sub device %d not found\n", id);
     return NULL;
 }
 
 static fsw_status_t fsw_btrfs_read_logical (struct fsw_btrfs_volume *vol, uint64_t addr,
-	void *buf, fsw_size_t size, int rdepth, int cache_level)
+        void *buf, fsw_size_t size, int rdepth, int cache_level)
 {
     while (size > 0)
     {
-	uint8_t *ptr;
-	struct btrfs_key *key;
-	struct btrfs_chunk_item *chunk;
-	uint64_t csize;
-	fsw_status_t err = 0;
-	struct btrfs_key key_out;
-	int challoc = 0;
-	struct btrfs_key key_in;
-	fsw_size_t chsize;
-	uint64_t chaddr;
+        uint8_t *ptr;
+        struct btrfs_key *key;
+        struct btrfs_chunk_item *chunk;
+        uint64_t csize;
+        fsw_status_t err = 0;
+        struct btrfs_key key_out;
+        int challoc = 0;
+        struct btrfs_key key_in;
+        fsw_size_t chsize;
+        uint64_t chaddr;
 
-	for (ptr = vol->bootstrap_mapping; ptr < vol->bootstrap_mapping + sizeof (vol->bootstrap_mapping) - sizeof (struct btrfs_key);)
-	{
-	    key = (struct btrfs_key *) ptr;
-	    if (key->type != GRUB_BTRFS_ITEM_TYPE_CHUNK)
-		break;
-	    chunk = (struct btrfs_chunk_item *) (key + 1);
-	    if (fsw_u64_le_swap (key->offset) <= addr
-		    && addr < fsw_u64_le_swap (key->offset)
-		    + fsw_u64_le_swap (chunk->size))
-	    {
-		goto chunk_found;
-	    }
-	    ptr += sizeof (*key) + sizeof (*chunk)
-		+ sizeof (struct btrfs_chunk_stripe)
-		* fsw_u16_le_swap (chunk->nstripes);
-	}
+        for (ptr = vol->bootstrap_mapping; ptr < vol->bootstrap_mapping + sizeof (vol->bootstrap_mapping) - sizeof (struct btrfs_key);)
+        {
+            key = (struct btrfs_key *) ptr;
+            if (key->type != GRUB_BTRFS_ITEM_TYPE_CHUNK)
+                break;
+            chunk = (struct btrfs_chunk_item *) (key + 1);
+            if (fsw_u64_le_swap (key->offset) <= addr
+                    && addr < fsw_u64_le_swap (key->offset)
+                    + fsw_u64_le_swap (chunk->size))
+            {
+                goto chunk_found;
+            }
+            ptr += sizeof (*key) + sizeof (*chunk)
+                + sizeof (struct btrfs_chunk_stripe)
+                * fsw_u16_le_swap (chunk->nstripes);
+        }
 
-	key_in.object_id = fsw_u64_le_swap (GRUB_BTRFS_OBJECT_ID_CHUNK);
-	key_in.type = GRUB_BTRFS_ITEM_TYPE_CHUNK;
-	key_in.offset = fsw_u64_le_swap (addr);
-	err = lower_bound (vol, &key_in, &key_out, vol->chunk_tree, &chaddr, &chsize, NULL, rdepth);
-	if (err)
-	    return err;
-	key = &key_out;
-	if (key->type != GRUB_BTRFS_ITEM_TYPE_CHUNK
-		|| !(fsw_u64_le_swap (key->offset) <= addr))
-	{
-	    return FSW_VOLUME_CORRUPTED;
-	}
-	// "couldn't find the chunk descriptor");
+        key_in.object_id = fsw_u64_le_swap (GRUB_BTRFS_OBJECT_ID_CHUNK);
+        key_in.type = GRUB_BTRFS_ITEM_TYPE_CHUNK;
+        key_in.offset = fsw_u64_le_swap (addr);
+        err = lower_bound (vol, &key_in, &key_out, vol->chunk_tree, &chaddr, &chsize, NULL, rdepth);
+        if (err)
+            return err;
+        key = &key_out;
+        if (key->type != GRUB_BTRFS_ITEM_TYPE_CHUNK
+                || !(fsw_u64_le_swap (key->offset) <= addr))
+        {
+            return FSW_VOLUME_CORRUPTED;
+        }
+        // "couldn't find the chunk descriptor");
 
-	chunk = AllocatePool (chsize);
-	if (!chunk) {
-	    return FSW_OUT_OF_MEMORY;
-	}
+        chunk = AllocatePool (chsize);
+        if (!chunk) {
+            return FSW_OUT_OF_MEMORY;
+        }
 
-	challoc = 1;
-	err = fsw_btrfs_read_logical (vol, chaddr, chunk, chsize, rdepth, cache_level < 5 ? cache_level+1 : 5);
-	if (err)
-	{
-	    if(chunk)
-		FreePool (chunk);
-	    return err;
-	}
+        challoc = 1;
+        err = fsw_btrfs_read_logical (vol, chaddr, chunk, chsize, rdepth, cache_level < 5 ? cache_level+1 : 5);
+        if (err)
+        {
+            if(chunk)
+                FreePool (chunk);
+            return err;
+        }
 
 chunk_found:
-	{
+        {
 #ifdef __MAKEWITH_GNUEFI
-#define UINTREM	UINTN
+#define UINTREM UINTN
 #else
 #undef DivU64x32
 #define DivU64x32 DivU64x32Remainder
 #define UINTREM UINT32
 #endif
-	    UINTREM stripen;
-	    UINTREM stripe_offset;
-	    uint64_t off = addr - fsw_u64_le_swap (key->offset);
-	    unsigned redundancy = 1;
-	    unsigned i, j;
+            UINTREM stripen;
+            UINTREM stripe_offset;
+            uint64_t off = addr - fsw_u64_le_swap (key->offset);
+            unsigned redundancy = 1;
+            unsigned i, j;
 
-	    if (fsw_u64_le_swap (chunk->size) <= off)
-	    {
-		return FSW_VOLUME_CORRUPTED;
-		//"couldn't find the chunk descriptor");
-	    }
+            if (fsw_u64_le_swap (chunk->size) <= off)
+            {
+                return FSW_VOLUME_CORRUPTED;
+                //"couldn't find the chunk descriptor");
+            }
 
-	    DPRINT(L"btrfs chunk 0x%lx+0xlx %d stripes (%d substripes) of %lx\n",
-		    fsw_u64_le_swap (key->offset),
-		    fsw_u64_le_swap (chunk->size),
-		    fsw_u16_le_swap (chunk->nstripes),
-		    fsw_u16_le_swap (chunk->nsubstripes),
-		    fsw_u64_le_swap (chunk->stripe_length));
+            DPRINT(L"btrfs chunk 0x%lx+0xlx %d stripes (%d substripes) of %lx\n",
+                    fsw_u64_le_swap (key->offset),
+                    fsw_u64_le_swap (chunk->size),
+                    fsw_u16_le_swap (chunk->nstripes),
+                    fsw_u16_le_swap (chunk->nsubstripes),
+                    fsw_u64_le_swap (chunk->stripe_length));
 
-	    /* gnu-efi has no DivU64x64Remainder, limited to DivU64x32 */
-	    switch (fsw_u64_le_swap (chunk->type)
-		    & ~GRUB_BTRFS_CHUNK_TYPE_BITS_DONTCARE)
-	    {
-		case GRUB_BTRFS_CHUNK_TYPE_SINGLE:
-		    {
-			uint64_t stripe_length;
+            /* gnu-efi has no DivU64x64Remainder, limited to DivU64x32 */
+            switch (fsw_u64_le_swap (chunk->type)
+                    & ~GRUB_BTRFS_CHUNK_TYPE_BITS_DONTCARE)
+            {
+                case GRUB_BTRFS_CHUNK_TYPE_SINGLE:
+                    {
+                        uint64_t stripe_length;
 
-			stripe_length = DivU64x32 (fsw_u64_le_swap (chunk->size),
-				fsw_u16_le_swap (chunk->nstripes), NULL);
+                        stripe_length = DivU64x32 (fsw_u64_le_swap (chunk->size),
+                                fsw_u16_le_swap (chunk->nstripes), NULL);
 
-			if(stripe_length > 1UL<<30)
-			    return FSW_VOLUME_CORRUPTED;
+                        if(stripe_length > 1UL<<30)
+                            return FSW_VOLUME_CORRUPTED;
 
-			stripen = DivU64x32 (off, (uint32_t)stripe_length, &stripe_offset);
-			csize = (stripen + 1) * stripe_length - off;
-			DPRINT(L"read_logical %d chunk_found single csize=%d\n", __LINE__, csize);
-			break;
-		    }
-		case GRUB_BTRFS_CHUNK_TYPE_DUPLICATED:
-		case GRUB_BTRFS_CHUNK_TYPE_RAID1:
-		    {
-			stripen = 0;
-			stripe_offset = off;
-			csize = fsw_u64_le_swap (chunk->size) - off;
-			redundancy = 2;
-			DPRINT(L"read_logical %d chunk_found dup/raid1 off=%lx csize=%d\n", __LINE__, stripe_offset, csize);
-			break;
-		    }
-		case GRUB_BTRFS_CHUNK_TYPE_RAID0:
-		    {
-			uint64_t stripe_length = fsw_u64_le_swap (chunk->stripe_length);
-			uint64_t middle, high;
-			UINTREM low;
+                        stripen = DivU64x32 (off, (uint32_t)stripe_length, &stripe_offset);
+                        csize = (stripen + 1) * stripe_length - off;
+                        DPRINT(L"read_logical %d chunk_found single csize=%d\n", __LINE__, csize);
+                        break;
+                    }
+                case GRUB_BTRFS_CHUNK_TYPE_DUPLICATED:
+                case GRUB_BTRFS_CHUNK_TYPE_RAID1:
+                    {
+                        stripen = 0;
+                        stripe_offset = off;
+                        csize = fsw_u64_le_swap (chunk->size) - off;
+                        redundancy = 2;
+                        DPRINT(L"read_logical %d chunk_found dup/raid1 off=%lx csize=%d\n", __LINE__, stripe_offset, csize);
+                        break;
+                    }
+                case GRUB_BTRFS_CHUNK_TYPE_RAID0:
+                    {
+                        uint64_t stripe_length = fsw_u64_le_swap (chunk->stripe_length);
+                        uint64_t middle, high;
+                        UINTREM low;
 
-			if(stripe_length > 1UL<<30)
-			    return FSW_VOLUME_CORRUPTED;
+                        if(stripe_length > 1UL<<30)
+                            return FSW_VOLUME_CORRUPTED;
 
-			middle = DivU64x32 (off, (uint32_t)stripe_length, &low);
+                        middle = DivU64x32 (off, (uint32_t)stripe_length, &low);
 
-			high = DivU64x32 (middle, fsw_u16_le_swap (chunk->nstripes), &stripen);
-			stripe_offset =
-			    low + fsw_u64_le_swap (chunk->stripe_length) * high;
-			csize = fsw_u64_le_swap (chunk->stripe_length) - low;
-			DPRINT(L"read_logical %d chunk_found raid0 csize=%d\n", __LINE__, csize);
-			break;
-		    }
-		case GRUB_BTRFS_CHUNK_TYPE_RAID10:
-		    {
-			uint64_t stripe_length = fsw_u64_le_swap (chunk->stripe_length);
-			uint64_t middle, high;
-			UINTREM low;
+                        high = DivU64x32 (middle, fsw_u16_le_swap (chunk->nstripes), &stripen);
+                        stripe_offset =
+                            low + fsw_u64_le_swap (chunk->stripe_length) * high;
+                        csize = fsw_u64_le_swap (chunk->stripe_length) - low;
+                        DPRINT(L"read_logical %d chunk_found raid0 csize=%d\n", __LINE__, csize);
+                        break;
+                    }
+                case GRUB_BTRFS_CHUNK_TYPE_RAID10:
+                    {
+                        uint64_t stripe_length = fsw_u64_le_swap (chunk->stripe_length);
+                        uint64_t middle, high;
+                        UINTREM low;
 
-			if(stripe_length > 1UL<<30)
-			    return FSW_VOLUME_CORRUPTED;
+                        if(stripe_length > 1UL<<30)
+                            return FSW_VOLUME_CORRUPTED;
 
-			middle = DivU64x32 (off, stripe_length, &low);
+                        middle = DivU64x32 (off, stripe_length, &low);
 
-			high = DivU64x32 (middle,
-				fsw_u16_le_swap (chunk->nstripes)
-				/ fsw_u16_le_swap (chunk->nsubstripes),
-				&stripen);
-			stripen *= fsw_u16_le_swap (chunk->nsubstripes);
-			redundancy = fsw_u16_le_swap (chunk->nsubstripes);
-			stripe_offset = low + fsw_u64_le_swap (chunk->stripe_length)
-			    * high;
-			csize = fsw_u64_le_swap (chunk->stripe_length) - low;
-			DPRINT(L"read_logical %d chunk_found raid01 csize=%d\n", __LINE__, csize);
-			break;
-		    }
-		default:
-		    DPRINT (L"btrfs: unsupported RAID\n");
-		    return FSW_UNSUPPORTED;
-	    }
-	    if (csize == 0)
-		//"couldn't find the chunk descriptor");
-		return FSW_VOLUME_CORRUPTED;
+                        high = DivU64x32 (middle,
+                                fsw_u16_le_swap (chunk->nstripes)
+                                / fsw_u16_le_swap (chunk->nsubstripes),
+                                &stripen);
+                        stripen *= fsw_u16_le_swap (chunk->nsubstripes);
+                        redundancy = fsw_u16_le_swap (chunk->nsubstripes);
+                        stripe_offset = low + fsw_u64_le_swap (chunk->stripe_length)
+                            * high;
+                        csize = fsw_u64_le_swap (chunk->stripe_length) - low;
+                        DPRINT(L"read_logical %d chunk_found raid01 csize=%d\n", __LINE__, csize);
+                        break;
+                    }
+                default:
+                    DPRINT (L"btrfs: unsupported RAID\n");
+                    return FSW_UNSUPPORTED;
+            }
+            if (csize == 0)
+                //"couldn't find the chunk descriptor");
+                return FSW_VOLUME_CORRUPTED;
 
-	    if (csize > (uint64_t) size)
-		csize = size;
+            if (csize > (uint64_t) size)
+                csize = size;
 
-	    for (j = 0; j < 2; j++)
-	    {
-		for (i = 0; i < redundancy; i++)
-		{
-		    struct btrfs_chunk_stripe *stripe;
-		    uint64_t paddr;
-		    struct fsw_volume *dev;
+            for (j = 0; j < 2; j++)
+            {
+                for (i = 0; i < redundancy; i++)
+                {
+                    struct btrfs_chunk_stripe *stripe;
+                    uint64_t paddr;
+                    struct fsw_volume *dev;
 
-		    stripe = (struct btrfs_chunk_stripe *) (chunk + 1);
-		    /* Right now the redundancy handling is easy.
-		       With RAID5-like it will be more difficult.  */
-		    stripe += stripen + i;
+                    stripe = (struct btrfs_chunk_stripe *) (chunk + 1);
+                    /* Right now the redundancy handling is easy.
+                       With RAID5-like it will be more difficult.  */
+                    stripe += stripen + i;
 
-		    paddr = fsw_u64_le_swap (stripe->offset) + stripe_offset;
+                    paddr = fsw_u64_le_swap (stripe->offset) + stripe_offset;
 
-		    DPRINT (L"btrfs: chunk 0x%lx+0x%lx (%d stripes (%d substripes) of %lx) stripe %lx maps to 0x%lx\n",
-			    fsw_u64_le_swap (key->offset),
-			    fsw_u64_le_swap (chunk->size),
-			    fsw_u16_le_swap (chunk->nstripes),
-			    fsw_u16_le_swap (chunk->nsubstripes),
-			    fsw_u64_le_swap (chunk->stripe_length),
-			    stripen, stripe->offset);
-		    DPRINT (L"btrfs: reading paddr 0x%lx for laddr 0x%lx\n", paddr, addr);
+                    DPRINT (L"btrfs: chunk 0x%lx+0x%lx (%d stripes (%d substripes) of %lx) stripe %lx maps to 0x%lx\n",
+                            fsw_u64_le_swap (key->offset),
+                            fsw_u64_le_swap (chunk->size),
+                            fsw_u16_le_swap (chunk->nstripes),
+                            fsw_u16_le_swap (chunk->nsubstripes),
+                            fsw_u64_le_swap (chunk->stripe_length),
+                            stripen, stripe->offset);
+                    DPRINT (L"btrfs: reading paddr 0x%lx for laddr 0x%lx\n", paddr, addr);
 
-		    dev = find_device (vol, stripe->device_id, j);
-		    if (!dev)
-		    {
-			err = FSW_VOLUME_CORRUPTED;
-			continue;
-		    }
+                    dev = find_device (vol, stripe->device_id, j);
+                    if (!dev)
+                    {
+                        err = FSW_VOLUME_CORRUPTED;
+                        continue;
+                    }
 
-		    uint32_t off = paddr & (vol->sectorsize - 1);
-		    paddr >>= vol->sectorshift;
-		    uint64_t n = 0;
-		    while(n < csize) {
-			char *buffer;
-			err = fsw_block_get(dev, paddr, cache_level, (void **)&buffer);
-			if(err)
-			    break;
-			int s = vol->sectorsize - off;
-			if(s > csize - n)
-			    s = csize - n;
-			fsw_memcpy(buf+n, buffer+off, s);
-			fsw_block_release(dev, paddr, (void *)buffer);
+                    uint32_t off = paddr & (vol->sectorsize - 1);
+                    paddr >>= vol->sectorshift;
+                    uint64_t n = 0;
+                    while(n < csize) {
+                        char *buffer;
+                        err = fsw_block_get(dev, paddr, cache_level, (void **)&buffer);
+                        if(err)
+                            break;
+                        int s = vol->sectorsize - off;
+                        if(s > csize - n)
+                            s = csize - n;
+                        fsw_memcpy(buf+n, buffer+off, s);
+                        fsw_block_release(dev, paddr, (void *)buffer);
 
-			n += s;
-			off = 0;
-			paddr++;
-		    }
-		    DPRINT (L"read logical: err %d csize %d got %d\n",
-				    err, csize, n);
-		    if(n>=csize)
-			break;
-		}
-		if (i != redundancy)
-		    break;
-	    }
-	    if (err)
-		return err;
-	}
-	size -= csize;
-	buf = (uint8_t *) buf + csize;
-	addr += csize;
-	if (challoc && chunk)
-	    FreePool (chunk);
+                        n += s;
+                        off = 0;
+                        paddr++;
+                    }
+                    DPRINT (L"read logical: err %d csize %d got %d\n",
+                                    err, csize, n);
+                    if(n>=csize)
+                        break;
+                }
+                if (i != redundancy)
+                    break;
+            }
+            if (err)
+                return err;
+        }
+        size -= csize;
+        buf = (uint8_t *) buf + csize;
+        addr += csize;
+        if (challoc && chunk)
+            FreePool (chunk);
     }
     return FSW_SUCCESS;
 }
@@ -994,63 +995,63 @@ static fsw_status_t fsw_btrfs_volume_mount(struct fsw_volume *volg) {
 
     err = btrfs_read_superblock (volg, &sblock);
     if (err)
-	return err;
+        return err;
 
     btrfs_set_superblock_info(vol, &sblock);
 
     if(vol->sectorshift == 0)
-	return FSW_UNSUPPORTED;
+        return FSW_UNSUPPORTED;
 
     if(vol->num_devices >= BTRFS_MAX_NUM_DEVICES)
-	return FSW_UNSUPPORTED;
+        return FSW_UNSUPPORTED;
 
     vol->is_master = master_uuid_add(vol, &master_out);
     /* already mounted via other device */
     if(vol->is_master == 0) {
 #define FAKE_LABEL "btrfs.multi.device"
-	s.type = FSW_STRING_TYPE_UTF8;
-	s.size = s.len = sizeof(FAKE_LABEL)-1;
-	s.data = FAKE_LABEL;
-	err = fsw_strdup_coerce(&volg->label, volg->host_string_type, &s);
-	if (err)
-	    return err;
-	btrfs_add_multi_device(master_out, volg, &sblock);
-	/* create fake root */
-	return fsw_dnode_create_root_with_tree(volg, 0, 0, &volg->root);
+        s.type = FSW_STRING_TYPE_UTF8;
+        s.size = s.len = sizeof(FAKE_LABEL)-1;
+        s.data = FAKE_LABEL;
+        err = fsw_strdup_coerce(&volg->label, volg->host_string_type, &s);
+        if (err)
+            return err;
+        btrfs_add_multi_device(master_out, volg, &sblock);
+        /* create fake root */
+        return fsw_dnode_create_root_with_tree(volg, 0, 0, &volg->root);
     }
 
     fsw_set_blocksize(volg, vol->sectorsize, vol->sectorsize);
     vol->g.bcache_size = BTRFS_INITIAL_BCACHE_SIZE;
     vol->n_devices_allocated = vol->num_devices;
     vol->devices_attached = AllocatePool (sizeof (vol->devices_attached[0])
-	    * vol->n_devices_allocated);
+            * vol->n_devices_allocated);
     if (!vol->devices_attached)
-	return FSW_OUT_OF_MEMORY;
+        return FSW_OUT_OF_MEMORY;
 
     vol->n_devices_attached = 1;
     vol->devices_attached[0].dev = volg;
     vol->devices_attached[0].id = sblock.this_device.device_id;
 
     for (i = 0; i < 0x100; i++)
-	if (sblock.label[i] == 0)
-	    break;
+        if (sblock.label[i] == 0)
+            break;
 
     s.type = FSW_STRING_TYPE_UTF8;
     s.size = s.len = i;
     s.data = sblock.label;
     err = fsw_strdup_coerce(&volg->label, volg->host_string_type, &s);
     if (err) {
-	FreePool (vol->devices_attached);
-	vol->devices_attached = NULL;
-	return err;
+        FreePool (vol->devices_attached);
+        vol->devices_attached = NULL;
+        return err;
     }
 
     err = fsw_btrfs_get_default_root(vol, sblock.root_dir_objectid);
     if (err) {
-	DPRINT(L"root not found\n");
-	FreePool (vol->devices_attached);
-	vol->devices_attached = NULL;
-	return err;
+        DPRINT(L"root not found\n");
+        FreePool (vol->devices_attached);
+        vol->devices_attached = NULL;
+        return err;
     }
 
     return FSW_SUCCESS;
@@ -1062,18 +1063,18 @@ static void fsw_btrfs_volume_free(struct fsw_volume *volg)
     struct fsw_btrfs_volume *vol = (struct fsw_btrfs_volume *)volg;
 
     if (vol==NULL)
-	return;
+        return;
 
     if (vol->is_master)
-	master_uuid_remove(vol);
+        master_uuid_remove(vol);
 
     /* The device 0 is closed one layer upper.  */
     for (i = 1; i < vol->n_devices_attached; i++)
-	fsw_unmount (vol->devices_attached[i].dev);
+        fsw_unmount (vol->devices_attached[i].dev);
     if(vol->devices_attached)
-	FreePool (vol->devices_attached);
+        FreePool (vol->devices_attached);
     if(vol->extent)
-	FreePool (vol->extent);
+        FreePool (vol->extent);
 }
 
 static fsw_status_t fsw_btrfs_volume_stat(struct fsw_volume *volg, struct fsw_volume_stat *sb)
@@ -1085,8 +1086,8 @@ static fsw_status_t fsw_btrfs_volume_stat(struct fsw_volume *volg, struct fsw_vo
 }
 
 static fsw_status_t fsw_btrfs_read_inode (struct fsw_btrfs_volume *vol,
-	struct btrfs_inode *inode, uint64_t num,
-	uint64_t tree)
+        struct btrfs_inode *inode, uint64_t num,
+        uint64_t tree)
 {
     struct btrfs_key key_in, key_out;
     uint64_t elemaddr;
@@ -1099,10 +1100,10 @@ static fsw_status_t fsw_btrfs_read_inode (struct fsw_btrfs_volume *vol,
 
     err = lower_bound (vol, &key_in, &key_out, tree, &elemaddr, &elemsize, NULL, 0);
     if (err)
-	return err;
+        return err;
     if (num != key_out.object_id
-	    || key_out.type != GRUB_BTRFS_ITEM_TYPE_INODE_ITEM)
-	return FSW_NOT_FOUND;
+            || key_out.type != GRUB_BTRFS_ITEM_TYPE_INODE_ITEM)
+        return FSW_NOT_FOUND;
 
     return fsw_btrfs_read_logical (vol, elemaddr, inode, sizeof (*inode), 0, 2);
 }
@@ -1116,23 +1117,23 @@ static fsw_status_t fsw_btrfs_dnode_fill(struct fsw_volume *volg, struct fsw_dno
 
     /* slave device got empty root */
     if (!vol->is_master) {
-	dno->g.size = 0;
-	dno->g.type = FSW_DNODE_TYPE_DIR;
-	return FSW_SUCCESS;
+        dno->g.size = 0;
+        dno->g.type = FSW_DNODE_TYPE_DIR;
+        return FSW_SUCCESS;
     }
 
     if (dno->raw)
-	return FSW_SUCCESS;
+        return FSW_SUCCESS;
 
     dno->raw = AllocatePool(sizeof(struct btrfs_inode));
     if(dno->raw == NULL)
-	return FSW_OUT_OF_MEMORY;
+        return FSW_OUT_OF_MEMORY;
 
     err = fsw_btrfs_read_inode(vol, dno->raw, dno->g.dnode_id, dno->g.tree_id);
     if (err) {
-	FreePool(dno->raw);
-	dno->raw = NULL;
-	return err;
+        FreePool(dno->raw);
+        dno->raw = NULL;
+        return err;
     }
 
     // get info from the inode
@@ -1140,13 +1141,13 @@ static fsw_status_t fsw_btrfs_dnode_fill(struct fsw_volume *volg, struct fsw_dno
     // TODO: check docs for 64-bit sized files
     mode = fsw_u32_le_swap(dno->raw->mode);
     if (S_ISREG(mode))
-	dno->g.type = FSW_DNODE_TYPE_FILE;
+        dno->g.type = FSW_DNODE_TYPE_FILE;
     else if (S_ISDIR(mode))
-	dno->g.type = FSW_DNODE_TYPE_DIR;
+        dno->g.type = FSW_DNODE_TYPE_DIR;
     else if (S_ISLNK(mode))
-	dno->g.type = FSW_DNODE_TYPE_SYMLINK;
+        dno->g.type = FSW_DNODE_TYPE_SYMLINK;
     else
-	dno->g.type = FSW_DNODE_TYPE_SPECIAL;
+        dno->g.type = FSW_DNODE_TYPE_SPECIAL;
 
     return FSW_SUCCESS;
 }
@@ -1155,7 +1156,7 @@ static void fsw_btrfs_dnode_free(struct fsw_volume *volg, struct fsw_dnode *dnog
 {
     struct fsw_btrfs_dnode *dno = (struct fsw_btrfs_dnode *)dnog;
     if (dno->raw)
-	FreePool(dno->raw);
+        FreePool(dno->raw);
 }
 
 static fsw_status_t fsw_btrfs_dnode_stat(struct fsw_volume *volg, struct fsw_dnode *dnog, struct fsw_dnode_stat *sb)
@@ -1164,26 +1165,26 @@ static fsw_status_t fsw_btrfs_dnode_stat(struct fsw_volume *volg, struct fsw_dno
 
     /* slave device got empty root */
     if(dno->raw == NULL) {
-	sb->used_bytes = 0;
-	sb->store_time_posix(sb, FSW_DNODE_STAT_CTIME, 0);
-	sb->store_time_posix(sb, FSW_DNODE_STAT_ATIME, 0);
-	sb->store_time_posix(sb, FSW_DNODE_STAT_MTIME, 0);
-	return FSW_SUCCESS;
+        sb->used_bytes = 0;
+        sb->store_time_posix(sb, FSW_DNODE_STAT_CTIME, 0);
+        sb->store_time_posix(sb, FSW_DNODE_STAT_ATIME, 0);
+        sb->store_time_posix(sb, FSW_DNODE_STAT_MTIME, 0);
+        return FSW_SUCCESS;
     }
     sb->used_bytes = fsw_u64_le_swap(dno->raw->nbytes);
     sb->store_time_posix(sb, FSW_DNODE_STAT_ATIME,
-	    fsw_u64_le_swap(dno->raw->atime.sec));
+            fsw_u64_le_swap(dno->raw->atime.sec));
     sb->store_time_posix(sb, FSW_DNODE_STAT_CTIME,
-	    fsw_u64_le_swap(dno->raw->ctime.sec));
+            fsw_u64_le_swap(dno->raw->ctime.sec));
     sb->store_time_posix(sb, FSW_DNODE_STAT_MTIME,
-	    fsw_u64_le_swap(dno->raw->mtime.sec));
+            fsw_u64_le_swap(dno->raw->mtime.sec));
     sb->store_attr_posix(sb, fsw_u32_le_swap(dno->raw->mode));
 
     return FSW_SUCCESS;
 }
 
 static fsw_ssize_t grub_btrfs_lzo_decompress(char *ibuf, fsw_size_t isize, grub_off_t off,
-	char *obuf, fsw_size_t osize)
+        char *obuf, fsw_size_t osize)
 {
     uint32_t total_size, cblock_size;
     fsw_size_t ret = 0;
@@ -1195,77 +1196,77 @@ static fsw_ssize_t grub_btrfs_lzo_decompress(char *ibuf, fsw_size_t isize, grub_
     ibuf += sizeof (total_size);
 
     if (isize < total_size)
-	return -1;
+        return -1;
 
     /* Jump forward to first block with requested data.  */
     while (off >= GRUB_BTRFS_LZO_BLOCK_SIZE)
     {
-	/* Don't let following uint32_t cross the page boundary.  */
-	if (((ibuf - ibuf0) & 0xffc) == 0xffc)
-	    ibuf = ((ibuf - ibuf0 + 3) & ~3) + ibuf0;
+        /* Don't let following uint32_t cross the page boundary.  */
+        if (((ibuf - ibuf0) & 0xffc) == 0xffc)
+            ibuf = ((ibuf - ibuf0 + 3) & ~3) + ibuf0;
 
-	cblock_size = fsw_u32_le_swap (fsw_get_unaligned32 (ibuf));
-	ibuf += sizeof (cblock_size);
+        cblock_size = fsw_u32_le_swap (fsw_get_unaligned32 (ibuf));
+        ibuf += sizeof (cblock_size);
 
-	if (cblock_size > GRUB_BTRFS_LZO_BLOCK_MAX_CSIZE)
-	    return -1;
+        if (cblock_size > GRUB_BTRFS_LZO_BLOCK_MAX_CSIZE)
+            return -1;
 
-	off -= GRUB_BTRFS_LZO_BLOCK_SIZE;
-	ibuf += cblock_size;
+        off -= GRUB_BTRFS_LZO_BLOCK_SIZE;
+        ibuf += cblock_size;
     }
 
     while (osize > 0)
     {
-	lzo_uint usize = GRUB_BTRFS_LZO_BLOCK_SIZE;
+        lzo_uint usize = GRUB_BTRFS_LZO_BLOCK_SIZE;
 
-	/* Don't let following uint32_t cross the page boundary.  */
-	if (((ibuf - ibuf0) & 0xffc) == 0xffc)
-	    ibuf = ((ibuf - ibuf0 + 3) & ~3) + ibuf0;
+        /* Don't let following uint32_t cross the page boundary.  */
+        if (((ibuf - ibuf0) & 0xffc) == 0xffc)
+            ibuf = ((ibuf - ibuf0 + 3) & ~3) + ibuf0;
 
-	cblock_size = fsw_u32_le_swap (fsw_get_unaligned32 (ibuf));
-	ibuf += sizeof (cblock_size);
+        cblock_size = fsw_u32_le_swap (fsw_get_unaligned32 (ibuf));
+        ibuf += sizeof (cblock_size);
 
-	if (cblock_size > GRUB_BTRFS_LZO_BLOCK_MAX_CSIZE)
-	    return -1;
+        if (cblock_size > GRUB_BTRFS_LZO_BLOCK_MAX_CSIZE)
+            return -1;
 
-	/* Block partially filled with requested data.  */
-	if (off > 0 || osize < GRUB_BTRFS_LZO_BLOCK_SIZE)
-	{
-	    fsw_size_t to_copy = GRUB_BTRFS_LZO_BLOCK_SIZE - off;
+        /* Block partially filled with requested data.  */
+        if (off > 0 || osize < GRUB_BTRFS_LZO_BLOCK_SIZE)
+        {
+            fsw_size_t to_copy = GRUB_BTRFS_LZO_BLOCK_SIZE - off;
 
-	    if (to_copy > osize)
-		to_copy = osize;
+            if (to_copy > osize)
+                to_copy = osize;
 
-	    if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, (lzo_bytep)buf, &usize, NULL) != 0)
-		return -1;
+            if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, (lzo_bytep)buf, &usize, NULL) != 0)
+                return -1;
 
-	    if (to_copy > usize)
-		to_copy = usize;
-	    fsw_memcpy(obuf, buf + off, to_copy);
+            if (to_copy > usize)
+                to_copy = usize;
+            fsw_memcpy(obuf, buf + off, to_copy);
 
-	    osize -= to_copy;
-	    ret += to_copy;
-	    obuf += to_copy;
-	    ibuf += cblock_size;
-	    off = 0;
-	    continue;
-	}
+            osize -= to_copy;
+            ret += to_copy;
+            obuf += to_copy;
+            ibuf += cblock_size;
+            off = 0;
+            continue;
+        }
 
-	/* Decompress whole block directly to output buffer.  */
-	if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, (lzo_bytep)obuf, &usize, NULL) != 0)
-	    return -1;
+        /* Decompress whole block directly to output buffer.  */
+        if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, (lzo_bytep)obuf, &usize, NULL) != 0)
+            return -1;
 
-	osize -= usize;
-	ret += usize;
-	obuf += usize;
-	ibuf += cblock_size;
+        osize -= usize;
+        ret += usize;
+        obuf += usize;
+        ibuf += cblock_size;
     }
 
     return ret;
 }
 
 static fsw_status_t fsw_btrfs_get_extent(struct fsw_volume *volg, struct fsw_dnode *dnog,
-	struct fsw_extent *extent)
+        struct fsw_extent *extent)
 {
     struct fsw_btrfs_volume *vol = (struct fsw_btrfs_volume *)volg;
     uint64_t ino = dnog->dnode_id;
@@ -1282,59 +1283,59 @@ static fsw_status_t fsw_btrfs_get_extent(struct fsw_volume *volg, struct fsw_dno
 
     /* slave device got empty root */
     if (!vol->is_master)
-	return FSW_NOT_FOUND;
+        return FSW_NOT_FOUND;
 
     if (!vol->extent || vol->extstart > pos || vol->extino != ino
-	    || vol->exttree != tree || vol->extend <= pos)
+            || vol->exttree != tree || vol->extend <= pos)
     {
-	struct btrfs_key key_in, key_out;
-	uint64_t elemaddr;
-	fsw_size_t elemsize;
+        struct btrfs_key key_in, key_out;
+        uint64_t elemaddr;
+        fsw_size_t elemsize;
 
-	if(vol->extent) {
-	    FreePool (vol->extent);
-	    vol->extent = NULL;
-	}
-	key_in.object_id = ino;
-	key_in.type = GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM;
-	key_in.offset = fsw_u64_le_swap (pos);
-	err = lower_bound (vol, &key_in, &key_out, tree, &elemaddr, &elemsize, NULL, 0);
-	if (err)
-	    return FSW_VOLUME_CORRUPTED;
-	if (key_out.object_id != ino
-		|| key_out.type != GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM)
-	{
-	    return FSW_VOLUME_CORRUPTED;
-	}
-	if ((fsw_ssize_t) elemsize < ((char *) &vol->extent->inl
-		    - (char *) vol->extent))
-	{
-	    return FSW_VOLUME_CORRUPTED;
-	}
-	vol->extstart = fsw_u64_le_swap (key_out.offset);
-	vol->extsize = elemsize;
-	vol->extent = AllocatePool (elemsize);
-	vol->extino = ino;
-	vol->exttree = tree;
-	if (!vol->extent)
-	    return FSW_OUT_OF_MEMORY;
+        if(vol->extent) {
+            FreePool (vol->extent);
+            vol->extent = NULL;
+        }
+        key_in.object_id = ino;
+        key_in.type = GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM;
+        key_in.offset = fsw_u64_le_swap (pos);
+        err = lower_bound (vol, &key_in, &key_out, tree, &elemaddr, &elemsize, NULL, 0);
+        if (err)
+            return FSW_VOLUME_CORRUPTED;
+        if (key_out.object_id != ino
+                || key_out.type != GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM)
+        {
+            return FSW_VOLUME_CORRUPTED;
+        }
+        if ((fsw_ssize_t) elemsize < ((char *) &vol->extent->inl
+                    - (char *) vol->extent))
+        {
+            return FSW_VOLUME_CORRUPTED;
+        }
+        vol->extstart = fsw_u64_le_swap (key_out.offset);
+        vol->extsize = elemsize;
+        vol->extent = AllocatePool (elemsize);
+        vol->extino = ino;
+        vol->exttree = tree;
+        if (!vol->extent)
+            return FSW_OUT_OF_MEMORY;
 
-	err = fsw_btrfs_read_logical (vol, elemaddr, vol->extent, elemsize, 0, 1);
-	if (err)
-	    return err;
+        err = fsw_btrfs_read_logical (vol, elemaddr, vol->extent, elemsize, 0, 1);
+        if (err)
+            return err;
 
-	vol->extend = vol->extstart + fsw_u64_le_swap (vol->extent->size);
-	if (vol->extent->type == GRUB_BTRFS_EXTENT_REGULAR
-		&& (char *) &vol->extent + elemsize
-		>= (char *) &vol->extent->filled + sizeof (vol->extent->filled))
-	    vol->extend =
-		vol->extstart + fsw_u64_le_swap (vol->extent->filled);
+        vol->extend = vol->extstart + fsw_u64_le_swap (vol->extent->size);
+        if (vol->extent->type == GRUB_BTRFS_EXTENT_REGULAR
+                && (char *) &vol->extent + elemsize
+                >= (char *) &vol->extent->filled + sizeof (vol->extent->filled))
+            vol->extend =
+                vol->extstart + fsw_u64_le_swap (vol->extent->filled);
 
-	DPRINT (L"btrfs: %lx +0x%lx\n", fsw_u64_le_swap (key_out.offset), fsw_u64_le_swap (vol->extent->size));
-	if (vol->extend <= pos)
-	{
-	    return FSW_VOLUME_CORRUPTED;
-	}
+        DPRINT (L"btrfs: %lx +0x%lx\n", fsw_u64_le_swap (key_out.offset), fsw_u64_le_swap (vol->extent->size));
+        if (vol->extend <= pos)
+        {
+            return FSW_VOLUME_CORRUPTED;
+        }
     }
 
     csize = vol->extend - pos;
@@ -1342,141 +1343,141 @@ static fsw_status_t fsw_btrfs_get_extent(struct fsw_volume *volg, struct fsw_dno
 
     if (vol->extent->encryption ||vol->extent->encoding)
     {
-	return FSW_UNSUPPORTED;
+        return FSW_UNSUPPORTED;
     }
 
     switch(vol->extent->compression) {
-	case GRUB_BTRFS_COMPRESSION_LZO:
-	case GRUB_BTRFS_COMPRESSION_ZLIB:
-	case GRUB_BTRFS_COMPRESSION_NONE:
-	    break;
-	default:
-	    return FSW_UNSUPPORTED;
+        case GRUB_BTRFS_COMPRESSION_LZO:
+        case GRUB_BTRFS_COMPRESSION_ZLIB:
+        case GRUB_BTRFS_COMPRESSION_NONE:
+            break;
+        default:
+            return FSW_UNSUPPORTED;
     }
 
     count = ( csize + vol->sectorsize - 1) >> vol->sectorshift;
     switch (vol->extent->type)
     {
-	case GRUB_BTRFS_EXTENT_INLINE:
-	    buf = AllocatePool( count << vol->sectorshift);
-	    if(!buf)
-		return FSW_OUT_OF_MEMORY;
-	    if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
-	    {
-		if (grub_zlib_decompress (vol->extent->inl, vol->extsize -
-			    ((uint8_t *) vol->extent->inl
-			     - (uint8_t *) vol->extent),
-			    extoff, buf, csize)
-			!= (fsw_ssize_t) csize)
-		{
-		    FreePool(buf);
-		    return FSW_VOLUME_CORRUPTED;
-		}
-	    }
-	    else if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
-	    {
-		if (grub_btrfs_lzo_decompress(vol->extent->inl, vol->extsize -
-			    ((uint8_t *) vol->extent->inl
-			     - (uint8_t *) vol->extent),
-			    extoff, buf, csize)
-			!= (fsw_ssize_t) csize)
-		{
-		    FreePool(buf);
-		    return -FSW_VOLUME_CORRUPTED;
-		}
-	    }
-	    else
-		fsw_memcpy (buf, vol->extent->inl + extoff, csize);
-	    break;
+        case GRUB_BTRFS_EXTENT_INLINE:
+            buf = AllocatePool( count << vol->sectorshift);
+            if(!buf)
+                return FSW_OUT_OF_MEMORY;
+            if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
+            {
+                if (grub_zlib_decompress (vol->extent->inl, vol->extsize -
+                            ((uint8_t *) vol->extent->inl
+                             - (uint8_t *) vol->extent),
+                            extoff, buf, csize)
+                        != (fsw_ssize_t) csize)
+                {
+                    FreePool(buf);
+                    return FSW_VOLUME_CORRUPTED;
+                }
+            }
+            else if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
+            {
+                if (grub_btrfs_lzo_decompress(vol->extent->inl, vol->extsize -
+                            ((uint8_t *) vol->extent->inl
+                             - (uint8_t *) vol->extent),
+                            extoff, buf, csize)
+                        != (fsw_ssize_t) csize)
+                {
+                    FreePool(buf);
+                    return -FSW_VOLUME_CORRUPTED;
+                }
+            }
+            else
+                fsw_memcpy (buf, vol->extent->inl + extoff, csize);
+            break;
 
-	case GRUB_BTRFS_EXTENT_REGULAR:
-	    if (!vol->extent->laddr)
-		break;
+        case GRUB_BTRFS_EXTENT_REGULAR:
+            if (!vol->extent->laddr)
+                break;
 
-	    if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_NONE)
-	    {
-		if( count > 64 ) {
-		    count = 64;
-		    csize = count << vol->sectorshift;
-		}
-		buf = AllocatePool( count << vol->sectorshift);
-		if(!buf)
-		    return FSW_OUT_OF_MEMORY;
-		err = fsw_btrfs_read_logical (vol,
-			fsw_u64_le_swap (vol->extent->laddr)
-			+ fsw_u64_le_swap (vol->extent->offset)
-			+ extoff, buf, csize, 0, 0);
-		if (err) {
-		    FreePool(buf);
-		    return err;
-		}
-		break;
-	    }
-	    if (vol->extent->compression != GRUB_BTRFS_COMPRESSION_NONE)
-	    {
-		char *tmp;
-		uint64_t zsize;
-		fsw_ssize_t ret;
+            if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_NONE)
+            {
+                if( count > 64 ) {
+                    count = 64;
+                    csize = count << vol->sectorshift;
+                }
+                buf = AllocatePool( count << vol->sectorshift);
+                if(!buf)
+                    return FSW_OUT_OF_MEMORY;
+                err = fsw_btrfs_read_logical (vol,
+                        fsw_u64_le_swap (vol->extent->laddr)
+                        + fsw_u64_le_swap (vol->extent->offset)
+                        + extoff, buf, csize, 0, 0);
+                if (err) {
+                    FreePool(buf);
+                    return err;
+                }
+                break;
+            }
+            if (vol->extent->compression != GRUB_BTRFS_COMPRESSION_NONE)
+            {
+                char *tmp;
+                uint64_t zsize;
+                fsw_ssize_t ret;
 
-		zsize = fsw_u64_le_swap (vol->extent->compressed_size);
-		tmp = AllocatePool (zsize);
-		if (!tmp)
-		    return -FSW_OUT_OF_MEMORY;
-		err = fsw_btrfs_read_logical (vol, fsw_u64_le_swap (vol->extent->laddr), tmp, zsize, 0, 0);
-		if (err)
-		{
-		    FreePool (tmp);
-		    return -FSW_VOLUME_CORRUPTED;
-		}
+                zsize = fsw_u64_le_swap (vol->extent->compressed_size);
+                tmp = AllocatePool (zsize);
+                if (!tmp)
+                    return -FSW_OUT_OF_MEMORY;
+                err = fsw_btrfs_read_logical (vol, fsw_u64_le_swap (vol->extent->laddr), tmp, zsize, 0, 0);
+                if (err)
+                {
+                    FreePool (tmp);
+                    return -FSW_VOLUME_CORRUPTED;
+                }
 
-		buf = AllocatePool( count << vol->sectorshift);
-		if(!buf) {
-		    FreePool(tmp);
-		    return FSW_OUT_OF_MEMORY;
-		}
+                buf = AllocatePool( count << vol->sectorshift);
+                if(!buf) {
+                    FreePool(tmp);
+                    return FSW_OUT_OF_MEMORY;
+                }
 
-		if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
-		{
-		    ret = grub_zlib_decompress (tmp, zsize, extoff
-			    + fsw_u64_le_swap (vol->extent->offset),
-			    buf, csize);
-		}
-		else if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
-		    ret = grub_btrfs_lzo_decompress (tmp, zsize, extoff
-			    + fsw_u64_le_swap (vol->extent->offset),
-			    buf, csize);
-		else
-		    ret = -1;
+                if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
+                {
+                    ret = grub_zlib_decompress (tmp, zsize, extoff
+                            + fsw_u64_le_swap (vol->extent->offset),
+                            buf, csize);
+                }
+                else if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
+                    ret = grub_btrfs_lzo_decompress (tmp, zsize, extoff
+                            + fsw_u64_le_swap (vol->extent->offset),
+                            buf, csize);
+                else
+                    ret = -1;
 
-		FreePool (tmp);
+                FreePool (tmp);
 
-		if (ret != (fsw_ssize_t) csize) {
-		    FreePool(tmp);
-		    return -FSW_VOLUME_CORRUPTED;
-		}
+                if (ret != (fsw_ssize_t) csize) {
+                    FreePool(tmp);
+                    return -FSW_VOLUME_CORRUPTED;
+                }
 
-		break;
-	    }
-	    break;
-	default:
-	    return -FSW_VOLUME_CORRUPTED;
+                break;
+            }
+            break;
+        default:
+            return -FSW_VOLUME_CORRUPTED;
     }
 
     extent->log_count = count;
     if(buf) {
-	if(csize < (count << vol->sectorshift))
-	    fsw_memzero( buf + csize, (count << vol->sectorshift) - csize);
-	extent->buffer = buf;
-	extent->type = FSW_EXTENT_TYPE_BUFFER;
+        if(csize < (count << vol->sectorshift))
+            fsw_memzero( buf + csize, (count << vol->sectorshift) - csize);
+        extent->buffer = buf;
+        extent->type = FSW_EXTENT_TYPE_BUFFER;
     } else {
-	extent->buffer = NULL;
-	extent->type = FSW_EXTENT_TYPE_SPARSE;
+        extent->buffer = NULL;
+        extent->type = FSW_EXTENT_TYPE_SPARSE;
     }
     return FSW_SUCCESS;
 }
 
 static fsw_status_t fsw_btrfs_readlink(struct fsw_volume *volg, struct fsw_dnode *dnog,
-	struct fsw_string *link_target)
+        struct fsw_string *link_target)
 {
     struct fsw_btrfs_volume *vol = (struct fsw_btrfs_volume *)volg;
     struct fsw_btrfs_dnode *dno = (struct fsw_btrfs_dnode *)dnog;
@@ -1486,30 +1487,30 @@ static fsw_status_t fsw_btrfs_readlink(struct fsw_volume *volg, struct fsw_dnode
     char *tmp;
 
     if (dno->g.size > FSW_PATH_MAX)
-	return FSW_VOLUME_CORRUPTED;
+        return FSW_VOLUME_CORRUPTED;
 
     tmp = AllocatePool(dno->g.size);
     if(!tmp)
-	return FSW_OUT_OF_MEMORY;
+        return FSW_OUT_OF_MEMORY;
 
     i = 0;
     do {
-	struct fsw_extent extent;
-	int size;
-	extent.log_start = i;
-	status = fsw_btrfs_get_extent(volg, dnog, &extent);
-	if(status || extent.type != FSW_EXTENT_TYPE_BUFFER) {
-	    FreePool(tmp);
-	    if(extent.buffer)
-		FreePool(extent.buffer);
-	    return FSW_VOLUME_CORRUPTED;
-	}
-	size = extent.log_count << vol->sectorshift;
-	if(size > (dno->g.size - (i<<vol->sectorshift)))
-	    size = dno->g.size - (i<<vol->sectorshift);
-	fsw_memcpy(tmp + (i<<vol->sectorshift), extent.buffer, size);
-	FreePool(extent.buffer);
-	i += extent.log_count;
+        struct fsw_extent extent;
+        int size;
+        extent.log_start = i;
+        status = fsw_btrfs_get_extent(volg, dnog, &extent);
+        if(status || extent.type != FSW_EXTENT_TYPE_BUFFER) {
+            FreePool(tmp);
+            if(extent.buffer)
+                FreePool(extent.buffer);
+            return FSW_VOLUME_CORRUPTED;
+        }
+        size = extent.log_count << vol->sectorshift;
+        if(size > (dno->g.size - (i<<vol->sectorshift)))
+            size = dno->g.size - (i<<vol->sectorshift);
+        fsw_memcpy(tmp + (i<<vol->sectorshift), extent.buffer, size);
+        FreePool(extent.buffer);
+        i += extent.log_count;
     } while( (i << vol->sectorshift) < dno->g.size);
 
     s.type = FSW_STRING_TYPE_UTF8;
@@ -1522,11 +1523,11 @@ static fsw_status_t fsw_btrfs_readlink(struct fsw_volume *volg, struct fsw_dnode
 }
 
 static fsw_status_t fsw_btrfs_lookup_dir_item(struct fsw_btrfs_volume *vol,
-	uint64_t tree_id, uint64_t object_id,
-	struct fsw_string *lookup_name,
-	struct btrfs_dir_item **direl_buf,
-	struct btrfs_dir_item **direl_out
-	)
+        uint64_t tree_id, uint64_t object_id,
+        struct fsw_string *lookup_name,
+        struct btrfs_dir_item **direl_buf,
+        struct btrfs_dir_item **direl_out
+        )
 {
     uint64_t elemaddr;
     fsw_size_t elemsize;
@@ -1544,46 +1545,46 @@ static fsw_status_t fsw_btrfs_lookup_dir_item(struct fsw_btrfs_volume *vol,
 
     err = lower_bound (vol, &key, &key_out, tree_id, &elemaddr, &elemsize, NULL, 0);
     if (err)
-	return err;
+        return err;
 
     if (key_cmp (&key, &key_out) != 0)
-	return FSW_NOT_FOUND;
+        return FSW_NOT_FOUND;
 
     if (elemsize > allocated)
     {
-	allocated = 2 * elemsize;
-	if(*direl_buf)
-	    FreePool (*direl_buf);
-	*direl_buf = AllocatePool (allocated + 1);
-	if (!*direl_buf)
-	    return FSW_OUT_OF_MEMORY;
+        allocated = 2 * elemsize;
+        if(*direl_buf)
+            FreePool (*direl_buf);
+        *direl_buf = AllocatePool (allocated + 1);
+        if (!*direl_buf)
+            return FSW_OUT_OF_MEMORY;
     }
 
     err = fsw_btrfs_read_logical (vol, elemaddr, *direl_buf, elemsize, 0, 1);
     if (err)
-	return err;
+        return err;
 
     for (cdirel = *direl_buf;
-	    (uint8_t *) cdirel - (uint8_t *) *direl_buf < (fsw_ssize_t) elemsize;
-	    cdirel = (void *) ((uint8_t *) (*direl_buf + 1)
-		+ fsw_u16_le_swap (cdirel->n)
-		+ fsw_u16_le_swap (cdirel->m)))
+            (uint8_t *) cdirel - (uint8_t *) *direl_buf < (fsw_ssize_t) elemsize;
+            cdirel = (void *) ((uint8_t *) (*direl_buf + 1)
+                + fsw_u16_le_swap (cdirel->n)
+                + fsw_u16_le_swap (cdirel->m)))
     {
-	if (lookup_name->size == fsw_u16_le_swap (cdirel->n)
-		&& fsw_memeq (cdirel->name, lookup_name->data, lookup_name->size))
-	    break;
+        if (lookup_name->size == fsw_u16_le_swap (cdirel->n)
+                && fsw_memeq (cdirel->name, lookup_name->data, lookup_name->size))
+            break;
     }
     if ((uint8_t *) cdirel - (uint8_t *) *direl_buf >= (fsw_ssize_t) elemsize)
-	return FSW_NOT_FOUND;
+        return FSW_NOT_FOUND;
 
     *direl_out = cdirel;
     return FSW_SUCCESS;
 }
 
 static fsw_status_t fsw_btrfs_get_root_tree(
-	struct fsw_btrfs_volume *vol,
-	struct btrfs_key *key_in,
-	uint64_t *tree_out)
+        struct fsw_btrfs_volume *vol,
+        struct btrfs_key *key_in,
+        uint64_t *tree_out)
 {
     fsw_status_t err;
     struct btrfs_root_item ri;
@@ -1593,25 +1594,25 @@ static fsw_status_t fsw_btrfs_get_root_tree(
 
     err = lower_bound (vol, key_in, &key_out, vol->root_tree, &elemaddr, &elemsize, NULL, 0);
     if (err)
-	return err;
+        return err;
 
     if (key_in->object_id != key_out.object_id || key_in->type != key_out.type)
-	return FSW_NOT_FOUND;
+        return FSW_NOT_FOUND;
 
     err = fsw_btrfs_read_logical (vol, elemaddr, &ri, sizeof (ri), 0, 1);
     if (err)
-	return err;
+        return err;
 
     *tree_out = ri.tree;
     return FSW_SUCCESS;
 }
 
 static fsw_status_t fsw_btrfs_get_sub_dnode(
-	struct fsw_btrfs_volume *vol,
-	struct fsw_btrfs_dnode *dno,
-	struct btrfs_dir_item *cdirel,
-	struct fsw_string *name,
-	struct fsw_dnode **child_dno_out)
+        struct fsw_btrfs_volume *vol,
+        struct fsw_btrfs_dnode *dno,
+        struct btrfs_dir_item *cdirel,
+        struct fsw_string *name,
+        struct fsw_dnode **child_dno_out)
 {
     fsw_status_t err;
     int child_type;
@@ -1620,43 +1621,43 @@ static fsw_status_t fsw_btrfs_get_sub_dnode(
 
     switch (cdirel->key.type)
     {
-	case GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM:
-	    err = fsw_btrfs_get_root_tree (vol, &cdirel->key, &tree_id);
-	    if (err)
-		return err;
+        case GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM:
+            err = fsw_btrfs_get_root_tree (vol, &cdirel->key, &tree_id);
+            if (err)
+                return err;
 
-	    child_type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
-	    child_id = fsw_u64_le_swap(GRUB_BTRFS_OBJECT_ID_CHUNK);
-	    break;
-	case GRUB_BTRFS_ITEM_TYPE_INODE_ITEM:
-	    child_type = cdirel->type;
-	    child_id = cdirel->key.object_id;
-	    break;
+            child_type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
+            child_id = fsw_u64_le_swap(GRUB_BTRFS_OBJECT_ID_CHUNK);
+            break;
+        case GRUB_BTRFS_ITEM_TYPE_INODE_ITEM:
+            child_type = cdirel->type;
+            child_id = cdirel->key.object_id;
+            break;
 
-	default:
-	    DPRINT (L"btrfs: unrecognised object type 0x%x", cdirel->key.type);
-	    return FSW_VOLUME_CORRUPTED;
+        default:
+            DPRINT (L"btrfs: unrecognised object type 0x%x", cdirel->key.type);
+            return FSW_VOLUME_CORRUPTED;
     }
 
     switch(child_type) {
-	case GRUB_BTRFS_DIR_ITEM_TYPE_REGULAR:
-	    child_type = FSW_DNODE_TYPE_FILE;
-	    break;
-	case GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY:
-	    child_type = FSW_DNODE_TYPE_DIR;
-	    break;
-	case GRUB_BTRFS_DIR_ITEM_TYPE_SYMLINK:
-	    child_type = FSW_DNODE_TYPE_SYMLINK;
-	    break;
-	default:
-	    child_type = FSW_DNODE_TYPE_SPECIAL;
-	    break;
+        case GRUB_BTRFS_DIR_ITEM_TYPE_REGULAR:
+            child_type = FSW_DNODE_TYPE_FILE;
+            break;
+        case GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY:
+            child_type = FSW_DNODE_TYPE_DIR;
+            break;
+        case GRUB_BTRFS_DIR_ITEM_TYPE_SYMLINK:
+            child_type = FSW_DNODE_TYPE_SYMLINK;
+            break;
+        default:
+            child_type = FSW_DNODE_TYPE_SPECIAL;
+            break;
     }
     return fsw_dnode_create_with_tree(&dno->g, tree_id, child_id, child_type, name, child_dno_out);
 }
 
 static fsw_status_t fsw_btrfs_dir_lookup(struct fsw_volume *volg, struct fsw_dnode *dnog,
-	struct fsw_string *lookup_name, struct fsw_dnode **child_dno_out)
+        struct fsw_string *lookup_name, struct fsw_dnode **child_dno_out)
 {
     struct fsw_btrfs_volume *vol = (struct fsw_btrfs_volume *)volg;
     struct fsw_btrfs_dnode *dno = (struct fsw_btrfs_dnode *)dnog;
@@ -1667,31 +1668,31 @@ static fsw_status_t fsw_btrfs_dir_lookup(struct fsw_volume *volg, struct fsw_dno
 
     /* slave device got empty root */
     if (!vol->is_master)
-	return FSW_NOT_FOUND;
+        return FSW_NOT_FOUND;
 
     err = fsw_strdup_coerce(&s, FSW_STRING_TYPE_UTF8, lookup_name);
     if(err)
-	return err;
+        return err;
 
     /* treat '...' under root as top root */
     if(dnog == volg->root && s.size == 3 && ((char *)s.data)[0]=='.' && ((char *)s.data)[1]=='.' && ((char *)s.data)[2]=='.')
     {
-	fsw_strfree (&s);
-	if(dnog->tree_id == vol->top_tree) {
-	    fsw_dnode_retain(dnog);
-	    *child_dno_out = dnog;
-	    return FSW_SUCCESS;
-	}
-	return fsw_dnode_create_with_tree(dnog,
-		vol->top_tree, fsw_u64_le_swap(GRUB_BTRFS_OBJECT_ID_CHUNK),
-		FSW_DNODE_TYPE_DIR, lookup_name, child_dno_out);
+        fsw_strfree (&s);
+        if(dnog->tree_id == vol->top_tree) {
+            fsw_dnode_retain(dnog);
+            *child_dno_out = dnog;
+            return FSW_SUCCESS;
+        }
+        return fsw_dnode_create_with_tree(dnog,
+                vol->top_tree, fsw_u64_le_swap(GRUB_BTRFS_OBJECT_ID_CHUNK),
+                FSW_DNODE_TYPE_DIR, lookup_name, child_dno_out);
     }
     struct btrfs_dir_item *direl=NULL, *cdirel;
     err = fsw_btrfs_lookup_dir_item(vol, dnog->tree_id, dnog->dnode_id, &s, &direl, &cdirel);
     if(!err)
-	err = fsw_btrfs_get_sub_dnode(vol, dno, cdirel, lookup_name, child_dno_out);
+        err = fsw_btrfs_get_sub_dnode(vol, dno, cdirel, lookup_name, child_dno_out);
     if(direl)
-	FreePool (direl);
+        FreePool (direl);
     fsw_strfree (&s);
     return err;
 }
@@ -1710,7 +1711,7 @@ static fsw_status_t fsw_btrfs_get_default_root(struct fsw_btrfs_volume *vol, uin
     top_root_key.offset = -1LL;
     err = fsw_btrfs_get_root_tree (vol, &top_root_key, &vol->top_tree);
     if (err)
-	return err;
+        return err;
 
     s.type = FSW_STRING_TYPE_UTF8;
     s.data = "default";
@@ -1719,22 +1720,22 @@ static fsw_status_t fsw_btrfs_get_default_root(struct fsw_btrfs_volume *vol, uin
 
     /* if "default" is failed or invalid, use top tree */
     if (err || /* failed */
-	    cdirel->type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY || /* not dir */
-	    cdirel->key.type != GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM || /* not tree */
-	    cdirel->key.object_id == fsw_u64_le_swap(5UL) || /* same as top */
-	    (err = fsw_btrfs_get_root_tree (vol, &cdirel->key, &default_tree_id)))
-	default_tree_id = vol->top_tree;
+            cdirel->type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY || /* not dir */
+            cdirel->key.type != GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM || /* not tree */
+            cdirel->key.object_id == fsw_u64_le_swap(5UL) || /* same as top */
+            (err = fsw_btrfs_get_root_tree (vol, &cdirel->key, &default_tree_id)))
+        default_tree_id = vol->top_tree;
 
     if (!err)
-	err = fsw_dnode_create_root_with_tree(&vol->g, default_tree_id,
-		fsw_u64_le_swap (GRUB_BTRFS_OBJECT_ID_CHUNK), &vol->g.root);
+        err = fsw_dnode_create_root_with_tree(&vol->g, default_tree_id,
+                fsw_u64_le_swap (GRUB_BTRFS_OBJECT_ID_CHUNK), &vol->g.root);
     if (direl)
-	FreePool (direl);
+        FreePool (direl);
     return err;
 }
 
 static fsw_status_t fsw_btrfs_dir_read(struct fsw_volume *volg, struct fsw_dnode *dnog,
-	struct fsw_shandle *shand, struct fsw_dnode **child_dno_out)
+        struct fsw_shandle *shand, struct fsw_dnode **child_dno_out)
 {
     struct fsw_btrfs_volume *vol = (struct fsw_btrfs_volume *)volg;
     struct fsw_btrfs_dnode *dno = (struct fsw_btrfs_dnode *)dnog;
@@ -1751,7 +1752,7 @@ static fsw_status_t fsw_btrfs_dir_read(struct fsw_volume *volg, struct fsw_dnode
 
     /* slave device got empty root */
     if (!vol->is_master)
-	return FSW_NOT_FOUND;
+        return FSW_NOT_FOUND;
 
     key_in.object_id = dnog->dnode_id;
     key_in.type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
@@ -1759,98 +1760,98 @@ static fsw_status_t fsw_btrfs_dir_read(struct fsw_volume *volg, struct fsw_dnode
 
     if((int64_t)key_in.offset == -1LL)
     {
-	return FSW_NOT_FOUND;
+        return FSW_NOT_FOUND;
     }
 
     err = lower_bound (vol, &key_in, &key_out, tree, &elemaddr, &elemsize, &desc, 0);
     if (err) {
-	return err;
+        return err;
     }
 
     DPRINT(L"key_in %lx:%x:%lx out %lx:%x:%lx elem %lx+%lx\n",
-	    key_in.object_id, key_in.type, key_in.offset,
-	    key_out.object_id, key_out.type, key_out.offset,
-	    elemaddr, elemsize);
+            key_in.object_id, key_in.type, key_in.offset,
+            key_out.object_id, key_out.type, key_out.offset,
+            elemaddr, elemsize);
     if (key_out.type != GRUB_BTRFS_ITEM_TYPE_DIR_ITEM ||
-	    key_out.object_id != key_in.object_id)
+            key_out.object_id != key_in.object_id)
     {
-	r = next (vol, &desc, &elemaddr, &elemsize, &key_out);
-	if (r <= 0)
-	    goto out;
-	DPRINT(L"next out %lx:%x:%lx\n",
-		key_out.object_id, key_out.type, key_out.offset, elemaddr, elemsize);
+        r = next (vol, &desc, &elemaddr, &elemsize, &key_out);
+        if (r <= 0)
+            goto out;
+        DPRINT(L"next out %lx:%x:%lx\n",
+                key_out.object_id, key_out.type, key_out.offset, elemaddr, elemsize);
     }
     if (key_out.type == GRUB_BTRFS_ITEM_TYPE_DIR_ITEM &&
-	    key_out.object_id == key_in.object_id &&
-	    fsw_u64_le_swap(key_out.offset) <= fsw_u64_le_swap(key_in.offset))
+            key_out.object_id == key_in.object_id &&
+            fsw_u64_le_swap(key_out.offset) <= fsw_u64_le_swap(key_in.offset))
     {
-	r = next (vol, &desc, &elemaddr, &elemsize, &key_out);
-	if (r <= 0)
-	    goto out;
-	DPRINT(L"next out %lx:%x:%lx\n",
-		key_out.object_id, key_out.type, key_out.offset, elemaddr, elemsize);
+        r = next (vol, &desc, &elemaddr, &elemsize, &key_out);
+        if (r <= 0)
+            goto out;
+        DPRINT(L"next out %lx:%x:%lx\n",
+                key_out.object_id, key_out.type, key_out.offset, elemaddr, elemsize);
     }
 
     do
     {
-	struct btrfs_dir_item *cdirel;
-	if (key_out.type != GRUB_BTRFS_ITEM_TYPE_DIR_ITEM ||
-		key_out.object_id != key_in.object_id)
-	{
-	    r = 0;
-	    break;
-	}
-	if (elemsize > allocated)
-	{
-	    allocated = 2 * elemsize;
-	    if(direl)
-		FreePool (direl);
-	    direl = AllocatePool (allocated + 1);
-	    if (!direl)
-	    {
-		r = -FSW_OUT_OF_MEMORY;
-		break;
-	    }
-	}
+        struct btrfs_dir_item *cdirel;
+        if (key_out.type != GRUB_BTRFS_ITEM_TYPE_DIR_ITEM ||
+                key_out.object_id != key_in.object_id)
+        {
+            r = 0;
+            break;
+        }
+        if (elemsize > allocated)
+        {
+            allocated = 2 * elemsize;
+            if(direl)
+                FreePool (direl);
+            direl = AllocatePool (allocated + 1);
+            if (!direl)
+            {
+                r = -FSW_OUT_OF_MEMORY;
+                break;
+            }
+        }
 
-	err = fsw_btrfs_read_logical (vol, elemaddr, direl, elemsize, 0, 1);
-	if (err)
-	{
-	    r = -err;
-	    break;
-	}
+        err = fsw_btrfs_read_logical (vol, elemaddr, direl, elemsize, 0, 1);
+        if (err)
+        {
+            r = -err;
+            break;
+        }
 
-	for (cdirel = direl;
-		(uint8_t *) cdirel - (uint8_t *) direl
-		< (fsw_ssize_t) elemsize;
-		cdirel = (void *) ((uint8_t *) (direl + 1)
-		    + fsw_u16_le_swap (cdirel->n)
-		    + fsw_u16_le_swap (cdirel->m)))
-	{
-	    struct fsw_string s;
-	    s.type = FSW_STRING_TYPE_UTF8;
-	    s.size = s.len = fsw_u16_le_swap (cdirel->n);
-	    s.data = cdirel->name;
-	    DPRINT(L"item key %lx:%x%lx, type %lx, namelen=%lx\n",
-		    cdirel->key.object_id, cdirel->key.type, cdirel->key.offset, cdirel->type, s.size);
-	    if(!err) {
-		err = fsw_btrfs_get_sub_dnode(vol, dno, cdirel, &s, child_dno_out);
-		if(direl)
-		    FreePool (direl);
-		free_iterator (&desc);
-		shand->pos = key_out.offset;
-		return FSW_SUCCESS;
-	    }
-	}
-	r = next (vol, &desc, &elemaddr, &elemsize, &key_out);
-	DPRINT(L"next2 out %lx:%x:%lx\n",
-		key_out.object_id, key_out.type, key_out.offset, elemaddr, elemsize);
+        for (cdirel = direl;
+                (uint8_t *) cdirel - (uint8_t *) direl
+                < (fsw_ssize_t) elemsize;
+                cdirel = (void *) ((uint8_t *) (direl + 1)
+                    + fsw_u16_le_swap (cdirel->n)
+                    + fsw_u16_le_swap (cdirel->m)))
+        {
+            struct fsw_string s;
+            s.type = FSW_STRING_TYPE_UTF8;
+            s.size = s.len = fsw_u16_le_swap (cdirel->n);
+            s.data = cdirel->name;
+            DPRINT(L"item key %lx:%x%lx, type %lx, namelen=%lx\n",
+                    cdirel->key.object_id, cdirel->key.type, cdirel->key.offset, cdirel->type, s.size);
+            if(!err) {
+                err = fsw_btrfs_get_sub_dnode(vol, dno, cdirel, &s, child_dno_out);
+                if(direl)
+                    FreePool (direl);
+                free_iterator (&desc);
+                shand->pos = key_out.offset;
+                return FSW_SUCCESS;
+            }
+        }
+        r = next (vol, &desc, &elemaddr, &elemsize, &key_out);
+        DPRINT(L"next2 out %lx:%x:%lx\n",
+                key_out.object_id, key_out.type, key_out.offset, elemaddr, elemsize);
     }
     while (r > 0);
 
 out:
     if(direl)
-	FreePool (direl);
+        FreePool (direl);
     free_iterator (&desc);
 
     r = r < 0 ? -r : FSW_NOT_FOUND;

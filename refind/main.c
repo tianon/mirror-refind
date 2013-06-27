@@ -75,12 +75,14 @@
 #define DRIVER_DIRS             L"drivers,drivers_x64"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
+#define EFI_STUB_ARCH           0x8664
 #elif defined (EFI32)
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellia32.efi,\\shell.efi,\\shellia32.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi"
 #define DRIVER_DIRS             L"drivers,drivers_ia32"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #define FALLBACK_BASENAME       L"bootia32.efi"
+#define EFI_STUB_ARCH           0x014c
 #else
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\shell.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi"
@@ -88,6 +90,7 @@
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" /* Not really correct */
 #define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
 #endif
+#define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
 
 // Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
 // L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive
@@ -1163,17 +1166,12 @@ static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *Path, EFI_FILE_INFO 
 
 // Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
 static BOOLEAN IsValidLoader(REFIT_VOLUME *Volume, CHAR16 *FileName) {
-#if defined (EFIX64)
-#define EFI_STUB_ARCH   0x8664
-#else
-#define EFI_STUB_ARCH   0x14c
-#endif
-#define FAT_ARCH        0x0ef1fab9 /* ID for Apple "fat" binary */
+    BOOLEAN         IsValid = TRUE;
+#if defined (EFIX64) | defined (EFI32)
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
     CHAR8           Header[512];
     UINTN           Size = sizeof(Header);
-    BOOLEAN         IsValid;
 
     Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR(Status))
@@ -1190,6 +1188,7 @@ static BOOLEAN IsValidLoader(REFIT_VOLUME *Volume, CHAR16 *FileName) {
                Header[Size+2] == 0 && Header[Size+3] == 0 &&
                *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
               (*(UINT32 *)&Header == FAT_ARCH));
+#endif
     return IsValid;
 } // BOOLEAN IsValidLoader()
 

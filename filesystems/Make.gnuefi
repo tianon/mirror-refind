@@ -31,7 +31,7 @@ ifeq ($(ARCH),x86_64)
   LD_CODE = elf_x86_64
 endif
 
-LOCAL_CPPFLAGS   = -DFSTYPE=$(DRIVERNAME) $(ARCH_C_FLAGS) -I$(SRCDIR) -I$(SRCDIR)/../include -I$(SRCDIR)/../libeg
+LOCAL_CPPFLAGS   = -DCACHE=$(CACHE) -DFSTYPE=$(DRIVERNAME) $(ARCH_C_FLAGS) -I$(SRCDIR) -I$(SRCDIR)/../include -I$(SRCDIR)/../libeg
 
 OBJS            = fsw_core.o fsw_efi.o fsw_efi_lib.o fsw_lib.o fsw_$(DRIVERNAME).o
 TARGET          = $(DRIVERNAME)_$(FILENAME_CODE).efi

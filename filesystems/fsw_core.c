@@ -191,18 +191,18 @@ fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, fsw_u32 
         cache_level = MAX_CACHE_LEVEL;
 
     if (vol->bcache_size > 0 && vol->bcache == NULL) {
-	/* driver set the initial cache size */
+        /* driver set the initial cache size */
         status = fsw_alloc(vol->bcache_size * sizeof(struct fsw_blockcache), &vol->bcache);
-	if(status)
-	    return status;
-	for( i = 0; i < vol->bcache_size; i++) {
+        if(status)
+            return status;
+        for (i = 0; i < vol->bcache_size; i++) {
             vol->bcache[i].refcount = 0;
             vol->bcache[i].cache_level = 0;
             vol->bcache[i].phys_bno = (fsw_u32)FSW_INVALID_BNO;
             vol->bcache[i].data = NULL;
-	}
-	i = 0;
-	goto miss;
+        }
+        i = 0;
+        goto miss;
     }
 
     // check block cache
@@ -777,10 +777,12 @@ fsw_status_t fsw_dnode_resolve(struct fsw_dnode *dno, struct fsw_dnode **target_
     fsw_status_t    status;
     struct fsw_string target_name;
     struct fsw_dnode *target_dno;
+    /* Linux kernel max link count is 40 */
+    int link_count = 40;
 
     fsw_dnode_retain(dno);
 
-    while (1) {
+    while (--link_count > 0) {
         // get full information
         status = fsw_dnode_fill(dno);
         if (status)
@@ -810,6 +812,8 @@ fsw_status_t fsw_dnode_resolve(struct fsw_dnode *dno, struct fsw_dnode **target_
         fsw_dnode_release(dno);
         dno = target_dno;   // is already retained
     }
+    if(link_count == 0)
+      status = FSW_NOT_FOUND;
 
 errorexit:
     fsw_dnode_release(dno);

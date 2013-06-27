@@ -98,7 +98,7 @@ EFI_GUID gEfiFileSystemVolumeLabelInfoIdGuid = EFI_FILE_SYSTEM_VOLUME_LABEL_INFO
 /** Helper macro for stringification. */
 #define FSW_EFI_STRINGIFY(x) #x
 /** Expands to the EFI driver name given the file system type name. */
-#define FSW_EFI_DRIVER_NAME(t) L"rEFInd 0.6.11 " FSW_EFI_STRINGIFY(t) L" File System Driver"
+#define FSW_EFI_DRIVER_NAME(t) L"rEFInd 0.6.12.2 " FSW_EFI_STRINGIFY(t) L" File System Driver"
 
 // function prototypes
 
@@ -339,7 +339,6 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN EFI_DRIVER_BINDING_PROTOCOL  *T
                               ControllerHandle,
                               EFI_OPEN_PROTOCOL_BY_DRIVER);
     if (EFI_ERROR(Status)) {
-        Print(L"Fsw ERROR: OpenProtocol(DiskIo) returned %r\n", Status);
         return Status;
     }
 
@@ -497,23 +496,87 @@ void fsw_efi_change_blocksize(struct fsw_volume *vol,
  * to read a block of data from the device. The buffer is allocated by the core code.
  */
 
+
+#if CACHE != 0
+/**
+ * This version implements a primitive cache that greatly improves performance of most
+ * filesystems under VirtualBox, and slightly improves it on a handful of other systems.
+ */
+#define CACHE_SIZE 131072 /* 128KiB */
 fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u32 phys_bno, void *buffer)
 {
-    EFI_STATUS          Status;
-    FSW_VOLUME_DATA     *Volume = (FSW_VOLUME_DATA *)vol->host_data;
+    EFI_STATUS               Status = EFI_SUCCESS;
+    FSW_VOLUME_DATA          *Volume = (FSW_VOLUME_DATA *)vol->host_data;
+    static fsw_u8            *Cache = NULL;
+    static fsw_u64           CacheStart = 0;
+    static BOOLEAN           CacheValid = FALSE;
+    static FSW_VOLUME_DATA   *PrevVol = NULL;
+    fsw_u64                  StartRead = (fsw_u64) phys_bno * vol->phys_blocksize;
 
 //    FSW_MSG_DEBUGV((FSW_MSGSTR("fsw_efi_read_block: %d  (%d)\n"), phys_bno, vol->phys_blocksize));
 
+    if (Cache == NULL) {
+       Cache = AllocatePool(CACHE_SIZE);
+    }
+
+    if ((PrevVol != Volume) || (StartRead < CacheStart) || ((StartRead + vol->phys_blocksize) > CacheStart + CACHE_SIZE)) {
+       CacheStart = StartRead;
+       CacheValid = FALSE;
+       PrevVol = Volume;
+    }
+
     // read from disk
-    Status = refit_call5_wrapper(Volume->DiskIo->ReadDisk, Volume->DiskIo, Volume->MediaId,
-                                      (UINT64)phys_bno * vol->phys_blocksize,
-                                      vol->phys_blocksize,
-                                      buffer);
+    if (!CacheValid && (Cache != NULL)) {
+       Status = refit_call5_wrapper(Volume->DiskIo->ReadDisk, Volume->DiskIo, Volume->MediaId,
+                                    StartRead, CACHE_SIZE, Cache);
+       if (!EFI_ERROR(Status))
+          CacheValid = TRUE;
+    } // if (!CacheValid)
+
+    if (CacheValid) {
+       if (buffer != NULL) {
+          CopyMem(buffer, &Cache[StartRead - CacheStart], vol->phys_blocksize);
+       } else {
+          Status = EFI_BAD_BUFFER_SIZE;
+       } // if/else buffer OK
+    } else {
+       // Unable to use cache; load without cache....
+       Status = refit_call5_wrapper(Volume->DiskIo->ReadDisk, Volume->DiskIo, Volume->MediaId,
+                                     (UINT64)phys_bno * vol->phys_blocksize,
+                                     vol->phys_blocksize,
+                                     buffer);
+    } // if/else CacheValid
+
     Volume->LastIOStatus = Status;
     if (EFI_ERROR(Status))
         return FSW_IO_ERROR;
     return FSW_SUCCESS;
 }
+#else
+/**
+ * This version is the original, which does NOT implement a cache. It performs badly under
+ * VirtualBox, but I'm still using it for ext2fs because there seems to be a glitch in the
+ * ext2fs driver that causes a loop that repeatedly re-reads pairs of sectors, and the
+ * primitive cache in the preceding code just makes that worse.
+ */
+fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u32 phys_bno, void *buffer)
+{
+   EFI_STATUS          Status;
+   FSW_VOLUME_DATA     *Volume = (FSW_VOLUME_DATA *)vol->host_data;
+
+//    FSW_MSG_DEBUGV((FSW_MSGSTR("fsw_efi_read_block: %d  (%d)\n"), phys_bno, vol->phys_blocksize));
+
+   // read from disk
+   Status = refit_call5_wrapper(Volume->DiskIo->ReadDisk, Volume->DiskIo, Volume->MediaId,
+                                (UINT64)phys_bno * vol->phys_blocksize,
+                                vol->phys_blocksize,
+                                buffer);
+   Volume->LastIOStatus = Status;
+   if (EFI_ERROR(Status))
+      return FSW_IO_ERROR;
+   return FSW_SUCCESS;
+}
+#endif
 
 /**
  * Map FSW status codes to EFI status codes. The FSW_IO_ERROR code is only produced

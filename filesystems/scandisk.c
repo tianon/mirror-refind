@@ -39,11 +39,11 @@ static struct fsw_volume *create_dummy_volume(EFI_DISK_IO *diskio, UINT32 mediai
 
     err = fsw_alloc_zero(sizeof(struct fsw_volume), (void **)&vol);
     if(err)
-	return NULL;
+        return NULL;
     err = fsw_alloc_zero(sizeof(FSW_VOLUME_DATA), (void **)&Volume);
     if(err) {
-	fsw_free(vol);
-	return NULL;
+        fsw_free(vol);
+        return NULL;
     }
     /* fstype_table->volume_free for fsw_unmount */
     vol->fstype_table = &dummy_fstype;
@@ -70,32 +70,37 @@ static void free_dummy_volume(struct fsw_volume *vol)
 
 static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), struct fsw_volume *master)
 {
-    EFI_STATUS	Status;
+    EFI_STATUS  Status;
     EFI_HANDLE *Handles;
-    UINTN	HandleCount = 0;
-    UINTN	i;
-    UINTN	scanned = 0;
+    UINTN       HandleCount = 0;
+    UINTN       i;
+    UINTN       scanned = 0;
 
+    // Driver hangs if compiled with GNU-EFI unless there's a Print() statement somewhere.
+    // I'm still trying to track that down; in the meantime, work around it....
+#if defined(__MAKEWITH_GNUEFI)
+    Print(L" ");
+#endif
     DPRINT(L"Scanning disks\n");
-    Status = BS->LocateHandleBuffer(ByProtocol, &PROTO_NAME(DiskIoProtocol), NULL, &HandleCount, &Handles);
+    Status = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &PROTO_NAME(DiskIoProtocol), NULL, &HandleCount, &Handles);
     if (Status == EFI_NOT_FOUND)
-	return -1;  // no filesystems. strange, but true...
+        return -1;  // no filesystems. strange, but true...
     for (i = 0; i < HandleCount; i++) {
-	EFI_DISK_IO *diskio;
-	EFI_BLOCK_IO *blockio;
-	Status = refit_call3_wrapper(BS->HandleProtocol, Handles[i], &PROTO_NAME(DiskIoProtocol), (VOID **) &diskio);
-	if (Status != 0)
-	    continue;
-	Status = refit_call3_wrapper(BS->HandleProtocol, Handles[i], &PROTO_NAME(BlockIoProtocol), (VOID **) &blockio);
-	if (Status != 0)
-	    continue;
-	struct fsw_volume *vol = create_dummy_volume(diskio, blockio->Media->MediaId);
-	if(vol) {
-	    DPRINT(L"Checking disk %d\n", i);
-	    if(hook(master, vol) == FSW_SUCCESS)
-		scanned++;
-	    free_dummy_volume(vol);
-	}
+        EFI_DISK_IO *diskio;
+        EFI_BLOCK_IO *blockio;
+        Status = refit_call3_wrapper(BS->HandleProtocol, Handles[i], &PROTO_NAME(DiskIoProtocol), (VOID **) &diskio);
+        if (Status != 0)
+            continue;
+        Status = refit_call3_wrapper(BS->HandleProtocol, Handles[i], &PROTO_NAME(BlockIoProtocol), (VOID **) &blockio);
+        if (Status != 0)
+            continue;
+        struct fsw_volume *vol = create_dummy_volume(diskio, blockio->Media->MediaId);
+        if(vol) {
+            DPRINT(L"Checking disk %d\n", i);
+            if(hook(master, vol) == FSW_SUCCESS)
+                scanned++;
+            free_dummy_volume(vol);
+        }
     }
     return scanned;
 }
