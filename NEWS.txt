@@ -1,12 +1,22 @@
-0.7.0 (?/??/2013):
+0.7.0 (6/27/2013):
 ------------------
 
-- Added a cache to all the filesystem drivers except for ext2fs. This cache
-  greatly improves performance in VirtualBox, and offers modest performance
-  improvements on a few "real" computers. The ext2fs driver loads blocks in
-  a strange non-linear fashion that causes the cache to degrade
-  performance, so I've disabled the cache for ext2fs. (Ext4fs doesn't
-  suffer from this problem.)
+- Added Btrfs signature to rEFInd, so that it can identify the filesystem
+  type for volumes that lack labels.
+
+- Changed some critical filesystem driver pointers from 32-bit to 64-bit.
+  This *SHOULD* enable use of over-2TiB filesystems (for those filesystems
+  that support such large volumes). This capability is largely untested,
+  though.
+
+- Added a cache to the filesystem driver core, and therefore to all the
+  filesystem drivers. This cache greatly improves performance in
+  VirtualBox, and offers modest performance improvements on a few "real"
+  computers. The most dramatic improvement is on ext2/3fs under VirtualBox:
+  Loading a kernel and initrd used to take ~200 seconds on my system, but
+  now takes ~3 seconds! On most "real" hardware, the improvement is much
+  less dramatic -- an improvement of a second or less, presumably because
+  of cacheing within the EFI or on the hard disk itself.
 
 - Filter boot loaders based on a test of their validity; keeps out Linux
   kernels without EFI stub loader code, loaders for the wrong architecture,

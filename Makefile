@@ -35,6 +35,7 @@ tiano:
 	+make AR_TARGET=mok -C $(MOK_DIR) -f Make.tiano
 	+make BUILDME=refind DLL_TARGET=refind -C $(LOADER_DIR) -f Make.tiano
 	+make -C $(GPTSYNC_DIR) -f Make.tiano
+	+make -C $(FS_DIR)
 
 clean:
 	make -C $(LIBEG_DIR) clean

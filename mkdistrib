@@ -56,7 +56,7 @@ zip -9r refind-src-$1.zip refind-$1
 
 # Build the IA32 binaries
 cd refind-$1
-ARCH=ia32 make -j4
+ARCH=ia32 make -j1
 ARCH=ia32 make fs
 mkdir -p refind-bin-$1/refind/drivers_ia32
 cp --preserve=timestamps drivers_ia32/*_ia32.efi refind-bin-$1/refind/drivers_ia32/
@@ -68,7 +68,7 @@ cp --preserve=timestamps gptsync/gptsync_ia32.efi refind-bin-$1/refind/tools_ia3
 
 # Build the X64 binaries
 make clean
-make -j4
+make -j1
 make fs
 mkdir -p refind-bin-$1/refind/drivers_x64
 cp -a icons refind-bin-$1/refind/
@@ -100,7 +100,7 @@ zip -9r ../refind-bin-$1.zip refind-bin-$1
 
 # Prepare a variant with the x86-64 version built with GNU-EFI....
 make clean
-make -j4 gnuefi
+make -j1 gnuefi
 if [[ $SignIt == 1 ]] ; then
    $SBSign --key $KeysDir/refind.key --cert $KeysDir/refind.crt --output refind-bin-$1/refind/refind_x64.efi refind/refind_x64.efi
 else

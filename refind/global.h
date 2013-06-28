@@ -119,7 +119,8 @@
 #define FS_TYPE_EXT4           4
 #define FS_TYPE_HFSPLUS        5
 #define FS_TYPE_REISERFS       6
-#define FS_TYPE_ISO9660        7
+#define FS_TYPE_BTRFS          7
+#define FS_TYPE_ISO9660        8
 
 // Names of binaries that can manage MOKs....
 #define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi"

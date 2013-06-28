@@ -73,7 +73,7 @@
 #define FSW_FSTYPE_TABLE_NAME(t) FSW_CONCAT3(fsw_,t,_table)
 
 /** Indicates that the block cache entry is empty. */
-#define FSW_INVALID_BNO (~0UL)
+#define FSW_INVALID_BNO 0xFFFFFFFFFFFFFFFF
 
 
 //
@@ -230,7 +230,7 @@ struct fsw_fstype_table;
 struct fsw_blockcache {
     fsw_u32     refcount;           //!< Reference count
     fsw_u32     cache_level;        //!< Level of importance of this block
-    fsw_u32     phys_bno;           //!< Physical block number
+    fsw_u64     phys_bno;           //!< Physical block number
     void        *data;              //!< Block data buffer
 };
 
@@ -294,9 +294,9 @@ enum {
 
 struct fsw_extent {
     fsw_u32     type;               //!< Type of extent specification
-    fsw_u32     log_start;          //!< Starting logical block number
+    fsw_u64     log_start;          //!< Starting logical block number
     fsw_u32     log_count;          //!< Logical block count
-    fsw_u32     phys_start;         //!< Starting physical block number (for FSW_EXTENT_TYPE_PHYSBLOCK only)
+    fsw_u64     phys_start;         //!< Starting physical block number (for FSW_EXTENT_TYPE_PHYSBLOCK only)
     void        *buffer;            //!< Allocated buffer pointer (for FSW_EXTENT_TYPE_BUFFER only)
 };
 
@@ -363,7 +363,7 @@ struct fsw_host_table
     void         (*change_blocksize)(struct fsw_volume *vol,
                                      fsw_u32 old_phys_blocksize, fsw_u32 old_log_blocksize,
                                      fsw_u32 new_phys_blocksize, fsw_u32 new_log_blocksize);
-    fsw_status_t (*read_block)(struct fsw_volume *vol, fsw_u32 phys_bno, void *buffer);
+    fsw_status_t (*read_block)(struct fsw_volume *vol, fsw_u64 phys_bno, void *buffer);
 };
 
 /**
@@ -409,8 +409,8 @@ void         fsw_unmount(struct fsw_volume *vol);
 fsw_status_t fsw_volume_stat(struct fsw_volume *vol, struct fsw_volume_stat *sb);
 
 void         fsw_set_blocksize(struct VOLSTRUCTNAME *vol, fsw_u32 phys_blocksize, fsw_u32 log_blocksize);
-fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, fsw_u32 cache_level, void **buffer_out);
-void         fsw_block_release(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, void *buffer);
+fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u64 phys_bno, fsw_u32 cache_level, void **buffer_out);
+void         fsw_block_release(struct VOLSTRUCTNAME *vol, fsw_u64 phys_bno, void *buffer);
 
 /*@}*/
 

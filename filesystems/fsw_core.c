@@ -178,7 +178,7 @@ void fsw_set_blocksize(struct fsw_volume *vol, fsw_u32 phys_blocksize, fsw_u32 l
  * caller calls fsw_block_release.
  */
 
-fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, fsw_u32 cache_level, void **buffer_out)
+fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u64 phys_bno, fsw_u32 cache_level, void **buffer_out)
 {
     fsw_status_t    status;
     fsw_u32         i, discard_level, new_bcache_size;
@@ -198,7 +198,7 @@ fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, fsw_u32 
         for (i = 0; i < vol->bcache_size; i++) {
             vol->bcache[i].refcount = 0;
             vol->bcache[i].cache_level = 0;
-            vol->bcache[i].phys_bno = (fsw_u32)FSW_INVALID_BNO;
+            vol->bcache[i].phys_bno = (fsw_u64)FSW_INVALID_BNO;
             vol->bcache[i].data = NULL;
         }
         i = 0;
@@ -219,7 +219,7 @@ fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, fsw_u32 
 
     // find a free entry in the cache table
     for (i = 0; i < vol->bcache_size; i++) {
-        if (vol->bcache[i].phys_bno == (fsw_u32)FSW_INVALID_BNO)
+        if (vol->bcache[i].phys_bno == (fsw_u64)FSW_INVALID_BNO)
             break;
     }
     if (i >= vol->bcache_size) {
@@ -246,7 +246,7 @@ fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, fsw_u32 
         for (i = vol->bcache_size; i < new_bcache_size; i++) {
             new_bcache[i].refcount = 0;
             new_bcache[i].cache_level = 0;
-            new_bcache[i].phys_bno = (fsw_u32)FSW_INVALID_BNO;
+            new_bcache[i].phys_bno = (fsw_u64)FSW_INVALID_BNO;
             new_bcache[i].data = NULL;
         }
         i = vol->bcache_size;
@@ -257,7 +257,7 @@ fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, fsw_u32 
         vol->bcache = new_bcache;
         vol->bcache_size = new_bcache_size;
     }
-    vol->bcache[i].phys_bno = (fsw_u32)FSW_INVALID_BNO;
+    vol->bcache[i].phys_bno = (fsw_u64)FSW_INVALID_BNO;
 miss:
 
     // read the data
@@ -282,7 +282,7 @@ miss:
  * from fsw_block_get.
  */
 
-void fsw_block_release(struct VOLSTRUCTNAME *vol, fsw_u32 phys_bno, void *buffer)
+void fsw_block_release(struct VOLSTRUCTNAME *vol, fsw_u64 phys_bno, void *buffer)
 {
     fsw_u32 i;
 
@@ -879,8 +879,8 @@ fsw_status_t fsw_shandle_read(struct fsw_shandle *shand, fsw_u32 *buffer_size_in
     struct fsw_dnode *dno = shand->dnode;
     struct fsw_volume *vol = dno->vol;
     fsw_u8          *buffer, *block_buffer;
-    fsw_u32         buflen, copylen, pos;
-    fsw_u32         log_bno, pos_in_extent, phys_bno, pos_in_physblock;
+    fsw_u64         buflen, copylen, pos;
+    fsw_u64         log_bno, pos_in_extent, phys_bno, pos_in_physblock;
     fsw_u32         cache_level;
 
     if (shand->pos >= dno->size) {   // already at EOF
@@ -899,7 +899,7 @@ fsw_status_t fsw_shandle_read(struct fsw_shandle *shand, fsw_u32 *buffer_size_in
 
     while (buflen > 0) {
         // get extent for the current logical block
-        log_bno = pos / vol->log_blocksize;
+        log_bno = FSW_U64_DIV(pos, vol->log_blocksize);
         if (shand->extent.type == FSW_EXTENT_TYPE_INVALID ||
             log_bno < shand->extent.log_start ||
             log_bno >= shand->extent.log_start + shand->extent.log_count) {
@@ -921,7 +921,7 @@ fsw_status_t fsw_shandle_read(struct fsw_shandle *shand, fsw_u32 *buffer_size_in
         // dispatch by extent type
         if (shand->extent.type == FSW_EXTENT_TYPE_PHYSBLOCK) {
             // convert to physical block number and offset
-            phys_bno = shand->extent.phys_start + pos_in_extent / vol->phys_blocksize;
+            phys_bno = shand->extent.phys_start + FSW_U64_DIV(pos_in_extent, vol->phys_blocksize);
             pos_in_physblock = pos_in_extent & (vol->phys_blocksize - 1);
             copylen = vol->phys_blocksize - pos_in_physblock;
             if (copylen > buflen)

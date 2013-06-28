@@ -385,7 +385,7 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
                                         struct fsw_extent *extent)
 {
     fsw_status_t  status;
-    fsw_u32       bno, release_bno, buf_offset, file_bcnt;
+    fsw_u32       bno, buf_offset;
     int           ext_cnt;
     void          *buffer;
 

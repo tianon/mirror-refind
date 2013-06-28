@@ -73,6 +73,7 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 #define REISERFS_SUPER_MAGIC_STRING      "ReIsErFs"
 #define REISER2FS_SUPER_MAGIC_STRING     "ReIsEr2Fs"
 #define REISER2FS_JR_SUPER_MAGIC_STRING  "ReIsEr3Fs"
+#define BTRFS_SIGNATURE                  "_BHRfS_M"
 
 // variables
 
@@ -407,6 +408,9 @@ static CHAR16 *FSTypeName(IN UINT32 TypeCode) {
       case FS_TYPE_REISERFS:
          retval = L" ReiserFS";
          break;
+      case FS_TYPE_BTRFS:
+         retval = L" Btrfs";
+         break;
       case FS_TYPE_ISO9660:
          retval = L" ISO-9660";
          break;
@@ -458,6 +462,12 @@ static UINT32 IdentifyFilesystemType(IN UINT8 *Buffer, IN UINTN BufferSize) {
          } // if
       } // search for ReiserFS magic
 
+      if (BufferSize >= (65536 + 64 + 8)) {
+         MagicString = (char*) (Buffer + 65536 + 64);
+         if (CompareMem(MagicString, BTRFS_SIGNATURE, 8) == 0)
+            return FS_TYPE_BTRFS;
+      } // search for Btrfs magic
+
       if (BufferSize >= (1024 + 2)) {
          Magic16 = (UINT16*) (Buffer + 1024);
          if ((*Magic16 == HFSPLUS_MAGIC1) || (*Magic16 == HFSPLUS_MAGIC2)) {
@@ -467,7 +477,7 @@ static UINT32 IdentifyFilesystemType(IN UINT8 *Buffer, IN UINTN BufferSize) {
    } // if (Buffer != NULL)
 
    return FoundType;
-}
+} // UINT32 IdentifyFilesystemType()
 
 static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
 {

@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 6/18/2013</p>
+<p>Last Web page update: 6/27/2013</p>
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.7.0 (6/27/2013)</b>&mdash;Improvements to the filesystem drivers dominate this version. The biggest change is a new Btrfs driver, created by Samuel Liao and based in part on the GRUB 2.0 Btrfs support. The drivers also now include a read cache to improve their speed. This has only a tiny effect on most computers, but on some it can speed boot times by a few seconds, and under VirtualBox the effect is dramatic&mdash;the ext2fs driver goes from a sluggish three <i>minutes</i> to load a kernel and initrd to three <i>seconds</i>. I've also changed some critical filesystem driver pointers from 32-bit to 64-bit, which may enable some of them to work with larger filesystems, although this isn't yet tested. The main rEFInd binary sports only two changes: It can now identify Btrfs volumes as such for labelling purposes and it can now filter out invalid loaders (those for the wrong architecture or Linux kernels that lack EFI stub loader support, for instance).</li>
 
 <li><b>0.6.12 (6/18/2013)</b>&mdash;This version changes relatively little code, but it adds one feature that will simplify rEFInd installation for some users: The program can now deduce minimal Linux boot options based on an <tt>/etc/fstab</tt> file <i>if</i> that file is on the same partition as the kernel (in other words, if you do <i>not</i> use a separate <tt>/boot</tt> partition). Put another way, <tt>refind_linux.conf</tt> is no longer required for some installations, although it's still desirable. If you're already using rEFInd, this isn't likely to be important, but it can help when you're just starting out. In addition, this version adds support for the Linux Foundation's PreBootloader in the <tt>install.sh</tt> script. I've also changed the default 64-bit shell included on the CD-R and USB flash drive images to a modified version 2 shell, so as to enable use of the <tt>bcfg</tt> command to help install rEFInd (or make other changes to the firmware's boot manager configuration).</li>
 

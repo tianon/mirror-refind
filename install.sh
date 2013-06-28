@@ -33,6 +33,7 @@
 #
 # Revision history:
 #
+# 0.7.0   -- Added support for the new Btrfs driver
 # 0.6.12  -- Added support for PreLoader as well as for shim
 # 0.6.11  -- Improvements in script's ability to handle directories with spaces
 #            in their names
@@ -246,6 +247,8 @@ CopyDrivers() {
          ext4) DriverType="ext4"
               ;;
          reiserfs) DriverType="reiserfs"
+              ;;
+         btrfs) DriverType="btrfs"
               ;;
          hfsplus) DriverType="hfs"
               ;;

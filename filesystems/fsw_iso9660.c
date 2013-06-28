@@ -282,7 +282,6 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
     struct iso9660_dirrec rootdir;
     int sua_pos;
     char *sig;
-    int skip;
     struct fsw_rock_ridge_susp_entry *entry;
 
     // read through the Volume Descriptor Set
@@ -363,7 +362,6 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
 #if 1
     status = fsw_block_get(vol, ISOINT(rootdir.extent_location), 0, &buffer);
     sig = (char *)buffer + sua_pos;
-    skip = 0;
     entry = (struct fsw_rock_ridge_susp_entry *)sig;
     if (   entry->sig[0] == 'S'
         && entry->sig[1] == 'P')
@@ -376,7 +374,6 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
  //           FSW_MSG_DEBUG((FSW_MSGSTR("fsw_iso9660_volume_mount: SP magic isn't valid\n")));
 //          DBG("fsw_iso9660_volume_mount: SP magic isn't valid\n");
         }
-        skip = sp->skip;
     }
 #endif
     // release volume descriptors
