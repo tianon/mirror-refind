@@ -383,6 +383,27 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
     </ul></li> <!-- Drivers -->
 
+<li><b>Improvements to <tt>gptsync</tt>, <tt>install.sh</tt>, or other
+    support tools:</b>
+
+    <ul>
+
+    <li>The <tt>gptsync</tt> program can return misleading error codes
+	under some circumstances, such as when it makes no changes to the
+	partition table. Fix this.</li>
+
+    <li>When updating a system with Secure Boot via an RPM or Debian
+	package, the RPM installation script can detect rEFInd's existing
+	shim or PreLoader program and pass options to <tt>install.sh</tt>
+	to try to copy these programs over themselves. This results in a
+	message that the copy was over the same file and an error message
+	that there were problems with the installation, although this isn't
+	really the case.</li>
+
+    <li>A Mac-specific package is highly desirable.</li>
+
+    </ul></li>
+
 </ul>
 
 <hr />
