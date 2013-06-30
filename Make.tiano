@@ -30,6 +30,7 @@ ifeq ($(ARCH),x86_64)
 endif
 
 EDK2BASE = /usr/local/UDK2010/MyWorkSpace
+#EDK2BASE = /usr/local/EDK2/tianocore-edk2
 
 # Below file defines TARGET (RELEASE or DEBUG) and TOOL_CHAIN_TAG (GCC44, GCC45, GCC46, or GCC47)
 include $(EDK2BASE)/Conf/target.txt

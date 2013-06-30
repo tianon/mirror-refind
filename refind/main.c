@@ -1228,9 +1228,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
              SPrint(FileName, 255, L"\\%s", DirEntry->FileName);
           CleanUpPathNameSlashes(FileName);
 
-          if( /* (!StriSubCmp(L"vmlinuz", DirEntry->FileName) ||
-              !StriSubCmp(L"bzImage", DirEntry->FileName)) && */
-              !IsValidLoader(Volume, FileName))
+          if(!IsValidLoader(Volume, FileName))
              continue;
 
           NewLoader = AllocateZeroPool(sizeof(struct LOADER_LIST));
