@@ -1,3 +1,12 @@
+0.7.1 (?/??/2013):
+------------------
+
+- Fixed build problem with recent development versions of EDK2.
+
+- Added scan for Boot Repair's backup of the Windows boot loader
+  (bkpbootmgfw.efi). If found, give separate entries for it and for
+  bootmgfw.efi, each with its own descriptive text label.
+
 0.7.0 (6/27/2013):
 ------------------
 

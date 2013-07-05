@@ -147,7 +147,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.0");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.0.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -926,7 +926,8 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
       Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_GRUB;
    } else if (StriCmp(FileName, L"cdboot.efi") == 0 ||
               StriCmp(FileName, L"bootmgr.efi") == 0 ||
-              StriCmp(FileName, L"bootmgfw.efi") == 0) {
+              StriCmp(FileName, L"bootmgfw.efi") == 0 ||
+              StriCmp(FileName, L"bkpbootmgfw.efi") == 0) {
       MergeStrings(&OSIconName, L"win", L',');
       Entry->OSType = 'W';
       ShortcutLetter = 'W';
@@ -1273,6 +1274,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
    CHAR16                  FileName[256], *Directory, *MatchPatterns, *VolName = NULL, *SelfPath;
    UINTN                   i, Length;
    BOOLEAN                 ScanFallbackLoader = TRUE;
+   BOOLEAN                 FoundBRBackup = FALSE;
 
    MatchPatterns = StrDuplicate(LOADER_MATCH_PATTERNS);
    if (GlobalConfig.ScanAllLinux)
@@ -1298,13 +1300,24 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       } // if should scan Mac directory
 
       // check for Microsoft boot loader/menu
-      StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bootmgfw.efi");
-      if (FileExists(Volume->RootDir, FileName) && ShouldScan(Volume, L"EFI\\Microsoft\\Boot") &&
-          !IsIn(L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
-         AddLoaderEntry(FileName, L"Microsoft EFI boot", Volume);
-         if (DuplicatesFallback(Volume, FileName))
-            ScanFallbackLoader = FALSE;
-      }
+      if (ShouldScan(Volume, L"EFI\\Microsoft\\Boot")) {
+         StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bkpbootmgfw.efi");
+         if (FileExists(Volume->RootDir, FileName) &&  !IsIn(L"bkpbootmgfw.efi", GlobalConfig.DontScanFiles)) {
+            AddLoaderEntry(FileName, L"Microsoft EFI boot (Boot Repair backup)", Volume);
+            FoundBRBackup = TRUE;
+            if (DuplicatesFallback(Volume, FileName))
+               ScanFallbackLoader = FALSE;
+         }
+         StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bootmgfw.efi");
+         if (FileExists(Volume->RootDir, FileName) &&  !IsIn(L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
+            if (FoundBRBackup)
+               AddLoaderEntry(FileName, L"Supposed Microsoft EFI boot (probably GRUB)", Volume);
+            else
+               AddLoaderEntry(FileName, L"Microsoft EFI boot", Volume);
+            if (DuplicatesFallback(Volume, FileName))
+               ScanFallbackLoader = FALSE;
+         }
+      } // if
 
       // scan the root directory for EFI executables
       if (ScanLoaderDir(Volume, L"\\", MatchPatterns))

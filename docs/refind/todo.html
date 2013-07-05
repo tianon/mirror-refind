@@ -228,10 +228,10 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     <li>I've been receiving reports of blank screens when using rEFInd on
 	some recent Mac models. I've investigated this with the help of one
 	user, and I suspect that Apple has made changes to its firmware
-	that are likely to affect just about any EFI program. I don't know
-	how to fix the problem at the moment, though; I need both
-	documentation and access to an afflicted computer to do the
-	necessary work, and I have neither.</li>
+	that are likely to affect just about any EFI program. I don't have
+	a definitive solution, but at least one user has reported that
+	removing rEFInd's drivers has caused the problem to go into
+	remission.</li>
 
     <li>The <a href="http://www.rodsbooks.com/gb-hybrid-efi/">Gigabyte
 	Hybrid EFI</a> has a bug that causes the allegedly case-insensitive
@@ -299,6 +299,16 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	kernels or boot loaders in RAID 1 twice. This could be fixed by
 	adding a check for duplicate filesystem UUIDs to the
 	partition-scanning code.</li>
+
+    <li>Some Macs experience problems with waking up from suspend states
+	when rEFInd is installed. Unfortunately, I lack the hardware to
+	test and experiment with this (my only Intel-based Mac doesn't
+	exhibit this problem), so I can't fix this myself. <a
+	href="apple.stackexchange.com/questions/91139/why-does-my-mbp-sleep-on-mountain-lion-and-often-not-wake-up/91150#91150">Using
+	<tt>pmset</tt> to disable the <tt>autopoweroff</tt> option</a> is
+	<a
+	href="http://apple.stackexchange.com/questions/91529/macbook-air-not-waking-up-from-suspend-sleep-with-refind-boot-manager-installed">claimed
+	by some</a> to at least partially fix the problem, though.</li>
 
     </ul></li> <!-- Known bugs -->
 
