@@ -354,7 +354,8 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN EFI_DRIVER_BINDING_PROTOCOL  *T
                               ControllerHandle,
                               EFI_OPEN_PROTOCOL_BY_DRIVER);
     if (EFI_ERROR(Status)) {
-        return Status;
+       Print(L"Fsw ERROR: OpenProtocol(DiskIo) returned %r\n", Status);
+       return Status;
     }
 
     // allocate volume structure

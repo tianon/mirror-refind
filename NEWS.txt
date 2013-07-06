@@ -7,6 +7,9 @@
   (bkpbootmgfw.efi). If found, give separate entries for it and for
   bootmgfw.efi, each with its own descriptive text label.
 
+- Fixed also_scan_dirs; used to have bug that caused it to ignore
+  volume specification, if present.
+
 0.7.0 (6/27/2013):
 ------------------
 

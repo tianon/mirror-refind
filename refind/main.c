@@ -1039,7 +1039,7 @@ static VOID CleanUpLoaderList(struct LOADER_LIST *LoaderList) {
 // Returns TRUE if none of these conditions is met -- that is, if the path is
 // eligible for scanning.
 static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
-   CHAR16   *VolName = NULL, *DontScanDir;
+   CHAR16   *VolName = NULL, *DontScanDir, *PathCopy = NULL;
    UINTN    i = 0, VolNum;
    BOOLEAN  ScanIt = TRUE;
 
@@ -1049,6 +1049,25 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
    if ((StriCmp(Path, SelfDirPath) == 0) && (Volume->DeviceHandle == SelfVolume->DeviceHandle))
       return FALSE;
 
+   // See if Path includes an explicit volume declaration that's NOT Volume....
+   PathCopy = StrDuplicate(Path);
+   if (SplitVolumeAndFilename(&PathCopy, &VolName)) {
+      if (StriCmp(VolName, Volume->VolName) != 0) {
+         if ((StrLen(VolName) > 2) && (VolName[0] == L'f') && (VolName[1] == L's') && (VolName[2] >= L'0') && (VolName[2] <= L'9')) {
+            VolNum = Atoi(VolName + 2);
+            if (VolNum != Volume->VolNumber) {
+               ScanIt = FALSE;
+            }
+         } else {
+            ScanIt = FALSE;
+         }
+      } // if
+   } // if Path includes volume specification
+   MyFreePool(PathCopy);
+   MyFreePool(VolName);
+   VolName = NULL;
+
+   // See if Volume is in GlobalConfig.DontScanDirs....
    while ((DontScanDir = FindCommaDelimited(GlobalConfig.DontScanDirs, i++)) && ScanIt) {
       SplitVolumeAndFilename(&DontScanDir, &VolName);
       CleanUpPathNameSlashes(DontScanDir);
@@ -1065,8 +1084,10 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
             ScanIt = FALSE;
       }
       MyFreePool(DontScanDir);
+      MyFreePool(VolName);
       DontScanDir = NULL;
-   }
+   } // while()
+
    return ScanIt;
 } // BOOLEAN ShouldScan()
 
@@ -1339,11 +1360,13 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       // Scan user-specified (or additional default) directories....
       i = 0;
       while ((Directory = FindCommaDelimited(GlobalConfig.AlsoScan, i++)) != NULL) {
-         SplitVolumeAndFilename(&Directory, &VolName);
-         CleanUpPathNameSlashes(Directory);
-         Length = StrLen(Directory);
-         if ((Length > 0) && ScanLoaderDir(Volume, Directory, MatchPatterns))
-            ScanFallbackLoader = FALSE;
+         if (ShouldScan(Volume, Directory)) {
+            SplitVolumeAndFilename(&Directory, &VolName);
+            CleanUpPathNameSlashes(Directory);
+            Length = StrLen(Directory);
+            if ((Length > 0) && ScanLoaderDir(Volume, Directory, MatchPatterns))
+               ScanFallbackLoader = FALSE;
+         } // if
          MyFreePool(Directory);
          MyFreePool(VolName);
       } // while
