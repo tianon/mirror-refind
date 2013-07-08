@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 6/27/2013</p>
+<p>Last Web page update: 7/8/2013</p>
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.7.1 (7/8/2013)</b>&mdash;The most important improvement to this version is a bug fix to the filesystem drivers. In version 0.7.0, drivers could hang the system (the Btrfs driver in particular generated problem reports, although the bug could theoretically affect any driver). Version 0.7.1 fixes this problem. I've also fixed a build problem with development versions of the TianoCore EDK2. In rEFInd proper, I've added a scan for <tt>EFI/Microsoft/Boot/bkpbootmgfw.efi</tt>, which is how recent versions of Ubuntu's Boot Repair utility rename the Windows boot loader. This change enables rEFInd to launch Windows even on systems that have been "repaired" by this overzealous tool. I've also fixed a bug that caused volume specifications in <tt>also_scan_dirs</tt> tokens to be ignored.</li>
 
 <li><b>0.7.0 (6/27/2013)</b>&mdash;Improvements to the filesystem drivers dominate this version. The biggest change is a new Btrfs driver, created by Samuel Liao and based in part on the GRUB 2.0 Btrfs support. The drivers also now include a read cache to improve their speed. This has only a tiny effect on most computers, but on some it can speed boot times by a few seconds, and under VirtualBox the effect is dramatic&mdash;the ext2fs driver goes from a sluggish three <i>minutes</i> to load a kernel and initrd to three <i>seconds</i>. I've also changed some critical filesystem driver pointers from 32-bit to 64-bit, which may enable some of them to work with larger filesystems, although this isn't yet tested. The main rEFInd binary sports only two changes: It can now identify Btrfs volumes as such for labelling purposes and it can now filter out invalid loaders (those for the wrong architecture or Linux kernels that lack EFI stub loader support, for instance).</li>
 
