@@ -98,7 +98,7 @@ EFI_GUID gEfiFileSystemVolumeLabelInfoIdGuid = EFI_FILE_SYSTEM_VOLUME_LABEL_INFO
 /** Helper macro for stringification. */
 #define FSW_EFI_STRINGIFY(x) #x
 /** Expands to the EFI driver name given the file system type name. */
-#define FSW_EFI_DRIVER_NAME(t) L"rEFInd 0.7.0 " FSW_EFI_STRINGIFY(t) L" File System Driver"
+#define FSW_EFI_DRIVER_NAME(t) L"rEFInd 0.7.0.3 " FSW_EFI_STRINGIFY(t) L" File System Driver"
 
 // function prototypes
 
@@ -176,6 +176,7 @@ struct cache_data {
 
 #define NUM_CACHES 2 /* Don't increase without modifying fsw_efi_read_block() */
 static struct cache_data    Caches[NUM_CACHES];
+static int LastRead = -1;
 
 /**
  * Interface structure for the EFI Driver Binding protocol.
@@ -214,6 +215,22 @@ struct fsw_host_table   fsw_efi_host_table = {
 extern struct fsw_fstype_table   FSW_FSTYPE_TABLE_NAME(FSTYPE);
 
 //#include "OverrideFunctions-kabyl.edk2.c.include"
+
+static VOID EFIAPI fsw_efi_clear_cache(VOID) {
+   int i;
+
+   // clear the cache
+   for (i = 0; i < NUM_CACHES; i++) {
+      if (Caches[i].Cache != NULL) {
+         FreePool(Caches[i].Cache);
+         Caches[i].Cache = NULL;
+      } // if
+            Caches[i].CacheStart = 0;
+            Caches[i].CacheValid = FALSE;
+            Caches[i].Volume = NULL;
+   }
+   LastRead = -1;
+} // VOID EFIAPI fsw_efi_clear_cache();
 
 /**
  * Image entry point. Installs the Driver Binding and Component Name protocols
@@ -354,8 +371,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN EFI_DRIVER_BINDING_PROTOCOL  *T
                               ControllerHandle,
                               EFI_OPEN_PROTOCOL_BY_DRIVER);
     if (EFI_ERROR(Status)) {
-       Print(L"Fsw ERROR: OpenProtocol(DiskIo) returned %r\n", Status);
-       return Status;
+        return Status;
     }
 
     // allocate volume structure
@@ -460,12 +476,8 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN  EFI_DRIVER_BINDING_PROTOCOL  *T
                                ControllerHandle);
 
     // clear the cache
-    for (i = 0; i < NUM_CACHES; i++) {
-       if (Caches[i].Cache != NULL) {
-          FreePool(Caches[i].Cache);
-          Caches[i].Cache = NULL;
-       } // if
-    }
+    fsw_efi_clear_cache();
+
     return Status;
 }
 
@@ -527,7 +539,6 @@ void fsw_efi_change_blocksize(struct fsw_volume *vol,
  */
 
 fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *buffer) {
-   static int       LastRead = -1;
    int              i, ReadCache = -1;
    FSW_VOLUME_DATA  *Volume = (FSW_VOLUME_DATA *)vol->host_data;
    EFI_STATUS       Status = EFI_SUCCESS;
@@ -539,12 +550,7 @@ fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *
 
    // Initialize static data structures, if necessary....
    if (LastRead < 0) {
-      for (i = 0; i < NUM_CACHES; i++) {
-         Caches[i].Cache = NULL;
-         Caches[i].CacheStart = 0;
-         Caches[i].CacheValid = FALSE;
-         Caches[i].Volume = NULL;
-      } // for
+      fsw_efi_clear_cache();
    } // if
 
    // Look for a cache hit on the current query....
@@ -593,6 +599,7 @@ fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *
                                    vol->phys_blocksize,
                                    buffer);
    }
+   Volume->LastIOStatus = Status;
 
    return Status;
 } // fsw_status_t *fsw_efi_read_block()
@@ -640,6 +647,7 @@ EFI_STATUS EFIAPI fsw_efi_FileSystem_OpenVolume(IN EFI_FILE_IO_INTERFACE *This,
     Print(L"fsw_efi_FileSystem_OpenVolume\n");
 #endif
 
+    fsw_efi_clear_cache();
     Status = fsw_efi_dnode_to_FileHandle(Volume->vol->root, Root);
 
     return Status;
