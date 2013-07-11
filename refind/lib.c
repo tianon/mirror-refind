@@ -636,21 +636,27 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
     }
 } /* VOID ScanVolumeBootcode() */
 
-// default volume badge icon based on disk kind
-static VOID ScanVolumeDefaultIcon(IN OUT REFIT_VOLUME *Volume)
+// Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
+static VOID SetVolumeBadgeIcon(IN OUT REFIT_VOLUME *Volume)
 {
-    switch (Volume->DiskKind) {
-       case DISK_KIND_INTERNAL:
-          Volume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_INTERNAL);
-          break;
-       case DISK_KIND_EXTERNAL:
-          Volume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_EXTERNAL);
-          break;
-       case DISK_KIND_OPTICAL:
-          Volume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_OPTICAL);
-          break;
-    } // switch()
-}
+   if (Volume->VolBadgeImage == NULL) {
+      Volume->VolBadgeImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeBadge", 128);
+   }
+
+   if (Volume->VolBadgeImage == NULL) {
+      switch (Volume->DiskKind) {
+          case DISK_KIND_INTERNAL:
+             Volume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_INTERNAL);
+             break;
+          case DISK_KIND_EXTERNAL:
+             Volume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_EXTERNAL);
+             break;
+          case DISK_KIND_OPTICAL:
+             Volume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_OPTICAL);
+             break;
+      } // switch()
+   }
+} // VOID SetVolumeBadgeIcon()
 
 // Return a string representing the input size in IEEE-1541 units.
 // The calling function is responsible for freeing the allocated memory.
@@ -844,9 +850,6 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
         Volume->HasBootCode = FALSE;
     }
 
-    // default volume icon based on disk kind
-    ScanVolumeDefaultIcon(Volume);
-
     // open the root directory of the volume
     Volume->RootDir = LibOpenRoot(Volume->DeviceHandle);
     if (Volume->RootDir == NULL) {
@@ -858,9 +861,10 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
     Volume->VolName = GetVolumeName(Volume);
 
-    // get custom volume icon if present
-    if (!Volume->VolBadgeImage)
-       Volume->VolBadgeImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeBadge", 32);
+    // Set volume icon based on .VolumeBadge icon or disk kind
+    SetVolumeBadgeIcon(Volume);
+
+    // get custom volume icons if present
     if (!Volume->VolIconImage)
        Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", 128);
 } // ScanVolume()
@@ -918,7 +922,7 @@ static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_I
                 if (!Bootable)
                     Volume->HasBootCode = FALSE;
 
-                ScanVolumeDefaultIcon(Volume);
+                SetVolumeBadgeIcon(Volume);
 
                 AddListElement((VOID ***) &Volumes, &VolumesCount, Volume);
 

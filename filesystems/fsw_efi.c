@@ -433,7 +433,6 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN  EFI_DRIVER_BINDING_PROTOCOL  *T
     EFI_STATUS          Status;
     EFI_FILE_IO_INTERFACE *FileSystem;
     FSW_VOLUME_DATA     *Volume;
-    int                 i;
 
 #if DEBUG_LEVEL
     Print(L"fsw_efi_DriverBinding_Stop\n");
