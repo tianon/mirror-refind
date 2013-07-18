@@ -147,7 +147,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.1.1");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.1.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -377,7 +377,6 @@ static EFI_STATUS RebootIntoFirmware(VOID) {
    refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
    Print(L"Error calling ResetSystem: %r", err);
    PauseForKey();
-//   uefi_call_wrapper(BS->Stall, 1, 3 * 1000 * 1000);
    return err;
 }
 

@@ -27,3 +27,4 @@ typedef struct _SHIM_LOCK
 BOOLEAN ShimLoaded(void);
 BOOLEAN ShimValidate (VOID *data, UINT32 size);
 BOOLEAN secure_mode (VOID);
+VOID disable_secure_boot(VOID);
