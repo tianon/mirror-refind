@@ -706,6 +706,7 @@ GenerateRefindLinuxConf() {
       if [[ -f "$RootDir/etc/default/grub" ]] ; then
          # We want the default options used by the distribution, stored here....
          source "$RootDir/etc/default/grub"
+         echo "Setting default boot options based on $RootDir/etc/default/grub"
       fi
       RootFS=`df "$RootDir" | grep dev | cut -f 1 -d " "`
       StartOfDevname=`echo "$RootFS" | cut -b 1-7`
