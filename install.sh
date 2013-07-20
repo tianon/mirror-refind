@@ -33,6 +33,7 @@
 #
 # Revision history:
 #
+# 0.7.2   -- Fixed code that could be confused by use of autofs to mount the ESP
 # 0.7.0   -- Added support for the new Btrfs driver
 # 0.6.12  -- Added support for PreLoader as well as for shim
 # 0.6.11  -- Improvements in script's ability to handle directories with spaces
@@ -635,7 +636,7 @@ FindLinuxESP() {
    fi
    InstallDir=`echo $EspLine | cut -d " " -f 6`
    if [[ -n "$InstallDir" ]] ; then
-      EspFilesystem=`grep "$InstallDir" /etc/mtab | uniq | cut -d " " -f 3`
+      EspFilesystem=`grep "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3`
    fi
    echo "EspFilesystem is '$EspFilesystem'"
    if [[ $EspFilesystem != 'vfat' ]] ; then
