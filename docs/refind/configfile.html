@@ -304,7 +304,7 @@ timeout 20
 <tr>
    <td><tt>dont_scan_files</tt> or <tt>don't_scan_files</tt></td>
    <td>filename(s)</td>
-   <td>Adds the specified filename or filenames to a filename "blacklist"&mdash;these files are <i>not</i> included as boot loader options even if they're found on the disk. This is useful to exclude support programs (such as <tt>shim.efi</tt> and <tt>MokManager.efi</tt>) and drivers from your OS list. The default value is <tt>shim.efi, MokManager.efi, HashTool.efi, TextMode.efi, ebounce.efi, GraphicsConsole.efi</tt>.</td>
+   <td>Adds the specified filename or filenames to a filename "blacklist"&mdash;these files are <i>not</i> included as boot loader options even if they're found on the disk. This is useful to exclude support programs (such as <tt>shim.efi</tt> and <tt>MokManager.efi</tt>) and drivers from your OS list. The default value is <tt>shim.efi, PreLoader.efi, TextMode.efi, ebounce.efi, GraphicsConsole.efi</tt>, <tt>MokManager.efi</tt>, <tt>HashTool.efi</tt>, <tt>HashTool-signed.efi</tt>.</td>
 </tr>
 <tr>
    <td><tt>scan_all_linux_kernels</tt></td>

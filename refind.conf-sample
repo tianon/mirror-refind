@@ -232,7 +232,7 @@ timeout 20
 # set of tools. Most notably, MokManager.efi is in this blacklist,
 # but will show up as a tool if present in certain directories. You
 # can control the tools row with the showtools token.
-# The default is shim.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi,MokManager.efi,HashTool.efi,HashTool-signed.efi
+# The default is shim.efi,PreLoader.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi,MokManager.efi,HashTool.efi,HashTool-signed.efi
 #
 #dont_scan_files shim.efi,MokManager.efi
 

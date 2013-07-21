@@ -638,7 +638,6 @@ FindLinuxESP() {
    if [[ -n "$InstallDir" ]] ; then
       EspFilesystem=`grep "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3`
    fi
-   echo "EspFilesystem is '$EspFilesystem'"
    if [[ $EspFilesystem != 'vfat' ]] ; then
       echo "$RootDir/boot/efi doesn't seem to be on a VFAT filesystem. The ESP must be"
       echo "mounted at $RootDir/boot or $RootDir/boot/efi and it must be VFAT! Aborting!"
@@ -695,6 +694,8 @@ AddBootEntry() {
       echo "rename the $Refind binary to the default name (EFI/boot/bootx64.efi"
       echo "on x86-64 systems or EFI/boot/bootia32.efi on x86 systems) to have it run!"
       echo
+   else
+      echo "rEFInd has been set as the default boot manager."
    fi
 } # AddBootEntry()
 
@@ -703,6 +704,7 @@ GenerateRefindLinuxConf() {
    if [[ -f "$RLConfFile" ]] ; then
       echo "Existing $RLConfFile found; not overwriting."
    else
+      echo "Creating $RLConfFile; edit it to adjust kernel options."
       if [[ -f "$RootDir/etc/default/grub" ]] ; then
          # We want the default options used by the distribution, stored here....
          source "$RootDir/etc/default/grub"
