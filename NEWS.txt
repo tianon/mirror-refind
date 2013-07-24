@@ -1,9 +1,16 @@
 0.7.2 (?/??/2013):
 ------------------
 
-- Added PreLoader.efi to default dont_scan_files list; it's now "shim.efi,
-  PreLoader.efi, TextMode.efi, ebounce.efi, GraphicsConsole.efi,
-  MokManager.efi, HashTool.efi, HashTool-signed.efi".
+- Fixed bug that could cause incorrect scanning or even a rEFInd crash when
+  using volume specification in also_scan_dirs token.
+
+- Added protection against loading invalid drivers and other EFI programs.
+  (Some EFIs crash when attempting to load such drivers and programs.)
+
+- Added PreLoader.efi and shim-fedora.efi to default dont_scan_files list;
+  it's now "shim.efi, shim-fedora.efi, PreLoader.efi, TextMode.efi,
+  ebounce.efi, GraphicsConsole.efi, MokManager.efi, HashTool.efi,
+  HashTool-signed.efi".
 
 - Added icon for Funtoo Linux.
 

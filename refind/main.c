@@ -210,6 +210,34 @@ static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
    } // if
 } // VOID WarnSecureBootError()
 
+// Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
+static BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
+    BOOLEAN         IsValid = TRUE;
+#if defined (EFIX64) | defined (EFI32)
+    EFI_STATUS      Status;
+    EFI_FILE_HANDLE FileHandle;
+    CHAR8           Header[512];
+    UINTN           Size = sizeof(Header);
+
+    Status = refit_call5_wrapper(RootDir->Open, RootDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
+    if (EFI_ERROR(Status))
+       return 0;
+
+    Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &Size, Header);
+    refit_call1_wrapper(FileHandle->Close, FileHandle);
+
+    IsValid = !EFI_ERROR(Status) &&
+              Size == sizeof(Header) &&
+              ((Header[0] == 'M' && Header[1] == 'Z' &&
+               (Size = *(UINT32 *)&Header[0x3c]) < 0x180 &&
+               Header[Size] == 'P' && Header[Size+1] == 'E' &&
+               Header[Size+2] == 0 && Header[Size+3] == 0 &&
+               *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
+              (*(UINT32 *)&Header == FAT_ARCH));
+#endif
+    return IsValid;
+} // BOOLEAN IsValidLoader()
+
 // Launch an EFI binary.
 static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
                                     IN CHAR16 *LoadOptions, IN CHAR16 *LoadOptionsPrefix,
@@ -220,9 +248,11 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
     EFI_STATUS              Status, ReturnStatus;
     EFI_HANDLE              ChildImageHandle;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
+    REFIT_VOLUME            *Volume = NULL;
     UINTN                   DevicePathIndex;
     CHAR16                  ErrorInfo[256];
     CHAR16                  *FullLoadOptions = NULL;
+    CHAR16                  *Filename = NULL;
 
     if (ErrorInStep != NULL)
         *ErrorInStep = 0;
@@ -251,15 +281,23 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
     // load the image into memory (and execute it, in the case of a shim/MOK image).
     ReturnStatus = Status = EFI_NOT_FOUND;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
-       // NOTE: Below commented-out line could be more efficient if file were read ahead of
-       // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
-       // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
-       // kernel returns a "Failed to handle fs_proto" error message.
-       // TODO: Track down the cause of this error and fix it, if possible.
-       // ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePaths[DevicePathIndex],
-       //                                            ImageData, ImageSize, &ChildImageHandle);
-       ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePaths[DevicePathIndex],
-                                                   NULL, 0, &ChildImageHandle);
+       FindVolumeAndFilename(DevicePaths[DevicePathIndex], &Volume, &Filename);
+       // Some EFIs crash if attempting to load driver for invalid architecture, so
+       // protect for this condition....
+       if (IsValidLoader(Volume->RootDir, Filename)) {
+          // NOTE: Below commented-out line could be more efficient if file were read ahead of
+          // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
+          // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
+          // kernel returns a "Failed to handle fs_proto" error message.
+          // TODO: Track down the cause of this error and fix it, if possible.
+          // ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePaths[DevicePathIndex],
+          //                                            ImageData, ImageSize, &ChildImageHandle);
+          ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePaths[DevicePathIndex],
+                                                      NULL, 0, &ChildImageHandle);
+       } else {
+          Print(L"Invalid loader file!\n");
+          ReturnStatus = EFI_LOAD_ERROR;
+       }
        if (ReturnStatus != EFI_NOT_FOUND) {
           break;
        }
@@ -1185,34 +1223,6 @@ static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *Path, EFI_FILE_INFO 
    return (DirEntry->FileSize != FileSize2);
 } // BOOLEAN IsSymbolicLink()
 
-// Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
-static BOOLEAN IsValidLoader(REFIT_VOLUME *Volume, CHAR16 *FileName) {
-    BOOLEAN         IsValid = TRUE;
-#if defined (EFIX64) | defined (EFI32)
-    EFI_STATUS      Status;
-    EFI_FILE_HANDLE FileHandle;
-    CHAR8           Header[512];
-    UINTN           Size = sizeof(Header);
-
-    Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
-    if (EFI_ERROR(Status))
-       return 0;
-
-    Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &Size, Header);
-    refit_call1_wrapper(FileHandle->Close, FileHandle);
-
-    IsValid = !EFI_ERROR(Status) &&
-              Size == sizeof(Header) &&
-              ((Header[0] == 'M' && Header[1] == 'Z' &&
-               (Size = *(UINT32 *)&Header[0x3c]) < 0x180 &&
-               Header[Size] == 'P' && Header[Size+1] == 'E' &&
-               Header[Size+2] == 0 && Header[Size+3] == 0 &&
-               *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
-              (*(UINT32 *)&Header == FAT_ARCH));
-#endif
-    return IsValid;
-} // BOOLEAN IsValidLoader()
-
 // Scan an individual directory for EFI boot loader files and, if found,
 // add them to the list. Exception: Ignores FALLBACK_FULLNAME, which is picked
 // up in ScanEfiFiles(). Sorts the entries within the loader directory so that
@@ -1249,7 +1259,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
              SPrint(FileName, 255, L"\\%s", DirEntry->FileName);
           CleanUpPathNameSlashes(FileName);
 
-          if(!IsValidLoader(Volume, FileName))
+          if(!IsValidLoader(Volume->RootDir, FileName))
              continue;
 
           NewLoader = AllocateZeroPool(sizeof(struct LOADER_LIST));
@@ -1365,9 +1375,9 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             Length = StrLen(Directory);
             if ((Length > 0) && ScanLoaderDir(Volume, Directory, MatchPatterns))
                ScanFallbackLoader = FALSE;
-         } // if
+            MyFreePool(VolName);
+         } // if should scan dir
          MyFreePool(Directory);
-         MyFreePool(VolName);
       } // while
 
       // Don't scan the fallback loader if it's on the same volume and a duplicate of rEFInd itself....

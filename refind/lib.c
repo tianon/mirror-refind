@@ -115,10 +115,11 @@ static VOID UninitVolumes(VOID);
 // isn't present.
 VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName) {
    CHAR16   *NewName;
-   UINTN    i, FinalChar = 0;
+   UINTN    i, Length, FinalChar = 0;
    BOOLEAN  LastWasSlash = FALSE;
 
-   NewName = AllocateZeroPool(sizeof(CHAR16) * (StrLen(PathName) + 2));
+   Length = StrLen(PathName);
+   NewName = AllocateZeroPool(sizeof(CHAR16) * (Length + 2));
    if (NewName != NULL) {
       for (i = 0; i < StrLen(PathName); i++) {
          if ((PathName[i] == L'/') || (PathName[i] == L'\\')) {
