@@ -1,6 +1,9 @@
 0.7.2 (?/??/2013):
 ------------------
 
+- Fixed bug that caused display glitches in the final entry on the first
+  row of icons if the second row of icons was empty.
+
 - Fixed bug that could cause incorrect scanning or even a rEFInd crash when
   using volume specification in also_scan_dirs token.
 

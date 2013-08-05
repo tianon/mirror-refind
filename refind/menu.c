@@ -339,7 +339,7 @@ static VOID IdentifyRows(IN SCROLL_STATE *State, IN REFIT_MENU_SCREEN *Screen) {
 
    State->FinalRow0 = 0;
    State->InitialRow1 = State->MaxIndex;
-   for (i = 0; i < State->MaxIndex; i++) {
+   for (i = 0; i <= State->MaxIndex; i++) {
       if (Screen->Entries[i]->Row == 0) {
          State->FinalRow0 = i;
       } else if ((Screen->Entries[i]->Row == 1) && (State->InitialRow1 > i)) {
