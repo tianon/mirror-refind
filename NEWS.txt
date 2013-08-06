@@ -1,5 +1,5 @@
-0.7.2 (?/??/2013):
-------------------
+0.7.2 (8/6/2013):
+-----------------
 
 - Fixed bug that caused display glitches in the final entry on the first
   row of icons if the second row of icons was empty.
@@ -17,7 +17,7 @@
 
 - Added icon for Funtoo Linux.
 
-- Fixed reading of volume icons from user-specified icons directory, which
+- Fixed reading of volume badges from user-specified icons directory, which
   was broken.
 
 - Fixed handling of /.VolumeBadge.icns (or /.VolumeBadge.png) files, which
