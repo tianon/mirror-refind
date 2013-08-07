@@ -1,3 +1,11 @@
+0.7.3 (8/7/2013):
+-----------------
+
+- Fixed bug that caused missing media-type badges on BIOS-mode boot
+  loaders on Macs.
+
+- Fixed bug that caused failure when launching BIOS-mode OSes on Macs.
+
 0.7.2 (8/6/2013):
 -----------------
 

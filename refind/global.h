@@ -271,7 +271,6 @@ LOADER_ENTRY * MakeGenericLoaderEntry(VOID);
 LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume);
 VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
 LOADER_ENTRY * AddPreparedLoaderEntry(LOADER_ENTRY *Entry);
-VOID disable_secure_boot(VOID);
 
 #endif
 

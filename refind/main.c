@@ -66,7 +66,7 @@
 #endif
 
 //
-// variables
+// constants
 
 #define MACOSX_LOADER_PATH      L"System\\Library\\CoreServices\\boot.efi"
 #if defined (EFIX64)
@@ -109,6 +109,10 @@
 #define SUBSCREEN_HINT2            L"Insert or F2 to edit options; Esc to return to main menu"
 #define SUBSCREEN_HINT2_NO_EDITOR  L"Esc to return to main menu"
 
+// Load types
+#define TYPE_EFI    1
+#define TYPE_LEGACY 2
+
 static REFIT_MENU_ENTRY MenuEntryAbout    = { L"About rEFInd", TAG_ABOUT, 1, 0, 'A', NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryReset    = { L"Reboot Computer", TAG_REBOOT, 1, 0, 'R', NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryShutdown = { L"Shut Down Computer", TAG_SHUTDOWN, 1, 0, 'U', NULL, NULL, NULL };
@@ -147,7 +151,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.3");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -240,7 +244,7 @@ static BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
 
 // Launch an EFI binary.
 static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
-                                    IN CHAR16 *LoadOptions, IN CHAR16 *LoadOptionsPrefix,
+                                    IN CHAR16 *LoadOptions, IN UINTN LoaderType,
                                     IN CHAR16 *ImageTitle, IN CHAR8 OSType,
                                     OUT UINTN *ErrorInStep,
                                     IN BOOLEAN Verbose)
@@ -259,7 +263,7 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
 
     // set load options
     if (LoadOptions != NULL) {
-        if (LoadOptionsPrefix != NULL) {
+        if (LoaderType == TYPE_EFI) {
             MergeStrings(&FullLoadOptions, LoadOptions, L' ');
             if (OSType == 'M') {
                MergeStrings(&FullLoadOptions, L" ", 0);
@@ -284,7 +288,7 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
        FindVolumeAndFilename(DevicePaths[DevicePathIndex], &Volume, &Filename);
        // Some EFIs crash if attempting to load driver for invalid architecture, so
        // protect for this condition....
-       if (IsValidLoader(Volume->RootDir, Filename)) {
+       if ((LoaderType == TYPE_LEGACY) || IsValidLoader(Volume->RootDir, Filename)) {
           // NOTE: Below commented-out line could be more efficient if file were read ahead of
           // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
           // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
@@ -349,7 +353,7 @@ bailout:
 } /* static EFI_STATUS StartEFIImageList() */
 
 static EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
-                                IN CHAR16 *LoadOptions, IN CHAR16 *LoadOptionsPrefix,
+                                IN CHAR16 *LoadOptions, IN UINTN LoaderType,
                                 IN CHAR16 *ImageTitle, IN CHAR8 OSType,
                                 OUT UINTN *ErrorInStep,
                                 IN BOOLEAN Verbose)
@@ -358,7 +362,7 @@ static EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
 
     DevicePaths[0] = DevicePath;
     DevicePaths[1] = NULL;
-    return StartEFIImageList(DevicePaths, LoadOptions, LoadOptionsPrefix, ImageTitle, OSType, ErrorInStep, Verbose);
+    return StartEFIImageList(DevicePaths, LoadOptions, LoaderType, ImageTitle, OSType, ErrorInStep, Verbose);
 } /* static EFI_STATUS StartEFIImage() */
 
 // From gummiboot: Retrieve a raw EFI variable.
@@ -428,7 +432,7 @@ static VOID StartLoader(LOADER_ENTRY *Entry)
     UINTN ErrorInStep = 0;
 
     BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
-    StartEFIImage(Entry->DevicePath, Entry->LoadOptions, Basename(Entry->LoaderPath),
+    StartEFIImage(Entry->DevicePath, Entry->LoadOptions, TYPE_EFI,
                   Basename(Entry->LoaderPath), Entry->OSType, &ErrorInStep, !Entry->UseGraphicsMode);
     FinishExternalScreen();
 }
@@ -1606,7 +1610,7 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
 
     ExtractLegacyLoaderPaths(DiscoveredPathList, MAX_DISCOVERED_PATHS, LegacyLoaderList);
 
-    Status = StartEFIImageList(DiscoveredPathList, Entry->LoadOptions, NULL, L"legacy loader", 0, &ErrorInStep, TRUE);
+    Status = StartEFIImageList(DiscoveredPathList, Entry->LoadOptions, TYPE_LEGACY, L"legacy loader", 0, &ErrorInStep, TRUE);
     if (Status == EFI_NOT_FOUND) {
         if (ErrorInStep == 1) {
             Print(L"\nPlease make sure that you have the latest firmware update installed.\n");
@@ -1917,7 +1921,7 @@ static VOID ScanLegacyExternal(VOID)
 static VOID StartTool(IN LOADER_ENTRY *Entry)
 {
    BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
-   StartEFIImage(Entry->DevicePath, Entry->LoadOptions, Basename(Entry->LoaderPath),
+   StartEFIImage(Entry->DevicePath, Entry->LoadOptions, TYPE_EFI,
                  Basename(Entry->LoaderPath), Entry->OSType, NULL, TRUE);
    FinishExternalScreen();
 } /* static VOID StartTool() */
@@ -1967,7 +1971,7 @@ static UINTN ScanDriverDir(IN CHAR16 *Path)
         SPrint(FileName, 255, L"%s\\%s", Path, DirEntry->FileName);
         NumFound++;
         Status = StartEFIImage(FileDevicePath(SelfLoadedImage->DeviceHandle, FileName),
-                               L"", DirEntry->FileName, DirEntry->FileName, 0, NULL, FALSE);
+                               L"", TYPE_EFI, DirEntry->FileName, 0, NULL, FALSE);
     }
     Status = DirIterClose(&DirIter);
     if (Status != EFI_NOT_FOUND) {
