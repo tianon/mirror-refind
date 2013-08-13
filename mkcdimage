@@ -46,7 +46,7 @@ ln ../../../refind/drivers_x64/* ./
 cd ..
 mkdir drivers_ia32
 cd drivers_ia32
-ln ../../../refind/drivers_x64/* ./
+ln ../../../refind/drivers_ia32/* ./
 cd ../../..
 
 # Get the size of the binaries to go in the El Torito image in kB

@@ -904,6 +904,8 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <p>The biggest drawback to this approach is that you won't be able to edit the rEFInd configuration file or move rEFInd-related binaries from an EFI shell if you install it in this way, since Apple's HFS+ driver for EFI is read-only. (The same is true of rEFInd's HFS+ driver, so it won't help you overcome this limitation.) You may also be limited in making changes to your rEFInd configuration from Linux or other OSes, too, since Linux's HFS+ drivers disable write support by default on volumes with an active journal. You can force write access by using the <tt>force</tt> option to <tt>mount</tt>; however, this procedure is noted as being risky in the Linux HFS+ documentation, so I don't recommend doing this on a regular basis. As a compromise, you might try creating a small non-journaled HFS+ volume that's dedicated to holding rEFInd. You could even mount it as the Linux <tt>/boot</tt> partition, in which case it would also hold the Linux kernel and related files. You'll need to install rEFInd manually if you try this.</p>
 
+<p>A variant of this solution is suggested in <a href="http://www.sparxeng.com/blog/software/fixing-slow-boot-on-a-triple-boot-mountain-lion-mac">this blog post,</a> which recommends placing rEFInd on an HFS+ volume on the first SATA channel. (In the blogger's case, that channel used to hold an optical drive, but that drive was replaced by a hard disk.)</p>
+
 <a name="fallback">
 <h3>Using the Fallback Filename</h3>
 </a>

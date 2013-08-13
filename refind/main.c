@@ -151,7 +151,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.3");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.3.4");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -223,9 +223,16 @@ static BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     CHAR8           Header[512];
     UINTN           Size = sizeof(Header);
 
+    if ((RootDir == NULL) || (FileName == NULL)) {
+       // Assume valid here, because Macs produce NULL RootDir (& maybe FileName)
+       // when launching from a Firewire drive. This should be handled better, but
+       // fix would have to be in StartEFIImageList() and/or in FindVolumeAndFilename().
+       return TRUE;
+    } // if
+
     Status = refit_call5_wrapper(RootDir->Open, RootDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR(Status))
-       return 0;
+       return FALSE;
 
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &Size, Header);
     refit_call1_wrapper(FileHandle->Close, FileHandle);
@@ -287,8 +294,9 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
        FindVolumeAndFilename(DevicePaths[DevicePathIndex], &Volume, &Filename);
        // Some EFIs crash if attempting to load driver for invalid architecture, so
-       // protect for this condition....
-       if ((LoaderType == TYPE_LEGACY) || IsValidLoader(Volume->RootDir, Filename)) {
+       // protect for this condition; but sometimes Volume comes back NULL, so provide
+       // an exception. (TODO: Handle this special condition better.)
+       if ((LoaderType == TYPE_LEGACY) || (Volume == NULL) || IsValidLoader(Volume->RootDir, Filename)) {
           // NOTE: Below commented-out line could be more efficient if file were read ahead of
           // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
           // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
