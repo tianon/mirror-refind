@@ -465,6 +465,8 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.ShowTools[i - 1] = TAG_MOK_TOOL;
                 } else if (StriCmp(FlagName, L"firmware") == 0) {
                    GlobalConfig.ShowTools[i - 1] = TAG_FIRMWARE;
+                } else if ((StriCmp(FlagName, L"memtest86") == 0) || (StriCmp(FlagName, L"memtest") == 0)) {
+                   GlobalConfig.ShowTools[i - 1] = TAG_MEMTEST;
                 } else {
                    Print(L" unknown showtools flag: '%s'\n", FlagName);
                 }

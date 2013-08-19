@@ -71,7 +71,8 @@
 #define TAG_APPLE_RECOVERY (11)
 #define TAG_MOK_TOOL       (12)
 #define TAG_FIRMWARE       (13)
-#define NUM_TOOLS          (13)
+#define TAG_MEMTEST        (14)
+#define NUM_TOOLS          (14)
 
 #define NUM_SCAN_OPTIONS 10
 

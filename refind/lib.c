@@ -1,5 +1,5 @@
 /*
- * refit/lib.c
+ * refind/lib.c
  * General library functions
  *
  * Copyright (c) 2006-2009 Christoph Pfisterer

@@ -1,6 +1,19 @@
 0.7.4 (?/??/2013):
 ------------------
 
+- Added support for memtest86 as second-row option. Program must be
+  stored in EFI/tools, EFI/tools/memtest, EFI/tools/memtest86, EFI/memtest,
+  or EFI/memtest86; and must use the name memtest86.efi, memtest86_x64.efi,
+  memtest86x64.efi, or bootx64.efi (changing "x64" to "ia32" on IA-32
+  systems). The memtest86 program is scanned for when the "showtools"
+  option includes the "memtest" or "memtest86" token, which it does by
+  default.
+
+- Added space to end of "Boot %s from %s" string; enables adding a space
+  to the end of the "default_selection" item (in quotes) to set a default
+  that matches a volume name that's identical to another one except for
+  extra characters at the end of the non-wanted volume's name.
+
 - Fixed bug that could cause rEFInd to hang when launching boot loaders
   under some conditions. (Launching from Firewire drives on Macs is the
   known case, but there may be others.)

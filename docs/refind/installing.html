@@ -834,13 +834,31 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <li><b><a
     href="http://tianocore.git.sourceforge.net/git/gitweb.cgi?p=tianocore/edk2;a=blob_plain;f=EdkShellBinPkg/FullShell/X64/Shell_Full.efi;hb=HEAD"><tt>shell.efi</tt></a></b>&mdash;This
-    file, placed in the ESP's <tt>efi/tools</tt> directory, adds the
+    file, placed in the ESP's <tt>EFI/tools</tt> directory, adds the
     ability to launch a text-mode EFI shell from rEFInd. Note that the
     download link is to a 64-bit binary that must be renamed before rEFInd
     will recognize it. Additional shell download links appear on the <a
     href="https://wiki.archlinux.org/index.php/Unified_Extensible_Firmware_Interface#UEFI_Shell_download_links">Arch
     Linux wiki,</a> and on other sites; try a Web search if the shell you
     find doesn't work to your satisfaction.</li>
+
+<li><b><a
+    href="http://www.memtest86.com/download.htm">Memtest86</a></b>&mdash;This
+    is a popular tool for performing basic hardware tests, and especially
+    memory tests. rEFInd recognizes this program when it is stored in the
+    <tt>EFI/tools</tt>, <tt>EFI/tools/memtest</tt>,
+    <tt>EFI/tools/memtest86</tt>, <tt>EFI/memtest</tt>, or
+    <tt>EFI/memtest86</tt> directory, with a program filename of
+    <tt>memtest86.efi</tt>, <tt>memtest86_x64.efi</tt>,
+    <tt>memtest86x64.efi</tt>, or <tt>bootx64.efi</tt>. (Change
+    <tt>x64</tt> to <tt>ia32</tt> on IA-32 systems.) Be sure to download
+    the EFI version of the program. If you get the USB flash drive version,
+    you should mount the flash drive's ESP (partition 2) and copy the
+    <tt>EFI/BOOT</tt> directory to your own ESP's
+    <tt>EFI/tools/memtest</tt> or other Memtest86 directory name, as just
+    specified. rEFInd should then recognize it, provided the
+    <tt>showtools</tt> line includes the <tt>memtest</tt> or
+    <tt>memtest86</tt> token.</li>
 
 <li><b><tt>gptsync.efi</tt> or <tt>gptsync_<tt
     class="variable">arch</tt>.efi</tt></b>&mdash;This program creates a <a

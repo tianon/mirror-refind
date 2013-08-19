@@ -69,9 +69,11 @@
 // constants
 
 #define MACOSX_LOADER_PATH      L"System\\Library\\CoreServices\\boot.efi"
+#define MEMTEST_LOCATIONS       L"EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
 #if defined (EFIX64)
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shell.efi,\\shellx64.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi"
+#define MEMTEST_NAMES           L"memtest86.efi,memtest86_x64.efi,memtest86x64.efi,bootx64.efi"
 #define DRIVER_DIRS             L"drivers,drivers_x64"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
@@ -79,6 +81,7 @@
 #elif defined (EFI32)
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellia32.efi,\\shell.efi,\\shellia32.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi"
+#define MEMTEST_NAMES           L"memtest86.efi,memtest86_ia32.efi,memtest86ia32.efi,bootia32.efi"
 #define DRIVER_DIRS             L"drivers,drivers_ia32"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #define FALLBACK_BASENAME       L"bootia32.efi"
@@ -86,6 +89,7 @@
 #else
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\shell.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi"
+#define MEMTEST_NAMES           L"memtest86.efi"
 #define DRIVER_DIRS             L"drivers"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" /* Not really correct */
 #define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
@@ -127,8 +131,8 @@ static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0,
 
 REFIT_CONFIG GlobalConfig = { FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
                               NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                              { TAG_SHELL, TAG_APPLE_RECOVERY, TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE,
-                                0, 0, 0, 0, 0, 0 }
+                              { TAG_SHELL, TAG_MEMTEST, TAG_APPLE_RECOVERY, TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN,
+                                TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0 }
                             };
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
@@ -151,7 +155,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.3.4");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.3.6");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -1007,7 +1011,7 @@ LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN 
    if (Entry != NULL) {
       Entry->Title = StrDuplicate((LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
       Entry->me.Title = AllocateZeroPool(sizeof(CHAR16) * 256);
-      SPrint(Entry->me.Title, 255, L"Boot %s from %s", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath, Volume->VolName);
+      SPrint(Entry->me.Title, 255, L"Boot %s from %s ", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath, Volume->VolName);
       Entry->me.Row = 0;
       Entry->me.BadgeImage = Volume->VolBadgeImage;
       if ((LoaderPath != NULL) && (LoaderPath[0] != L'\\')) {
@@ -1368,7 +1372,8 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       // scan subdirectories of the EFI directory (as per the standard)
       DirIterOpen(Volume->RootDir, L"EFI", &EfiDirIter);
       while (DirIterNext(&EfiDirIter, 1, NULL, &EfiDirEntry)) {
-         if (StriCmp(EfiDirEntry->FileName, L"tools") == 0 || EfiDirEntry->FileName[0] == '.')
+         if (StriCmp(EfiDirEntry->FileName, L"tools") == 0 || (StriCmp(EfiDirEntry->FileName, L"memtest") == 0) ||
+             (StriCmp(EfiDirEntry->FileName, L"memtest86") == 0) || EfiDirEntry->FileName[0] == '.')
             continue;   // skip this, doesn't contain boot loaders or is scanned later
          SPrint(FileName, 255, L"EFI\\%s", EfiDirEntry->FileName);
          if (ScanLoaderDir(Volume, FileName, MatchPatterns))
@@ -2198,7 +2203,7 @@ static VOID ScanForBootloaders(VOID) {
 // Add the second-row tags containing built-in and external tools (EFI shell,
 // reboot, etc.)
 static VOID ScanForTools(VOID) {
-   CHAR16 *FileName = NULL, *MokLocations, *MokName, *PathName, Description[256];
+   CHAR16 *FileName = NULL, *MokLocations, *MokName, *MemtestName, *PathName, Description[256];
    REFIT_MENU_ENTRY *TempMenuEntry;
    UINTN i, j, k, VolumeIndex;
    UINT64 osind;
@@ -2262,6 +2267,7 @@ static VOID ScanForTools(VOID) {
             } // while
             FileName = NULL;
             break;
+
          case TAG_APPLE_RECOVERY:
             FileName = StrDuplicate(L"\\com.apple.recovery.boot\\boot.efi");
             for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -2274,6 +2280,7 @@ static VOID ScanForTools(VOID) {
             MyFreePool(FileName);
             FileName = NULL;
             break;
+
          case TAG_MOK_TOOL:
             j = 0;
             while ((FileName = FindCommaDelimited(MokLocations, j++)) != NULL) {
@@ -2293,8 +2300,29 @@ static VOID ScanForTools(VOID) {
                } // while MOK_NAMES
                MyFreePool(FileName);
             } // while MokLocations
-
             break;
+
+         case TAG_MEMTEST:
+            j = 0;
+            while ((FileName = FindCommaDelimited(MEMTEST_LOCATIONS, j++)) != NULL) {
+               k = 0;
+               while ((MemtestName = FindCommaDelimited(MEMTEST_NAMES, k++)) != NULL) {
+                  PathName = StrDuplicate(FileName);
+                  MergeStrings(&PathName, MemtestName, (StriCmp(PathName, L"\\") == 0) ? 0 : L'\\');
+                  for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+                     if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, PathName))) {
+                        SPrint(Description, 255, L"Memory test utility at %s on %s", PathName, Volumes[VolumeIndex]->VolName);
+                        AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, PathName, Description,
+                                     BuiltinIcon(BUILTIN_ICON_FUNC_FIRMWARE), 'S', FALSE);
+                     } // if
+                  } // for
+                  MyFreePool(PathName);
+                  MyFreePool(MemtestName);
+               } // while MEMTEST_NAMES
+               MyFreePool(FileName);
+            } // while MEMTEST_LOCATIONS
+            break;
+
       } // switch()
    } // for
 } // static VOID ScanForTools

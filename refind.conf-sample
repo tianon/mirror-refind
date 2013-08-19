@@ -133,6 +133,8 @@ timeout 20
 # order to display them:
 #  shell           - the EFI shell (requires external program; see rEFInd
 #                    documentation for details)
+#  memtest         - the memtest86 program, in EFI/tools, EFI/memtest86,
+#                    EFI/memtest, EFI/tools/memtest86, or EFI/tools/memtest
 #  gptsync         - the (dangerous) gptsync.efi utility (requires external
 #                    program; see rEFInd documentation for details)
 #  apple_recovery  - boots the Apple Recovery HD partition, if present
@@ -145,9 +147,9 @@ timeout 20
 #  reboot          - a tag to reboot the computer
 #  firmware        - a tag to reboot the computer into the firmware's
 #                    user interface (ignored on older computers)
-# Default is shell,apple_recovery,mok_tool,about,shutdown,reboot,firmware
+# Default is shell,memtest,apple_recovery,mok_tool,about,shutdown,reboot,firmware
 #
-#showtools shell, mok_tool, about, reboot, exit, firmware
+#showtools shell, memtest, mok_tool, about, reboot, exit, firmware
 
 # Directories in which to search for EFI drivers. These drivers can
 # provide filesystem support, give access to hard disks on plug-in
@@ -208,10 +210,11 @@ timeout 20
 #dont_scan_volumes "Recovery HD"
 
 # Directories that should NOT be scanned for boot loaders. By default,
-# rEFInd doesn't scan its own directory or the EFI/tools directory.
-# You can "blacklist" additional directories with this option, which
-# takes a list of directory names as options. You might do this to
-# keep EFI/boot/bootx64.efi out of the menu if that's a duplicate of
+# rEFInd doesn't scan its own directory, the EFI/tools directory, the
+# EFI/memtest directory, or the EFI/memtest86 directory. You can
+# "blacklist" additional directories with this option, which takes a
+# list of directory names as options. You might do this to keep
+# EFI/boot/bootx64.efi out of the menu if that's a duplicate of
 # another boot loader or to exclude a directory that holds drivers
 # or non-bootloader utilities provided by a hardware manufacturer. If
 # a directory is listed both here and in also_scan_dirs, dont_scan_dirs
