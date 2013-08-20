@@ -61,6 +61,7 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"tool_rescue", 48 },
    { NULL, L"tool_apple_rescue", 48 },
    { NULL, L"tool_mok_tool", 48 },
+   { NULL, L"tool_memtest", 48 },
    { NULL, L"vol_internal", 32 },
    { NULL, L"vol_external", 32 },
    { NULL, L"vol_optical", 32 },

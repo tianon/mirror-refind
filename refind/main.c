@@ -155,7 +155,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.3.6");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.3.9");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -274,21 +274,17 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
 
     // set load options
     if (LoadOptions != NULL) {
-        if (LoaderType == TYPE_EFI) {
-            MergeStrings(&FullLoadOptions, LoadOptions, L' ');
-            if (OSType == 'M') {
-               MergeStrings(&FullLoadOptions, L" ", 0);
-               // NOTE: That last space is also added by the EFI shell and seems to be significant
-               //  when passing options to Apple's boot.efi...
-            } // if
-        } else {
-            MergeStrings(&FullLoadOptions, LoadOptions, 0);
-        } // if/else
+       MergeStrings(&FullLoadOptions, LoadOptions, 0);
+       if ((LoaderType == TYPE_EFI) && (OSType == 'M')) {
+           MergeStrings(&FullLoadOptions, L" ", 0);
+           // NOTE: That last space is also added by the EFI shell and seems to be significant
+           // when passing options to Apple's boot.efi...
+        } // if
     } else { // LoadOptions == NULL
        // NOTE: We provide a non-null string when no options are specified for safety;
        // some systems (at least DUET) can hang when launching some programs (such as
        // an EFI shell) without this.
-       FullLoadOptions = StrDuplicate(L" ");
+       FullLoadOptions = StrDuplicate(L"");
     }
     if (Verbose)
        Print(L"Starting %s\nUsing load options '%s'\n", ImageTitle, FullLoadOptions);
@@ -2313,7 +2309,7 @@ static VOID ScanForTools(VOID) {
                      if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, PathName))) {
                         SPrint(Description, 255, L"Memory test utility at %s on %s", PathName, Volumes[VolumeIndex]->VolName);
                         AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, PathName, Description,
-                                     BuiltinIcon(BUILTIN_ICON_FUNC_FIRMWARE), 'S', FALSE);
+                                     BuiltinIcon(BUILTIN_ICON_TOOL_MEMTEST), 'S', FALSE);
                      } // if
                   } // for
                   MyFreePool(PathName);

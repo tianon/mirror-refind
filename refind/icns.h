@@ -65,10 +65,11 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id);
 #define BUILTIN_ICON_TOOL_RESCUE       (7)
 #define BUILTIN_ICON_TOOL_APPLE_RESCUE (8)
 #define BUILTIN_ICON_TOOL_MOK_TOOL     (9)
-#define BUILTIN_ICON_VOL_INTERNAL      (10)
-#define BUILTIN_ICON_VOL_EXTERNAL      (11)
-#define BUILTIN_ICON_VOL_OPTICAL       (12)
-#define BUILTIN_ICON_COUNT             (13)
+#define BUILTIN_ICON_TOOL_MEMTEST      (10)
+#define BUILTIN_ICON_VOL_INTERNAL      (11)
+#define BUILTIN_ICON_VOL_EXTERNAL      (12)
+#define BUILTIN_ICON_VOL_OPTICAL       (13)
+#define BUILTIN_ICON_COUNT             (14)
 
 #endif
 

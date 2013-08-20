@@ -76,6 +76,9 @@ Icons and graphics:
 * The keys icon for MOK keys management comes from the
   kdeartwork-iconthemes-4.8.5 package on Gentoo.
 
+* The memtest icon (tool_memtest.icns) was originally memory.png from
+  the Gentoo kdeartwork-iconthemes-4.10.5 icons package.
+
 * The gummiboot icon is taken from the gummiboot Web page
   (http://freedesktop.org/wiki/Software/gummiboot) and scaled down
   slightly.

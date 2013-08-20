@@ -93,7 +93,7 @@ you MUST install the kit from source code using its own unusual compilation
 procedure. The installation documentation also omits at least one step and
 is a bit unclear about others. Here's how I installed the toolkit:
 
-1) Download UDK2010.SR1.UP1 from
+1) Download UDK2010.SR1.UP1.P1 from
    https://sourceforge.net/apps/mediawiki/tianocore/index.php?title=UDK2010.
 
 2) Type "mkdir /usr/local/UDK2010". You can use another directory, but the
@@ -103,8 +103,8 @@ is a bit unclear about others. Here's how I installed the toolkit:
 
 3) Type "cd /usr/local/UDK2010".
 
-3) Unzip the downloaded file (UDK2010.SR1.UP1.Complete.MyWorkSpace.zip) in
-   the current directory (/usr/local/UDK2010). This creates a handful of
+3) Unzip the downloaded file (UDK2010.SR1.UP1.P1.Complete.MyWorkSpace.zip)
+   in the current directory (/usr/local/UDK2010). This creates a handful of
    files, including a tarball and a couple of .zip files.
 
 4) Type "unzip UDK2010.SR1.UP1.MyWorkSpace.zip". This extracts the
@@ -131,7 +131,7 @@ is a bit unclear about others. Here's how I installed the toolkit:
      "IA32 X64".
    - TOOL_CHAIN_TAG = GCC46 (or other value depending on your GCC version;
      type "gcc -v" to learn your GCC version number). Note that GCC 4.7
-     doesn't have its own entry, so use GCC46 for GCC 4.7.
+     and 4.8 don't have their own entries, so use GCC46 for them.
    The TianoCore Makefiles read some of these variables from this file
    and use them when accessing directories, so be sure to type these
    entries in the case specified.
