@@ -152,7 +152,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.3.11");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.4");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -589,13 +589,13 @@ LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry) {
 // Returns a pointer to a new string. The calling function is responsible for
 // freeing its memory.
 static CHAR16 *AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
-   CHAR16 *NewOptions;
+   CHAR16 *NewOptions = NULL;
 
-
-   if ((InitrdPath != NULL) && !StriSubCmp(L"initrd=", Options)) {
-      NewOptions = PoolPrint(L"%s initrd=%s", Options ? Options : L"", InitrdPath);
-   } else {
+   if (Options != NULL)
       NewOptions = StrDuplicate(Options);
+   if ((InitrdPath != NULL) && !StriSubCmp(L"initrd=", Options)) {
+      MergeStrings(&NewOptions, L"initrd=", L' ');
+      MergeStrings(&NewOptions, InitrdPath, 0);
    }
    return NewOptions;
 } // CHAR16 *AddInitrdToOptions()
