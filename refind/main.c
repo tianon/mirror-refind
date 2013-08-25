@@ -69,7 +69,6 @@
 // constants
 
 #define MACOSX_LOADER_PATH      L"System\\Library\\CoreServices\\boot.efi"
-#define MEMTEST_LOCATIONS       L"EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
 #if defined (EFIX64)
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shell.efi,\\shellx64.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi"
@@ -151,11 +150,9 @@ struct LOADER_LIST {
 
 static VOID AboutrEFInd(VOID)
 {
-    CHAR16 *TempStr; // Note: Don't deallocate; moved to menu structure
-
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.3.9");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.3.11");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -163,25 +160,18 @@ static VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Running on:");
-        TempStr = AllocateZeroPool(256 * sizeof(CHAR16));
-        SPrint(TempStr, 255, L" EFI Revision %d.%02d", ST->Hdr.Revision >> 16, ST->Hdr.Revision & ((1 << 16) - 1));
-        AddMenuInfoLine(&AboutMenu, TempStr);
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" EFI Revision %d.%02d", ST->Hdr.Revision >> 16, ST->Hdr.Revision & ((1 << 16) - 1)));
 #if defined(EFI32)
         AddMenuInfoLine(&AboutMenu, L" Platform: x86 (32 bit)");
 #elif defined(EFIX64)
-        TempStr = AllocateZeroPool(256 * sizeof(CHAR16));
-        SPrint(TempStr, 255, L" Platform: x86_64 (64 bit); Secure Boot %s", secure_mode() ? L"active" : L"inactive");
-        AddMenuInfoLine(&AboutMenu, TempStr);
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86_64 (64 bit); Secure Boot %s",
+                                              secure_mode() ? L"active" : L"inactive"));
 #else
         AddMenuInfoLine(&AboutMenu, L" Platform: unknown");
 #endif
-        TempStr = AllocateZeroPool(256 * sizeof(CHAR16));
-        SPrint(TempStr, 255, L" Firmware: %s %d.%02d",
-               ST->FirmwareVendor, ST->FirmwareRevision >> 16, ST->FirmwareRevision & ((1 << 16) - 1));
-        AddMenuInfoLine(&AboutMenu, TempStr);
-        TempStr = AllocateZeroPool(256 * sizeof(CHAR16));
-        SPrint(TempStr, 255, L" Screen Output: %s", egScreenDescription());
-        AddMenuInfoLine(&AboutMenu, TempStr);
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", ST->FirmwareVendor, ST->FirmwareRevision >> 16,
+                                              ST->FirmwareRevision & ((1 << 16) - 1)));
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", egScreenDescription()));
         AddMenuInfoLine(&AboutMenu, L"");
 #if defined(__MAKEWITH_GNUEFI)
         AddMenuInfoLine(&AboutMenu, L"Built with GNU-EFI");
@@ -268,26 +258,22 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
     CHAR16                  ErrorInfo[256];
     CHAR16                  *FullLoadOptions = NULL;
     CHAR16                  *Filename = NULL;
+    CHAR16                  *Temp;
 
     if (ErrorInStep != NULL)
         *ErrorInStep = 0;
 
     // set load options
     if (LoadOptions != NULL) {
-       MergeStrings(&FullLoadOptions, LoadOptions, 0);
+       FullLoadOptions = StrDuplicate(LoadOptions);
        if ((LoaderType == TYPE_EFI) && (OSType == 'M')) {
            MergeStrings(&FullLoadOptions, L" ", 0);
            // NOTE: That last space is also added by the EFI shell and seems to be significant
            // when passing options to Apple's boot.efi...
         } // if
-    } else { // LoadOptions == NULL
-       // NOTE: We provide a non-null string when no options are specified for safety;
-       // some systems (at least DUET) can hang when launching some programs (such as
-       // an EFI shell) without this.
-       FullLoadOptions = StrDuplicate(L"");
-    }
+    } // if (LoadOptions != NULL)
     if (Verbose)
-       Print(L"Starting %s\nUsing load options '%s'\n", ImageTitle, FullLoadOptions);
+       Print(L"Starting %s\nUsing load options '%s'\n", ImageTitle, FullLoadOptions ? FullLoadOptions : L"");
 
     // load the image into memory (and execute it, in the case of a shim/MOK image).
     ReturnStatus = Status = EFI_NOT_FOUND;  // in case the list is empty
@@ -297,6 +283,14 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
        // protect for this condition; but sometimes Volume comes back NULL, so provide
        // an exception. (TODO: Handle this special condition better.)
        if ((LoaderType == TYPE_LEGACY) || (Volume == NULL) || IsValidLoader(Volume->RootDir, Filename)) {
+          if (Filename) {
+             Temp = PoolPrint(L"\\%s %s", Filename, FullLoadOptions ? FullLoadOptions : L"");
+             if (Temp != NULL) {
+                MyFreePool(FullLoadOptions);
+                FullLoadOptions = Temp;
+             }
+          } // if (Filename)
+
           // NOTE: Below commented-out line could be more efficient if file were read ahead of
           // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
           // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
@@ -333,7 +327,7 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
        goto bailout_unload;
     }
     ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
-    ChildLoadedImage->LoadOptionsSize = ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof(CHAR16);
+    ChildLoadedImage->LoadOptionsSize = FullLoadOptions ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof(CHAR16) : 0;
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
 
@@ -480,13 +474,11 @@ static CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
       InitrdVersion = FindNumbers(DirEntry->FileName);
       if (KernelVersion != NULL) {
          if (StriCmp(InitrdVersion, KernelVersion) == 0) {
-            MergeStrings(&InitrdName, Path, 0);
-            MergeStrings(&InitrdName, DirEntry->FileName, 0);
+            InitrdName = PoolPrint(L"%s%s", Path, DirEntry->FileName);
          } // if
       } else {
          if (InitrdVersion == NULL) {
-            MergeStrings(&InitrdName, Path, 0);
-            MergeStrings(&InitrdName, DirEntry->FileName, 0);
+            InitrdName = PoolPrint(L"%s%s", Path, DirEntry->FileName);
          } // if
       } // if/else
       MyFreePool(InitrdVersion);
@@ -597,13 +589,13 @@ LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry) {
 // Returns a pointer to a new string. The calling function is responsible for
 // freeing its memory.
 static CHAR16 *AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
-   CHAR16 *NewOptions = NULL;
+   CHAR16 *NewOptions;
 
-   if (Options != NULL)
-      NewOptions = StrDuplicate(Options);
+
    if ((InitrdPath != NULL) && !StriSubCmp(L"initrd=", Options)) {
-      MergeStrings(&NewOptions, L"initrd=", L' ');
-      MergeStrings(&NewOptions, InitrdPath, 0);
+      NewOptions = PoolPrint(L"%s initrd=%s", Options ? Options : L"", InitrdPath);
+   } else {
+      NewOptions = StrDuplicate(Options);
    }
    return NewOptions;
 } // CHAR16 *AddInitrdToOptions()
@@ -1368,8 +1360,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       // scan subdirectories of the EFI directory (as per the standard)
       DirIterOpen(Volume->RootDir, L"EFI", &EfiDirIter);
       while (DirIterNext(&EfiDirIter, 1, NULL, &EfiDirEntry)) {
-         if (StriCmp(EfiDirEntry->FileName, L"tools") == 0 || (StriCmp(EfiDirEntry->FileName, L"memtest") == 0) ||
-             (StriCmp(EfiDirEntry->FileName, L"memtest86") == 0) || EfiDirEntry->FileName[0] == '.')
+         if (StriCmp(EfiDirEntry->FileName, L"tools") == 0 || EfiDirEntry->FileName[0] == '.')
             continue;   // skip this, doesn't contain boot loaders or is scanned later
          SPrint(FileName, 255, L"EFI\\%s", EfiDirEntry->FileName);
          if (ScanLoaderDir(Volume, FileName, MatchPatterns))
@@ -1943,8 +1934,7 @@ static LOADER_ENTRY * AddToolEntry(EFI_HANDLE DeviceHandle, IN CHAR16 *LoaderPat
 
     Entry = AllocateZeroPool(sizeof(LOADER_ENTRY));
 
-    MergeStrings(&TitleStr, L"Start ", 0);
-    MergeStrings(&TitleStr, LoaderTitle, 0);
+    TitleStr = PoolPrint(L"Start %s", LoaderTitle);
     Entry->me.Title = TitleStr;
     Entry->me.Tag = TAG_TOOL;
     Entry->me.Row = 1;
@@ -2196,12 +2186,36 @@ static VOID ScanForBootloaders(VOID) {
    FinishTextScreen(FALSE);
 } // static VOID ScanForBootloaders()
 
+// Locate a single tool from the specified Locations using one of the
+// specified Names and add it to the menu.
+static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINTN Icon) {
+   UINTN j = 0, k, VolumeIndex;
+   CHAR16 *DirName, *FileName, *PathName, FullDescription[256];
+
+   while ((DirName = FindCommaDelimited(Locations, j++)) != NULL) {
+      k = 0;
+      while ((FileName = FindCommaDelimited(Names, k++)) != NULL) {
+         PathName = StrDuplicate(DirName);
+         MergeStrings(&PathName, FileName, (StriCmp(PathName, L"\\") == 0) ? 0 : L'\\');
+         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+            if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, PathName))) {
+               SPrint(FullDescription, 255, L"%s at %s on %s", Description, PathName, Volumes[VolumeIndex]->VolName);
+               AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, PathName, FullDescription, BuiltinIcon(Icon), 'S', FALSE);
+            } // if
+         } // for
+         MyFreePool(PathName);
+         MyFreePool(FileName);
+      } // while Names
+      MyFreePool(DirName);
+   } // while Locations
+} // VOID FindTool()
+
 // Add the second-row tags containing built-in and external tools (EFI shell,
 // reboot, etc.)
 static VOID ScanForTools(VOID) {
-   CHAR16 *FileName = NULL, *MokLocations, *MokName, *MemtestName, *PathName, Description[256];
+   CHAR16 *FileName = NULL, *MokLocations, Description[256];
    REFIT_MENU_ENTRY *TempMenuEntry;
-   UINTN i, j, k, VolumeIndex;
+   UINTN i, j, VolumeIndex;
    UINT64 osind;
    CHAR8 *b = 0;
 
@@ -2217,21 +2231,25 @@ static VOID ScanForTools(VOID) {
             TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_SHUTDOWN);
             AddMenuEntry(&MainMenu, TempMenuEntry);
             break;
+
          case TAG_REBOOT:
             TempMenuEntry = CopyMenuEntry(&MenuEntryReset);
             TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_RESET);
             AddMenuEntry(&MainMenu, TempMenuEntry);
             break;
+
          case TAG_ABOUT:
             TempMenuEntry = CopyMenuEntry(&MenuEntryAbout);
             TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
             AddMenuEntry(&MainMenu, TempMenuEntry);
             break;
+
          case TAG_EXIT:
             TempMenuEntry = CopyMenuEntry(&MenuEntryExit);
             TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_EXIT);
             AddMenuEntry(&MainMenu, TempMenuEntry);
             break;
+
          case TAG_FIRMWARE:
             if (EfivarGetRaw(&GlobalGuid, L"OsIndicationsSupported", &b, &j) == EFI_SUCCESS) {
                osind = (UINT64)*b;
@@ -2242,6 +2260,7 @@ static VOID ScanForTools(VOID) {
                } // if
             } // if
             break;
+
          case TAG_SHELL:
             j = 0;
             while ((FileName = FindCommaDelimited(SHELL_NAMES, j++)) != NULL) {
@@ -2252,6 +2271,7 @@ static VOID ScanForTools(VOID) {
                MyFreePool(FileName);
             } // while
             break;
+
          case TAG_GPTSYNC:
             j = 0;
             while ((FileName = FindCommaDelimited(GPTSYNC_NAMES, j++)) != NULL) {
@@ -2278,45 +2298,11 @@ static VOID ScanForTools(VOID) {
             break;
 
          case TAG_MOK_TOOL:
-            j = 0;
-            while ((FileName = FindCommaDelimited(MokLocations, j++)) != NULL) {
-               k = 0;
-               while ((MokName = FindCommaDelimited(MOK_NAMES, k++)) != NULL) {
-                  PathName = StrDuplicate(FileName);
-                  MergeStrings(&PathName, MokName, (StriCmp(PathName, L"\\") == 0) ? 0 : L'\\');
-                  for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                     if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, PathName))) {
-                        SPrint(Description, 255, L"MOK utility at %s on %s", PathName, Volumes[VolumeIndex]->VolName);
-                        AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, PathName, Description,
-                                     BuiltinIcon(BUILTIN_ICON_TOOL_MOK_TOOL), 'S', FALSE);
-                     } // if
-                  } // for
-                  MyFreePool(PathName);
-                  MyFreePool(MokName);
-               } // while MOK_NAMES
-               MyFreePool(FileName);
-            } // while MokLocations
+            FindTool(MokLocations, MOK_NAMES, L"MOK utility utility", BUILTIN_ICON_TOOL_MOK_TOOL);
             break;
 
          case TAG_MEMTEST:
-            j = 0;
-            while ((FileName = FindCommaDelimited(MEMTEST_LOCATIONS, j++)) != NULL) {
-               k = 0;
-               while ((MemtestName = FindCommaDelimited(MEMTEST_NAMES, k++)) != NULL) {
-                  PathName = StrDuplicate(FileName);
-                  MergeStrings(&PathName, MemtestName, (StriCmp(PathName, L"\\") == 0) ? 0 : L'\\');
-                  for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                     if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, PathName))) {
-                        SPrint(Description, 255, L"Memory test utility at %s on %s", PathName, Volumes[VolumeIndex]->VolName);
-                        AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, PathName, Description,
-                                     BuiltinIcon(BUILTIN_ICON_TOOL_MEMTEST), 'S', FALSE);
-                     } // if
-                  } // for
-                  MyFreePool(PathName);
-                  MyFreePool(MemtestName);
-               } // while MEMTEST_NAMES
-               MyFreePool(FileName);
-            } // while MEMTEST_LOCATIONS
+            FindTool(MEMTEST_LOCATIONS, MEMTEST_NAMES, L"Memory test utility", BUILTIN_ICON_TOOL_MEMTEST);
             break;
 
       } // switch()

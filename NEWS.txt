@@ -1,6 +1,10 @@
 0.7.4 (?/??/2013):
 ------------------
 
+- Fixed options passing to loader to include loader's filename as the first
+  option. This omission had no effect on most boot loaders, but caused
+  VMware's mboot64.efi to fail.
+
 - Added support for memtest86 as second-row option. Program must be
   stored in EFI/tools, EFI/tools/memtest, EFI/tools/memtest86, EFI/memtest,
   or EFI/memtest86; and must use the name memtest86.efi, memtest86_x64.efi,

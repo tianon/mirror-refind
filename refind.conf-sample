@@ -211,10 +211,12 @@ timeout 20
 
 # Directories that should NOT be scanned for boot loaders. By default,
 # rEFInd doesn't scan its own directory, the EFI/tools directory, the
-# EFI/memtest directory, or the EFI/memtest86 directory. You can
-# "blacklist" additional directories with this option, which takes a
-# list of directory names as options. You might do this to keep
-# EFI/boot/bootx64.efi out of the menu if that's a duplicate of
+# EFI/memtest directory, or the EFI/memtest86 directory. Using the
+# dont_scan_dirs option enables you to "blacklist" other directories;
+# but note that using this option removes the EFI/memtest and
+# EFI/memtest86 directories, so if you don't want them scanned, be
+# sure to include them in your new list. You might use this token to
+# keep EFI/boot/bootx64.efi out of the menu if that's a duplicate of
 # another boot loader or to exclude a directory that holds drivers
 # or non-bootloader utilities provided by a hardware manufacturer. If
 # a directory is listed both here and in also_scan_dirs, dont_scan_dirs
@@ -224,7 +226,7 @@ timeout 20
 # to exclude EFI/somedir from the scan on the myvol volume but not on
 # other volumes.
 #
-#dont_scan_dirs ESP:/EFI/boot,EFI/Dell
+#dont_scan_dirs ESP:/EFI/boot,EFI/Dell,EFI/memtest86
 
 # Files that should NOT be included as EFI boot loaders (on the
 # first line of the display). If you're using a boot loader that

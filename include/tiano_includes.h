@@ -161,4 +161,6 @@ TimeCompare (
    IN EFI_TIME               *SecondTime
 );
 
+#define PoolPrint(...) CatSPrint(NULL, __VA_ARGS__)
+
 #endif

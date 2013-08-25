@@ -1,5 +1,5 @@
 /*
- * refit/config.c
+ * refind/config.c
  * Configuration file functions
  *
  * Copyright (c) 2006 Christoph Pfisterer
@@ -340,7 +340,7 @@ VOID ReadConfig(CHAR16 *FileName)
     REFIT_FILE      File;
     CHAR16          **TokenList;
     CHAR16          *FlagName;
-    CHAR16          *SelfPath = NULL;
+    CHAR16          *TempStr = NULL;
     UINTN           TokenCount, i;
 
     // Set a few defaults only if we're loading the default file.
@@ -350,15 +350,16 @@ VOID ReadConfig(CHAR16 *FileName)
        MyFreePool(GlobalConfig.DontScanDirs);
        if (SelfVolume) {
           if (SelfVolume->VolName) {
-             SelfPath = SelfVolume->VolName ? StrDuplicate(SelfVolume->VolName) : NULL;
+             TempStr = SelfVolume->VolName ? StrDuplicate(SelfVolume->VolName) : NULL;
           } else {
-             SelfPath = AllocateZeroPool(256 * sizeof(CHAR16));
-             if (SelfPath != NULL)
-                SPrint(SelfPath, 255, L"fs%d", SelfVolume->VolNumber);
+             TempStr = AllocateZeroPool(256 * sizeof(CHAR16));
+             if (TempStr != NULL)
+                SPrint(TempStr, 255, L"fs%d", SelfVolume->VolNumber);
           } // if/else
        }
-       MergeStrings(&SelfPath, SelfDirPath, L':');
-       GlobalConfig.DontScanDirs = SelfPath;
+       MergeStrings(&TempStr, SelfDirPath, L':');
+       MergeStrings(&TempStr, MEMTEST_LOCATIONS, L',');
+       GlobalConfig.DontScanDirs = TempStr;
        MyFreePool(GlobalConfig.DontScanFiles);
        GlobalConfig.DontScanFiles = StrDuplicate(DONT_SCAN_FILES);
        MergeStrings(&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
@@ -791,7 +792,7 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
    UINTN        TokenCount, i;
    REFIT_FILE   *Options = NULL, *Fstab = NULL;
    EFI_STATUS   Status;
-   CHAR16       **TokenList, Line[513], Root[100];
+   CHAR16       **TokenList, *Line, Root[100];
 
    if (FileExists(Volume->RootDir, L"\\etc\\fstab")) {
       Options = AllocateZeroPool(sizeof(REFIT_FILE));
@@ -806,7 +807,6 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
          Fstab = NULL;
       } else { // File read; locate root fs and create entries
          Options->Encoding = ENCODING_UTF16_LE;
-         Line[0] = '\0';
          while ((TokenCount = ReadTokenLine(Fstab, &TokenList)) > 0) {
             if (TokenCount > 2) {
                Root[0] = '\0';
@@ -819,9 +819,10 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
                   for (i = 0; i < StrLen(Root); i++)
                      if (Root[i] == '\\')
                         Root[i] = '/';
-                  SPrint(Line, 512, L"\"Boot with normal options\"    \"ro root=%s\"\n", Root);
+                  Line = PoolPrint(L"\"Boot with normal options\"    \"ro root=%s\"\n", Root);
                   MergeStrings((CHAR16 **) &(Options->Buffer), Line, 0);
-                  SPrint(Line, 512, L"\"Boot into single-user mode\"  \"ro root=%s single\"\n", Root);
+                  MyFreePool(Line);
+                  Line = PoolPrint(L"\"Boot into single-user mode\"  \"ro root=%s single\"\n", Root);
                   MergeStrings((CHAR16**) &(Options->Buffer), Line, 0);
                   Options->BufferSize = StrLen((CHAR16*) Options->Buffer) * sizeof(CHAR16);
                } // if

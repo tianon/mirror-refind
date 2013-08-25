@@ -128,6 +128,8 @@
 // Directories to search for these MOK-managing programs. Note that SelfDir is
 // searched in addition to these locations....
 #define MOK_LOCATIONS           L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\opensuse,EFI\\altlinux"
+// Directories to search for memtest86....
+#define MEMTEST_LOCATIONS       L"EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
 
 //
 // global definitions
