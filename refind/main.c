@@ -152,7 +152,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.4");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.4.1");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -283,7 +283,7 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
        // protect for this condition; but sometimes Volume comes back NULL, so provide
        // an exception. (TODO: Handle this special condition better.)
        if ((LoaderType == TYPE_LEGACY) || (Volume == NULL) || IsValidLoader(Volume->RootDir, Filename)) {
-          if (Filename) {
+          if (Filename && (LoaderType != TYPE_LEGACY)) {
              Temp = PoolPrint(L"\\%s %s", Filename, FullLoadOptions ? FullLoadOptions : L"");
              if (Temp != NULL) {
                 MyFreePool(FullLoadOptions);

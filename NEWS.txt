@@ -1,3 +1,10 @@
+0.7.4.1 (8/25/2013):
+--------------------
+
+- My initial 0.7.4 release broke legacy-boot ability on Macs, so I quickly
+  released this version using the original 0.7.4 filenames to fix the
+  problem.
+
 0.7.4 (8/25/2013):
 ------------------
 

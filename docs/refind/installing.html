@@ -168,6 +168,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
    <li class="tight"><a href="#efishell">Installing rEFInd Manually Using an EFI Shell</a></ul></li>
 
+<li class="tight"><a href="#wde">Using OS X Whole-Disk Encryption</a></li>
+
 <li class="tight"><a href="#naming">Alternative Naming Options</a>
 
    <ul>
@@ -690,6 +692,20 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 </ol>
 
 <p>With any luck, rEFInd will start up at this point. If not, you can check your settings using a shell or an emergency system for your OS of choice. In an EFI shell, you might type <tt class="userinput">bcfg boot dump -b</tt> to view your boot loader entries and verify that rEFInd appears at the top of the list. Be sure to check the pathname for typos. If you continue to have problems, you might look into giving rEFInd a <a href="#naming">fallback filename</a> that your firmware will recognize.</p>
+
+<a name="wde">
+<h2>Using OS X Whole-Disk Encryption</h2>
+</a>
+
+<p>If you're using OS X's Whole-Disk Encryption (WDE) feature, you must do two extra things:</p>
+
+<ul>
+
+<li>You must install rEFInd to the ESP. Unfortunately, as described earlier, this can result in a delay (usually of 30 seconds) as the firmware launches rEFInd. See the upcoming <a href="#sluggish">section on fixing sluggish Mac boots</a> if you run into this problem.</li>
+
+<li>You must uncomment the <tt>dont_scan_volumes</tt> line in <tt>refind.conf</tt> and ensure that <tt>"Recovery HD"</tt> is <i>not</i> among its options. (You can use a blank line or provide a dummy value if you want to scan all your volumes.) Alternatively, you can create a manual boot stanza to boot OS X.</li>
+
+</ul>
 
 <a name="naming">
 <h2>Alternative Naming Options</h2>
