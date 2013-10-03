@@ -467,8 +467,8 @@ VOID BltClearScreen(IN BOOLEAN ShowBanner)
         }
 
     } else {
-        // clear to standard background color
-        egClearScreen(&StdBackgroundPixel);
+        // clear to menu background color
+        egClearScreen(&MenuBackgroundPixel);
     }
 
     GraphicsScreenDirty = FALSE;

@@ -176,7 +176,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Using the EFI Stub Loader: Three Configuration Options</h2>
 </a>
 
-<p>The EFI stub loader is basic and reliable, but it requires some setup to use it on some computers. It also requires that you run a kernel with the same bit width as your EFI. In most cases, this means running a 64-bit kernel, since 32-bit EFI-based computers are so rare. I describe three methods of using the EFI stub loader: an <a href="#easiest">easiest method</a> for those with compatible partition and filesystem layouts, a <a href="#testing">quick test configuration</a> for those without such a layout, and <a href="#longterm">a long-term setup</a> for those without the ideal setup.</p>
+<p>The EFI stub loader is basic and reliable, but it requires some setup to use it on some computers. It also requires that you run a kernel with the same bit width as your EFI. In most cases, this means running a 64-bit kernel, since 32-bit EFI-based computers are so rare. I describe three methods of using the EFI stub loader: an <a href="#easiest">easiest method</a> for those with compatible partition and filesystem layouts, a <a href="#testing">quick test configuration</a> for those without such a layout, and <a href="#reconfigure">a long-term setup</a> for those without the ideal setup.</p>
 
 <a name="easiest">
 <h3>For Those With Foresight or Luck: The Easiest Method</h3>
@@ -205,7 +205,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </ul>
 
-<p>When you reboot, you should see rEFInd options for your Linux kernels. If they work, your job is done, although you might want to apply some of the tweaks described in the <a href="#longterm">maintenance-free setup</a> section. If you have problems, you may need to adjust the <tt>refind_linux.conf</tt> file, as described in the <a href="#efistub">detailed configuration section.</a></p>
+<p>When you reboot, you should see rEFInd options for your Linux kernels. If they work, your job is done, although you might want to apply some of the tweaks described in the <a href="#reconfigure">maintenance-free setup</a> section. If you have problems, you may need to adjust the <tt>refind_linux.conf</tt> file, as described in the <a href="#efistub">detailed configuration section.</a></p>
 
 <a name="testing">
 <h3>Preparing a Test Configuration</h3>

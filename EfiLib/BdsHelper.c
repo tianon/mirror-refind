@@ -121,23 +121,23 @@ BdsLibDoLegacyBoot (
     }
     OptionBBS = (BBS_BBS_DEVICE_PATH *) Option->DevicePath;
 
-//     Print(L"\n\n");
-//     Print(L"Option->Name='%s'\n", Option->OptionName);
-//     Print(L"Option->Number='%d'\n", Option->OptionNumber);
-//     Print(L"Option->Description='%s'\n", Option->Description);
-//     Print(L"Option->LoadOptionsSize='%d'\n",Option->LoadOptionsSize);
-//     Print(L"Option->BootCurrent='%d'\n",Option->BootCurrent);
-//     Print(L"Option->DevicePath->Type= '%d'\n", Option->DevicePath->Type);
-//     Print(L"Option->DevicePath->SubType= '%d'\n", Option->DevicePath->SubType);
-//     Print(L"Option->DevicePath->Length[0]= '%d'\n", Option->DevicePath->Length[0]);
-//     Print(L"Option->DevicePath->Length[1]= '%d'\n", Option->DevicePath->Length[1]);
-//     Print(L"OptionBBS->DeviceType='%d'\n",OptionBBS->DeviceType);
-//     Print(L"OptionBBS->StatusFlag='%d'\n",OptionBBS->StatusFlag);
-//     Print(L"OptionBBS->String[0]='%c'\n",OptionBBS->String[0]);
-//     Print(L"About to legacy boot!\n");
-//     PauseForKey();
+    Print(L"\n\n");
+    Print(L"Option->Name='%s'\n", Option->OptionName);
+    Print(L"Option->Number='%d'\n", Option->OptionNumber);
+    Print(L"Option->Description='%s'\n", Option->Description);
+    Print(L"Option->LoadOptionsSize='%d'\n",Option->LoadOptionsSize);
+    Print(L"Option->BootCurrent='%d'\n",Option->BootCurrent);
+    Print(L"Option->DevicePath->Type= '%d'\n", Option->DevicePath->Type);
+    Print(L"Option->DevicePath->SubType= '%d'\n", Option->DevicePath->SubType);
+    Print(L"Option->DevicePath->Length[0]= '%d'\n", Option->DevicePath->Length[0]);
+    Print(L"Option->DevicePath->Length[1]= '%d'\n", Option->DevicePath->Length[1]);
+    Print(L"OptionBBS->DeviceType='%d'\n",OptionBBS->DeviceType);
+    Print(L"OptionBBS->StatusFlag='%d'\n",OptionBBS->StatusFlag);
+    Print(L"OptionBBS->String[0]='%s'\n",OptionBBS->String);
+    Print(L"About to legacy boot!\n");
+    PauseForKey();
 
-    UpdateBbsTable(OptionBBS->DeviceType); 
+    UpdateBbsTable(OptionBBS->DeviceType);
 
     return LegacyBios->LegacyBoot (LegacyBios, (BBS_BBS_DEVICE_PATH *) Option->DevicePath, Option->LoadOptionsSize, Option->LoadOptions);
 }

@@ -153,7 +153,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.4.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.4.3");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -1625,14 +1625,18 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
 
 // Start a device on a non-Mac using the EFI_LEGACY_BIOS_PROTOCOL
 #ifdef __MAKEWITH_TIANO
-static VOID StartLegacyUEFI(IN LEGACY_ENTRY *Entry)
+static VOID StartLegacyUEFI(LEGACY_ENTRY *Entry)
 {
+    UINTN ExitDataSize = 0;
+    CHAR16 *ExitData = NULL;
+    EFI_STATUS Status;
+
     BeginExternalScreen(TRUE, L"Booting Legacy OS (UEFI mode)");
+    Print(L"Launching from '%s'\n", DevicePathToStr(Entry->BdsOption->DevicePath));
+    PauseForKey();
 
-    BdsDeleteAllInvalidLegacyBootOptions();
-    BdsAddNonExistingLegacyBootOptions();
-//    BdsUpdateLegacyDevOrder();
-
+//    Status = BdsLibBootViaBootOption(Entry->BdsOption, Entry->BdsOption->DevicePath, &ExitDataSize, &ExitData);
+//    Print(L"BdsLibBootViaBootOption() returned %d\n", Status);
     BdsLibConnectDevicePath (Entry->BdsOption->DevicePath);
     BdsLibDoLegacyBoot(Entry->BdsOption);
 
@@ -2154,6 +2158,17 @@ static VOID WarnIfLegacyProblems() {
 static VOID ScanForBootloaders(VOID) {
    UINTN  i;
 
+   if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+      Print(L"About to call BdsDeleteAllInvalidLegacyBootOptions()\n");
+      BdsDeleteAllInvalidLegacyBootOptions();
+      Print(L"About to call BdsAddNonExistingLegacyBootOptions()\n");
+      BdsAddNonExistingLegacyBootOptions();
+      Print(L"About to call BdsUpdateLegacyDevOrder()\n");
+//      BdsUpdateLegacyDevOrder(); // EXTREME CAUTION: HOSED ONE FIRMWARE!
+      Print(L"Done with legacy boot updates!\n");
+      PauseForKey();
+   }
+
    ScanVolumes();
 
    // scan for loaders and tools, add them to the menu
@@ -2415,6 +2430,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     ReadConfig(CONFIG_FILE_NAME);
     ScanVolumes();
 
+    PauseForKey();
     InitScreen();
     WarnIfLegacyProblems();
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;

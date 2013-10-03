@@ -18,6 +18,8 @@
 #ifndef __LEGACY_H_
 #define __LEGACY_H_
 
+typedef UINT8 BBS_TYPE;
+
 #define VAR_FLAG  EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_NON_VOLATILE
 
 #pragma pack(1)
@@ -30,6 +32,17 @@ typedef struct {
    UINT16    BbsIndex;
    UINT16    BbsType;
 } BOOT_OPTION_BBS_MAPPING;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct {
+   BBS_TYPE  BbsType;
+   ///
+   /// Length = sizeof (UINT16) + sizeof (Data)
+   ///
+   UINT16    Length;
+   UINT16    Data[1];
+} LEGACY_DEV_ORDER_ENTRY;
 #pragma pack()
 
 EFI_STATUS
@@ -61,10 +74,10 @@ BdsDeleteAllInvalidLegacyBootOptions (
   @retval EFI_DEVICE_ERROR      Fail to add the legacy device boot order into EFI variable
                                 because of hardware error.
 **/
-// EFI_STATUS
-// EFIAPI
-// BdsUpdateLegacyDevOrder (
-//   VOID
-//   );
+EFI_STATUS
+EFIAPI
+BdsUpdateLegacyDevOrder (
+  VOID
+  );
 
 #endif
