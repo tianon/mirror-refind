@@ -1,6 +1,9 @@
 0.7.5 (10/??/2013):
 -------------------
 
+- Fixed bug that caused rEFInd to hang on some Macs when multiple EFI
+  drivers were present.
+
 - Fixed bug that caused clear to default gray screen when launching OSes
   with 'use_graphics_for' enabled, even when the rEFInd background is not
   gray. Now rEFInd clears to the same background color used in its menu.

@@ -201,6 +201,11 @@ EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
 // called before running external programs to close open file handles
 VOID UninitRefitLib(VOID)
 {
+    // This piece of code was made to correspond to weirdness in ReinitRefitLib().
+    // See the comment on it there.
+    if(SelfRootDir == SelfVolume->RootDir)
+        SelfRootDir=0;
+
     UninitVolumes();
 
     if (SelfDir != NULL) {

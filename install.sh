@@ -33,6 +33,7 @@
 #
 # Revision history:
 #
+# 0.7.5   -- Fixed bug when installing to ESP on recent versions of OS X
 # 0.7.2   -- Fixed code that could be confused by use of autofs to mount the ESP
 # 0.7.0   -- Added support for the new Btrfs driver
 # 0.6.12  -- Added support for PreLoader as well as for shim
@@ -411,7 +412,7 @@ MountOSXESP() {
    Temp=`diskutil list | grep " EFI "`
    Esp=/dev/`echo $Temp | cut -f 5 -d ' '`
    # If the ESP is mounted, use its current mount point....
-   Temp=`df | grep "$Esp"`
+   Temp=`df -P | grep "$Esp"`
    InstallDir=`echo $Temp | cut -f 6 -d ' '`
    if [[ "$InstallDir" == '' ]] ; then
       mkdir /Volumes/ESP &> /dev/null
