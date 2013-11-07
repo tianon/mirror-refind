@@ -510,7 +510,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
     if (!EFI_ERROR(Status)) {
 
         Volume->FSType = IdentifyFilesystemType(Buffer, SAMPLE_SIZE);
-        if (*((UINT16 *)(Buffer + 510)) == 0xaa55 && Buffer[0] != 0) {
+        if ((*((UINT16 *)(Buffer + 510)) == 0xaa55 && Buffer[0] != 0) && (FindMem(Buffer, 512, "EXFAT", 5) == -1)) {
             *Bootable = TRUE;
             Volume->HasBootCode = TRUE;
         }

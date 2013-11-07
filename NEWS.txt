@@ -1,5 +1,11 @@
-0.7.5 (10/??/2013):
+0.7.5 (11/??/2013):
 -------------------
+
+- Fixed bug that caused unbootable exFAT partitions to show up as
+  bootable in OS X.
+
+- Fixed bug in install.sh that caused installs to the ESP on recent
+  versions of OS X to fail.
 
 - Fixed bug that caused rEFInd to hang on some Macs when multiple EFI
   drivers were present.
