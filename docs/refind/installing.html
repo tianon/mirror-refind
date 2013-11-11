@@ -350,7 +350,8 @@ Installation has completed successfully.</pre>
 <p>In addition to these quirks, you should be aware of some options that <tt>install.sh</tt> supports to enable you to customize your installation in various ways. The syntax for <tt>install.sh</tt> is as follows:</p>
 
 <pre class="listing">
-install.sh [--esp | --usedefault <tt class="variable">device-file</tt> | --root <tt class="variable">mount-point</tt> ] \
+install.sh [--esp | --usedefault <tt class="variable">device-file</tt> | --root <tt class="variable">mount-point</tt> | \
+            --ownhfs <tt class="variable">device-file</tt> ] \
            [--nodrivers | --alldrivers] [--shim <tt class="variable">shim-filename</tt>] [--localkeys] [--yes]
 </pre>
 
@@ -368,6 +369,10 @@ install.sh [--esp | --usedefault <tt class="variable">device-file</tt> | --root 
 <tr>
    <td><tt>--usedefault <tt class="variable">device-file</tt></tt></td>
    <td>You can install rEFInd to a disk using the default/fallback filename of <tt>EFI/BOOT/bootx64.efi</tt> (and <tt>EFI/BOOT/bootia32.efi</tt>, if the 32-bit build is available) using this option. The <tt class="variable">device-file</tt> should be an <i>unmounted</i> ESP, or at least a FAT partition, as in <tt>--usedefault /dev/sdc1</tt>. Your computer's NVRAM entries will <i>not</i> be modified when installing in this way. The intent is that you can create a bootable USB flash drive or install rEFInd on a computer that tends to "forget" its NVRAM settings with this option. This option is mutually exclusive with <tt>--esp</tt> and <tt>--root</tt> (except for implicit use of <tt>--esp</tt> on Linux).</td>
+</tr>
+<tr>
+   <td><tt>--ownhfs <tt class="variable">device-file</tt></tt></td>
+   <td>This option should be used <i>only</i> under OS X. It's used to install rEFInd to an HFS+ volume <i>other than</i> a standard Mac boot volume. The result should be that rEFInd will show up in the Mac's own boot manager. More importantly, suspend-to-RAM operations may work correctly. Note that this option requires an HFS+ volume that is <i>not</i> currently an OS X boot volume. This can be a data volume or a dedicated rEFInd partition. The ESP might also work, if it's converted to use HFS+.</td>
 </tr>
 <tr>
    <td><tt>--root <tt class="variable">/mount-point</tt></tt></td>

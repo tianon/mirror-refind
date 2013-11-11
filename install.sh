@@ -8,10 +8,12 @@
 #
 # options include:
 #    "--esp" to install to the ESP rather than to the system's root
-#           filesystem. This is the default on Linux
+#           filesystem. This is the default on Linux.
 #    "--usedefault {devicefile}" to install as default
 #           (/EFI/BOOT/BOOTX64.EFI and similar) to the specified device
 #           (/dev/sdd1 or whatever) without registering with the NVRAM.
+#    "--ownhfs {devicefile}" to install to an HFS+ volume that's NOT currently
+#           an OS X boot volume.
 #    "--root {dir}" to specify installation using the specified directory
 #           as the system's root
 #    "--alldrivers" to install all drivers along with regular files
@@ -33,6 +35,7 @@
 #
 # Revision history:
 #
+# 0.7.6   -- Added --ownhfs {device-filename} option
 # 0.7.5   -- Fixed bug when installing to ESP on recent versions of OS X
 # 0.7.2   -- Fixed code that could be confused by use of autofs to mount the ESP
 # 0.7.0   -- Added support for the new Btrfs driver
@@ -94,6 +97,11 @@ GetParams() {
       case $1 in
          --esp | --ESP) InstallToEspOnMac=1
               ;;
+         --ownhfs) OwnHfs=1
+              TargetPart="$2"
+              TargetDir=/System/Library/CoreServices
+              shift
+              ;;
          --usedefault) TargetDir=/EFI/BOOT
               TargetPart="$2"
               TargetX64="bootx64.efi"
@@ -115,7 +123,8 @@ GetParams() {
               ;;
          --yes) AlwaysYes=1
               ;;
-         * ) echo "Usage: $0 [--esp | --usedefault {device-file} | --root {directory} ]"
+         * ) echo "Usage: $0 [--esp | --usedefault {device-file} | --root {directory} |"
+             echo "                     --ownhfs {device-file} ]"
              echo "                  [--nodrivers | --alldrivers] [--shim {shim-filename}]"
              echo "                  [--localkeys] [--yes]"
              exit 1
@@ -133,6 +142,10 @@ GetParams() {
    fi
    if [[ "$RootDir" != '/' && $InstallToEspOnMac == 1 ]] ; then
       echo "You may use --root OR --esp, but not both! Aborting!"
+      exit 1
+   fi
+   if [[ "$TargetDir" != '/System/Library/CoreServices' && "$OwnHfs" == '1' ]] ; then
+      echo "If you use --ownhfs, you may NOT use --usedefault! Aborting!"
       exit 1
    fi
 
@@ -332,6 +345,9 @@ CopyRefindFiles() {
             cp "$ThisDir/keys/refind.crt" "$EtcKeysDir" 2> /dev/null
          fi
       fi
+      if [[ "$TargetDir" == '/System/Library/CoreServices' ]] ; then
+         SetupMacHfs $TargetX64
+      fi
    elif [[ $Platform == 'EFI32' ]] ; then
       cp "$RefindDir/refind_ia32.efi" "$InstallDir/$TargetDir/$TargetIA32"
       if [[ $? != 0 ]] ; then
@@ -340,6 +356,9 @@ CopyRefindFiles() {
       CopyDrivers ia32
       CopyTools ia32
       Refind="refind_ia32.efi"
+      if [[ "$TargetDir" == '/System/Library/CoreServices' ]] ; then
+         SetupMacHfs $TargetIA32
+      fi
    else
       echo "Unknown platform! Aborting!"
       exit 1
@@ -381,12 +400,24 @@ CopyRefindFiles() {
    fi
 } # CopyRefindFiles()
 
-# Mount the partition the user specified with the --usedefault option
+# Mount the partition the user specified with the --usedefault or --ownhfs option
 MountDefaultTarget() {
    InstallDir=/tmp/refind_install
    mkdir -p "$InstallDir"
+   UnmountEsp=1
    if [[ $OSName == 'Darwin' ]] ; then
-      mount -t msdos "$TargetPart" "$InstallDir"
+      if [[ $OwnHfs == '1' ]] ; then
+         Temp=`diskutil info "$TargetPart" | grep "Mount Point"`
+         InstallDir=`echo $Temp | cut -f 3-30 -d ' '`
+         if [[ $InstallDir == '' ]] ; then
+            InstallDir=/tmp/refind_install
+            mount -t hfs "$TargetPart" "$InstallDir"
+         else
+            UnmountEsp=0
+         fi
+      else
+         mount -t msdos "$TargetPart" "$InstallDir"
+      fi
    elif [[ $OSName == 'Linux' ]] ; then
       mount -t vfat "$TargetPart" "$InstallDir"
    fi
@@ -395,7 +426,7 @@ MountDefaultTarget() {
       rmdir "$InstallDir"
       exit 1
    fi
-   UnmountEsp=1
+   echo "UnmountEsp = $UnmountEsp"
 } # MountDefaultTarget()
 
 #
@@ -426,11 +457,39 @@ MountOSXESP() {
    fi
 } # MountOSXESP()
 
+# Set up for booting from Mac HFS+ volume that boots rEFInd in MJG's way
+# (http://mjg59.dreamwidth.org/7468.html)
+# Must be passed the original rEFInd binary filename (without a path).
+SetupMacHfs() {
+   if [[ -s "$InstallDir/mach_kernel" ]] ; then
+      echo "Attempt to install rEFInd to a partition with a /mach_kernel file! Aborting!"
+      exit 1
+   fi
+   cp -n "$InstallDir/$TargetDir/boot.efi" "$InstallDir/$TargetDir/boot.efi-backup" &> /dev/null
+   ln -f "$InstallDir/$TargetDir/$1" "$InstallDir/$TargetDir/boot.efi"
+   touch "$InstallDir/mach_kernel"
+   cp -n "$RefindDir/icons/os_refind.icns" "$InstallDir/.VolumeIcon.icns" &> /dev/null
+   rm "$InstallDir/$TargetDir/SystemVersion.plist" &> /dev/null
+   cat - << ENDOFHERE >> "$InstallDir/$TargetDir/SystemVersion.plist"
+<xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+        <key>ProductBuildVersion</key>
+        <string></string>
+        <key>ProductName</key>
+        <string>rEFInd</string>
+        <key>ProductVersion</key>
+        <string>0.7.6</string>
+</dict>
+</plist>
+ENDOFHERE
+} # SetupMacHfs()
+
 # Control the OS X installation.
 # Sets Problems=1 if problems found during the installation.
 InstallOnOSX() {
    echo "Installing rEFInd on OS X...."
-   if [[ "$TargetDir" == "/EFI/BOOT" ]] ; then
+   if [[ "$TargetDir" == "/EFI/BOOT" || "$OwnHfs" == '1' ]] ; then
       MountDefaultTarget
    elif [[ "$InstallToEspOnMac" == "1" ]] ; then
       MountOSXESP
@@ -833,6 +892,10 @@ DetermineTargetDir() {
 # Controls rEFInd installation under Linux.
 # Sets Problems=1 if something goes wrong.
 InstallOnLinux() {
+   if [[ "$TargetDir" == "/System/Library/CoreServices" ]] ; then
+      echo "You may not use the --ownhfs option under Linux! Aborting!"
+      exit 1
+   fi
    echo "Installing rEFInd on Linux...."
    modprobe efivars &> /dev/null
    if [[ $TargetDir == "/EFI/BOOT" ]] ; then
@@ -941,7 +1004,7 @@ else
    echo
 fi
 
-if [[ $UnmountEsp ]] ; then
+if [[ $UnmountEsp == '1' ]] ; then
    echo "Unmounting install dir"
    umount $InstallDir
 fi

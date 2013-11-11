@@ -1,4 +1,13 @@
-0.7.5 (11/??/2013):
+0.7.6 (11/??/2013):
+-------------------
+
+- Added --ownhfs {target} option to install.sh. This option causes rEFInd
+  to install to an HFS+ partition in a way that's more consistent with the
+  way the Mac's native boot loader is installed. Note that you should NOT
+  install to an already-bootable partition with this option, since it will
+  overwrite the existing boot loader, which would render OS X unbootable.
+
+0.7.5 (11/10/2013):
 -------------------
 
 - Fixed bug that caused unbootable exFAT partitions to show up as
