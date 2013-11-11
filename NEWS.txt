@@ -2,7 +2,7 @@
 -------------------
 
 - Fixed bug that caused unbootable exFAT partitions to show up as
-  bootable in OS X.
+  bootable on Macs with BIOS/CSM/legacy boot options enabled.
 
 - Fixed bug in install.sh that caused installs to the ESP on recent
   versions of OS X to fail.

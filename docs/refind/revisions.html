@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 8/25/2013</p>
+<p>Last Web page update: 11/10/2013</p>
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.7.5 (11/10/2013)</b>&mdash;This version fixes a few bugs, the most important of which is one that caused some Macs to hang when multiple EFI drivers were present. Another squashed bug caused the screen to clear to the default gray rather than the actual background color when launching OSes in graphics mode. rEFInd no longer shows all exFAT partitions as being bootable on Macs when legacy boot options are enabled; now such partitions only show up as bootable if rEFInd spots a known boot loader installed on them. Finally, I've fixed a bug that caused <tt>install.sh</tt> to fail when installing to the ESP with recent versions of OS X.</li>
 
 <li><b>0.7.4 (8/25/2013)</b>&mdash;This version fixes problems in booting VMware's <tt>mboot64.efi</tt> boot loader and when launching boot loaders from some types of Mac drives. These fixes might improve matters for other boot loaders, too. I've also added a space to the end of the <tt>Boot <i>X</i> from <i>Y</i></tt> description, which means you can use <tt><i>Y</i></tt> in the <tt>default_selection</tt> field even if another entry contains the same <tt><i>Y</i></tt> string, but with something added. To do this, you must enclose <tt><i>Y</i></tt> in quotes and add a space to its end, as in <tt>default_selection "Bit "</tt>, which sets the first boot loader on the <tt>Bit</tt> volume as the default, even if you also have a disk called <tt>Bitten</tt>. Finally, this version adds explicit support for the new EFI version of <a href="http://www.memtest86.com/download.htm">Memtest86.</a> See the <a href="installing.html#addons">"Installing Additional Components"</a> section of the <a href="installing.html">Installing rEFInd</a> page for details on this support.</li>
 
