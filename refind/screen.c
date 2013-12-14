@@ -119,7 +119,7 @@ VOID InitScreen(VOID)
     PrepareBlankLine();
 
     // show the banner if in text mode
-    if (GlobalConfig.TextOnly)
+    if (GlobalConfig.TextOnly && (GlobalConfig.ScreensaverTime != -1))
        DrawScreenHeader(L"Initializing...");
 }
 
@@ -168,7 +168,11 @@ VOID SetupScreen(VOID)
         // clear screen and show banner
         // (now we know we'll stay in graphics mode)
         SwitchToGraphics();
-        BltClearScreen(TRUE);
+        if (GlobalConfig.ScreensaverTime != -1) {
+           BltClearScreen(TRUE);
+        } else { // start with screen blanked
+           GraphicsScreenDirty = TRUE;
+        }
     }
 } // VOID SetupScreen()
 
@@ -433,6 +437,7 @@ VOID BltClearScreen(IN BOOLEAN ShowBanner)
 {
     static EG_IMAGE *Banner = NULL, *CroppedBanner;
     INTN BannerPosX, BannerPosY;
+    EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
 
     if (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)) {
         // load banner on first call
@@ -456,14 +461,19 @@ VOID BltClearScreen(IN BOOLEAN ShowBanner)
         }
 
         // clear and draw banner
-        egClearScreen(&MenuBackgroundPixel);
+        if (GlobalConfig.ScreensaverTime != -1)
+           egClearScreen(&MenuBackgroundPixel);
+        else
+           egClearScreen(&Black);
+
         if (Banner != NULL) {
             BannerPosX = (Banner->Width < UGAWidth) ? ((UGAWidth - Banner->Width) / 2) : 0;
             BannerPosY = (INTN) (ComputeRow0PosY() / 2) - (INTN) Banner->Height;
             if (BannerPosY < 0)
                BannerPosY = 0;
             GlobalConfig.BannerBottomEdge = BannerPosY + Banner->Height;
-            BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
+            if (GlobalConfig.ScreensaverTime != -1)
+               BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
         }
 
     } else {

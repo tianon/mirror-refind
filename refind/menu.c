@@ -395,13 +395,15 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
     // override the starting selection with the default index, if any
     if (*DefaultEntryIndex >= 0 && *DefaultEntryIndex <= State.MaxIndex) {
         State.CurrentSelection = *DefaultEntryIndex;
-        UpdateScroll(&State, SCROLL_NONE);
+        if (GlobalConfig.ScreensaverTime != -1)
+           UpdateScroll(&State, SCROLL_NONE);
     }
-    State.PaintAll = TRUE;
+    if (GlobalConfig.ScreensaverTime != -1)
+        State.PaintAll = TRUE;
 
     while (!MenuExit) {
         // update the screen
-        if (State.PaintAll) {
+        if (State.PaintAll && (GlobalConfig.ScreensaverTime != -1)) {
             StyleFunc(Screen, &State, MENU_FUNCTION_PAINT_ALL, NULL);
             State.PaintAll = FALSE;
         } else if (State.PaintSelection) {
@@ -413,7 +415,8 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             CurrentTime = (TimeoutCountdown + 5) / 10;
             if (CurrentTime != PreviousTime) {
                SPrint(TimeoutMessage, 255, L"%s in %d seconds", Screen->TimeoutText, CurrentTime);
-               StyleFunc(Screen, &State, MENU_FUNCTION_PAINT_TIMEOUT, TimeoutMessage);
+               if (GlobalConfig.ScreensaverTime != -1)
+                  StyleFunc(Screen, &State, MENU_FUNCTION_PAINT_TIMEOUT, TimeoutMessage);
                PreviousTime = CurrentTime;
             }
         }
@@ -449,6 +452,11 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             // the user pressed a key, cancel the timeout
             StyleFunc(Screen, &State, MENU_FUNCTION_PAINT_TIMEOUT, L"");
             HaveTimeout = FALSE;
+            if (GlobalConfig.ScreensaverTime == -1) { // cancel start-with-blank-screen coding
+               GlobalConfig.ScreensaverTime = 0;
+               if (!GlobalConfig.TextOnly)
+                 BltClearScreen(TRUE);
+            }
         }
 
         // react to key press

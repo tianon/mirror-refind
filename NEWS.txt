@@ -1,5 +1,15 @@
-0.7.6 (11/??/2013):
+0.7.6 (12/??/2013):
 -------------------
+
+- Added support for a blank-screen startup: Set "screensaver -1" and the
+  screen saver will be initialized when rEFInd starts. If you set a low
+  "timeout" value, the result will be a boot straight to the default OS
+  unless you hit a key soon after rEFInd starts. Once you hit a key, the
+  screensaver will be disabled.
+
+- Modified install.sh and mkrlconf.sh to create a new Linux kernel
+  option set: "Boot without EFI storage paranoia," which passes the
+  efi_no_storage_paranoia option to the kernel.
 
 - Added --ownhfs {target} option to install.sh. This option causes rEFInd
   to install to an HFS+ partition in a way that's more consistent with the

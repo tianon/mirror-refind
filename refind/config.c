@@ -305,8 +305,12 @@ VOID FreeTokenLine(IN OUT CHAR16 ***TokenList, IN OUT UINTN *TokenCount)
 // handle a parameter with a single integer argument
 static VOID HandleInt(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT UINTN *Value)
 {
-    if (TokenCount == 2)
-       *Value = Atoi(TokenList[1]);
+    if (TokenCount == 2) {
+       if (StriCmp(TokenList[1], L"-1") == 0)
+          *Value = -1;
+       else
+          *Value = Atoi(TokenList[1]);
+    }
 }
 
 // handle a parameter with a single string argument

@@ -143,7 +143,7 @@ timeout 20
 #  about           - an "about this program" option
 #  exit            - a tag to exit from rEFInd
 #  shutdown        - shuts down the computer (a bug causes this to reboot
-#                    EFI systems)
+#                    many UEFI systems)
 #  reboot          - a tag to reboot the computer
 #  firmware        - a tag to reboot the computer into the firmware's
 #                    user interface (ignored on older computers)

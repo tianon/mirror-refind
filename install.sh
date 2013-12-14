@@ -780,9 +780,10 @@ GenerateRefindLinuxConf() {
          fi
       fi
       DefaultOptions="$GRUB_CMDLINE_LINUX $GRUB_CMDLINE_LINUX_DEFAULT"
-      echo "\"Boot with standard options\" \"ro root=$RootFS $DefaultOptions \"" > $RLConfFile
-      echo "\"Boot to single-user mode\"   \"ro root=$RootFS $DefaultOptions single\"" >> $RLConfFile
-      echo "\"Boot with minimal options\"  \"ro root=$RootFS\"" >> $RLConfFile
+      echo "\"Boot with standard options\"        \"ro root=$RootFS $DefaultOptions \"" > $RLConfFile
+      echo "\"Boot to single-user mode\"          \"ro root=$RootFS $DefaultOptions single\"" >> $RLConfFile
+      echo "\"Boot without EFI storage paranoia\" \"ro root=$RootFS $DefaultOptions efi_no_storage_paranoia\"" >> $RLConfFile
+      echo "\"Boot with minimal options\"         \"ro root=$RootFS\"" >> $RLConfFile
    fi
 }
 
