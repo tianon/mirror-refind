@@ -1,6 +1,18 @@
 0.7.6 (12/??/2013):
 -------------------
 
+- Added support for time-sensitive "default_selection" setting. This token
+  may now have either one or three options. If one, it's interpreted as it
+  has been in the past, as setting a default that's independent of times.
+  If you follow this default by two times, however, those are interpreted
+  as the start and end times (in 24-hour format) for a default setting. For
+  instance, "default_selection foo 8:00 17:00" causes foo to be the default
+  from 8:00 (AM) to 17:00 (aka 5:00 PM). You can include multiple
+  "default_selection" lines to set different defaults for a variety of
+  times. If they're in conflict, the last one takes precedence. Note that
+  times are hardware clock's native value, which may be local time or UTC,
+  depending on your computer.
+
 - Added support for a blank-screen startup: Set "screensaver -1" and the
   screen saver will be initialized when rEFInd starts. If you set a low
   "timeout" value, the result will be a boot straight to the default OS

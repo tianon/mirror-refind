@@ -28,19 +28,20 @@ To compile rEFInd, you'll need the following:
     install this from a package called "gnu-efi"; however, rEFInd relies on
     features that were added in (I think) 3.0l to provide driver-loading
     capabilities. The versions I've used and that work are 3.0p, 3.0q,
-    3.0r, and 3.0s, with the caveat that 3.0s works when I installed it via
-    a Gentoo package, but not when I installed it by compiling the source
-    code locally. Through mid-to-late 2012, most Linux distributions
-    delivered rather elderly versions of GNU-EFI, but many are catching up
-    by late 2012. You should check your GNU-EFI version number; you may
-    need to download the latest source code, compile it, and install it
-    locally. Between rEFInd version 0.2.7 and 0.6.1, the Makefiles assumed
-    a locally-compiled GNU-EFI package, but older and more recent versions
-    assume GNU-EFI installation in typical locations for
-    distribution-provided packages. The legacy BIOS boot support on
-    UEFI-based PCs doesn't work when rEFInd is compiled under GNU-EFI, so
-    as of rEFInd 0.4.6, GNU-EFI is no longer the primary build environment,
-    although it's easier to set up on a Linux system.
+    3.0r, 3.0s, and 3.0u, with a caveat: The new time-sensitive
+    default_selection feature causes rEFInd to hang when using 3.0s and
+    earlier. 3.0u works fine for this (tested with compilation on three
+    computers). I don't know if 3.0t would work. Through mid-to-late 2012,
+    most Linux distributions delivered rather elderly versions of GNU-EFI,
+    but many are catching up by late 2012. You should check your GNU-EFI
+    version number; you may need to download the latest source code,
+    compile it, and install it locally. Between rEFInd version 0.2.7 and
+    0.6.1, the Makefiles assumed a locally-compiled GNU-EFI package, but
+    older and more recent versions assume GNU-EFI installation in typical
+    locations for distribution-provided packages. The legacy BIOS boot
+    support on UEFI-based PCs doesn't work when rEFInd is compiled under
+    GNU-EFI, so as of rEFInd 0.4.6, GNU-EFI is no longer the primary build
+    environment, although it's easier to set up on a Linux system.
 
 Of the two toolkits, I prefer to use TianoCore because it produces binaries
 that can boot BIOS/legacy-mode OSes and because the TianoCore-produced

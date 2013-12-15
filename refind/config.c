@@ -60,6 +60,9 @@
 #define ENCODING_UTF8       (1)
 #define ENCODING_UTF16_LE   (2)
 
+#define GetTime ST->RuntimeServices->GetTime
+#define LAST_MINUTE 1439 /* Last minute of a day */
+
 static REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 0, 0, 0, NULL, NULL, NULL };
 
 //
@@ -337,6 +340,85 @@ static VOID HandleStrings(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16
    }
 } // static VOID HandleStrings()
 
+// Convert TimeString (in "HH:MM" format) to a pure-minute format. Values should be
+// in the range from 0 (for 00:00, or midnight) to 1439 (for 23:59; aka LAST_MINUTE).
+// Any value outside that range denotes an error in the specification.
+// static UINTN HandleTime(IN CHAR16 *TimeString) {
+//    BOOLEAN Found = FALSE;
+//    UINTN ColonPosition = 0, Hour = 0, Minute = 0, TimeLength;
+// 
+//    Print(L"Entering HandleTime('%s')\n", TimeString);
+//    TimeLength = StrLen(TimeString);
+//    for (ColonPosition = 0; (ColonPosition < TimeLength) && !Found; ColonPosition++) {
+//       Print(L"ColonPosition = %d\n", ColonPosition);
+//       if (TimeString[ColonPosition] == ':')
+//          Found = TRUE;
+//    } // for
+// 
+//    if ((ColonPosition == 0) || (ColonPosition > StrLen(TimeString)))
+//       return (LAST_MINUTE + 1);
+// 
+//    Hour = Atoi(TimeString);
+//    Minute = Atoi(&TimeString[ColonPosition + 1]);
+//    Print(L"Hour = %d, Minute = %d\n", Hour, Minute);
+//    return (Hour * 60 + Minute);
+// } // BOOLEAN HandleTime()
+
+static UINTN HandleTime(IN CHAR16 *TimeString) {
+   UINTN Hour = 0, Minute = 0, TimeLength, i = 0;
+   BOOLEAN FoundColon = FALSE;
+
+   TimeLength = StrLen(TimeString);
+   while (i < TimeLength) {
+      if (TimeString[i] == L':') {
+         FoundColon = TRUE;
+         Hour = Minute;
+         Minute = 0;
+      } // if
+      if ((TimeString[i] >= L'0') && (TimeString[i] <= '9')) {
+         Minute *= 10;
+         Minute += (TimeString[i] - L'0');
+      } // if
+      i++;
+   } // while
+   return (FoundColon ? Hour * 60 + Minute : LAST_MINUTE + 1);
+} // BOOLEAN HandleTime()
+
+// Sets the default boot loader IF the current time is within the bounds
+// defined by the third and fourth tokens in the TokenList.
+static VOID SetDefaultByTime(IN CHAR16 **TokenList, OUT CHAR16 **Default) {
+   EFI_STATUS            Status;
+   EFI_TIME              CurrentTime;
+   UINTN                 StartTime = LAST_MINUTE + 1, EndTime = LAST_MINUTE + 1, Now;
+   BOOLEAN               SetIt = FALSE;
+
+   StartTime = HandleTime(TokenList[2]);
+   EndTime = HandleTime(TokenList[3]);
+
+   if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE)) {
+      Status = refit_call2_wrapper(GetTime, &CurrentTime, NULL);
+      Now = CurrentTime.Hour * 60 + CurrentTime.Minute;
+
+      if (Now > LAST_MINUTE) { // Shouldn't happen; just being paranoid
+         Print(L"Warning: Impossible system time: %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
+         return;
+      } // if impossible time
+
+      if (StartTime < EndTime) { // Time range does NOT cross midnight
+         if ((Now >= StartTime) && (Now <= EndTime))
+            SetIt = TRUE;
+      } else { // Time range DOES cross midnight
+         if ((Now >= StartTime) && (Now <= EndTime))
+            SetIt = TRUE;
+      } // if/else time range crosses midnight
+
+      if (SetIt) {
+         MyFreePool(*Default);
+         *Default = StrDuplicate(TokenList[1]);
+      } // if (SetIt)
+   } // if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE))
+} // VOID SetDefaultByTime()
+
 // read config file
 VOID ReadConfig(CHAR16 *FileName)
 {
@@ -487,7 +569,11 @@ VOID ReadConfig(CHAR16 *FileName)
            HandleString(TokenList, TokenCount, &(GlobalConfig.SelectionBigFileName));
 
         } else if (StriCmp(TokenList[0], L"default_selection") == 0) {
-           HandleString(TokenList, TokenCount, &(GlobalConfig.DefaultSelection));
+           if (TokenCount == 4) {
+              SetDefaultByTime(TokenList, &(GlobalConfig.DefaultSelection));
+           } else {
+              HandleString(TokenList, TokenCount, &(GlobalConfig.DefaultSelection));
+           }
 
         } else if (StriCmp(TokenList[0], L"textonly") == 0) {
            if ((TokenCount >= 2) && (StriCmp(TokenList[1], L"0") == 0)) {
