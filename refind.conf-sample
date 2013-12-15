@@ -272,8 +272,23 @@ scan_all_linux_kernels
 #    will be the default. 
 #  - Any substring that corresponds to a portion of the loader's title
 #    (usually the OS's name or boot loader's path).
+# You may also specify multiple selectors by separating them with commas
+# and enclosing the list in quotes.
+# If you follow the selector(s) with two times, in 24-hour format, the
+# default will apply only between those times. The times are in the
+# motherboard's time standard, whether that's UTC or local time, so if
+# you use UTC, you'll need to adjust this from local time manually.
+# Times may span midnight as in "23:30 00:30", which applies to 11:30 PM
+# to 12:30 AM. You may specify multiple default_selection lines, in which
+# case the last one to match takes precedence. Thus, you can set a main
+# option without a time followed by one or more that include times to
+# set different defaults for different times of day.
 #
 #default_selection 1
+#default_selection Microsoft
+#default_selection "bzImage,vmlinuz"
+#default_selection Maintenance 23:30 2:00
+#default_selection "Maintenance,OS X" 1:00 2:30
 
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its options appeared at the point of the "include"

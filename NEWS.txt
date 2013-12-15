@@ -1,6 +1,12 @@
 0.7.6 (12/??/2013):
 -------------------
 
+- Added support for multiple "default_selection" targets. These MUST be
+  comma-separated AND enclosed in quotes, as in:
+  default_selection "fred,ginger"
+  This example will launch "fred" by default if it's available; and if
+  it's not, rEFInd will attempt to launch "ginger" as the default.
+
 - Added support for time-sensitive "default_selection" setting. This token
   may now have either one or three options. If one, it's interpreted as it
   has been in the past, as setting a default that's independent of times.

@@ -305,29 +305,34 @@ VOID AddMenuEntry(IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry)
 }
 
 
-static INTN FindMenuShortcutEntry(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *Shortcut)
+static INTN FindMenuShortcutEntry(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *Defaults)
 {
-    UINTN i;
+    UINTN i, j = 0;
+    CHAR16 *Shortcut;
 
-    if (Shortcut == NULL)
-       return (-1);
-
-    if (StrLen(Shortcut) == 1) {
-      if (Shortcut[0] >= 'a' && Shortcut[0] <= 'z')
-         Shortcut[0] -= ('a' - 'A');
-      if (Shortcut[0]) {
-         for (i = 0; i < Screen->EntryCount; i++) {
-               if (Screen->Entries[i]->ShortcutDigit == Shortcut[0] || Screen->Entries[i]->ShortcutLetter == Shortcut[0]) {
-                  return i;
-               } // if
-         } // for
-      } // if
-    } else if (StrLen(Shortcut) > 1) {
-       for (i = 0; i < Screen->EntryCount; i++) {
-          if (StriSubCmp(Shortcut, Screen->Entries[i]->Title))
-             return i;
-       } // for
-    }
+    while ((Shortcut = FindCommaDelimited(Defaults, j)) != NULL) {
+       if (StrLen(Shortcut) == 1) {
+         if (Shortcut[0] >= 'a' && Shortcut[0] <= 'z')
+            Shortcut[0] -= ('a' - 'A');
+         if (Shortcut[0]) {
+            for (i = 0; i < Screen->EntryCount; i++) {
+                  if (Screen->Entries[i]->ShortcutDigit == Shortcut[0] || Screen->Entries[i]->ShortcutLetter == Shortcut[0]) {
+                     MyFreePool(Shortcut);
+                     return i;
+                  } // if
+            } // for
+         } // if
+       } else if (StrLen(Shortcut) > 1) {
+          for (i = 0; i < Screen->EntryCount; i++) {
+             if (StriSubCmp(Shortcut, Screen->Entries[i]->Title)) {
+                MyFreePool(Shortcut);
+                return i;
+             } // if
+          } // for
+       }
+       MyFreePool(Shortcut);
+       j++;
+    } // while()
     return -1;
 }
 

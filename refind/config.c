@@ -397,6 +397,8 @@ static VOID SetDefaultByTime(IN CHAR16 **TokenList, OUT CHAR16 **Default) {
 
    if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE)) {
       Status = refit_call2_wrapper(GetTime, &CurrentTime, NULL);
+      if (Status != EFI_SUCCESS)
+         return;
       Now = CurrentTime.Hour * 60 + CurrentTime.Minute;
 
       if (Now > LAST_MINUTE) { // Shouldn't happen; just being paranoid
