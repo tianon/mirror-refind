@@ -342,36 +342,15 @@ static VOID HandleStrings(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16
 
 // Convert TimeString (in "HH:MM" format) to a pure-minute format. Values should be
 // in the range from 0 (for 00:00, or midnight) to 1439 (for 23:59; aka LAST_MINUTE).
-// Any value outside that range denotes an error in the specification.
-// static UINTN HandleTime(IN CHAR16 *TimeString) {
-//    BOOLEAN Found = FALSE;
-//    UINTN ColonPosition = 0, Hour = 0, Minute = 0, TimeLength;
-// 
-//    Print(L"Entering HandleTime('%s')\n", TimeString);
-//    TimeLength = StrLen(TimeString);
-//    for (ColonPosition = 0; (ColonPosition < TimeLength) && !Found; ColonPosition++) {
-//       Print(L"ColonPosition = %d\n", ColonPosition);
-//       if (TimeString[ColonPosition] == ':')
-//          Found = TRUE;
-//    } // for
-// 
-//    if ((ColonPosition == 0) || (ColonPosition > StrLen(TimeString)))
-//       return (LAST_MINUTE + 1);
-// 
-//    Hour = Atoi(TimeString);
-//    Minute = Atoi(&TimeString[ColonPosition + 1]);
-//    Print(L"Hour = %d, Minute = %d\n", Hour, Minute);
-//    return (Hour * 60 + Minute);
-// } // BOOLEAN HandleTime()
-
+// Any value outside that range denotes an error in the specification. Note that if
+// the input is a number that includes no colon, this function will return the original
+// number in UINTN form.
 static UINTN HandleTime(IN CHAR16 *TimeString) {
    UINTN Hour = 0, Minute = 0, TimeLength, i = 0;
-   BOOLEAN FoundColon = FALSE;
 
    TimeLength = StrLen(TimeString);
    while (i < TimeLength) {
       if (TimeString[i] == L':') {
-         FoundColon = TRUE;
          Hour = Minute;
          Minute = 0;
       } // if
@@ -381,7 +360,7 @@ static UINTN HandleTime(IN CHAR16 *TimeString) {
       } // if
       i++;
    } // while
-   return (FoundColon ? Hour * 60 + Minute : LAST_MINUTE + 1);
+   return (Hour * 60 + Minute);
 } // BOOLEAN HandleTime()
 
 // Sets the default boot loader IF the current time is within the bounds

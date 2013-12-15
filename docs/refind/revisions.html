@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 11/10/2013</p>
+<p>Last Web page update: 12/15/2013</p>
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.7.6 (12/15/2013)</b>&mdash;The biggest changes in this version relate to the <tt>default_selection</tt> setting. You can now provide multiple default selections by listing them <i>within quotes</i> and separated by commas, as in <tt>default_selection "ubuntu,fedora"</tt> which boots <tt>ubuntu</tt> if it's present and <tt>fedora</tt> if <tt>ubuntu</tt> is not present but <tt>fedora</tt> is. This should be helpful with removable disks. You can also include two times, in 24-hour format, following a <tt>default_selection</tt> specification, as in <tt>default_selection Maintenance 1:00 2:00</tt>, which boots <tt>Maintenance</tt> by default between 1:00 and 2:00. If another <tt>default_selection</tt> without a time specification preceded this line, the earlier one will still apply at other times. Another change to the main program is that you can now set <tt>screensaver -1</tt> to have rEFInd come up with its screen blanked. You'll probably want to combine this with a short <tt>timeout</tt> value to have rEFInd boot your default OS quickly unless you press a key first. Finally, I've added a new option to the <tt>install.sh</tt> script: <tt>--ownhfs <i>target_partition</i></tt>. This option is valid only under OS X. It installs rEFInd to an HFS+ volume that does <i><b>not</b></i> currently hold an OS X installation. The installation method differs from the usual rEFInd installation in that the result looks to the firmware more like an OS X installation. This makes rEFInd appear as an option in the firmware's own boot manager and it may help suspend-to-RAM operations.</li>
 
 <li><b>0.7.5 (11/10/2013)</b>&mdash;This version fixes a few bugs, the most important of which is one that caused some Macs to hang when multiple EFI drivers were present. Another squashed bug caused the screen to clear to the default gray rather than the actual background color when launching OSes in graphics mode. rEFInd no longer shows all exFAT partitions as being bootable on Macs when legacy boot options are enabled; now such partitions only show up as bootable if rEFInd spots a known boot loader installed on them. Finally, I've fixed a bug that caused <tt>install.sh</tt> to fail when installing to the ESP with recent versions of OS X.</li>
 

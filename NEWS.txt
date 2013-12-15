@@ -1,4 +1,4 @@
-0.7.6 (12/??/2013):
+0.7.6 (12/15/2013):
 -------------------
 
 - Added support for multiple "default_selection" targets. These MUST be
@@ -24,10 +24,6 @@
   "timeout" value, the result will be a boot straight to the default OS
   unless you hit a key soon after rEFInd starts. Once you hit a key, the
   screensaver will be disabled.
-
-- Modified install.sh and mkrlconf.sh to create a new Linux kernel
-  option set: "Boot without EFI storage paranoia," which passes the
-  efi_no_storage_paranoia option to the kernel.
 
 - Added --ownhfs {target} option to install.sh. This option causes rEFInd
   to install to an HFS+ partition in a way that's more consistent with the
