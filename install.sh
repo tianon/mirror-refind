@@ -35,6 +35,7 @@
 #
 # Revision history:
 #
+# 0.7.7   -- Fixed bug that created mangled refind_linux.conf file
 # 0.7.6   -- Added --ownhfs {device-filename} option
 # 0.7.5   -- Fixed bug when installing to ESP on recent versions of OS X
 # 0.7.2   -- Fixed code that could be confused by use of autofs to mount the ESP
@@ -774,7 +775,7 @@ GenerateRefindLinuxConf() {
       StartOfDevname=`echo "$RootFS" | cut -b 1-7`
       if [[ "$StartOfDevname" == "/dev/sd" || "$StartOfDevName" == "/dev/hd" ]] ; then
          # Identify root filesystem by UUID rather than by device node, if possible
-         Uuid=`blkid -o export "$RootFS" 2> /dev/null | grep UUID=`
+         Uuid=`blkid -o export -s UUID "$RootFS" 2> /dev/null | grep UUID=`
          if [[ -n $Uuid ]] ; then
             RootFS="$Uuid"
          fi

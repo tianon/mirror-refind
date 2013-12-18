@@ -18,6 +18,7 @@
 
 # Revision history:
 #
+#  0.7.7 -- Fixed bug that caused stray PARTUUID= and line breaks in generated file
 #  0.5.1 -- Initial release
 #
 # Note: mkrlconf.sh version numbers match those of the rEFInd package
@@ -34,7 +35,7 @@ if [[ ! -f $RLConfFile || $1 == "--force" ]] ; then
    StartOfDevname=`echo $RootFS | cut -b 1-7`
    if [[ $StartOfDevname == "/dev/sd" || $StartOfDevName == "/dev/hd" ]] ; then
       # Identify root filesystem by UUID rather than by device node, if possible
-      Uuid=`blkid -o export $RootFS 2> /dev/null | grep UUID=`
+      Uuid=`blkid -o export -s UUID $RootFS 2> /dev/null | grep UUID=`
       if [[ -n $Uuid ]] ; then
          RootFS=$Uuid
       fi

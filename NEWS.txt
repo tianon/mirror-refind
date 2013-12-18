@@ -1,3 +1,10 @@
+0.7.7 (??/??/201?):
+-------------------
+
+- Fixed bug in mkrlconf.sh and install.sh that caused a stray line break
+  and PARTUUID= specification to appear in generated refind_linux.conf file
+  under some circumstances.
+
 0.7.6 (12/15/2013):
 -------------------
 
