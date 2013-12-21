@@ -427,21 +427,31 @@ static CHAR16 *FSTypeName(IN UINT32 TypeCode) {
    return retval;
 } // CHAR16 *FSTypeName()
 
-// Identify the filesystem type, if possible. Expects a Buffer containing
-// the first few (normally 4096) bytes of the filesystem, and outputs a
-// code representing the identified filesystem type.
-static UINT32 IdentifyFilesystemType(IN UINT8 *Buffer, IN UINTN BufferSize) {
-   UINT32       FoundType = FS_TYPE_UNKNOWN;
+// Identify the filesystem type and record the filesystem's UUID/serial number,
+// if possible. Expects a Buffer containing the first few (normally 4096) bytes
+// of the filesystem. Sets the filesystem type code in Volume->FSType and the
+// UUID/serial number in Volume->VolUuid. Note that the UUID value is recognized
+// differently for each filesystem, and is currently supported only for
+// ext2/3/4fs and ReiserFS. If the UUID can't be determined, it's set to 0. Also, the UUID
+// is just read directly into memory; it is *NOT* valid when displayed by
+// GuidAsString() or used in other GUID/UUID-manipulating functions. (As I
+// write, it's being used merely to detect partitions that are part of a
+// RAID 1 array.)
+static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFIT_VOLUME *Volume) {
    UINT32       *Ext2Incompat, *Ext2Compat;
    UINT16       *Magic16;
    char         *MagicString;
 
-   if (Buffer != NULL) {
+   if ((Buffer != NULL) && (Volume != NULL)) {
+      SetMem(&(Volume->VolUuid), sizeof(EFI_GUID), 0);
+      Volume->FSType = FS_TYPE_UNKNOWN;
 
       if (BufferSize >= 512) {
          Magic16 = (UINT16*) (Buffer + 510);
-         if (*Magic16 == FAT_MAGIC)
-            return FS_TYPE_FAT;
+         if (*Magic16 == FAT_MAGIC) {
+            Volume->FSType = FS_TYPE_FAT;
+            return;
+         } // if
       } // search for FAT magic
 
       if (BufferSize >= (1024 + 100)) {
@@ -450,12 +460,14 @@ static UINT32 IdentifyFilesystemType(IN UINT8 *Buffer, IN UINTN BufferSize) {
             Ext2Compat = (UINT32*) (Buffer + 1024 + 92);
             Ext2Incompat = (UINT32*) (Buffer + 1024 + 96);
             if ((*Ext2Incompat & 0x0040) || (*Ext2Incompat & 0x0200)) { // check for extents or flex_bg
-               return FS_TYPE_EXT4;
+               Volume->FSType = FS_TYPE_EXT4;
             } else if (*Ext2Compat & 0x0004) { // check for journal
-               return FS_TYPE_EXT3;
+               Volume->FSType = FS_TYPE_EXT3;
             } else { // none of these features; presume it's ext2...
-               return FS_TYPE_EXT2;
+               Volume->FSType = FS_TYPE_EXT2;
             }
+            CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
+            return;
          }
       } // search for ext2/3/4 magic
 
@@ -464,26 +476,32 @@ static UINT32 IdentifyFilesystemType(IN UINT8 *Buffer, IN UINTN BufferSize) {
          if ((CompareMem(MagicString, REISERFS_SUPER_MAGIC_STRING, 8) == 0) ||
              (CompareMem(MagicString, REISER2FS_SUPER_MAGIC_STRING, 9) == 0) ||
              (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)) {
-            return FS_TYPE_REISERFS;
+            Volume->FSType = FS_TYPE_REISERFS;
+            CopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
+            Print(L"Found ReiserFS UUID: %s\n", GuidAsString(&(Volume->VolUuid)));
+            PauseForKey();
+            return;
          } // if
       } // search for ReiserFS magic
 
       if (BufferSize >= (65536 + 64 + 8)) {
          MagicString = (char*) (Buffer + 65536 + 64);
-         if (CompareMem(MagicString, BTRFS_SIGNATURE, 8) == 0)
-            return FS_TYPE_BTRFS;
+         if (CompareMem(MagicString, BTRFS_SIGNATURE, 8) == 0) {
+            Volume->FSType = FS_TYPE_BTRFS;
+            return;
+         } // if
       } // search for Btrfs magic
 
       if (BufferSize >= (1024 + 2)) {
          Magic16 = (UINT16*) (Buffer + 1024);
          if ((*Magic16 == HFSPLUS_MAGIC1) || (*Magic16 == HFSPLUS_MAGIC2)) {
-            return FS_TYPE_HFSPLUS;
+            Volume->FSType = FS_TYPE_HFSPLUS;
+            return;
          }
       } // search for HFS+ magic
    } // if (Buffer != NULL)
 
-   return FoundType;
-} // UINT32 IdentifyFilesystemType()
+} // UINT32 SetFilesystemData()
 
 static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
 {
@@ -509,7 +527,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
                                  Volume->BlockIOOffset, SAMPLE_SIZE, Buffer);
     if (!EFI_ERROR(Status)) {
 
-        Volume->FSType = IdentifyFilesystemType(Buffer, SAMPLE_SIZE);
+        SetFilesystemData(Buffer, SAMPLE_SIZE, Volume);
         if ((*((UINT16 *)(Buffer + 510)) == 0xaa55 && Buffer[0] != 0) && (FindMem(Buffer, 512, "EXFAT", 5) == -1)) {
             *Bootable = TRUE;
             Volume->HasBootCode = TRUE;
@@ -950,6 +968,8 @@ VOID ScanVolumes(VOID)
     UINTN                   PartitionIndex;
     UINTN                   SectorSum, i, VolNumber = 0;
     UINT8                   *SectorBuffer1, *SectorBuffer2;
+    EFI_GUID                *UuidList;
+    EFI_GUID                NullUuid = { 00000000, 0000, 0000, {0000, 0000, 0000, 0000} };
 
     MyFreePool(Volumes);
     Volumes = NULL;
@@ -957,6 +977,7 @@ VOID ScanVolumes(VOID)
 
     // get all filesystem handles
     Status = LibLocateHandle(ByProtocol, &BlockIoProtocol, NULL, &HandleCount, &Handles);
+    UuidList = AllocateZeroPool(sizeof(EFI_GUID) * HandleCount);
     // was: &FileSystemProtocol
     if (Status == EFI_NOT_FOUND) {
         return;  // no filesystems. strange, but true...
@@ -969,6 +990,15 @@ VOID ScanVolumes(VOID)
         Volume = AllocateZeroPool(sizeof(REFIT_VOLUME));
         Volume->DeviceHandle = Handles[HandleIndex];
         ScanVolume(Volume);
+        if (UuidList) {
+           UuidList[HandleIndex] = Volume->VolUuid;
+           for (i = 0; i < HandleIndex; i++) {
+              if ((CompareMem(&(Volume->VolUuid), &(UuidList[i]), sizeof(EFI_GUID)) == 0) &&
+                  (CompareMem(&(Volume->VolUuid), &NullUuid, sizeof(EFI_GUID)) != 0)) { // Duplicate filesystem UUID
+                 Volume->IsReadable = FALSE;
+              } // if
+           } // for
+        } // if
         if (Volume->IsReadable)
            Volume->VolNumber = VolNumber++;
         else

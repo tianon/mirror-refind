@@ -153,7 +153,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.6");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.6.1");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -1315,7 +1315,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
    if (GlobalConfig.ScanAllLinux)
       MergeStrings(&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
 
-   if ((Volume->RootDir != NULL) && (Volume->VolName != NULL)) {
+   if ((Volume->RootDir != NULL) && (Volume->VolName != NULL) && (Volume->IsReadable)) {
       // check for Mac OS X boot loader
       if (ShouldScan(Volume, L"System\\Library\\CoreServices")) {
          StrCpy(FileName, MACOSX_LOADER_PATH);
