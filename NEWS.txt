@@ -1,6 +1,9 @@
 0.7.7 (??/??/201?):
 -------------------
 
+- Added feature in install.sh: Script now tries to locate and mount an ESP
+  in Linux, if it's currently unmounted.
+
 - Fixed bug in mkrlconf.sh and install.sh that caused a stray line break
   and PARTUUID= specification to appear in generated refind_linux.conf file
   under some circumstances.

@@ -35,7 +35,8 @@
 #
 # Revision history:
 #
-# 0.7.7   -- Fixed bug that created mangled refind_linux.conf file
+# 0.7.7   -- Fixed bug that created mangled refind_linux.conf file; added ability
+#            to locate and mount ESP on Linux, if it's not mounted
 # 0.7.6   -- Added --ownhfs {device-filename} option
 # 0.7.5   -- Fixed bug when installing to ESP on recent versions of OS X
 # 0.7.2   -- Fixed code that could be confused by use of autofs to mount the ESP
@@ -684,32 +685,66 @@ ReSignBinaries() {
    IFS=$SaveIFS
    RefindDir="$TempDir"
    DeleteRefindDir=1
-}
+} # ReSignBinaries()
+
+# Locate and mount an ESP, if possible, based on parted output.
+# Should be called only if /boot/efi is NOT an acceptable ESP.
+# Sets InstallDir to the mounted ESP's path ($RootDir/boot/efi)
+# and EspFilesystem the filesystem (always "vfat")
+FindLinuxESP() {
+   echo "The ESP doesn't seem to be mounted! Trying to find it...."
+   local Drive
+   local PartNum
+   local TableType
+   for Drive in `ls /dev/[sh]d?` ; do
+      TableType=`parted $Drive print -m -s 2> /dev/null | head -n 2 | tail -n 1 | cut -d ":" -f 6`
+      if [[ $TableType == 'gpt' ]] ; then # read only GPT disks
+         PartNum=`parted $Drive print -m -s 2> /dev/null | grep ":boot[,;]" | cut -d ":" -f 1`
+         if [ "$PartNum" -eq "$PartNum" ] 2> /dev/null ; then
+            InstallDir="$RootDir/boot/efi"
+            mkdir -p $InstallDir
+            mount $Drive$PartNum $InstallDir
+            EspFilesystem=`grep "$Drive$PartNum.*/boot/efi" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3`
+            if [[ $EspFilesystem != 'vfat' ]] ; then
+               umount $InstallDir
+            else
+               echo "Mounting ESP at $InstallDir"
+               break;
+            fi
+         fi # $PartNum -eq $PartNum
+      fi # TableType
+   done
+} # FindLinuxESP()
 
 # Identifies the ESP's location (/boot or /boot/efi, or these locations under
 # the directory specified by --root); aborts if the ESP isn't mounted at
 # either location.
 # Sets InstallDir to the ESP mount point.
-FindLinuxESP() {
+FindMountedESP() {
    EspLine=`df "$RootDir/boot/efi" 2> /dev/null | grep boot/efi`
    if [[ ! -n "$EspLine" ]] ; then
       EspLine=`df "$RootDir"/boot | grep boot`
    fi
    InstallDir=`echo $EspLine | cut -d " " -f 6`
+
    if [[ -n "$InstallDir" ]] ; then
       EspFilesystem=`grep "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3`
    fi
    if [[ $EspFilesystem != 'vfat' ]] ; then
-      echo "$RootDir/boot/efi doesn't seem to be on a VFAT filesystem. The ESP must be"
+      FindLinuxESP
+   fi
+   if [[ $EspFilesystem != 'vfat' ]] ; then
+      echo "$RootDir/$InstallDir doesn't seem to be on a VFAT filesystem. The ESP must be"
       echo "mounted at $RootDir/boot or $RootDir/boot/efi and it must be VFAT! Aborting!"
       exit 1
    fi
    echo "ESP was found at $InstallDir using $EspFilesystem"
-} # FindLinuxESP
+} # FindMountedESP
 
 # Uses efibootmgr to add an entry for rEFInd to the EFI's NVRAM.
 # If this fails, sets Problems=1
 AddBootEntry() {
+   local PartNum
    InstallIt="0"
    Efibootmgr=`which efibootmgr 2> /dev/null`
    if [[ "$Efibootmgr" ]] ; then
@@ -902,7 +937,7 @@ InstallOnLinux() {
    if [[ $TargetDir == "/EFI/BOOT" ]] ; then
       MountDefaultTarget
    else
-      FindLinuxESP
+      FindMountedESP
       DetermineTargetDir
    fi
    CpuType=`uname -m`
