@@ -478,8 +478,6 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
              (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)) {
             Volume->FSType = FS_TYPE_REISERFS;
             CopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
-            Print(L"Found ReiserFS UUID: %s\n", GuidAsString(&(Volume->VolUuid)));
-            PauseForKey();
             return;
          } // if
       } // search for ReiserFS magic
