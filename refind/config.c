@@ -334,7 +334,6 @@ static VOID HandleStrings(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16
    BOOLEAN AddMode = FALSE;
 
    if ((TokenCount > 2) && (StriCmp(TokenList[1], L"+") == 0)) {
-      Print(L"Entering add mode in HandleStrings for '%s'\n", TokenList[0]);
       AddMode = TRUE;
    }
 
@@ -626,12 +625,6 @@ VOID ReadConfig(CHAR16 *FileName)
 
         FreeTokenLine(&TokenList, &TokenCount);
     }
-//     Print(L"also_scan_dirs = '%s'\n", GlobalConfig.AlsoScan);
-//     Print(L"dont_scan_dirs = '%s'\n", GlobalConfig.DontScanDirs);
-//     Print(L"dont_scan_files = '%s'\n", GlobalConfig.DontScanFiles);
-//     Print(L"scan_driver_dirs = '%s'\n", GlobalConfig.DriverDirs);
-//     Print(L"use_graphics_for = %d\n", GlobalConfig.GraphicsFor);
-//     PauseForKey();
     MyFreePool(File.Buffer);
 } /* VOID ReadConfig() */
 
