@@ -626,12 +626,12 @@ VOID ReadConfig(CHAR16 *FileName)
 
         FreeTokenLine(&TokenList, &TokenCount);
     }
-    Print(L"also_scan_dirs = '%s'\n", GlobalConfig.AlsoScan);
-    Print(L"dont_scan_dirs = '%s'\n", GlobalConfig.DontScanDirs);
-    Print(L"dont_scan_files = '%s'\n", GlobalConfig.DontScanFiles);
-    Print(L"scan_driver_dirs = '%s'\n", GlobalConfig.DriverDirs);
-    Print(L"use_graphics_for = %d\n", GlobalConfig.GraphicsFor);
-    PauseForKey();
+//     Print(L"also_scan_dirs = '%s'\n", GlobalConfig.AlsoScan);
+//     Print(L"dont_scan_dirs = '%s'\n", GlobalConfig.DontScanDirs);
+//     Print(L"dont_scan_files = '%s'\n", GlobalConfig.DontScanFiles);
+//     Print(L"scan_driver_dirs = '%s'\n", GlobalConfig.DriverDirs);
+//     Print(L"use_graphics_for = %d\n", GlobalConfig.GraphicsFor);
+//     PauseForKey();
     MyFreePool(File.Buffer);
 } /* VOID ReadConfig() */
 
