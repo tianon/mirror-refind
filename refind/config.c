@@ -324,20 +324,30 @@ static VOID HandleString(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16 
    } // if
 } // static VOID HandleString()
 
-// Handle a parameter with a series of string arguments, to be added to a comma-delimited
-// list. Passes each token through the CleanUpPathNameSlashes() function to ensure
-// consistency in subsequent comparisons of filenames.
+// Handle a parameter with a series of string arguments, to replace or be added to a
+// comma-delimited list. Passes each token through the CleanUpPathNameSlashes() function
+// to ensure consistency in subsequent comparisons of filenames. If the first
+// non-keyword token is "+", the list is added to the existing target string; otherwise,
+// the tokens replace the current string.
 static VOID HandleStrings(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16 **Target) {
    UINTN i;
+   BOOLEAN AddMode = FALSE;
 
-   if (*Target != NULL) {
+   if ((TokenCount > 2) && (StriCmp(TokenList[1], L"+") == 0)) {
+      Print(L"Entering add mode in HandleStrings for '%s'\n", TokenList[0]);
+      AddMode = TRUE;
+   }
+
+   if ((*Target != NULL) && !AddMode) {
       FreePool(*Target);
       *Target = NULL;
    } // if
    for (i = 1; i < TokenCount; i++) {
-      CleanUpPathNameSlashes(TokenList[i]);
-      MergeStrings(Target, TokenList[i], L',');
-   }
+      if ((i != 1) || !AddMode) {
+         CleanUpPathNameSlashes(TokenList[i]);
+         MergeStrings(Target, TokenList[i], L',');
+      } // if
+   } // for
 } // static VOID HandleStrings()
 
 // Convert TimeString (in "HH:MM" format) to a pure-minute format. Values should be
@@ -577,7 +587,8 @@ VOID ReadConfig(CHAR16 *FileName)
            HandleInt(TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
 
         } else if (StriCmp(TokenList[0], L"use_graphics_for") == 0) {
-           GlobalConfig.GraphicsFor = 0;
+           if ((TokenCount == 2) || ((TokenCount > 2) && (StriCmp(TokenList[1], L"+") != 0)))
+              GlobalConfig.GraphicsFor = 0;
            for (i = 1; i < TokenCount; i++) {
               if (StriCmp(TokenList[i], L"osx") == 0) {
                  GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
@@ -615,6 +626,12 @@ VOID ReadConfig(CHAR16 *FileName)
 
         FreeTokenLine(&TokenList, &TokenCount);
     }
+    Print(L"also_scan_dirs = '%s'\n", GlobalConfig.AlsoScan);
+    Print(L"dont_scan_dirs = '%s'\n", GlobalConfig.DontScanDirs);
+    Print(L"dont_scan_files = '%s'\n", GlobalConfig.DontScanFiles);
+    Print(L"scan_driver_dirs = '%s'\n", GlobalConfig.DriverDirs);
+    Print(L"use_graphics_for = %d\n", GlobalConfig.GraphicsFor);
+    PauseForKey();
     MyFreePool(File.Buffer);
 } /* VOID ReadConfig() */
 

@@ -1,6 +1,12 @@
 0.7.7 (12/??/2013):
 -------------------
 
+- The use_graphics_for, also_scan_dirs, dont_scan_dirs, dont_scan_files,
+  and scan_driver_dirs tokens in refind.conf now support "+" as the first
+  option, which causes the remaining options to be added to the default
+  value rather than replacing that value. (This has no practical effect for
+  scan_driver_dirs, though, since it has a null default value.)
+
 - Added support for specifying the configuration file at program launch,
   via the "-c" parameter, as in "refind_x64.efi -c foo.conf" to use the
   foo.conf file as the main configuration file.
