@@ -1,5 +1,14 @@
-0.7.7 (??/??/201?):
+0.7.7 (12/??/2013):
 -------------------
+
+- Added support for specifying the configuration file at program launch,
+  via the "-c" parameter, as in "refind_x64.efi -c foo.conf" to use the
+  foo.conf file as the main configuration file.
+
+- Scans of ext2/3/4fs and ReiserFS partitions now omit partitions with
+  duplicate filesystem UUIDs. These are likely parts of RAID arrays and so
+  would have the same boot loaders or kernels as the first one with a given
+  UUID.
 
 - Added feature in install.sh: Script now tries to locate and mount an ESP
   in Linux, if it's currently unmounted.

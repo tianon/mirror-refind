@@ -471,7 +471,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
          }
       } // search for ext2/3/4 magic
 
-      if (BufferSize >= (65536 + 62)) {
+      if (BufferSize >= (65536 + 100)) {
          MagicString = (char*) (Buffer + 65536 + 52);
          if ((CompareMem(MagicString, REISERFS_SUPER_MAGIC_STRING, 8) == 0) ||
              (CompareMem(MagicString, REISER2FS_SUPER_MAGIC_STRING, 9) == 0) ||
@@ -1680,6 +1680,31 @@ CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index) {
    } // if
    return (FoundString);
 } // CHAR16 *FindCommaDelimited()
+
+// Return the position of SmallString within BigString, or -1 if
+// not found.
+INTN FindSubString(IN CHAR16 *SmallString, IN CHAR16 *BigString) {
+   INTN Position = -1;
+   UINTN i = 0, SmallSize, BigSize;
+   BOOLEAN Found = FALSE;
+
+   if ((SmallString == NULL) || (BigString == NULL))
+      return -1;
+
+   SmallSize = StrLen(SmallString);
+   BigSize = StrLen(BigString);
+   if ((SmallSize > BigSize) || (SmallSize == 0) || (BigSize == 0))
+      return -1;
+
+   while ((i <= (BigSize - SmallSize) && !Found)) {
+      if (CompareMem(BigString + i, SmallString, SmallSize) == 0) {
+         Found = TRUE;
+         Position = i;
+      } // if
+      i++;
+   } // while()
+   return Position;
+} // INTN FindSubString()
 
 // Returns TRUE if SmallString is an element in the comma-delimited List,
 // FALSE otherwise. Performs comparison case-insensitively (except on

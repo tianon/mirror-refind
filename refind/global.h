@@ -238,6 +238,7 @@ typedef struct {
    UINTN       ScreensaverTime;
    CHAR16      *BannerFileName;
    EG_IMAGE    *ScreenBackground;
+   CHAR16      *ConfigFilename;
    CHAR16      *SelectionSmallFileName;
    CHAR16      *SelectionBigFileName;
    CHAR16      *DefaultSelection;

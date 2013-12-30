@@ -56,7 +56,9 @@
 #include "../include/syslinux_mbr.h"
 
 #ifdef __MAKEWITH_GNUEFI
+#ifndef EFI_SECURITY_VIOLATION
 #define EFI_SECURITY_VIOLATION    EFIERR (26)
+#endif
 #else
 #include "../EfiLib/BdsHelper.h"
 #include "../EfiLib/legacy.h"
@@ -130,7 +132,7 @@ static REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
 REFIT_CONFIG GlobalConfig = { FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
-                              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                              NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_APPLE_RECOVERY, TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN,
                                 TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0 }
                             };
@@ -153,7 +155,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.6.1");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.6.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -930,7 +932,7 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
    } // if
 
    // detect specific loaders
-   if (StriSubCmp(L"bzImage", LoaderPath) || StriSubCmp(L"vmlinuz", LoaderPath)) {
+   if (StriSubCmp(L"bzImage", FileName) || StriSubCmp(L"vmlinuz", FileName)) {
       GuessLinuxDistribution(&OSIconName, Volume, LoaderPath);
       MergeStrings(&OSIconName, L"linux", L',');
       Entry->OSType = 'L';
@@ -2184,7 +2186,7 @@ static VOID ScanForBootloaders(VOID) {
             ScanLegacyExternal();
             break;
          case 'm': case 'M':
-            ScanUserConfigured(CONFIG_FILE_NAME);
+            ScanUserConfigured(GlobalConfig.ConfigFilename);
             break;
          case 'e': case 'E':
             ScanExternal();
@@ -2341,7 +2343,7 @@ VOID RescanAll(VOID) {
    FreeList((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
    MainMenu.Entries = NULL;
    MainMenu.EntryCount = 0;
-   ReadConfig(CONFIG_FILE_NAME);
+   ReadConfig(GlobalConfig.ConfigFilename);
    ConnectAllDriversToAllControllers();
    ScanVolumes();
    ScanForBootloaders();
@@ -2401,6 +2403,37 @@ static BOOLEAN SecureBootUninstall(VOID) {
    return Success;
 } // VOID SecureBootUninstall
 
+// Sets the global configuration filename; will be CONFIG_FILE_NAME unless the
+// "-c" command-line option is set, in which case that takes precedence.
+// If an error is encountered, leaves the value alone (it should be set to
+// CONFIG_FILE_NAME when GlobalConfig is initialized).
+static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
+   EFI_LOADED_IMAGE *Info;
+   CHAR16 *Options, *FileName;
+   EFI_STATUS Status;
+   INTN Where;
+
+   Status = uefi_call_wrapper(BS->HandleProtocol, 3, ImageHandle,
+                              &LoadedImageProtocol, (VOID **) &Info);
+   if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
+      Options = (CHAR16 *) Info->LoadOptions;
+      Where = FindSubString(L" -c ", Options);
+      if (Where >= 0) {
+         FileName = StrDuplicate(&Options[Where + 4]);
+         Where = FindSubString(L" ", FileName);
+         if (Where > 0)
+            FileName[Where] = L'\0';
+
+         if (FileExists(SelfDir, FileName)) {
+            GlobalConfig.ConfigFilename = FileName;
+         } else {
+            Print(L"Specified configuration file (%s) doesn't exist; using\n'refind.conf' default\n", FileName);
+            MyFreePool(FileName);
+         } // if/else
+      } // if
+   } // if
+} // VOID SetConfigFilename()
+
 //
 // main entry point
 //
@@ -2427,7 +2460,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     FindLegacyBootType();
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)
        CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
-    ReadConfig(CONFIG_FILE_NAME);
+    SetConfigFilename(ImageHandle);
+    ReadConfig(GlobalConfig.ConfigFilename);
     ScanVolumes();
 
     InitScreen();

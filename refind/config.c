@@ -411,7 +411,7 @@ VOID ReadConfig(CHAR16 *FileName)
     UINTN           TokenCount, i;
 
     // Set a few defaults only if we're loading the default file.
-    if (StriCmp(FileName, CONFIG_FILE_NAME) == 0) {
+    if (StriCmp(FileName, GlobalConfig.ConfigFilename) == 0) {
        MyFreePool(GlobalConfig.AlsoScan);
        GlobalConfig.AlsoScan = StrDuplicate(ALSO_SCAN_DIRS);
        MyFreePool(GlobalConfig.DontScanDirs);
@@ -605,7 +605,8 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (StriCmp(TokenList[0], L"max_tags") == 0) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.MaxTags));
 
-        } else if ((StriCmp(TokenList[0], L"include") == 0) && (TokenCount == 2) && (StriCmp(FileName, CONFIG_FILE_NAME) == 0)) {
+        } else if ((StriCmp(TokenList[0], L"include") == 0) && (TokenCount == 2) &&
+                   (StriCmp(FileName, GlobalConfig.ConfigFilename) == 0)) {
            if (StriCmp(TokenList[1], FileName) != 0) {
               ReadConfig(TokenList[1]);
            }
@@ -844,7 +845,8 @@ VOID ScanUserConfigured(CHAR16 *FileName)
             } // if/else
             MyFreePool(Title);
 
-         } else if ((StriCmp(TokenList[0], L"include") == 0) && (TokenCount == 2) && (StriCmp(FileName, CONFIG_FILE_NAME) == 0)) {
+         } else if ((StriCmp(TokenList[0], L"include") == 0) && (TokenCount == 2) &&
+                    (StriCmp(FileName, GlobalConfig.ConfigFilename) == 0)) {
             if (StriCmp(TokenList[1], FileName) != 0) {
                ScanUserConfigured(TokenList[1]);
             }

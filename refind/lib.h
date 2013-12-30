@@ -114,6 +114,7 @@ VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **Devi
 BOOLEAN SplitVolumeAndFilename(IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
 CHAR16 *FindNumbers(IN CHAR16 *InString);
 CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index);
+INTN FindSubString(IN CHAR16 *SmallString, IN CHAR16 *BigString);
 BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List);
 VOID MyFreePool(IN OUT VOID *Pointer);
 
