@@ -132,25 +132,32 @@ timeout 20
 
 # Which non-bootloader tools to show on the tools line, and in what
 # order to display them:
-#  shell           - the EFI shell (requires external program; see rEFInd
-#                    documentation for details)
-#  memtest         - the memtest86 program, in EFI/tools, EFI/memtest86,
-#                    EFI/memtest, EFI/tools/memtest86, or EFI/tools/memtest
-#  gptsync         - the (dangerous) gptsync.efi utility (requires external
-#                    program; see rEFInd documentation for details)
-#  apple_recovery  - boots the Apple Recovery HD partition, if present
-#  mok_tool        - makes available the Machine Owner Key (MOK) maintenance
-#                    tool, MokManager.efi, used on Secure Boot systems
-#  about           - an "about this program" option
-#  exit            - a tag to exit from rEFInd
-#  shutdown        - shuts down the computer (a bug causes this to reboot
-#                    many UEFI systems)
-#  reboot          - a tag to reboot the computer
-#  firmware        - a tag to reboot the computer into the firmware's
-#                    user interface (ignored on older computers)
+#  shell            - the EFI shell (requires external program; see rEFInd
+#                     documentation for details)
+#  memtest          - the memtest86 program, in EFI/tools, EFI/memtest86,
+#                     EFI/memtest, EFI/tools/memtest86, or EFI/tools/memtest
+#  gptsync          - the (dangerous) gptsync.efi utility (requires external
+#                     program; see rEFInd documentation for details)
+#  apple_recovery   - boots the Apple Recovery HD partition, if present
+#  windows_recovery - boots an OEM Windows recovery tool, if present
+#                     (see also the windows_recovery_files option)
+#  mok_tool         - makes available the Machine Owner Key (MOK) maintenance
+#                     tool, MokManager.efi, used on Secure Boot systems
+#  about            - an "about this program" option
+#  exit             - a tag to exit from rEFInd
+#  shutdown         - shuts down the computer (a bug causes this to reboot
+#                     many UEFI systems)
+#  reboot           - a tag to reboot the computer
+#  firmware         - a tag to reboot the computer into the firmware's
+#                     user interface (ignored on older computers)
 # Default is shell,memtest,apple_recovery,mok_tool,about,shutdown,reboot,firmware
 #
 #showtools shell, memtest, mok_tool, about, reboot, exit, firmware
+
+# Boot loaders that can launch a Windows restore or emergency system.
+# These tend to be OEM-specific.
+#
+#windows_recovery_files LRS_ESP:/EFI/Microsoft/Boot/LrsBootmgr.efi
 
 # Directories in which to search for EFI drivers. These drivers can
 # provide filesystem support, give access to hard disks on plug-in
@@ -206,7 +213,7 @@ timeout 20
 # label, which you can obtain in an EFI shell by typing "vol", from
 # Linux by typing "blkid /dev/{devicename}", or by examining the
 # disk's label in various OSes' file browsers.
-# The default is "Recovery HD".
+# The default is "Recovery HD,LRS_ESP".
 #
 #dont_scan_volumes "Recovery HD"
 
@@ -238,7 +245,9 @@ timeout 20
 # set of tools. Most notably, MokManager.efi is in this blacklist,
 # but will show up as a tool if present in certain directories. You
 # can control the tools row with the showtools token.
-# The default is shim.efi,PreLoader.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi,MokManager.efi,HashTool.efi,HashTool-signed.efi
+# The default is shim.efi,PreLoader.efi,TextMode.efi,ebounce.efi,
+# GraphicsConsole.efi,MokManager.efi,HashTool.efi,HashTool-signed.efi,
+# bootmgr.efi
 #
 #dont_scan_files shim.efi,MokManager.efi
 

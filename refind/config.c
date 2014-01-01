@@ -441,6 +441,7 @@ VOID ReadConfig(CHAR16 *FileName)
        MergeStrings(&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
        MyFreePool(GlobalConfig.DontScanVolumes);
        GlobalConfig.DontScanVolumes = StrDuplicate(DONT_SCAN_VOLUMES);
+       GlobalConfig.WindowsRecoveryFiles = StrDuplicate(WINDOWS_RECOVERY_FILES);
     } // if
 
     if (!FileExists(SelfDir, FileName)) {
@@ -517,6 +518,9 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if ((StriCmp(TokenList[0], L"don't_scan_files") == 0) || (StriCmp(TokenList[0], L"dont_scan_files") == 0)) {
            HandleStrings(TokenList, TokenCount, &(GlobalConfig.DontScanFiles));
 
+        } else if (StriCmp(TokenList[0], L"windows_recovery_files") == 0) {
+           HandleStrings(TokenList, TokenCount, &(GlobalConfig.WindowsRecoveryFiles));
+
         } else if (StriCmp(TokenList[0], L"scan_driver_dirs") == 0) {
             HandleStrings(TokenList, TokenCount, &(GlobalConfig.DriverDirs));
 
@@ -538,6 +542,8 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.ShowTools[i - 1] = TAG_SHUTDOWN;
                 } else if (StriCmp(FlagName, L"apple_recovery") == 0) {
                    GlobalConfig.ShowTools[i - 1] = TAG_APPLE_RECOVERY;
+                } else if (StriCmp(FlagName, L"windows_recovery") == 0) {
+                   GlobalConfig.ShowTools[i - 1] = TAG_WINDOWS_RECOVERY;
                 } else if (StriCmp(FlagName, L"mok_tool") == 0) {
                    GlobalConfig.ShowTools[i - 1] = TAG_MOK_TOOL;
                 } else if (StriCmp(FlagName, L"firmware") == 0) {

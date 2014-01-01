@@ -55,21 +55,22 @@ EG_IMAGE * DummyImage(IN UINTN PixelSize);
 
 EG_IMAGE * BuiltinIcon(IN UINTN Id);
 
-#define BUILTIN_ICON_FUNC_ABOUT        (0)
-#define BUILTIN_ICON_FUNC_RESET        (1)
-#define BUILTIN_ICON_FUNC_SHUTDOWN     (2)
-#define BUILTIN_ICON_FUNC_EXIT         (3)
-#define BUILTIN_ICON_FUNC_FIRMWARE     (4)
-#define BUILTIN_ICON_TOOL_SHELL        (5)
-#define BUILTIN_ICON_TOOL_PART         (6)
-#define BUILTIN_ICON_TOOL_RESCUE       (7)
-#define BUILTIN_ICON_TOOL_APPLE_RESCUE (8)
-#define BUILTIN_ICON_TOOL_MOK_TOOL     (9)
-#define BUILTIN_ICON_TOOL_MEMTEST      (10)
-#define BUILTIN_ICON_VOL_INTERNAL      (11)
-#define BUILTIN_ICON_VOL_EXTERNAL      (12)
-#define BUILTIN_ICON_VOL_OPTICAL       (13)
-#define BUILTIN_ICON_COUNT             (14)
+#define BUILTIN_ICON_FUNC_ABOUT            (0)
+#define BUILTIN_ICON_FUNC_RESET            (1)
+#define BUILTIN_ICON_FUNC_SHUTDOWN         (2)
+#define BUILTIN_ICON_FUNC_EXIT             (3)
+#define BUILTIN_ICON_FUNC_FIRMWARE         (4)
+#define BUILTIN_ICON_TOOL_SHELL            (5)
+#define BUILTIN_ICON_TOOL_PART             (6)
+#define BUILTIN_ICON_TOOL_RESCUE           (7)
+#define BUILTIN_ICON_TOOL_APPLE_RESCUE     (8)
+#define BUILTIN_ICON_TOOL_WINDOWS_RESCUE   (9)
+#define BUILTIN_ICON_TOOL_MOK_TOOL         (10)
+#define BUILTIN_ICON_TOOL_MEMTEST          (11)
+#define BUILTIN_ICON_VOL_INTERNAL          (12)
+#define BUILTIN_ICON_VOL_EXTERNAL          (13)
+#define BUILTIN_ICON_VOL_OPTICAL           (14)
+#define BUILTIN_ICON_COUNT                 (15)
 
 #endif
 

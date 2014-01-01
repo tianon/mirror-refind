@@ -58,21 +58,22 @@
 #define REFIT_DEBUG (0)
 
 // Tag classifications; used in various ways.
-#define TAG_ABOUT          (1)
-#define TAG_REBOOT         (2)
-#define TAG_SHUTDOWN       (3)
-#define TAG_TOOL           (4)
-#define TAG_LOADER         (5)
-#define TAG_LEGACY         (6)
-#define TAG_EXIT           (7)
-#define TAG_SHELL          (8)
-#define TAG_GPTSYNC        (9)
-#define TAG_LEGACY_UEFI    (10)
-#define TAG_APPLE_RECOVERY (11)
-#define TAG_MOK_TOOL       (12)
-#define TAG_FIRMWARE       (13)
-#define TAG_MEMTEST        (14)
-#define NUM_TOOLS          (14)
+#define TAG_ABOUT            (1)
+#define TAG_REBOOT           (2)
+#define TAG_SHUTDOWN         (3)
+#define TAG_TOOL             (4)
+#define TAG_LOADER           (5)
+#define TAG_LEGACY           (6)
+#define TAG_EXIT             (7)
+#define TAG_SHELL            (8)
+#define TAG_GPTSYNC          (9)
+#define TAG_LEGACY_UEFI      (10)
+#define TAG_APPLE_RECOVERY   (11)
+#define TAG_WINDOWS_RECOVERY (12)
+#define TAG_MOK_TOOL         (13)
+#define TAG_FIRMWARE         (14)
+#define TAG_MEMTEST          (15)
+#define NUM_TOOLS            (16)
 
 #define NUM_SCAN_OPTIONS 10
 
@@ -130,6 +131,8 @@
 #define MOK_LOCATIONS           L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\opensuse,EFI\\altlinux"
 // Directories to search for memtest86....
 #define MEMTEST_LOCATIONS       L"EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
+// Files that may be Windows recovery files
+#define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi"
 
 //
 // global definitions
@@ -246,6 +249,7 @@ typedef struct {
    CHAR16      *DontScanVolumes;
    CHAR16      *DontScanDirs;
    CHAR16      *DontScanFiles;
+   CHAR16      *WindowsRecoveryFiles;
    CHAR16      *DriverDirs;
    CHAR16      *IconsDir;
    UINTN       ShowTools[NUM_TOOLS];

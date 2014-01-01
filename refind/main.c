@@ -132,9 +132,9 @@ static REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
 REFIT_CONFIG GlobalConfig = { FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
-                              NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                              { TAG_SHELL, TAG_MEMTEST, TAG_APPLE_RECOVERY, TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN,
-                                TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0 }
+                              NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                              { TAG_SHELL, TAG_MEMTEST, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY, TAG_MOK_TOOL, TAG_ABOUT,
+                                TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0 }
                             };
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
@@ -2235,7 +2235,7 @@ static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINT
 // Add the second-row tags containing built-in and external tools (EFI shell,
 // reboot, etc.)
 static VOID ScanForTools(VOID) {
-   CHAR16 *FileName = NULL, *MokLocations, Description[256];
+   CHAR16 *FileName = NULL, *VolName = NULL, *MokLocations, Description[256];
    REFIT_MENU_ENTRY *TempMenuEntry;
    UINTN i, j, VolumeIndex;
    UINT64 osind;
@@ -2313,10 +2313,29 @@ static VOID ScanForTools(VOID) {
                   SPrint(Description, 255, L"Apple Recovery on %s", Volumes[VolumeIndex]->VolName);
                   AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
                                BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE), 'R', TRUE);
-               }
+               } // if
             } // for
             MyFreePool(FileName);
             FileName = NULL;
+            break;
+
+         case TAG_WINDOWS_RECOVERY:
+            j = 0;
+            while ((FileName = FindCommaDelimited(GlobalConfig.WindowsRecoveryFiles, j++)) != NULL) {
+               SplitVolumeAndFilename(&FileName, &VolName);
+               for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+                  if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, FileName)) &&
+                      ((VolName == NULL) || (StriCmp(VolName, Volumes[VolumeIndex]->VolName) == 0))) {
+                     SPrint(Description, 255, L"Microsoft Recovery on %s", Volumes[VolumeIndex]->VolName);
+                     AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
+                                  BuiltinIcon(BUILTIN_ICON_TOOL_WINDOWS_RESCUE), 'R', TRUE);
+                  } // if
+               } // for
+            } // while
+            MyFreePool(FileName);
+            FileName = NULL;
+            MyFreePool(VolName);
+            VolName = NULL;
             break;
 
          case TAG_MOK_TOOL:
