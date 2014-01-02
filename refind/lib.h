@@ -115,7 +115,10 @@ BOOLEAN SplitVolumeAndFilename(IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
 CHAR16 *FindNumbers(IN CHAR16 *InString);
 CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index);
 INTN FindSubString(IN CHAR16 *SmallString, IN CHAR16 *BigString);
-BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List);
+VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename);
+BOOLEAN IsIn(IN CHAR16 *Filename, IN CHAR16 *List);
+BOOLEAN FilenameIn(IN REFIT_VOLUME *Volume, IN CHAR16 *Directory, IN CHAR16 *Filename, IN CHAR16 *List);
+BOOLEAN VolumeNumberToName(REFIT_VOLUME *Volume, CHAR16 **VolName);
 VOID MyFreePool(IN OUT VOID *Pointer);
 
 BOOLEAN EjectMedia(VOID);

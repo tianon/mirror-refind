@@ -1,6 +1,16 @@
 0.7.7 (12/??/2013):
 -------------------
 
+- Can now specify complete paths, optionally including volumes, in
+  dont_scan_files.
+
+- Added shimx64.efi to the default dont_scan_files list.
+
+- Added windows_recovery_files token, to specify what program(s) launch a
+  Windows recovery utility; and the "windows_recovery" option to
+  "showtools," to control whether or not to display the Windows recovery
+  utility on the second row of icons.
+
 - The use_graphics_for, also_scan_dirs, dont_scan_dirs, dont_scan_files,
   and scan_driver_dirs tokens in refind.conf now support "+" as the first
   option, which causes the remaining options to be added to the default

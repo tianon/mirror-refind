@@ -1548,7 +1548,8 @@ CHAR16 *FindPath(IN CHAR16* FullPath) {
             LastBackslash = i;
       } // for
       PathOnly = StrDuplicate(FullPath);
-      PathOnly[LastBackslash] = 0;
+      if (PathOnly != NULL)
+         PathOnly[LastBackslash] = 0;
    } // if
    return (PathOnly);
 }
@@ -1706,6 +1707,36 @@ INTN FindSubString(IN CHAR16 *SmallString, IN CHAR16 *BigString) {
    return Position;
 } // INTN FindSubString()
 
+// Take an input path name, which may include a volume specification and/or
+// a path, and return separate volume, path, and file names. For instance,
+// "BIGVOL:\EFI\ubuntu\grubx64.efi" will return a VolName of "BIGVOL", a Path
+// of "EFI\ubuntu", and a Filename of "grubx64.efi". If an element is missing,
+// the returned pointer is NULL. The calling function is responsible for
+// freeing the allocated memory.
+VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename) {
+   CHAR16 *Temp = NULL;
+
+   MyFreePool(*VolName);
+   MyFreePool(*Path);
+   MyFreePool(*Filename);
+   *VolName = *Path = *Filename = NULL;
+   Temp = StrDuplicate(InPath);
+   SplitVolumeAndFilename(&Temp, VolName); // VolName is NULL or has volume; Temp has rest of path
+   CleanUpPathNameSlashes(Temp);
+   *Path = FindPath(Temp); // *Path has path (may be 0-length); Temp unchanged.
+   *Filename = StrDuplicate(Temp + StrLen(*Path));
+   CleanUpPathNameSlashes(*Filename);
+   if (StrLen(*Path) == 0) {
+      MyFreePool(*Path);
+      *Path = NULL;
+   }
+   if (StrLen(*Filename) == 0) {
+      MyFreePool(*Filename);
+      *Filename = NULL;
+   }
+   MyFreePool(Temp);
+} // VOID SplitPathName
+
 // Returns TRUE if SmallString is an element in the comma-delimited List,
 // FALSE otherwise. Performs comparison case-insensitively (except on
 // buggy EFIs with case-sensitive StriCmp() functions).
@@ -1720,8 +1751,62 @@ BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
             Found = TRUE;
       } // while
    } // if
-   return Found;
+      return Found;
 } // BOOLEAN IsIn()
+
+// Returns TRUE if specified Volume, Directory, and Filename correspond to an
+// element in the comma-delimited List, FALSE otherwise. Note that Directory and
+// Filename must *NOT* include a volume or path specification (that's part of
+// the Volume variable), but the List elements may. Performs comparison
+// case-insensitively (except on buggy EFIs with case-sensitive StriCmp()
+// functions).
+BOOLEAN FilenameIn(REFIT_VOLUME *Volume, CHAR16 *Directory, CHAR16 *Filename, CHAR16 *List) {
+   UINTN     i = 0;
+   BOOLEAN   Found = FALSE;
+   CHAR16    *OneElement;
+   CHAR16    *TargetVolName = NULL, *TargetPath = NULL, *TargetFilename = NULL;
+
+   if (Filename && List) {
+      while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
+         Found = TRUE;
+         SplitPathName(OneElement, &TargetVolName, &TargetPath, &TargetFilename);
+         VolumeNumberToName(Volume, &TargetVolName);
+         if (((TargetVolName != NULL) && ((Volume == NULL) || (StriCmp(TargetVolName, Volume->VolName) != 0))) ||
+             ((TargetPath != NULL) && (StriCmp(TargetPath, Directory) != 0)) ||
+             ((TargetFilename != NULL) && (StriCmp(TargetFilename, Filename) != 0))) {
+            Found = FALSE;
+         } // if
+         MyFreePool(OneElement);
+      } // while
+   } // if
+
+   MyFreePool(TargetVolName);
+   MyFreePool(TargetPath);
+   MyFreePool(TargetFilename);
+   return Found;
+} // BOOLEAN FilenameIn()
+
+// If *VolName is of the form "fs#", where "#" is a number, and if Volume points
+// to this volume number, returns with *VolName changed to the volume name, as
+// stored in the Volume data structure.
+// Returns TRUE if this substitution was made, FALSE otherwise.
+BOOLEAN VolumeNumberToName(REFIT_VOLUME *Volume, CHAR16 **VolName) {
+   BOOLEAN MadeSubstitution = FALSE;
+   UINTN VolNum;
+
+   if ((VolName == NULL) || (*VolName == NULL))
+      return FALSE;
+
+   if ((StrLen(*VolName) > 2) && (*VolName[0] == L'f') && (*VolName[1] == L's') && (*VolName[2] >= L'0') && (*VolName[2] <= L'9')) {
+      VolNum = Atoi(*VolName + 2);
+      if (VolNum == Volume->VolNumber) {
+         MyFreePool(*VolName);
+         *VolName = StrDuplicate(Volume->VolName);
+         MadeSubstitution = TRUE;
+      } // if
+   } // if
+   return MadeSubstitution;
+} // BOOLEAN VolumeMatchesNumber()
 
 // Implement FreePool the way it should have been done to begin with, so that
 // it doesn't throw an ASSERT message if fed a NULL pointer....

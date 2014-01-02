@@ -631,6 +631,8 @@ VOID ReadConfig(CHAR16 *FileName)
 
         FreeTokenLine(&TokenList, &TokenCount);
     }
+    if ((GlobalConfig.DontScanFiles) && (GlobalConfig.WindowsRecoveryFiles))
+       MergeStrings(&(GlobalConfig.DontScanFiles), GlobalConfig.WindowsRecoveryFiles, L',');
     MyFreePool(File.Buffer);
 } /* VOID ReadConfig() */
 

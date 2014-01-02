@@ -81,7 +81,7 @@ typedef struct {
 
 #define CONFIG_FILE_NAME         L"refind.conf"
 // Note: Below is combined with MOK_NAMES to make default
-#define DONT_SCAN_FILES L"shim.efi,shim-fedora.efi,PreLoader.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi,bootmgr.efi"
+#define DONT_SCAN_FILES L"shim.efi,shim-fedora.efi,shimx64.efi,PreLoader.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi,bootmgr.efi"
 #define DONT_SCAN_VOLUMES L"Recovery HD,LRS_ESP"
 #define ALSO_SCAN_DIRS L"boot"
 

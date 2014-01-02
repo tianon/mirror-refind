@@ -242,12 +242,15 @@ timeout 20
 # the main binary or if you want to "blacklist" certain loaders by
 # name rather than location, use this option. Note that this will
 # NOT prevent certain binaries from showing up in the second-row
-# set of tools. Most notably, MokManager.efi is in this blacklist,
-# but will show up as a tool if present in certain directories. You
-# can control the tools row with the showtools token.
-# The default is shim.efi,PreLoader.efi,TextMode.efi,ebounce.efi,
-# GraphicsConsole.efi,MokManager.efi,HashTool.efi,HashTool-signed.efi,
-# bootmgr.efi
+# set of tools. Most notably, various Secure Boot and recovery
+# tools are present in this list, but may appear as second-row
+# items.
+# The file may be specified as a bare name (e.g., "notme.efi"), as
+# a complete filename (e.g., "/EFI/somedir/notme.efi"), or as a
+# complete filename with volume (e.g., "SOMEDISK:/EFI/somedir/notme.efi").
+# The default is shim.efi,shim-fedora.efi,shimx64.efi,PreLoader.efi,
+# TextMode.efi,ebounce.efi,GraphicsConsole.efi,MokManager.efi,HashTool.efi,
+# HashTool-signed.efi,bootmgr.efi
 #
 #dont_scan_files shim.efi,MokManager.efi
 

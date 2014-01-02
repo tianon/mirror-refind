@@ -155,7 +155,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.6.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.6.3");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -1084,7 +1084,7 @@ static VOID CleanUpLoaderList(struct LOADER_LIST *LoaderList) {
 // eligible for scanning.
 static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
    CHAR16   *VolName = NULL, *DontScanDir, *PathCopy = NULL;
-   UINTN    i = 0, VolNum;
+   UINTN    i = 0;
    BOOLEAN  ScanIt = TRUE;
 
    if (IsIn(Volume->VolName, GlobalConfig.DontScanVolumes))
@@ -1096,15 +1096,9 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
    // See if Path includes an explicit volume declaration that's NOT Volume....
    PathCopy = StrDuplicate(Path);
    if (SplitVolumeAndFilename(&PathCopy, &VolName)) {
-      if (StriCmp(VolName, Volume->VolName) != 0) {
-         if ((StrLen(VolName) > 2) && (VolName[0] == L'f') && (VolName[1] == L's') && (VolName[2] >= L'0') && (VolName[2] <= L'9')) {
-            VolNum = Atoi(VolName + 2);
-            if (VolNum != Volume->VolNumber) {
-               ScanIt = FALSE;
-            }
-         } else {
-            ScanIt = FALSE;
-         }
+      VolumeNumberToName(Volume, &VolName);
+      if (VolName && StriCmp(VolName, Volume->VolName) != 0) {
+         ScanIt = FALSE;
       } // if
    } // if Path includes volume specification
    MyFreePool(PathCopy);
@@ -1115,14 +1109,10 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
    while ((DontScanDir = FindCommaDelimited(GlobalConfig.DontScanDirs, i++)) && ScanIt) {
       SplitVolumeAndFilename(&DontScanDir, &VolName);
       CleanUpPathNameSlashes(DontScanDir);
+      VolumeNumberToName(Volume, &VolName);
       if (VolName != NULL) {
          if ((StriCmp(VolName, Volume->VolName) == 0) && (StriCmp(DontScanDir, Path) == 0))
             ScanIt = FALSE;
-         if ((StrLen(VolName) > 2) && (VolName[0] == L'f') && (VolName[1] == L's') && (VolName[2] >= L'0') && (VolName[2] <= L'9')) {
-            VolNum = Atoi(VolName + 2);
-            if ((VolNum == Volume->VolNumber) && (StriCmp(DontScanDir, Path) == 0))
-               ScanIt = FALSE;
-         }
       } else {
          if (StriCmp(DontScanDir, Path) == 0)
             ScanIt = FALSE;
@@ -1257,7 +1247,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
               (StriCmp(DirEntry->FileName, FALLBACK_BASENAME) == 0 && (StriCmp(Path, L"EFI\\BOOT") == 0)) ||
               StriSubCmp(L"shell", DirEntry->FileName) ||
               IsSymbolicLink(Volume, Path, DirEntry) || /* is symbolic link */
-              IsIn(DirEntry->FileName, GlobalConfig.DontScanFiles))
+              FilenameIn(Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles))
                 continue;   // skip this
 
           if (Path)
@@ -1308,7 +1298,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
    EFI_STATUS              Status;
    REFIT_DIR_ITER          EfiDirIter;
    EFI_FILE_INFO           *EfiDirEntry;
-   CHAR16                  FileName[256], *Directory, *MatchPatterns, *VolName = NULL, *SelfPath;
+   CHAR16                  FileName[256], *Directory = NULL, *MatchPatterns, *VolName = NULL, *SelfPath;
    UINTN                   i, Length;
    BOOLEAN                 ScanFallbackLoader = TRUE;
    BOOLEAN                 FoundBRBackup = FALSE;
@@ -1321,7 +1311,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       // check for Mac OS X boot loader
       if (ShouldScan(Volume, L"System\\Library\\CoreServices")) {
          StrCpy(FileName, MACOSX_LOADER_PATH);
-         if (FileExists(Volume->RootDir, FileName) && !IsIn(L"boot.efi", GlobalConfig.DontScanFiles)) {
+         if (FileExists(Volume->RootDir, FileName) && !FilenameIn(Volume, Directory, L"boot.efi", GlobalConfig.DontScanFiles)) {
             AddLoaderEntry(FileName, L"Mac OS X", Volume);
             if (DuplicatesFallback(Volume, FileName))
                ScanFallbackLoader = FALSE;
@@ -1329,7 +1319,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
 
          // check for XOM
          StrCpy(FileName, L"System\\Library\\CoreServices\\xom.efi");
-         if (FileExists(Volume->RootDir, FileName) && !IsIn(L"boot.efi", GlobalConfig.DontScanFiles)) {
+         if (FileExists(Volume->RootDir, FileName) && !FilenameIn(Volume, Directory, L"boot.efi", GlobalConfig.DontScanFiles)) {
             AddLoaderEntry(FileName, L"Windows XP (XoM)", Volume);
             if (DuplicatesFallback(Volume, FileName))
                ScanFallbackLoader = FALSE;
@@ -1339,14 +1329,14 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       // check for Microsoft boot loader/menu
       if (ShouldScan(Volume, L"EFI\\Microsoft\\Boot")) {
          StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bkpbootmgfw.efi");
-         if (FileExists(Volume->RootDir, FileName) &&  !IsIn(L"bkpbootmgfw.efi", GlobalConfig.DontScanFiles)) {
+         if (FileExists(Volume->RootDir, FileName) &&  !FilenameIn(Volume, Directory, L"bkpbootmgfw.efi", GlobalConfig.DontScanFiles)) {
             AddLoaderEntry(FileName, L"Microsoft EFI boot (Boot Repair backup)", Volume);
             FoundBRBackup = TRUE;
             if (DuplicatesFallback(Volume, FileName))
                ScanFallbackLoader = FALSE;
          }
          StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bootmgfw.efi");
-         if (FileExists(Volume->RootDir, FileName) &&  !IsIn(L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
+         if (FileExists(Volume->RootDir, FileName) &&  !FilenameIn(Volume, Directory, L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
             if (FoundBRBackup)
                AddLoaderEntry(FileName, L"Supposed Microsoft EFI boot (probably GRUB)", Volume);
             else
