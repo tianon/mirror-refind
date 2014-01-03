@@ -732,7 +732,7 @@ FindLinuxESP() {
 # Sets InstallDir to the ESP mount point.
 FindMountedESP() {
    mount /boot &> /dev/null
-#   mount /boot/efi &> /dev/null
+   mount /boot/efi &> /dev/null
    EspLine=`df "$RootDir/boot/efi" 2> /dev/null | grep boot/efi`
    if [[ ! -n "$EspLine" ]] ; then
       EspLine=`df "$RootDir"/boot | grep boot`
