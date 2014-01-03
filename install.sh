@@ -696,10 +696,20 @@ FindLinuxESP() {
    local Drive
    local PartNum
    local TableType
+   local DmStatus
+   local SkipIt
    for Drive in `ls /dev/[sh]d?` ; do
-      TableType=`parted $Drive print -m -s 2> /dev/null | head -n 2 | tail -n 1 | cut -d ":" -f 6`
-      if [[ $TableType == 'gpt' ]] ; then # read only GPT disks
-         PartNum=`parted $Drive print -m -s 2> /dev/null | grep ":boot[,;]" | cut -d ":" -f 1`
+      SkipIt=0
+      if [ -x `which dmraid` ] ; then
+         DmStatus=`dmraid -r | grep $Drive`
+         if [ -n "$DmStatus" ] ; then
+            echo "$Drive seems to be part of a RAID array; skipping!"
+            SkipIt=1
+         fi
+      fi
+      TableType=`parted $Drive print -m -s 2>/dev/null | awk -F: '$1 == "'$Drive'" { print $6 }'`
+      if [[ $TableType == 'gpt' && $SkipIt == 0 ]] ; then # read only GPT disks that aren't part of dmraid array
+         PartNum=`LANG=C parted $Drive print -m -s 2>/dev/null | awk -F: '$7 ~ "(^boot| boot)" { print $1 }' | head -n 1`
          if [ "$PartNum" -eq "$PartNum" ] 2> /dev/null ; then
             InstallDir="$RootDir/boot/efi"
             mkdir -p $InstallDir
@@ -721,6 +731,8 @@ FindLinuxESP() {
 # either location.
 # Sets InstallDir to the ESP mount point.
 FindMountedESP() {
+   mount /boot &> /dev/null
+#   mount /boot/efi &> /dev/null
    EspLine=`df "$RootDir/boot/efi" 2> /dev/null | grep boot/efi`
    if [[ ! -n "$EspLine" ]] ; then
       EspLine=`df "$RootDir"/boot | grep boot`
