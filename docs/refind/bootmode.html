@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-12/15/2013, referencing rEFInd 0.7.6</p>
+1/3/2014, referencing rEFInd 0.7.7</p>
 
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -186,28 +186,31 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>Launch a terminal program in GUI mode, or log in using text mode.</li>
 
-<li>Type <b><tt>dmesg | grep EFI</tt></b>.
+<li>Type <b><tt>dmesg | grep -i EFI</tt></b>.
 
 </ol>
 
 <p>The result on a BIOS-based computer should be few or no lines of output. On an EFI-based computer, though, the output will be extensive:</p>
 
 <pre class="listing">
-[    0.000000] Command line: BOOT_IMAGE=dev000:\EFI\elilo\bzImage-3.2.7 root=/dev/mapper/nessus-g_root  dolvm ro
-[    0.000000] EFI v2.10 by TianoCore.org
-[    0.000000] Kernel-defined memdesc doesn't match the one from EFI!
-[    0.000000] EFI: mem00: type=7, attr=0xf, range=[0x0000000000086000-0x000000000009c000) (0MB)
-[    0.000000] EFI: mem01: type=4, attr=0xf, range=[0x000000000009c000-0x000000000009d000) (0MB)
+[    0.000000] efi: EFI v2.31 by INSYDE Corp.
+[    0.000000] efi:  ACPI=0x9cffe000  ACPI 2.0=0x9cffe014  SMBIOS=0x9cebef98 
+[    0.000000] efi: mem00: type=3, attr=0xf, range=[0x0000000000000000-0x0000000000001000) (0MB)
+[    0.000000] efi: mem01: type=2, attr=0xf, range=[0x0000000000001000-0x0000000000008000) (0MB)
 ...
-[    0.000000] EFI: mem58: type=0, attr=0x1, range=[0x00000000fec00000-0x0000000100000000) (20MB)
-[    0.000000] EFI: mem59: type=7, attr=0xf, range=[0x0000000100000000-0x0000000230000000) (4864MB)
-[    0.000000] Kernel command line: BOOT_IMAGE=dev000:\EFI\elilo\bzImage-3.2.7 root=/dev/mapper/nessus-g_root  dolvm ro
-[    0.844752] fbcon: EFI VGA (fb0) is primary device
-[    0.853525] fb0: EFI VGA frame buffer device
-[    1.061571] EFI Variables Facility v0.08 2004-May-17
+[    0.000000] efi: mem62: type=11, attr=0x8000000000000001, range=[0x00000000ff980000-0x0000000100000000) (6MB)
+[    0.000000] ACPI: UEFI 000000009cffc000 00236 (v01 LENOVO CB-01    00000001 ACPI 00040000)
+[    0.632723] efifb: probing for efifb
+[    0.634127] efifb: framebuffer at 0xa0000000, mapped to 0xffffc90021780000, using 8100k, total 8100k
+[    0.634129] efifb: mode is 1920x1080x32, linelength=7680, pages=1
+[    0.634130] efifb: scrolling: redraw
+[    0.634132] efifb: Truecolor: size=8:8:8:8, shift=24:16:8:0
+[    0.644648] fb0: EFI VGA frame buffer device
+[    0.754748] EFI Variables Facility v0.08 2004-May-17
+[    1.305636] fb: conflicting fb hw usage inteldrmfb vs EFI VGA - removing generic driver
 </pre>
 
-<p>I've actually cut quite a few lines from this output; there are a total of 60 <tt>EFI: mem<i>##</i></tt> lines on this computer. (Another of my computers has 148 such lines!) A BIOS-based computer will lack most or all of these lines, and certainly the <tt>EFI: mem<i>##</i></tt> lines. I've heard of some BIOS-based computers that produce the final <tt>EFI Variables Facility</tt> line, though.</p>
+<p>I've actually cut quite a few lines from this output; there are a total of 62 <tt>EFI: mem<i>##</i></tt> lines on this computer. (Another of my computers has 148 such lines!) A BIOS-based computer will lack most or all of these lines, and certainly the <tt>EFI: mem<i>##</i></tt> lines. I've heard of some BIOS-based computers that produce the <tt>EFI Variables Facility</tt> line, though.</p>
 
 <p>One caveat exists to these tests: It's possible to boot Linux in EFI mode but disable the EFI features that create the <tt>/sys/firmware/efi</tt> directory and the copious EFI output in <tt>dmesg</tt>. This can happen because your kernel was compiled without EFI support or because you've added the <tt>noefi</tt> line to your existing BIOS boot loader configuration. Some of these features will also be absent if the <tt>efivars</tt> driver is not built into the kernel and is not loaded as a module. Typing <tt class="userinput">modprobe efivars</tt> should load this module, so you might try that before concluding you've booted in BIOS mode. To the best of my knowledge, no major Linux distribution ships with EFI support disabled in any of these ways, so chances are your tests won't mislead you to thinking you're using BIOS mode unless you've recompiled your kernel or deliberately added a <tt>noefi</tt> parameter to your boot loader configuration.</p>
 
@@ -261,7 +264,7 @@ resumeobject            {3aa4c728-9935-11e0-9f12-806e6f6e6963}</pre>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2013 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2014 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

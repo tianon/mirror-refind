@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 12/15/2013</p>
+<p>Last Web page update: 1/3/2014</p>
 
 <p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -130,6 +130,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <ul>
 
+<li><b>0.7.7 (1/3/2014)</b>&mdash;A new configuration file token, <tt>windows_recovery_files</tt>, leads this list of changes; you can use it to specify files that boot Windows recovery tools. If you include the <tt>windows_recovery</tt> option on the <tt>showtools</tt> line, these files will then be represented by a small Windows recovery badge on the second row rather than as a full-sized OS loader, thus reducing clutter and making the purpose of this loader clearer. You can also now specify a complete path to <tt>dont_scan_files</tt> items, including a volume specifier. The <tt>use_graphics_for</tt>, <tt>also_scan_dirs</tt>, <tt>dont_scan_dirs</tt>, <tt>dont_scan_files</tt>, <tt>scan_driver_dirs</tt>, and <tt>windows_recovery_files</tt> tokens can all now accept <tt>+</tt> as their first option, which causes subsequent list items to be added to their defaults rather than replacing them. The configuration file can now be specified at program launch by passing a <tt>-c</tt> option, as in <tt>-c myconf.conf</tt>; you can use this feature to set up a manual boot stanza that launches rEFInd with modified boot options. Scans of ext2/3/4fs and ReiserFS partitions now omit partitions with filesystem UUIDs that have already been seen. This is an effort to reduce clutter from such partitions that are components of RAID 1 arrays. The <tt>install.sh</tt> script now attempts to locate and mount an unmounted ESP when run under Linux. Finally, I've fixed a bug in both <tt>install.sh</tt> and <tt>mkrlconf.sh</tt> that caused the generated <tt>refind_linux.conf</tt> file to contain a stray line break and unnecessary <tt>PARTUUID=</tt> specification on some systems.</li>
+
 <li><b>0.7.6 (12/15/2013)</b>&mdash;The biggest changes in this version relate to the <tt>default_selection</tt> setting. You can now provide multiple default selections by listing them <i>within quotes</i> and separated by commas, as in <tt>default_selection "ubuntu,fedora"</tt> which boots <tt>ubuntu</tt> if it's present and <tt>fedora</tt> if <tt>ubuntu</tt> is not present but <tt>fedora</tt> is. This should be helpful with removable disks. You can also include two times, in 24-hour format, following a <tt>default_selection</tt> specification, as in <tt>default_selection Maintenance 1:00 2:00</tt>, which boots <tt>Maintenance</tt> by default between 1:00 and 2:00. If another <tt>default_selection</tt> without a time specification preceded this line, the earlier one will still apply at other times. Another change to the main program is that you can now set <tt>screensaver -1</tt> to have rEFInd come up with its screen blanked. You'll probably want to combine this with a short <tt>timeout</tt> value to have rEFInd boot your default OS quickly unless you press a key first. Finally, I've added a new option to the <tt>install.sh</tt> script: <tt>--ownhfs <i>target_partition</i></tt>. This option is valid only under OS X. It installs rEFInd to an HFS+ volume that does <i><b>not</b></i> currently hold an OS X installation. The installation method differs from the usual rEFInd installation in that the result looks to the firmware more like an OS X installation. This makes rEFInd appear as an option in the firmware's own boot manager and it may help suspend-to-RAM operations.</li>
 
 <li><b>0.7.5 (11/10/2013)</b>&mdash;This version fixes a few bugs, the most important of which is one that caused some Macs to hang when multiple EFI drivers were present. Another squashed bug caused the screen to clear to the default gray rather than the actual background color when launching OSes in graphics mode. rEFInd no longer shows all exFAT partitions as being bootable on Macs when legacy boot options are enabled; now such partitions only show up as bootable if rEFInd spots a known boot loader installed on them. Finally, I've fixed a bug that caused <tt>install.sh</tt> to fail when installing to the ESP with recent versions of OS X.</li>
@@ -224,7 +226,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2013 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2014 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

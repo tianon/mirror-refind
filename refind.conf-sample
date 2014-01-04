@@ -156,6 +156,7 @@ timeout 20
 
 # Boot loaders that can launch a Windows restore or emergency system.
 # These tend to be OEM-specific.
+# Default is LRS_ESP:/EFI/Microsoft/Boot/LrsBootmgr.efi
 #
 #windows_recovery_files LRS_ESP:/EFI/Microsoft/Boot/LrsBootmgr.efi
 
