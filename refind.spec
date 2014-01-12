@@ -126,7 +126,9 @@ fi
 cd /usr/share/refind-%{version}
 
 declare VarFile=`ls -d /sys/firmware/efi/vars/SecureBoot* 2> /dev/null`
-declare ShimFile=`find /boot -name shim\.efi 2> /dev/null | head -n 1`
+# Note: Two find operations for ShimFile favors shim over PreLoader -- if both are
+# present, the script uses shim rather than PreLoader.
+declare ShimFile=`find /boot -name shim\.efi -o -name shimx64\.efi -o -name PreLoader\.efi 2> /dev/null | head -n 1`
 if [[ ! -n $ShimFile ]] ; then
    declare ShimFile=`find /boot -name PreLoader\.efi 2> /dev/null | head -n 1`
 fi

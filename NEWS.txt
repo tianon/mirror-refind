@@ -1,3 +1,16 @@
+0.7.8 (?/??/2014):
+------------------
+
+- Adjusted the post-installation script in refind.spec (used to generate
+  RPMs, and therefore also indirectly Debian packages) to search for
+  existing shim program files under the filesnames shim.efi and shimx64.efi
+  rather than just shim.efi. Ubuntu uses shimx64.efi, so Debian packages
+  were failing to detect Ubuntu's shim in previous versions. (Note,
+  however, that Ubuntu's early shim 0.1 is unsuitable for use with rEFInd
+  The newer 0.4 version that's in the repositories now should work fine;
+  it's only when installing on an older system that's NOT been updated that
+  problems might arise.
+
 0.7.7 (1/3/2014):
 -----------------
 
