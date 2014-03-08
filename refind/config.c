@@ -558,6 +558,15 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (StriCmp(TokenList[0], L"banner") == 0) {
            HandleString(TokenList, TokenCount, &(GlobalConfig.BannerFileName));
 
+        } else if ((StriCmp(TokenList[0], L"banner_scale") == 0) && (TokenCount == 2)) {
+           if (StriCmp(TokenList[1], L"noscale") == 0) {
+              GlobalConfig.BannerScale = BANNER_NOSCALE;
+           } else if (StriCmp(TokenList[1], L"fillscreen") == 0) {
+              GlobalConfig.BannerScale = BANNER_FILLSCREEN;
+           } else {
+              Print(L" unknown banner_type flag: '%s'\n", TokenList[1]);
+           } // if/else
+
         } else if (StriCmp(TokenList[0], L"selection_small") == 0) {
            HandleString(TokenList, TokenCount, &(GlobalConfig.SelectionSmallFileName));
 

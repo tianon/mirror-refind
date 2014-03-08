@@ -433,32 +433,37 @@ VOID SwitchToGraphicsAndClear(VOID)
         BltClearScreen(TRUE);
 }
 
-VOID BltClearScreen(IN BOOLEAN ShowBanner)
+VOID BltClearScreen(BOOLEAN ShowBanner)
 {
-    static EG_IMAGE *Banner = NULL, *CroppedBanner;
+    static EG_IMAGE *Banner = NULL;
+    EG_IMAGE *NewBanner = NULL;
     INTN BannerPosX, BannerPosY;
     EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
 
     if (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)) {
         // load banner on first call
         if (Banner == NULL) {
-            if (GlobalConfig.BannerFileName == NULL) {
-                Banner = egPrepareEmbeddedImage(&egemb_refind_banner, FALSE);
-            } else {
+            if (GlobalConfig.BannerFileName)
                 Banner = egLoadImage(SelfDir, GlobalConfig.BannerFileName, FALSE);
-                if (Banner && ((Banner->Width > UGAWidth) || (Banner->Height > UGAHeight))) {
-                   CroppedBanner = egCropImage(Banner, 0, 0, (Banner->Width > UGAWidth) ? UGAWidth : Banner->Width,
-                                               (Banner->Height > UGAHeight) ? UGAHeight : Banner->Height);
-                   MyFreePool(Banner);
-                   Banner = CroppedBanner;
-                } // if image too big
-                if (Banner == NULL) {
-                   Banner = egPrepareEmbeddedImage(&egemb_refind_banner, FALSE);
-                } // if unusable image
-            }
-            if (Banner != NULL)
-               MenuBackgroundPixel = Banner->PixelData[0];
+            if (Banner == NULL)
+                Banner = egPrepareEmbeddedImage(&egemb_refind_banner, FALSE);
         }
+
+        if (Banner) {
+           if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
+              if ((Banner->Height != UGAHeight) || (Banner->Width != UGAWidth)) {
+                 NewBanner = egScaleImage(Banner, UGAWidth, UGAHeight);
+              } // if
+           } else if ((Banner->Width > UGAWidth) || (Banner->Height > UGAHeight)) {
+              NewBanner = egCropImage(Banner, 0, 0, (Banner->Width > UGAWidth) ? UGAWidth : Banner->Width,
+                                      (Banner->Height > UGAHeight) ? UGAHeight : Banner->Height);
+           } // if/elseif
+           if (NewBanner) {
+              MyFreePool(Banner);
+              Banner = NewBanner;
+           }
+           MenuBackgroundPixel = Banner->PixelData[0];
+        } // if Banner exists
 
         // clear and draw banner
         if (GlobalConfig.ScreensaverTime != -1)
@@ -476,7 +481,7 @@ VOID BltClearScreen(IN BOOLEAN ShowBanner)
                BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
         }
 
-    } else {
+    } else { // not showing banner
         // clear to menu background color
         egClearScreen(&MenuBackgroundPixel);
     }
@@ -484,7 +489,8 @@ VOID BltClearScreen(IN BOOLEAN ShowBanner)
     GraphicsScreenDirty = FALSE;
     egFreeImage(GlobalConfig.ScreenBackground);
     GlobalConfig.ScreenBackground = egCopyScreen();
-} /* VOID BltClearScreen() */
+} // VOID BltClearScreen()
+
 
 VOID BltImage(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos)
 {

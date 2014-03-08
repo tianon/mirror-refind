@@ -124,6 +124,10 @@
 #define FS_TYPE_BTRFS          7
 #define FS_TYPE_ISO9660        8
 
+// How to scale banner images
+#define BANNER_NOSCALE         0
+#define BANNER_FILLSCREEN      1
+
 // Names of binaries that can manage MOKs....
 #define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi"
 // Directories to search for these MOK-managing programs. Note that SelfDir is
@@ -239,6 +243,7 @@ typedef struct {
    UINTN       LegacyType;
    UINTN       ScanDelay;
    UINTN       ScreensaverTime;
+   UINTN       BannerScale;
    CHAR16      *BannerFileName;
    EG_IMAGE    *ScreenBackground;
    CHAR16      *ConfigFilename;

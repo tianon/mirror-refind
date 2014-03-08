@@ -125,6 +125,67 @@ EG_IMAGE * egCropImage(IN EG_IMAGE *Image, IN UINTN StartX, IN UINTN StartY, IN 
    return NewImage;
 } // EG_IMAGE * egCropImage()
 
+// The following function implements a bilinear image scaling algorithm, based on
+// code presented at http://tech-algorithm.com/articles/bilinear-image-scaling/.
+// Resize an image; returns pointer to resized image if successful, NULL otherwise.
+// Calling function is responsible for freeing allocated memory.
+EG_IMAGE * egScaleImage(EG_IMAGE *Image, UINTN NewWidth, UINTN NewHeight) {
+   EG_IMAGE *NewImage = NULL;
+   EG_PIXEL a, b, c, d;
+   UINTN x, y, Index ;
+   UINTN i, j;
+   UINTN Offset = 0;
+   float x_ratio, y_ratio, x_diff, y_diff;
+
+   if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0))
+      return NULL;
+
+   if ((Image->Width == NewWidth) && (Image->Height == NewHeight))
+      return (egCopyImage(Image));
+
+   NewImage = egCreateImage(NewWidth, NewHeight, Image->HasAlpha);
+   if (NewImage == NULL)
+      return NULL;
+
+   x_ratio = ((float)(Image->Width-1))/NewWidth ;
+   y_ratio = ((float)(Image->Height-1))/NewHeight ;
+
+   for (i = 0; i < NewHeight; i++) {
+      for (j = 0; j < NewWidth; j++) {
+         x = (UINTN)(x_ratio * j) ;
+         y = (UINTN)(y_ratio * i) ;
+         x_diff = (x_ratio * j) - x ;
+         y_diff = (y_ratio * i) - y ;
+         Index = ((y * Image->Width) + x) ;
+         a = Image->PixelData[Index] ;
+         b = Image->PixelData[Index + 1] ;
+         c = Image->PixelData[Index + Image->Width] ;
+         d = Image->PixelData[Index + Image->Width + 1] ;
+
+         // blue element
+         // Yb = Ab(1-Image->Width)(1-Image->Height) + Bb(Image->Width)(1-Image->Height) + Cb(Image->Height)(1-Image->Width) + Db(wh)
+         NewImage->PixelData[Offset].b = (a.b)*(1-x_diff)*(1-y_diff) + (b.b)*(x_diff)*(1-y_diff) +
+                                         (c.b)*(y_diff)*(1-x_diff)   + (d.b)*(x_diff*y_diff);
+
+         // green element
+         // Yg = Ag(1-Image->Width)(1-Image->Height) + Bg(Image->Width)(1-Image->Height) + Cg(Image->Height)(1-Image->Width) + Dg(wh)
+         NewImage->PixelData[Offset].g = (a.g)*(1-x_diff)*(1-y_diff) + (b.g)*(x_diff)*(1-y_diff) +
+                                         (c.g)*(y_diff)*(1-x_diff)   + (d.g)*(x_diff*y_diff);
+
+         // red element
+         // Yr = Ar(1-Image->Width)(1-Image->Height) + Br(Image->Width)(1-Image->Height) + Cr(Image->Height)(1-Image->Width) + Dr(wh)
+         NewImage->PixelData[Offset].r = (a.r)*(1-x_diff)*(1-y_diff) + (b.r)*(x_diff)*(1-y_diff) +
+                                         (c.r)*(y_diff)*(1-x_diff)   + (d.r)*(x_diff*y_diff);
+
+         // alpha element
+         NewImage->PixelData[Offset++].a = (a.a)*(1-x_diff)*(1-y_diff) + (b.a)*(x_diff)*(1-y_diff) +
+                                           (c.a)*(y_diff)*(1-x_diff)   + (d.a)*(x_diff*y_diff);
+
+      } // for (j...)
+   } // for (i...)
+   return NewImage;
+} // EG_IMAGE * egScaleImage()
+
 VOID egFreeImage(IN EG_IMAGE *Image)
 {
     if (Image != NULL) {
@@ -273,7 +334,7 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
     EFI_STATUS      Status;
     UINT8           *FileData;
     UINTN           FileDataLength;
-    EG_IMAGE        *NewImage;
+    EG_IMAGE        *Image, *NewImage;
 
     if (BaseDir == NULL || Path == NULL)
         return NULL;
@@ -284,15 +345,17 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
        return NULL;
 
     // decode it
-    NewImage = egDecodeAny(FileData, FileDataLength, IconSize, TRUE);
+    Image = egDecodeAny(FileData, FileDataLength, IconSize, TRUE);
     FreePool(FileData);
-    if ((NewImage->Width != IconSize) || (NewImage->Height != IconSize)) {
-       Print(L"Warning: Attempt to load icon of the wrong size from '%s'\n", Path);
-       MyFreePool(NewImage);
-       NewImage = NULL;
+    if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
+       NewImage = egScaleImage(Image, IconSize, IconSize);
+       if (!NewImage)
+          Print(L"Warning: Unable to scale icon of the wrong size from '%s'\n", Path);
+       MyFreePool(Image);
+       Image = NewImage;
     }
 
-    return NewImage;
+    return Image;
 } // EG_IMAGE *egLoadIcon()
 
 // Returns an icon of any type from the specified subdirectory using the specified

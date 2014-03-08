@@ -36,6 +36,8 @@
 
 #include "libegint.h"
 
+#define MAX_ICNS_SIZES 4
+
 //
 // Decompress .icns RLE data
 //
@@ -97,11 +99,13 @@ EG_IMAGE * egDecodeICNS(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ic
     EG_IMAGE            *NewImage;
     UINT8               *Ptr, *BufferEnd, *DataPtr, *MaskPtr;
     UINT32              BlockLen, DataLen, MaskLen;
-    UINTN               FetchPixelSize, PixelCount, i;
+    UINTN               PixelCount, i;
     UINT8               *CompData;
     UINTN               CompLen;
     UINT8               *SrcPtr;
     EG_PIXEL            *DestPtr;
+    UINTN               SizesToTry[MAX_ICNS_SIZES + 1] = {IconSize, 128, 48, 32, 16};
+    UINTN               SizeToTry = 0;
 
     if (FileDataLength < 8 || FileData == NULL ||
         FileData[0] != 'i' || FileData[1] != 'c' || FileData[2] != 'n' || FileData[3] != 's') {
@@ -109,68 +113,70 @@ EG_IMAGE * egDecodeICNS(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ic
         return NULL;
     }
 
-    FetchPixelSize = IconSize;
     for (;;) {
         DataPtr = NULL;
         DataLen = 0;
         MaskPtr = NULL;
         MaskLen = 0;
 
-        Ptr = FileData + 8;
-        BufferEnd = FileData + FileDataLength;
-        // iterate over tagged blocks in the file
-        while (Ptr + 8 <= BufferEnd) {
-            BlockLen = ((UINT32)Ptr[4] << 24) + ((UINT32)Ptr[5] << 16) + ((UINT32)Ptr[6] << 8) + (UINT32)Ptr[7];
-            if (Ptr + BlockLen > BufferEnd)   // block continues beyond end of file
-                break;
+        do {
+           IconSize = SizesToTry[SizeToTry];
+           Ptr = FileData + 8;
+           BufferEnd = FileData + FileDataLength;
+           // iterate over tagged blocks in the file
+           while (Ptr + 8 <= BufferEnd) {
+               BlockLen = ((UINT32)Ptr[4] << 24) + ((UINT32)Ptr[5] << 16) + ((UINT32)Ptr[6] << 8) + (UINT32)Ptr[7];
+               if (Ptr + BlockLen > BufferEnd)   // block continues beyond end of file
+                   break;
 
-            // extract the appropriate blocks for each pixel size
-            if (FetchPixelSize == 128) {
-                if (Ptr[0] == 'i' && Ptr[1] == 't' && Ptr[2] == '3' && Ptr[3] == '2') {
-                    if (Ptr[8] == 0 && Ptr[9] == 0 && Ptr[10] == 0 && Ptr[11] == 0) {
-                        DataPtr = Ptr + 12;
-                        DataLen = BlockLen - 12;
-                    }
-                } else if (Ptr[0] == 't' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
-                    MaskPtr = Ptr + 8;
-                    MaskLen = BlockLen - 8;
-                }
+               // extract the appropriate blocks for each pixel size
+               if (IconSize == 128) {
+                   if (Ptr[0] == 'i' && Ptr[1] == 't' && Ptr[2] == '3' && Ptr[3] == '2') {
+                       if (Ptr[8] == 0 && Ptr[9] == 0 && Ptr[10] == 0 && Ptr[11] == 0) {
+                           DataPtr = Ptr + 12;
+                           DataLen = BlockLen - 12;
+                       }
+                   } else if (Ptr[0] == 't' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
+                       MaskPtr = Ptr + 8;
+                       MaskLen = BlockLen - 8;
+                   }
 
-            } else if (FetchPixelSize == 48) {
-                if (Ptr[0] == 'i' && Ptr[1] == 'h' && Ptr[2] == '3' && Ptr[3] == '2') {
-                    DataPtr = Ptr + 8;
-                    DataLen = BlockLen - 8;
-                } else if (Ptr[0] == 'h' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
-                    MaskPtr = Ptr + 8;
-                    MaskLen = BlockLen - 8;
-                }
+               } else if (IconSize == 48) {
+                   if (Ptr[0] == 'i' && Ptr[1] == 'h' && Ptr[2] == '3' && Ptr[3] == '2') {
+                       DataPtr = Ptr + 8;
+                       DataLen = BlockLen - 8;
+                   } else if (Ptr[0] == 'h' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
+                       MaskPtr = Ptr + 8;
+                       MaskLen = BlockLen - 8;
+                   }
 
-            } else if (FetchPixelSize == 32) {
-                if (Ptr[0] == 'i' && Ptr[1] == 'l' && Ptr[2] == '3' && Ptr[3] == '2') {
-                    DataPtr = Ptr + 8;
-                    DataLen = BlockLen - 8;
-                } else if (Ptr[0] == 'l' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
-                    MaskPtr = Ptr + 8;
-                    MaskLen = BlockLen - 8;
-                }
+               } else if (IconSize == 32) {
+                   if (Ptr[0] == 'i' && Ptr[1] == 'l' && Ptr[2] == '3' && Ptr[3] == '2') {
+                       DataPtr = Ptr + 8;
+                       DataLen = BlockLen - 8;
+                   } else if (Ptr[0] == 'l' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
+                       MaskPtr = Ptr + 8;
+                       MaskLen = BlockLen - 8;
+                   }
 
-            } else if (FetchPixelSize == 16) {
-                if (Ptr[0] == 'i' && Ptr[1] == 's' && Ptr[2] == '3' && Ptr[3] == '2') {
-                    DataPtr = Ptr + 8;
-                    DataLen = BlockLen - 8;
-                } else if (Ptr[0] == 's' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
-                    MaskPtr = Ptr + 8;
-                    MaskLen = BlockLen - 8;
-                }
+               } else if (IconSize == 16) {
+                   if (Ptr[0] == 'i' && Ptr[1] == 's' && Ptr[2] == '3' && Ptr[3] == '2') {
+                       DataPtr = Ptr + 8;
+                       DataLen = BlockLen - 8;
+                   } else if (Ptr[0] == 's' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
+                       MaskPtr = Ptr + 8;
+                       MaskLen = BlockLen - 8;
+                   }
 
-            }
+               }
 
-            Ptr += BlockLen;
-        }
+               Ptr += BlockLen;
+           }
+        } while ((DataPtr == NULL) && (SizeToTry++ < MAX_ICNS_SIZES));
 
         /* FUTURE: try to load a different size and scale it later
-            if (DataPtr == NULL && FetchPixelSize == 32) {
-                FetchPixelSize = 128;
+            if (DataPtr == NULL && IconSize == 32) {
+                IconSize = 128;
                 continue;
             }
         */
@@ -181,10 +187,10 @@ EG_IMAGE * egDecodeICNS(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ic
         return NULL;   // no image found
 
     // allocate image structure and buffer
-    NewImage = egCreateImage(FetchPixelSize, FetchPixelSize, WantAlpha);
+    NewImage = egCreateImage(IconSize, IconSize, WantAlpha);
     if (NewImage == NULL)
         return NULL;
-    PixelCount = FetchPixelSize * FetchPixelSize;
+    PixelCount = IconSize * IconSize;
 
     if (DataLen < PixelCount * 3) {
 

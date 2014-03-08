@@ -1,6 +1,19 @@
 0.7.8 (?/??/2014):
 ------------------
 
+- rEFInd now automatically scales icons to fit the standard icon sizes.
+  This won't have any effect with the icons that come with rEFInd, but it
+  can help if you want to use another icon, since you needn't scale it in a
+  graphics program before using it. Note that rEFInd uses bitmap icons, so
+  scaling by a huge amount (say, a 16x16 icon to fit the standard 128x128
+  OS icon) is not likely to look good.
+
+- Added new option, banner_scale, that tells rEFInd how to handle banners:
+  Set to "noscale" (the default), banners are not scaled, although they'll
+  be cropped if they're too big for the display. This is the same as the
+  behavior in previous versions. Set to "fillscreen", rEFInd now scales the
+  banner image (larger or smaller) to fill the display.
+
 - Adjusted the post-installation script in refind.spec (used to generate
   RPMs, and therefore also indirectly Debian packages) to search for
   existing shim program files under the filesnames shim.efi and shimx64.efi

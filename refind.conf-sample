@@ -51,6 +51,14 @@ timeout 20
 #banner hostname.bmp
 #banner mybanner.png
 
+# Specify how to handle banners that aren't exactly the same as the screen
+# size:
+#  noscale     - Crop if too big, show with border if too small
+#  fillscreen  - Fill the screen
+# Default is noscale
+#
+#banner_scale fillscreen
+
 # Custom images for the selection background. There is a big one (144 x 144)
 # for the OS icons, and a small one (64 x 64) for the function icons in the
 # second row. If only a small image is given, that one is also used for
@@ -150,7 +158,7 @@ timeout 20
 #  reboot           - a tag to reboot the computer
 #  firmware         - a tag to reboot the computer into the firmware's
 #                     user interface (ignored on older computers)
-# Default is shell,memtest,apple_recovery,mok_tool,about,shutdown,reboot,firmware
+# Default is shell,memtest,apple_recovery,windows_recovery,mok_tool,about,shutdown,reboot,firmware
 #
 #showtools shell, memtest, mok_tool, about, reboot, exit, firmware
 
