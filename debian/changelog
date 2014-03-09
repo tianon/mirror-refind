@@ -1,0 +1,5 @@
+refind (0.7.8-0ubuntu1) UNRELEASED; urgency=low
+
+  * Initial release. (Closes: #1136112)
+
+ -- Roderick W. Smith <rod.smith@canonical.com>  Sun, 9 Mar 2014 07:59:50 -0500

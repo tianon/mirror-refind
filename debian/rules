@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+DH_VERBOSE=1
+%:
+	dh $@
+
+override_dh_auto_clean:
+	rm -rf $$(pwd)/debian/files $$(pwd)/debian/refind.* $$(pwd)/debian/refind
+	$(MAKE) clean
+	rm -f $$(pwd)/drivers*/*
+
+override_dh_auto_build:
+	$(MAKE) gnuefi
+	$(MAKE) fs_gnuefi
+
+override_dh_auto_install:
+	$$(pwd)/debian/debinstall $$(pwd)/debian/refind
