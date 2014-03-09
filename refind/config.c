@@ -561,11 +561,23 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if ((StriCmp(TokenList[0], L"banner_scale") == 0) && (TokenCount == 2)) {
            if (StriCmp(TokenList[1], L"noscale") == 0) {
               GlobalConfig.BannerScale = BANNER_NOSCALE;
-           } else if (StriCmp(TokenList[1], L"fillscreen") == 0) {
+           } else if ((StriCmp(TokenList[1], L"fillscreen") == 0) || (StriCmp(TokenList[1], L"fullscreen") == 0)) {
               GlobalConfig.BannerScale = BANNER_FILLSCREEN;
            } else {
               Print(L" unknown banner_type flag: '%s'\n", TokenList[1]);
            } // if/else
+
+        } else if ((StriCmp(TokenList[0], L"small_icon_size") == 0) && (TokenCount == 2)) {
+           HandleInt(TokenList, TokenCount, &i);
+           if (i >= 32)
+              GlobalConfig.IconSizes[ICON_SIZE_SMALL] = i;
+
+        } else if ((StriCmp(TokenList[0], L"big_icon_size") == 0) && (TokenCount == 2)) {
+           HandleInt(TokenList, TokenCount, &i);
+           if (i >= 32) {
+              GlobalConfig.IconSizes[ICON_SIZE_BIG] = i;
+              GlobalConfig.IconSizes[ICON_SIZE_BADGE] = i / 4;
+           }
 
         } else if (StriCmp(TokenList[0], L"selection_small") == 0) {
            HandleString(TokenList, TokenCount, &(GlobalConfig.SelectionSmallFileName));
@@ -792,9 +804,9 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
 
       } else if ((StriCmp(TokenList[0], L"icon") == 0) && (TokenCount > 1)) {
          MyFreePool(Entry->me.Image);
-         Entry->me.Image = egLoadIcon(CurrentVolume->RootDir, TokenList[1], 128);
+         Entry->me.Image = egLoadIcon(CurrentVolume->RootDir, TokenList[1], GlobalConfig.IconSizes[ICON_SIZE_BIG]);
          if (Entry->me.Image == NULL) {
-            Entry->me.Image = DummyImage(128);
+            Entry->me.Image = DummyImage(GlobalConfig.IconSizes[ICON_SIZE_BIG]);
          }
 
       } else if ((StriCmp(TokenList[0], L"initrd") == 0) && (TokenCount > 1)) {

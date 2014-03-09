@@ -69,7 +69,7 @@ EG_IMAGE * egCreateImage(IN UINTN Width, IN UINTN Height, IN BOOLEAN HasAlpha)
         return NULL;
     NewImage->PixelData = (EG_PIXEL *) AllocatePool(Width * Height * sizeof(EG_PIXEL));
     if (NewImage->PixelData == NULL) {
-        FreePool(NewImage);
+        egFreeImage(NewImage);
         return NULL;
     }
 
@@ -129,7 +129,7 @@ EG_IMAGE * egCropImage(IN EG_IMAGE *Image, IN UINTN StartX, IN UINTN StartY, IN 
 // code presented at http://tech-algorithm.com/articles/bilinear-image-scaling/.
 // Resize an image; returns pointer to resized image if successful, NULL otherwise.
 // Calling function is responsible for freeing allocated memory.
-EG_IMAGE * egScaleImage(EG_IMAGE *Image, UINTN NewWidth, UINTN NewHeight) {
+EG_IMAGE * egScaleImage(IN EG_IMAGE *Image, IN UINTN NewWidth, IN UINTN NewHeight) {
    EG_IMAGE *NewImage = NULL;
    EG_PIXEL a, b, c, d;
    UINTN x, y, Index ;
@@ -147,20 +147,20 @@ EG_IMAGE * egScaleImage(EG_IMAGE *Image, UINTN NewWidth, UINTN NewHeight) {
    if (NewImage == NULL)
       return NULL;
 
-   x_ratio = ((float)(Image->Width-1))/NewWidth ;
-   y_ratio = ((float)(Image->Height-1))/NewHeight ;
+   x_ratio = ((float)(Image->Width - 1)) / NewWidth;
+   y_ratio = ((float)(Image->Height - 1)) / NewHeight;
 
    for (i = 0; i < NewHeight; i++) {
       for (j = 0; j < NewWidth; j++) {
-         x = (UINTN)(x_ratio * j) ;
-         y = (UINTN)(y_ratio * i) ;
-         x_diff = (x_ratio * j) - x ;
-         y_diff = (y_ratio * i) - y ;
-         Index = ((y * Image->Width) + x) ;
-         a = Image->PixelData[Index] ;
-         b = Image->PixelData[Index + 1] ;
-         c = Image->PixelData[Index + Image->Width] ;
-         d = Image->PixelData[Index + Image->Width + 1] ;
+         x = (UINTN)(x_ratio * j);
+         y = (UINTN)(y_ratio * i);
+         x_diff = (x_ratio * j) - x;
+         y_diff = (y_ratio * i) - y;
+         Index = ((y * Image->Width) + x);
+         a = Image->PixelData[Index];
+         b = Image->PixelData[Index + 1];
+         c = Image->PixelData[Index + Image->Width];
+         d = Image->PixelData[Index + Image->Width + 1];
 
          // blue element
          // Yb = Ab(1-Image->Width)(1-Image->Height) + Bb(Image->Width)(1-Image->Height) + Cb(Image->Height)(1-Image->Width) + Db(wh)
@@ -321,7 +321,7 @@ EG_IMAGE * egLoadImage(IN EFI_FILE* BaseDir, IN CHAR16 *FileName, IN BOOLEAN Wan
         return NULL;
 
     // decode it
-    NewImage = egDecodeAny(FileData, FileDataLength, 128, WantAlpha);
+    NewImage = egDecodeAny(FileData, FileDataLength, 128 /* arbitrary value */, WantAlpha);
     FreePool(FileData);
 
     return NewImage;
@@ -351,7 +351,7 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
        NewImage = egScaleImage(Image, IconSize, IconSize);
        if (!NewImage)
           Print(L"Warning: Unable to scale icon of the wrong size from '%s'\n", Path);
-       MyFreePool(Image);
+       egFreeImage(Image);
        Image = NewImage;
     }
 
@@ -617,26 +617,26 @@ VOID egComposeImage(IN OUT EG_IMAGE *CompImage, IN EG_IMAGE *TopImage, IN UINTN 
     }
 } /* VOID egComposeImage() */
 
-EG_IMAGE * egEnsureImageSize(IN EG_IMAGE *Image, IN UINTN Width, IN UINTN Height, IN EG_PIXEL *Color)
-{
-    EG_IMAGE *NewImage;
-
-    if (Image == NULL)
-        return NULL;
-    if (Image->Width == Width && Image->Height == Height)
-        return Image;
-
-    NewImage = egCreateFilledImage(Width, Height, Image->HasAlpha, Color);
-    if (NewImage == NULL) {
-        egFreeImage(Image);
-        return NULL;
-    }
-    Image->HasAlpha = FALSE;
-    egComposeImage(NewImage, Image, 0, 0);
-    egFreeImage(Image);
-
-    return NewImage;
-}
+// EG_IMAGE * egEnsureImageSize(IN EG_IMAGE *Image, IN UINTN Width, IN UINTN Height, IN EG_PIXEL *Color)
+// {
+//     EG_IMAGE *NewImage;
+// 
+//     if (Image == NULL)
+//         return NULL;
+//     if (Image->Width == Width && Image->Height == Height)
+//         return Image;
+// 
+//     NewImage = egCreateFilledImage(Width, Height, Image->HasAlpha, Color);
+//     if (NewImage == NULL) {
+//         egFreeImage(Image);
+//         return NULL;
+//     }
+//     Image->HasAlpha = FALSE;
+//     egComposeImage(NewImage, Image, 0, 0);
+//     egFreeImage(Image);
+// 
+//     return NewImage;
+// }
 
 //
 // misc internal functions

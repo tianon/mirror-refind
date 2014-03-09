@@ -52,6 +52,7 @@
 #include "../include/refit_call_wrapper.h"
 
 #include "../include/egemb_back_selected_small.h"
+#include "../include/egemb_back_selected_big.h"
 #include "../include/egemb_arrow_left.h"
 #include "../include/egemb_arrow_right.h"
 
@@ -68,15 +69,12 @@ typedef VOID (*MENU_STYLE_FUNC)(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *S
 
 static CHAR16 ArrowUp[2] = { ARROW_UP, 0 };
 static CHAR16 ArrowDown[2] = { ARROW_DOWN, 0 };
+static UINTN TileSizes[2] = { 144, 64 };
 
 // Text and icon spacing constants....
 #define TEXT_YMARGIN (2)
-//#define TEXT_XMARGIN (8)
-//#define TEXT_LINE_HEIGHT (FONT_CELL_HEIGHT + TEXT_YMARGIN * 2)
 #define TITLEICON_SPACING (16)
 
-#define ROW0_TILESIZE (144)
-#define ROW1_TILESIZE (64)
 #define TILE_XSPACING (8)
 #define TILE_YSPACING (16)
 
@@ -93,8 +91,8 @@ static EG_PIXEL SelectionBackgroundPixel = { 0xff, 0xff, 0xff, 0 };
 
 static VOID InitSelection(VOID)
 {
-    UINTN       x, y, src_x, src_y;
-    EG_PIXEL    *DestPtr, *SrcPtr;
+    EG_IMAGE    *TempSmallImage = NULL, *TempBigImage = NULL;
+    BOOLEAN     LoadedSmallImage = FALSE;
 
     if (!AllowGraphicsMode)
         return;
@@ -103,51 +101,32 @@ static VOID InitSelection(VOID)
 
     // load small selection image
     if (GlobalConfig.SelectionSmallFileName != NULL) {
-        SelectionImages[1] = egLoadImage(SelfDir, GlobalConfig.SelectionSmallFileName, TRUE);
+        TempSmallImage = egLoadImage(SelfDir, GlobalConfig.SelectionSmallFileName, TRUE);
     }
-    if (SelectionImages[1] == NULL)
-        SelectionImages[1] = egPrepareEmbeddedImage(&egemb_back_selected_small, TRUE);
-    SelectionImages[1] = egEnsureImageSize(SelectionImages[1], ROW1_TILESIZE, ROW1_TILESIZE, &MenuBackgroundPixel);
-    if (SelectionImages[1] == NULL)
-        return;
+    if (TempSmallImage == NULL)
+        TempSmallImage = egPrepareEmbeddedImage(&egemb_back_selected_small, TRUE);
+    else
+       LoadedSmallImage = TRUE;
+    SelectionImages[1] = egScaleImage(TempSmallImage, TileSizes[1], TileSizes[1]);
 
     // load big selection image
     if (GlobalConfig.SelectionBigFileName != NULL) {
-        SelectionImages[0] = egLoadImage(SelfDir, GlobalConfig.SelectionBigFileName, TRUE);
-        SelectionImages[0] = egEnsureImageSize(SelectionImages[0], ROW0_TILESIZE, ROW0_TILESIZE, &MenuBackgroundPixel);
+        TempBigImage = egLoadImage(SelfDir, GlobalConfig.SelectionBigFileName, TRUE);
     }
-    if (SelectionImages[0] == NULL) {
-        // calculate big selection image from small one
-
-        SelectionImages[0] = egCreateImage(ROW0_TILESIZE, ROW0_TILESIZE, TRUE);
-        if (SelectionImages[0] == NULL) {
-            egFreeImage(SelectionImages[1]);
-            SelectionImages[1] = NULL;
-            return;
-        }
-
-        DestPtr = SelectionImages[0]->PixelData;
-        SrcPtr  = SelectionImages[1]->PixelData;
-        for (y = 0; y < ROW0_TILESIZE; y++) {
-            if (y < (ROW1_TILESIZE >> 1))
-                src_y = y;
-            else if (y < (ROW0_TILESIZE - (ROW1_TILESIZE >> 1)))
-                src_y = (ROW1_TILESIZE >> 1);
-            else
-                src_y = y - (ROW0_TILESIZE - ROW1_TILESIZE);
-
-            for (x = 0; x < ROW0_TILESIZE; x++) {
-                if (x < (ROW1_TILESIZE >> 1))
-                    src_x = x;
-                else if (x < (ROW0_TILESIZE - (ROW1_TILESIZE >> 1)))
-                    src_x = (ROW1_TILESIZE >> 1);
-                else
-                    src_x = x - (ROW0_TILESIZE - ROW1_TILESIZE);
-
-                *DestPtr++ = SrcPtr[src_y * ROW1_TILESIZE + src_x];
-            }
+    if (TempBigImage == NULL) {
+        if (LoadedSmallImage) {
+           // calculate big selection image from small one
+           TempBigImage = egCopyImage(TempSmallImage);
+        } else {
+           TempBigImage = egPrepareEmbeddedImage(&egemb_back_selected_big, TRUE);
         }
     }
+    SelectionImages[0] = egScaleImage(TempBigImage, TileSizes[0], TileSizes[0]);
+
+    if (TempSmallImage)
+       egFreeImage(TempSmallImage);
+    if (TempBigImage)
+       egFreeImage(TempBigImage);
 } // VOID InitSelection()
 
 //
@@ -160,7 +139,7 @@ static VOID InitScroll(OUT SCROLL_STATE *State, IN UINTN ItemCount, IN UINTN Vis
     State->MaxIndex = (INTN)ItemCount - 1;
     State->FirstVisible = 0;
     if (AllowGraphicsMode) {
-       State->MaxVisible = UGAWidth / (ROW0_TILESIZE + TILE_XSPACING) - 1;
+       State->MaxVisible = UGAWidth / (TileSizes[0] + TILE_XSPACING) - 1;
     } else
        State->MaxVisible = ConHeight - 4;
     if ((VisibleSpace > 0) && (VisibleSpace < State->MaxVisible))
@@ -1011,7 +990,7 @@ static VOID PaintSelection(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State,
 static VOID PaintIcon(IN EG_EMBEDDED_IMAGE *BuiltInIcon, IN CHAR16 *ExternalFilename, UINTN PosX, UINTN PosY, UINTN Alignment) {
    EG_IMAGE *Icon = NULL;
 
-   Icon = egFindIcon(ExternalFilename, 48);
+   Icon = egFindIcon(ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
    if (Icon == NULL)
       Icon = egPrepareEmbeddedImage(BuiltInIcon, TRUE);
    if (Icon != NULL) {
@@ -1022,7 +1001,7 @@ static VOID PaintIcon(IN EG_EMBEDDED_IMAGE *BuiltInIcon, IN CHAR16 *ExternalFile
 } // static VOID ()
 
 inline UINTN ComputeRow0PosY(VOID) {
-   return ((UGAHeight / 2) - ROW0_TILESIZE / 2);
+   return ((UGAHeight / 2) - TileSizes[0] / 2);
 } // UINTN ComputeRow0PosY()
 
 // Display (or erase) the arrow icons to the left and right of an icon's row,
@@ -1034,7 +1013,7 @@ static VOID PaintArrows(SCROLL_STATE *State, UINTN PosX, UINTN PosY, UINTN row0L
    // NOTE: Assume that left and right arrows are of the same size....
    Width = egemb_arrow_left.Width;
    Height = egemb_arrow_left.Height;
-   RightX = (UGAWidth + (ROW0_TILESIZE + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
+   RightX = (UGAWidth + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
    AdjPosY = PosY - (Height / 2);
 
    // For PaintIcon() calls, the starting Y position is moved to the midpoint
@@ -1085,12 +1064,12 @@ VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINT
                      row0Count++;
                }
             }
-            row0PosX = (UGAWidth + TILE_XSPACING - (ROW0_TILESIZE + TILE_XSPACING) * row0Count) >> 1;
+            row0PosX = (UGAWidth + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
             row0PosY = ComputeRow0PosY();
-            row1PosX = (UGAWidth + TILE_XSPACING - (ROW1_TILESIZE + TILE_XSPACING) * row1Count) >> 1;
-            row1PosY = row0PosY + ROW0_TILESIZE + TILE_YSPACING;
+            row1PosX = (UGAWidth + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
+            row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
             if (row1Count > 0)
-                textPosY = row1PosY + ROW1_TILESIZE + TILE_YSPACING;
+                textPosY = row1PosY + TileSizes[1] + TILE_YSPACING;
             else
                 textPosY = row1PosY;
 
@@ -1100,10 +1079,10 @@ VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINT
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (Screen->Entries[i]->Row == 0) {
                     itemPosX[i] = row0PosXRunning;
-                    row0PosXRunning += ROW0_TILESIZE + TILE_XSPACING;
+                    row0PosXRunning += TileSizes[0] + TILE_XSPACING;
                 } else {
                     itemPosX[i] = row1PosXRunning;
-                    row1PosXRunning += ROW1_TILESIZE + TILE_XSPACING;
+                    row1PosXRunning += TileSizes[1] + TILE_XSPACING;
                 }
             }
             // initial painting
@@ -1120,7 +1099,7 @@ VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINT
             // For PaintArrows(), the starting Y position is moved to the midpoint
             // of the surrounding row; PaintIcon() adjusts this back up by half the
             // icon's height to properly center it.
-            PaintArrows(State, row0PosX - TILE_XSPACING, row0PosY + (ROW0_TILESIZE / 2), row0Loaders);
+            PaintArrows(State, row0PosX - TILE_XSPACING, row0PosY + (TileSizes[0] / 2), row0Loaders);
             break;
 
         case MENU_FUNCTION_PAINT_SELECTION:
@@ -1187,6 +1166,9 @@ UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN CHAR16* DefaultSelection, OUT
     UINTN MenuExit = 0;
     INTN DefaultEntryIndex = -1;
     INTN DefaultSubmenuIndex = -1;
+
+    TileSizes[0] = (GlobalConfig.IconSizes[ICON_SIZE_BIG] * 9) / 8;
+    TileSizes[1] = (GlobalConfig.IconSizes[ICON_SIZE_SMALL] * 4) / 3;
 
     if (DefaultSelection != NULL) {
         // Find a menu entry that includes *DefaultSelection as a substring

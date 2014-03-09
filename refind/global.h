@@ -128,6 +128,15 @@
 #define BANNER_NOSCALE         0
 #define BANNER_FILLSCREEN      1
 
+// Sizes of the default icons; badges are 1/4 the big icon size
+#define DEFAULT_SMALL_ICON_SIZE 48
+#define DEFAULT_BIG_ICON_SIZE   128
+
+// Codes for types of icon sizes; used for indexing into GlobalConfig.IconSizes[]
+#define ICON_SIZE_BADGE 0
+#define ICON_SIZE_SMALL 1
+#define ICON_SIZE_BIG   2
+
 // Names of binaries that can manage MOKs....
 #define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi"
 // Directories to search for these MOK-managing programs. Note that SelfDir is
@@ -243,6 +252,7 @@ typedef struct {
    UINTN       LegacyType;
    UINTN       ScanDelay;
    UINTN       ScreensaverTime;
+   UINTN       IconSizes[3];
    UINTN       BannerScale;
    CHAR16      *BannerFileName;
    EG_IMAGE    *ScreenBackground;

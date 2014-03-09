@@ -47,25 +47,25 @@
 typedef struct {
     EG_IMAGE    *Image;
     CHAR16      *FileName;
-    UINTN       PixelSize;
+    UINTN       IconSize;
 } BUILTIN_ICON;
 
 BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
-   { NULL, L"func_about", 48 },
-   { NULL, L"func_reset", 48 },
-   { NULL, L"func_shutdown", 48 },
-   { NULL, L"func_exit", 48 },
-   { NULL, L"func_firmware", 48 },
-   { NULL, L"tool_shell", 48 },
-   { NULL, L"tool_part", 48 },
-   { NULL, L"tool_rescue", 48 },
-   { NULL, L"tool_apple_rescue", 48 },
-   { NULL, L"tool_windows_rescue", 48 },
-   { NULL, L"tool_mok_tool", 48 },
-   { NULL, L"tool_memtest", 48 },
-   { NULL, L"vol_internal", 32 },
-   { NULL, L"vol_external", 32 },
-   { NULL, L"vol_optical", 32 },
+   { NULL, L"func_about", ICON_SIZE_SMALL },
+   { NULL, L"func_reset", ICON_SIZE_SMALL },
+   { NULL, L"func_shutdown", ICON_SIZE_SMALL },
+   { NULL, L"func_exit", ICON_SIZE_SMALL },
+   { NULL, L"func_firmware", ICON_SIZE_SMALL },
+   { NULL, L"tool_shell", ICON_SIZE_SMALL },
+   { NULL, L"tool_part", ICON_SIZE_SMALL },
+   { NULL, L"tool_rescue", ICON_SIZE_SMALL },
+   { NULL, L"tool_apple_rescue", ICON_SIZE_SMALL },
+   { NULL, L"tool_windows_rescue", ICON_SIZE_SMALL },
+   { NULL, L"tool_mok_tool", ICON_SIZE_SMALL },
+   { NULL, L"tool_memtest", ICON_SIZE_SMALL },
+   { NULL, L"vol_internal", ICON_SIZE_BADGE },
+   { NULL, L"vol_external", ICON_SIZE_BADGE },
+   { NULL, L"vol_optical", ICON_SIZE_BADGE },
 };
 
 EG_IMAGE * BuiltinIcon(IN UINTN Id)
@@ -74,9 +74,9 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id)
         return NULL;
 
     if (BuiltinIconTable[Id].Image == NULL) {
-       BuiltinIconTable[Id].Image = egFindIcon(BuiltinIconTable[Id].FileName, BuiltinIconTable[Id].PixelSize);
+       BuiltinIconTable[Id].Image = egFindIcon(BuiltinIconTable[Id].FileName, GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
        if (BuiltinIconTable[Id].Image == NULL)
-          BuiltinIconTable[Id].Image = DummyImage(BuiltinIconTable[Id].PixelSize);
+          BuiltinIconTable[Id].Image = DummyImage(GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
     } // if
 
     return BuiltinIconTable[Id].Image;
@@ -102,24 +102,24 @@ EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconNam
     // First, try to find an icon from the OSIconName list....
     while (((CutoutName = FindCommaDelimited(OSIconName, Index++)) != NULL) && (Image == NULL)) {
        SPrint(BaseName, 255, L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
-       Image = egFindIcon(BaseName, 128);
+       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 
     // If that fails, try again using the FallbackIconName....
     if (Image == NULL) {
        SPrint(BaseName, 255, L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
-       Image = egFindIcon(BaseName, 128);
+       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 
     // If that fails and if BootLogo was set, try again using the "os_" start of the name....
     if (BootLogo && (Image == NULL)) {
        SPrint(BaseName, 255, L"os_%s", FallbackIconName);
-       Image = egFindIcon(BaseName, 128);
+       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 
     // If all of these fail, return the dummy image....
     if (Image == NULL)
-       Image = DummyImage(128);
+       Image = DummyImage(GlobalConfig.IconSizes[ICON_SIZE_BIG]);
 
     return Image;
 } /* EG_IMAGE * LoadOSIcon() */

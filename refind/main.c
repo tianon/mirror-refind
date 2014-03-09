@@ -132,7 +132,7 @@ static REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
 REFIT_CONFIG GlobalConfig = { FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
-                              BANNER_NOSCALE,
+                              { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE }, BANNER_NOSCALE,
                               NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY, TAG_MOK_TOOL, TAG_ABOUT,
                                 TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0 }
@@ -156,7 +156,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.7");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.7.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2013 Roderick W. Smith");
@@ -898,7 +898,7 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
    // locate a custom icon for the loader
    // Anything found here takes precedence over the "hints" in the OSIconName variable
    if (!Entry->me.Image)
-      Entry->me.Image = egLoadIconAnyType(Volume->RootDir, PathOnly, NoExtension, 128);
+      Entry->me.Image = egLoadIconAnyType(Volume->RootDir, PathOnly, NoExtension, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
    if (!Entry->me.Image)
       Entry->me.Image = egCopyImage(Volume->VolIconImage);
 
@@ -2423,8 +2423,7 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
    EFI_STATUS Status;
    INTN Where;
 
-   Status = uefi_call_wrapper(BS->HandleProtocol, 3, ImageHandle,
-                              &LoadedImageProtocol, (VOID **) &Info);
+   Status = refit_call3_wrapper(BS->HandleProtocol, ImageHandle, &LoadedImageProtocol, (VOID **) &Info);
    if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
       Options = (CHAR16 *) Info->LoadOptions;
       Where = FindSubString(L" -c ", Options);

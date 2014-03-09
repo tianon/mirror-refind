@@ -174,12 +174,6 @@ EG_IMAGE * egDecodeICNS(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ic
            }
         } while ((DataPtr == NULL) && (SizeToTry++ < MAX_ICNS_SIZES));
 
-        /* FUTURE: try to load a different size and scale it later
-            if (DataPtr == NULL && IconSize == 32) {
-                IconSize = 128;
-                continue;
-            }
-        */
         break;
     }
 

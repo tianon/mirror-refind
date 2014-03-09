@@ -662,7 +662,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
 VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume)
 {
    if (Volume->VolBadgeImage == NULL) {
-      Volume->VolBadgeImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeBadge", 128);
+      Volume->VolBadgeImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeBadge", GlobalConfig.IconSizes[ICON_SIZE_BADGE]);
    }
 
    if (Volume->VolBadgeImage == NULL) {
@@ -889,7 +889,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
     // get custom volume icons if present
     if (!Volume->VolIconImage)
-       Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", 128);
+       Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
 } // ScanVolume()
 
 static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_INFO *MbrEntry)

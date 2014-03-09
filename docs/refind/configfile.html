@@ -142,6 +142,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="#hiding">Hiding and Displaying EFI Boot Loaders</li>
 
+<li class="tight"><a href="#icons">Setting OS Icons</li>
+
 <li class="tight"><a href="#adjusting">Adjusting the Global Configuration</a></li>
 
 <li class="tight"><a href="#stanzas">Creating OS Stanzas</a></li>
@@ -166,13 +168,17 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Another way to hide a boot loader is to move it into rEFInd's own directory. In order to keep rEFInd from showing up in its own menu, it ignores boot loaders in its own directory. This obviously includes the rEFInd binary file itself, but also anything else you might store there.</p>
 
-<p>In addition to hiding boot loaders, you can adjust their icons. You can do this in any of five ways for auto-detected boot loaders:</p>
+<a name="icons">
+<h2>Setting OS Icons</h2>
+</a>
+
+<p>In addition to hiding boot loaders, you can adjust their icons. You can do this in any of six ways for auto-detected boot loaders:</p>
 
 <ul>
 
-<li>You can name an icon file after your boot loader, but with an extension of <tt>.icns</tt> or <tt>.png</tt> for ICNS-format and PNG-format icons, respectively. For instance, if you're using <tt class="variable">loader</tt><tt>.efi</tt>, you would name the icon file <tt class="variable">loader</tt><tt>.icns</tt>. (If you use the <tt>scan_all_linux_kernels</tt> option, you can give an icon for a Linux kernel without a <tt>.efi</tt> extension a name based on the kernel name but with a <tt>.icns</tt> or <tt>.png</tt> extension&mdash;for instance, <tt>bzImage-3.6.9.png</tt> will serve as the icon for the <tt>bzImage-3.6.9</tt> kernel.) These icon files should be 128x128 images in <a href="http://en.wikipedia.org/wiki/Apple_Icon_Image_format">Apple's ICNS</a> or <a href="http://en.wikipedia.org/wiki/Portable_Network_Graphics">Portable Network Graphics (PNG)</a> format, depending on the filename extension.</li>
+<li>You can name an icon file after your boot loader, but with an extension of <tt>.icns</tt> or <tt>.png</tt> for ICNS-format and PNG-format icons, respectively. For instance, if you're using <tt class="variable">loader</tt><tt>.efi</tt>, you would name the icon file <tt class="variable">loader</tt><tt>.icns</tt>. (If you use the <tt>scan_all_linux_kernels</tt> option, you can give an icon for a Linux kernel without a <tt>.efi</tt> extension a name based on the kernel name but with a <tt>.icns</tt> or <tt>.png</tt> extension&mdash;for instance, <tt>bzImage-3.13.6.png</tt> will serve as the icon for the <tt>bzImage-3.13.6</tt> kernel.) These icon files should be in <a href="http://en.wikipedia.org/wiki/Apple_Icon_Image_format">Apple's ICNS</a> or <a href="http://en.wikipedia.org/wiki/Portable_Network_Graphics">Portable Network Graphics (PNG)</a> format, depending on the filename extension.</li>
 
-<li>If you're booting OS X from its standard boot loader, or if you place a boot loader file for any OS in the root directory of a partition, you can create a file called <tt>.VolumeIcon.icns</tt> or <tt>.VolumeIcon.png</tt> that holds an icon file. OS X uses the <tt>.VolumeIcon.icns</tt> file for its volume icons, so rEFInd picks up these icons automatically, provided they include 128x128 bitmaps.</li>
+<li>If you're booting OS X from its standard boot loader, or if you place a boot loader file for any OS in the root directory of a partition, you can create a file called <tt>.VolumeIcon.icns</tt> or <tt>.VolumeIcon.png</tt> that holds an icon file. OS X uses the <tt>.VolumeIcon.icns</tt> file for its volume icons, so rEFInd picks up these icons automatically, provided they include appropriate bitmaps.</li>
 
 <li>You can place a boot loader in a directory with a name that matches one of rEFInd's standard icons, which take names of the form <tt>os_<tt class="variable">name</tt>.icns</tt> or <tt>os_<tt class="variable">name</tt>.png</tt>. To use such an icon, you would place the boot loader in the directory called <tt class="variable">name</tt>.</li>
 
@@ -180,11 +186,15 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>Certain boot loaders have hard-coded icons associated with them. For instance, filenames beginning with <tt>vmlinuz</tt> or <tt>bzImage</tt> acquire Linux "Tux" icons and the <tt>bootmgfw.efi</tt> loader acquires a Windows icon. For the most part, these are the associations you want to overcome with the preceding rules, but sometimes renaming a boot loader to a more conventional name is the better approach.</li>
 
+<li>rEFInd attempts to guess the Linux distribution based on clues in the kernel's filename and data in the <tt>/etc/os-release</tt> file. This file will only be accessible if a separate <tt>/boot</tt> partition is <i>not</i> used, though. Fedora and Red Hat kernels can be identified by the presence of <tt>.fc</tt> or <tt>.el</tt> strings in their filenames, and so acquire suitable icons automatically. Manually adjusting the <tt>os-release</tt> file to change an OS icon in rEFInd is <i>not</i> recommended. Renaming a locally-compiled kernel so that it acquires a Fedora or Red Hat icon is reasonable, but I don't recommend renaming precompiled kernels unless you also manually copy them to the ESP.</li>
+
 </ul>
 
 <p>As a special case, rEFInd assigns icons to the Windows and OS X boot loaders based on their conventional locations, so they get suitable icons even if they don't follow these rules.</p>
 
-<p>In addition to the main OS tag icon, you can set the <i>badge</i> icon for a volume by creating a file called <tt>.VolumeBadge.icns</tt> or <tt>.VolumeBadge.png</tt> in the root directory of a partition. This icon file must include a 32x32 bitmap. If present, it replaces the disk-type icons that are overlaid on the main OS icon. If you use this feature, the badge is applied to all the boot loaders read from the disk, not just those stored in the root directory or the Apple boot loader location. You could use this feature to set a custom badge for different specific disks or to help differentiate multiple OS X installations on one computer. If you don't want any badges, you can replace the three badge icons in the rEFInd <tt>icons</tt> subdirectory (<tt>vol_external.icns</tt>, <tt>vol_internal.icns</tt>, and <tt>vol_optical.icns</tt>) with a completely transparent badge. The <tt>transparent.icns</tt> file in the rEFInd <tt>icons</tt> directory may be used for this purpose.</p>
+<p>In addition to the main OS tag icon, you can set the <i>badge</i> icon for a volume by creating a file called <tt>.VolumeBadge.icns</tt> or <tt>.VolumeBadge.png</tt> in the root directory of a partition. If present, it replaces the disk-type icons that are overlaid on the main OS icon. If you use this feature, the badge is applied to all the boot loaders read from the disk, not just those stored in the root directory or the Apple boot loader location. You could use this feature to set a custom badge for different specific disks or to help differentiate multiple OS X installations on one computer. If you don't want any badges, you can replace the three badge icons in the rEFInd <tt>icons</tt> subdirectory (<tt>vol_external.icns</tt>, <tt>vol_internal.icns</tt>, and <tt>vol_optical.icns</tt>) with a completely transparent badge. The <tt>transparent.icns</tt> file in the rEFInd <tt>icons</tt> directory may be used for this purpose.</p>
+
+<p>The default icon sizes are 128x128 pixels for OS icons, 48x48 pixels for the second-row tools, and 32x32 pixels for badges. You can change the sizes of the big OS icons and the small tool icons with the <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens in <tt>refind.conf</tt>, as noted in <a href="#table1">Table 1.</a> The size of the disk-type badges is 1/4 the size of OS icons.</p>
 
 <a name="adjusting">
 <h2>Adjusting the Global Configuration</h2>
@@ -232,6 +242,21 @@ timeout 20
    <td><tt>banner</tt></td>
    <td>filename</td>
    <td>Specifies a custom banner file to replace the rEFInd banner image. The file should be a BMP or PNG image with a color depth of 24, 8, 4, or 1 bits. The file path is relative to the directory where the rEFInd binary is stored.</td>
+</tr>
+<tr>
+   <td><tt>banner_scale</tt></td>
+   <td><tt>noscale</tt> or <tt>fillscreen</tt></td>
+   <td>Tells rEFInd whether to display banner images pixel-for-pixel (<tt>noscale</tt>) or to scale banner images to fill the screen (<tt>fillscreen</tt>). The former is the default.</td>
+</tr>
+<tr>
+   <td><tt>big_icon_size</tt></td>
+   <td>numeric value (at least <tt>32</tt>)</td>
+   <td>Sets the size of big icons (those used for OSes on the first row). All icons are square, so only one value is specified. If icon files don't contain images of the specified size, the available images are scaled to this size. The disk-type badge size is set indirectly by this token; badges are 1/4 the size of big icons. The default value is <tt>128<tt>.</td>
+</tr>
+<tr>
+   <td><tt>small_icon_size</tt></td>
+   <td>numeric value (at least <tt>32</tt>)</td>
+   <td>Sets the size of small icons (those used for tools on the second row). All icons are square, so only one value is specified. If icon files don't contain images of the specified size, the available images are scaled to this size. The default value is <tt>128<tt>.</td>
 </tr>
 <tr>
    <td><tt>selection_big</tt></td>
