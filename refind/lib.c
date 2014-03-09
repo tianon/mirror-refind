@@ -34,8 +34,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2013 Roderick W. Smith
- * 
+ * Modifications copyright (c) 2012-2014 Roderick W. Smith
+ *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
  * with this source code or binaries made from it.
@@ -747,7 +747,7 @@ static CHAR16 *GetVolumeName(IN REFIT_VOLUME *Volume) {
       if (FoundName != NULL) {
          TypeName = FSTypeName(Volume->FSType); // NOTE: Don't free TypeName; function returns constant
          if (StrLen(TypeName) > 0)
-            SPrint(FoundName, 255, L"%s volume", FSTypeName(Volume->FSType));
+            SPrint(FoundName, 255, L"%s volume", TypeName);
          else
             SPrint(FoundName, 255, L"unknown volume");
       } // if allocated memory OK
@@ -1138,7 +1138,8 @@ VOID ReinitVolumes(VOID)
 
             if (!EFI_ERROR(Status)) {
                 // get the BlockIO protocol
-                Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle, &BlockIoProtocol, (VOID **) &Volume->WholeDiskBlockIO);
+                Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle, &BlockIoProtocol,
+                                             (VOID **) &Volume->WholeDiskBlockIO);
                 if (EFI_ERROR(Status)) {
                     Volume->WholeDiskBlockIO = NULL;
                     CheckError(Status, L"from HandleProtocol");

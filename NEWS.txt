@@ -1,5 +1,22 @@
-0.7.8 (?/??/2014):
-------------------
+0.7.8 (3/9/2014):
+-----------------
+
+- Added "debian" directory to source, which facilitates creation of Debian
+  packages. Packages built in this way are built with GNU-EFI and don't run
+  any post-installation script, so although the rEFInd binaries are on the
+  hard disk, they aren't installed to be bootable; you must manually run
+  install.sh. Also, at least on Ubuntu, the Make.common file's /usr/lib64
+  references must be changed to /usr/lib. This is more of a proof of
+  concept and a "leg up" for distribution maintainers than anything else.
+
+- Two new options, big_icon_size and small_icon_size, set the size of
+  the first-row OS icons and of the second-row tool icons, respectively.
+  The big_icon_size option also indirectly sets the size of disk-type
+  badges; they're 1/4 the size of the big icons. Default values are 128 and
+  48, respectively, to match the actual icon files provided with rEFInd. If
+  the icon you're using is of a different size than you've specified,
+  rEFInd scales it. For best quality, you should both provide icons drawn
+  to the right size and set the icon sizes in refind.conf.
 
 - rEFInd now automatically scales icons to fit the standard icon sizes.
   This won't have any effect with the icons that come with rEFInd, but it

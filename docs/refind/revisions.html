@@ -14,9 +14,9 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 1/3/2014</p>
+<p>Last Web page update: 3/9/2014</p>
 
-<p>I'm a technical writer and consultant specializing in Linux technologies. This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
 <table border="1">
 <tr>
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.7.8 (3/9/2014</b>&mdash;This version emphasizes changes to icon and banner graphics handling. Internally, rEFInd can now scale graphics, which previous versions could not do. To make use of this feature, three new <tt>refind.conf</tt> tokens now exist: <tt>big_icon_size</tt> and <tt>small_icon_size</tt> set the sizes of big (first-row OS) and small (second-row tool) icons; and <tt>banner_scale</tt> tells rEFInd to draw banners to a 1:1 scale (<tt>noscale</tt>, the default) or to scale the banner to fill the screen (<tt>fillscreen</tt>). See <a href="configfile.html#table1">Table 1 on the configuration page of this document</a> for more on these new options. I've also adjusted the post-installation script used by the RPM and Debian packages to search for existing Shim programs called <tt>shimx64.efi</tt>, not just <tt>shim.efi</tt> (as had been done before). This should help when installing a package on distributions that use the <tt>shimx64.efi</tt> filename, such as Ubuntu. Finally, I'm providing a preliminary set of Debian packaging files, which may help distribution maintainers to adopt rEFInd.</li>
 
 <li><b>0.7.7 (1/3/2014)</b>&mdash;A new configuration file token, <tt>windows_recovery_files</tt>, leads this list of changes; you can use it to specify files that boot Windows recovery tools. If you include the <tt>windows_recovery</tt> option on the <tt>showtools</tt> line, these files will then be represented by a small Windows recovery badge on the second row rather than as a full-sized OS loader, thus reducing clutter and making the purpose of this loader clearer. You can also now specify a complete path to <tt>dont_scan_files</tt> items, including a volume specifier. The <tt>use_graphics_for</tt>, <tt>also_scan_dirs</tt>, <tt>dont_scan_dirs</tt>, <tt>dont_scan_files</tt>, <tt>scan_driver_dirs</tt>, and <tt>windows_recovery_files</tt> tokens can all now accept <tt>+</tt> as their first option, which causes subsequent list items to be added to their defaults rather than replacing them. The configuration file can now be specified at program launch by passing a <tt>-c</tt> option, as in <tt>-c myconf.conf</tt>; you can use this feature to set up a manual boot stanza that launches rEFInd with modified boot options. Scans of ext2/3/4fs and ReiserFS partitions now omit partitions with filesystem UUIDs that have already been seen. This is an effort to reduce clutter from such partitions that are components of RAID 1 arrays. The <tt>install.sh</tt> script now attempts to locate and mount an unmounted ESP when run under Linux. Finally, I've fixed a bug in both <tt>install.sh</tt> and <tt>mkrlconf.sh</tt> that caused the generated <tt>refind_linux.conf</tt> file to contain a stray line break and unnecessary <tt>PARTUUID=</tt> specification on some systems.</li>
 
