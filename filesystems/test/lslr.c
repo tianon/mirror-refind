@@ -128,7 +128,7 @@ int main(int argc, char **argv)
     }
 
     listdir(vol, "/boot/", 0);
-    catfile(vol, "/boot/vmlinuz-3.5.0-19-generic");
+    catfile(vol, "/boot/testfile.txt");
 
     fsw_posix_unmount(vol);
 
