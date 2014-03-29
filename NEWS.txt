@@ -1,6 +1,14 @@
 0.7.9 (?/??/2014):
 ------------------
 
+- Fixed some EFI filesystem driver bugs that could cause lockups under
+  some circumstances. These bugs could affect any of the filesystem
+  drivers.
+
+- Added "gdisk" option to the "showtools" configuration file token. When
+  active, this adds gdisk.efi or gdisk_{arch}.efi, if present in the
+  EFI\tools directory, to the tools row.
+
 - Fixed mistaken identification of the MOK utility as the "MOK utility
   utility."
 

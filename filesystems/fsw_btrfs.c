@@ -406,7 +406,7 @@ static fsw_status_t btrfs_read_superblock (struct fsw_volume *vol, struct btrfs_
             break;
 
         err = fsw_block_get(vol, superblock_pos[i], 0, (void **)&buffer);
-        if (err == FSW_UNSUPPORTED) {
+        if (err) {
             fsw_block_release(vol, superblock_pos[i], buffer);
             break;
         }
@@ -1862,7 +1862,7 @@ out:
 //
 
 struct fsw_fstype_table   FSW_FSTYPE_TABLE_NAME(btrfs) = {
-    { FSW_STRING_TYPE_UTF8, 4, 4, "btrfs" },
+    { FSW_STRING_TYPE_UTF8, 5, 5, "btrfs" },
     sizeof(struct fsw_btrfs_volume),
     sizeof(struct fsw_btrfs_dnode),
 

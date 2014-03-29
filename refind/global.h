@@ -73,7 +73,8 @@
 #define TAG_MOK_TOOL         (13)
 #define TAG_FIRMWARE         (14)
 #define TAG_MEMTEST          (15)
-#define NUM_TOOLS            (16)
+#define TAG_GDISK            (16)
+#define NUM_TOOLS            (17)
 
 #define NUM_SCAN_OPTIONS 10
 

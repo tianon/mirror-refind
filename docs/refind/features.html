@@ -229,7 +229,7 @@ lack a usable CSM.</li>
 
 <li>Drivers for ISO-9660, HFS+, ext4fs, and Btrfs, which are not included in rEFIt. (The ISO-9660 driver is based on code from the rEFIt project, but was never completed by its original author. It was completed by Oracle for VirtualBox. The ext4fs driver is derived from the rEFIt ext2fs driver, and the Btrfs driver is derived from the rEFIt and GRUB 2.0 driver code.)</li>
 
-<li>Beginning with version 0.5.0, the ability to "talk" to the <a href="http://mjg59.dreamwidth.org/20303.html">shim boot loader</a> to validate binaries supported by shim or its machine owner key (MOK) list when booting with Secure Boot active. As of version 0.6.0, this support is still crude and buggy; it should be considered an alpha-level feature at the moment.</li>
+<li>Beginning with version 0.5.0, the ability to "talk" to the <a href="http://mjg59.dreamwidth.org/20303.html">shim boot loader</a> to validate binaries supported by shim or its machine owner key (MOK) list when booting with Secure Boot active.</li>
 
 <li>The <tt>gptsync</tt> utility, included with rEFInd 0.6.9 and later, has safety checks to prevent creating a fresh hybrid MBR if the MBR side has been adjusted without adjusting the GPT side&mdash;a common source of problems. This update also prioritizes partition inclusion in the hybrid MBR, which can help on disks that have many partitions. OTOH, as of rEFInd 0.6.9, this version of <tt>gptsync</tt> is relatively untested.</li>
 

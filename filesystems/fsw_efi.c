@@ -556,6 +556,7 @@ fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *
    i = 0;
    do {
       if ((Caches[i].Volume == Volume) &&
+	  (Caches[i].CacheValid == TRUE) &&
           (StartRead >= Caches[i].CacheStart) &&
           ((StartRead + vol->phys_blocksize) <= (Caches[i].CacheStart + CACHE_SIZE))) {
          ReadCache = i;
@@ -568,6 +569,7 @@ fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *
       if (LastRead == -1)
          LastRead = 1;
       ReadCache = 1 - LastRead; // NOTE: If NUM_CACHES > 2, this must become more complex
+      Caches[ReadCache].CacheValid = FALSE;
       if (Caches[ReadCache].Cache == NULL)
          Caches[ReadCache].Cache = AllocatePool(CACHE_SIZE);
       if (Caches[ReadCache].Cache != NULL) {
@@ -586,7 +588,7 @@ fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *
       } // if cache memory allocated
    } // if (ReadCache < 0)
 
-   if (Caches[ReadCache].Cache != NULL) {
+   if (Caches[ReadCache].Cache != NULL && Caches[ReadCache].CacheValid == TRUE) {
       CopyMem(buffer, &Caches[ReadCache].Cache[StartRead - Caches[ReadCache].CacheStart], vol->phys_blocksize);
    } else {
       ReadOneBlock = TRUE;

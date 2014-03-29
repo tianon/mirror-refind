@@ -532,6 +532,8 @@ VOID ReadConfig(CHAR16 *FileName)
                     GlobalConfig.ShowTools[i - 1] = TAG_SHELL;
                 } else if (StriCmp(FlagName, L"gptsync") == 0) {
                     GlobalConfig.ShowTools[i - 1] = TAG_GPTSYNC;
+                } else if (StriCmp(FlagName, L"gdisk") == 0) {
+                   GlobalConfig.ShowTools[i - 1] = TAG_GDISK;
                 } else if (StriCmp(FlagName, L"about") == 0) {
                    GlobalConfig.ShowTools[i - 1] = TAG_ABOUT;
                 } else if (StriCmp(FlagName, L"exit") == 0) {

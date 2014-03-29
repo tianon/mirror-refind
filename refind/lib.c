@@ -637,7 +637,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
 
         // dummy FAT boot sector (created by iPartition)
         if ((FindMem(Buffer, 512, "Medienfehler", 12) >= 0) &&
-            (FindMem(Buffer, 512, "Neustart: Taste dr\x81" "ken", 22) >= 0))
+            (FindMem(Buffer, 512, "Neustart: Taste dr\x81" "cken", 22) >= 0))
             Volume->HasBootCode = FALSE;
 
         // check for MBR partition table
@@ -709,7 +709,7 @@ static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
       SPrint(TheValue, 255, L"%ld%s", SizeInIeee, Units);
    } // if
    return TheValue;
-} // CHAR16 *SizeInSIUnits()
+} // CHAR16 *SizeInIEEEUnits()
 
 // Return a name for the volume. Ideally this should be the label for the
 // filesystem it contains, but this function falls back to describing the

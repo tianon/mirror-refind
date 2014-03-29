@@ -157,6 +157,7 @@ timeout 20
 #                     EFI/memtest, EFI/tools/memtest86, or EFI/tools/memtest
 #  gptsync          - the (dangerous) gptsync.efi utility (requires external
 #                     program; see rEFInd documentation for details)
+#  gdisk            - the gdisk partitioning program
 #  apple_recovery   - boots the Apple Recovery HD partition, if present
 #  windows_recovery - boots an OEM Windows recovery tool, if present
 #                     (see also the windows_recovery_files option)
@@ -169,9 +170,9 @@ timeout 20
 #  reboot           - a tag to reboot the computer
 #  firmware         - a tag to reboot the computer into the firmware's
 #                     user interface (ignored on older computers)
-# Default is shell,memtest,apple_recovery,windows_recovery,mok_tool,about,shutdown,reboot,firmware
+# Default is shell,memtest,gdisk,apple_recovery,windows_recovery,mok_tool,about,shutdown,reboot,firmware
 #
-#showtools shell, memtest, mok_tool, about, reboot, exit, firmware
+#showtools shell, gdisk, memtest, mok_tool, about, reboot, exit, firmware
 
 # Boot loaders that can launch a Windows restore or emergency system.
 # These tend to be OEM-specific.
