@@ -1,6 +1,9 @@
 0.7.9 (?/??/2014):
 ------------------
 
+- Fixed bug in install.sh that could cause it to display error messages
+  if the dmraid utility was not installed.
+
 - Fixed some EFI filesystem driver bugs that could cause lockups under
   some circumstances. These bugs could affect any of the filesystem
   drivers.

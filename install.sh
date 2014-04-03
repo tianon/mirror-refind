@@ -248,13 +248,16 @@ CopyKeys() {
 # honoring the $InstallDrivers condition. Must be passed a suitable
 # architecture code (ia32 or x64).
 CopyDrivers() {
+   local Blkid
+
+   Blkid=`which blkid 2> /dev/null`
    if [[ $InstallDrivers == "all" ]] ; then
       mkdir -p "$InstallDir/$TargetDir/drivers_$1"
       cp "$ThisDir"/drivers_$1/*_$1.efi "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
       cp "$RefindDir"/drivers_$1/*_$1.efi "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
-   elif [[ "$InstallDrivers" == "boot" && -x `which blkid` ]] ; then
+   elif [[ "$InstallDrivers" == "boot" && -x "$Blkid" ]] ; then
       BootPart=`df /boot | grep dev | cut -f 1 -d " "`
-      BootFS=`blkid -o export $BootPart 2> /dev/null | grep TYPE= | cut -f 2 -d =`
+      BootFS=`$Blkid -o export $BootPart 2> /dev/null | grep TYPE= | cut -f 2 -d =`
       DriverType=""
       case $BootFS in
          ext2 | ext3) DriverType="ext2"
@@ -698,9 +701,11 @@ FindLinuxESP() {
    local TableType
    local DmStatus
    local SkipIt
+   local Dmraid
    for Drive in `ls /dev/[sh]d?` ; do
       SkipIt=0
-      if [ -x `which dmraid` ] ; then
+      Dmraid=`which dmraid 2> /dev/null`
+      if [ -x "$Dmraid" ] ; then
          DmStatus=`dmraid -r | grep $Drive`
          if [ -n "$DmStatus" ] ; then
             echo "$Drive seems to be part of a RAID array; skipping!"
