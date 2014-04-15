@@ -35,6 +35,7 @@
 #
 # Revision history:
 #
+# 0.7.9   -- Fixed bug that caused errors if dmraid utility not installed
 # 0.7.7   -- Fixed bug that created mangled refind_linux.conf file; added ability
 #            to locate and mount ESP on Linux, if it's not mounted
 # 0.7.6   -- Added --ownhfs {device-filename} option

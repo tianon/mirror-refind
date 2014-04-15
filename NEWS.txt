@@ -1,6 +1,13 @@
 0.7.9 (?/??/2014):
 ------------------
 
+- Attempt to fix rEFInd perpetually re-scanning after ejecting a disc on
+  some Macs.
+
+- Added check to remove redundant (or non-functional if Secure Boot is
+  active) kernel entries for Ubuntu, which is now including two versions of
+  kernels, one signed and the other unsigned.
+
 - Fixed bug in install.sh that could cause it to display error messages
   if the dmraid utility was not installed.
 
@@ -15,8 +22,6 @@
 - Fixed mistaken identification of the MOK utility as the "MOK utility
   utility."
 
-- Added detection of German-language FAT (non-)boot sector created by
-  iPartition to keep it out of the Mac boot menu.
 
 0.7.8 (3/9/2014):
 -----------------

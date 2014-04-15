@@ -159,7 +159,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.8.4");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.8.6");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -1224,6 +1224,26 @@ static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *Path, EFI_FILE_INFO 
    return (DirEntry->FileSize != FileSize2);
 } // BOOLEAN IsSymbolicLink()
 
+// Returns TRUE if a file with the same name as the original but with
+// ".efi.signed" is also present in the same directory. Ubuntu is using
+// this filename as a signed version of the original unsigned kernel, and
+// there's no point in cluttering the display with two kernels that will
+// behave identically on non-SB systems, or when one will fail when SB
+// is active.
+static BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16 *Filename) {
+   CHAR16 *NewFile = NULL;
+   BOOLEAN retval = FALSE;
+
+   MergeStrings(&NewFile, Path, 0);
+   MergeStrings(&NewFile, Filename, L'\\');
+   MergeStrings(&NewFile, L".efi.signed", 0);
+   if (FileExists(Volume->RootDir, NewFile))
+      retval = TRUE;
+   MyFreePool(NewFile);
+
+   return retval;
+} // BOOLEAN HasSignedCounterpart()
+
 // Scan an individual directory for EFI boot loader files and, if found,
 // add them to the list. Exception: Ignores FALLBACK_FULLNAME, which is picked
 // up in ScanEfiFiles(). Sorts the entries within the loader directory so that
@@ -1251,6 +1271,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
               (StriCmp(DirEntry->FileName, FALLBACK_BASENAME) == 0 && (StriCmp(Path, L"EFI\\BOOT") == 0)) ||
               StriSubCmp(L"shell", DirEntry->FileName) ||
               IsSymbolicLink(Volume, Path, DirEntry) || /* is symbolic link */
+              HasSignedCounterpart(Volume, Path, DirEntry->FileName) || /* a file with same name plus ".efi.signed" is present */
               FilenameIn(Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles))
                 continue;   // skip this
 
@@ -2521,6 +2542,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
         // The Escape key triggers a re-scan operation....
         if (MenuExit == MENU_EXIT_ESCAPE) {
+            MenuExit = 0;
             RescanAll();
             continue;
         }

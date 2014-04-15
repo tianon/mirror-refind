@@ -635,11 +635,6 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
         if (FindMem(Buffer, 512, "Press any key to restart", 24) >= 0)
             Volume->HasBootCode = FALSE;
 
-        // dummy FAT boot sector (created by iPartition)
-        if ((FindMem(Buffer, 512, "Medienfehler", 12) >= 0) &&
-            (FindMem(Buffer, 512, "Neustart: Taste dr\x81" "cken", 22) >= 0))
-            Volume->HasBootCode = FALSE;
-
         // check for MBR partition table
         if (*((UINT16 *)(Buffer + 510)) == 0xaa55) {
             MbrTable = (MBR_PARTITION_INFO *)(Buffer + 446);
