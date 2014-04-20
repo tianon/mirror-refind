@@ -602,6 +602,8 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 <h3>Installing rEFInd Manually Using an EFI Shell</h3>
 </a>
 
+<p class="sidebar"><b>Warning:</b> Do not attempt to use the procedure described in this section on a Macintosh. Macs have a strange EFI implementation that does not use the EFI variables that this procedure manipulates. Therefore, chances are this procedure simply won't work. It's conceivable that this procedure will actually cause problems, but I'm not curious enough to try it and risk damaging my Mac!</p>
+
 <p>If you can't currently boot any OS (say, because a firmware update has wiped your NVRAM entries), you may find it convenient to install rEFInd using an EFI version 2 shell. Unfortunately, the <tt>bcfg</tt> command described here is not available in the EFI version 1 shell, and the version 2 shell is unusable on many firmware implementations prior to 2.3.1. Thus, this procedure won't work for all systems.</p>
 
 <p>In addition to emergency situations, using <tt>bcfg</tt> can be desirable if <tt>efibootmgr</tt> or other OS-hosted tools don't do the job. This happens under VirtualBox, for instance. An alternative in such cases can be to use <a href="#naming">alternative names for rEFInd.</a></p>

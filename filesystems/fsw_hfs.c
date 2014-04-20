@@ -221,7 +221,9 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
     fsw_u32                   blockno;
     struct fsw_string         s;
     HFSMasterDirectoryBlock*  mdb;
-//    UINTN                     i;
+    fsw_u32 firstLeafNum;
+    fsw_u64 catfOffset;
+    fsw_u8 cbuff[sizeof (BTNodeDescriptor) + sizeof (HFSPlusCatalogKey)];
 
     rv = FSW_UNSUPPORTED;
 
@@ -259,8 +261,6 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
         }
         else if (signature == kHFSSigWord) // 'BD'
         {
-//            HFSMasterDirectoryBlock* mdb = (HFSMasterDirectoryBlock*)buffer;
-//VolumeName = mdb->drVN 28bytes
             if (be16_to_cpu(mdb->drEmbedSigWord) == kHFSPlusSigWord)
             {
                 DPRINT("found HFS+ inside HFS, untested\n");
@@ -343,12 +343,33 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
         vol->catalog_tree.root_node = be32_to_cpu (tree_header.rootNode);
         vol->catalog_tree.node_size = be16_to_cpu (tree_header.nodeSize);
 
-//         /* get volume name */
-//         s.type = FSW_STRING_TYPE_ISO88591;
-//         s.size = s.len = kHFSMaxVolumeNameChars;
-//         s.data = vol->catalog_tree.file->g.name.data;
-//         status = fsw_strdup_coerce(&vol->g.label, vol->g.host_string_type, &s);
-//         CHECK(status);
+        //nms42
+        /* Take Volume Name before tree_header overwritten */
+        firstLeafNum = be32_to_cpu(tree_header.firstLeafNode);
+        catfOffset = firstLeafNum * vol->catalog_tree.node_size;
+
+        r = fsw_hfs_read_file(vol->catalog_tree.file, catfOffset, sizeof (cbuff), cbuff);
+
+        if (r == sizeof (cbuff))
+        {
+           BTNodeDescriptor* btnd;
+           HFSPlusCatalogKey* ck;
+
+           btnd = (BTNodeDescriptor*) cbuff;
+           ck = (HFSPlusCatalogKey*) (cbuff + sizeof(BTNodeDescriptor));
+           if (btnd->kind == kBTLeafNode && be32_to_cpu (ck->parentID) == kHFSRootParentID)
+           {
+              struct fsw_string vn;
+
+              vn.type = FSW_STRING_TYPE_UTF16_BE;
+              vn.len = be16_to_cpu (ck->nodeName.length);
+              vn.size = vn.len * sizeof (fsw_u16);
+              vn.data = ck->nodeName.unicode;
+              fsw_strfree (&vol->g.label);
+              status = fsw_strdup_coerce(&vol->g.label, vol->g.host_string_type, &vn);
+              CHECK(status);
+           } // if
+        } // if
 
         /* Read extents overflow file */
         r = fsw_hfs_read_file(vol->extents_tree.file,

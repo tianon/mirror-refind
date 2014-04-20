@@ -1354,7 +1354,8 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       // check for Microsoft boot loader/menu
       if (ShouldScan(Volume, L"EFI\\Microsoft\\Boot")) {
          StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bkpbootmgfw.efi");
-         if (FileExists(Volume->RootDir, FileName) &&  !FilenameIn(Volume, Directory, L"bkpbootmgfw.efi", GlobalConfig.DontScanFiles)) {
+         if (FileExists(Volume->RootDir, FileName) &&  !FilenameIn(Volume, Directory, L"bkpbootmgfw.efi",
+             GlobalConfig.DontScanFiles)) {
             AddLoaderEntry(FileName, L"Microsoft EFI boot (Boot Repair backup)", Volume);
             FoundBRBackup = TRUE;
             if (DuplicatesFallback(Volume, FileName))
