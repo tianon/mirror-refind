@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/19/2012; last Web page update:
-3/9/2014, referencing rEFInd 0.7.8</p>
+4/20/2014, referencing rEFInd 0.7.9</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -337,7 +337,9 @@ on BIOS. The most reliable solution under BIOS is to chainload one boot
 loader to another. The same solution is possible under EFI, but rEFInd
 offers another possibility.</p>
 
-<p>rEFInd 0.2.1 and later supports semi-automatic Linux EFI stub loader detection. This feature works as part of the standard boot loader scan operation, but it extends it as follows:</p>
+<p>rEFInd supports semi-automatic Linux EFI stub loader detection. This
+feature works as part of the standard boot loader scan operation, but it
+extends it as follows:</p>
 
 <ol>
 
@@ -352,6 +354,17 @@ offers another possibility.</p>
     out, delete it, or change it to read <tt>scan_all_linux_kernels 0</tt>,
     rEFInd won't scan for kernels that lack <tt>.efi</tt> filename
     extensions.</li>
+
+<li>If a file's name ends in <tt>.efi.signed</tt>, any other file with an
+    otherwise-identical name that <i>lacks</i> this extension is excluded.
+    This peculiar rule exists because Ubuntu has begun delivering two
+    copies of every kernel, one with and one without this extension. The
+    one with the extension is signed with a Secure Boot key; the one
+    without it is not so signed. Thus, if both files are present, the one
+    without the key won't boot on a computer with Secure Boot active, and
+    either will boot if Secure Boot is inactive. Thus, rEFInd excludes the
+    redundant (unsigned) file in order to help keep the list of boot
+    options manageable.</li>
 
 <p class="sidebar">A kernel whose filename lacks a version string matches an initial RAM disk that also lacks a version string in its filename. Note that you can reliably use only <i>one</i> kernel and initial RAM disk per directory that lack version numbers in their filenames.</p>
 
@@ -368,11 +381,8 @@ offers another possibility.</p>
     initial RAM disk is identified, rEFInd passes a suitable
     <tt>initrd=</tt> option to the kernel when it boots.</li>
 
-<p class="sidebar">rEFInd 0.2.1 and 0.2.2 used a filename of <tt>linux.conf</tt> to hold Linux kernel options; however, the Linux kernel developers plan to use this name themselves, so I've switched to <tt>refind_linux.conf</tt> as of rEFInd 0.2.3. Through version 0.4.2, rEFInd still supported the <tt>linux.conf</tt> filename as a backup to <tt>refind_linux.conf</tt>, but as of version 0.4.3, <tt>linux.conf</tt> no longer works, so you should rename rEFInd's <tt>linux.conf</tt> file to <tt>refind_linux.conf</tt> if you're upgrading.</p>
-
 <li>rEFInd looks for a file called <tt>refind_linux.conf</tt> in the same
-    directory as the kernel file. This file is a practical requirement for
-    booting from an auto-detected kernel. It consists of a series of lines,
+    directory as the kernel file. It consists of a series of lines,
     each of which consists of a label followed by a series of kernel
     options. The first line sets default options, and subsequent lines set
     options that are accessible from the main menu tag's submenu screen. If

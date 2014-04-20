@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-3/23/2014, referencing rEFInd 0.7.8</p>
+4/20/2014, referencing rEFInd 0.7.9</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -441,7 +441,7 @@ Filesystem     1K-blocks  Used Available Use% Mounted on
 
 <li>Rename the configuration file by typing <tt><b>mv refind.conf-sample refind.conf</b></tt>. Consult the <a href="configfile.html">Editing the rEFInd Configuration File</a> page for information on how to adjust your options.</li>
 
-<p class="sidebar"><b>Weird:</b> A <a href="http://mjg59.dreamwidth.org/20187.html">bug exists</a> in some Lenovo computers (and perhaps in some others, too) that causes the firmware's boot manager to refuse to boot any boot loader that doesn't have the name <tt>Windows Boot Manager</tt> or <tt>Red Hat Enterprise Linux</tt>. If you have such a system, you must pass one of those names (in quotes) rather than <tt>rEFInd</tt> to <tt>efibootmgr</tt> via its <tt>-L</tt> option. This bug was reported to Lenovo in mid-November 2012, so with any luck updated firmware without this bug will be available later this year or early in 2013. I can make no promises about this, though.</p>
+<p class="sidebar"><b>Weird:</b> A <a href="http://mjg59.dreamwidth.org/20187.html">bug exists</a> in some Lenovo computers (and perhaps in some others, too) that causes the firmware's boot manager to refuse to boot any boot loader that doesn't have the name <tt>Windows Boot Manager</tt> or <tt>Red Hat Enterprise Linux</tt>. If you have such a system, you must pass one of those names (in quotes) rather than <tt>rEFInd</tt> to <tt>efibootmgr</tt> via its <tt>-L</tt> option. This bug was reported to Lenovo in mid-November 2012, and by late 2013, at least some Lenovos were mercifully free of this bug.</p>
 
 <a name="efibootmgr">
 <li>On a UEFI-based system, type <tt><b>efibootmgr -c -l \\EFI\\refind\\refind_x64.efi -L rEFInd</b></tt> to add rEFInd to your EFI's list of available boot loaders, which it stores in NVRAM. Adjust the path to the binary as required if you install somewhere else. You may also need to include additional options if your ESP isn't on <tt>/dev/sda1</tt> or if your configuration is otherwise unusual; consult the <tt>efibootmgr</tt> man page for details. You may need to install this program on some systems; it's a standard part of most distributions' repositories. Also, if you're installing in Secure Boot mode, you must normally register <tt>shim.efi</tt> rather than the rEFInd binary, and rename <tt>refind_x64.efi</tt> to <tt>grubx64.efi</tt>.</li>

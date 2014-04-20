@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 3/9/2014</p>
+<p>Last Web page update: 4/20/2014</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.7.9 (4/20/2014)</b>&mdash;This version includes a number of bug fixes: <tt>install.sh</tt> no longer displays error messages if the <tt>dmraid</tt> utility isn't available; the HFS+ driver now reports a correct volume name; filesystem driver bugs that could cause lockups have been fixed; a redundant "utility" in the MOK utility's description has been removed; and an (as-yet untested) attempt to fix a continuous-rescanning problem after ejecting a disc on some computers has been implemented. In addition, rEFInd now removes redundant kernel entries on Ubuntu systems to keep the menu uncluttered and a new <tt>gdisk</tt> option has been added to the <tt>showtools</tt> item. (An EFI version of my <a href="http://www.rodsbooks.com/gdisk/"><tt>gdisk</tt></a> utility can be built with the help of the <a href="https://sourceforge.net/projects/uefigptfdisk/?source=directory">UEFI GPT fdisk</a> library.)</li>
 
 <li><b>0.7.8 (3/9/2014</b>&mdash;This version emphasizes changes to icon and banner graphics handling. Internally, rEFInd can now scale graphics, which previous versions could not do. To make use of this feature, three new <tt>refind.conf</tt> tokens now exist: <tt>big_icon_size</tt> and <tt>small_icon_size</tt> set the sizes of big (first-row OS) and small (second-row tool) icons; and <tt>banner_scale</tt> tells rEFInd to draw banners to a 1:1 scale (<tt>noscale</tt>, the default) or to scale the banner to fill the screen (<tt>fillscreen</tt>). See <a href="configfile.html#table1">Table 1 on the configuration page of this document</a> for more on these new options. I've also adjusted the post-installation script used by the RPM and Debian packages to search for existing Shim programs called <tt>shimx64.efi</tt>, not just <tt>shim.efi</tt> (as had been done before). This should help when installing a package on distributions that use the <tt>shimx64.efi</tt> filename, such as Ubuntu. Finally, I'm providing a preliminary set of Debian packaging files, which may help distribution maintainers to adopt rEFInd.</li>
 

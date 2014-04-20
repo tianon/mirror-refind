@@ -297,7 +297,7 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
         voldesc = NULL;
         fsw_set_blocksize(vol, block_size, block_size);
 
-        /* get volume name */
+        /* set default/fallback volume name */
         s.type = FSW_STRING_TYPE_ISO88591;
         s.size = s.len = kHFSMaxVolumeNameChars;
         s.data = "HFS+ volume";

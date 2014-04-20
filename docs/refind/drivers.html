@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-3/9/2014, referencing rEFInd 0.7.8</p>
+4/20/2014, referencing rEFInd 0.7.9</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -207,36 +207,36 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     href="https://github.com/falstaff84/rEFInd">modified the rEFIt/rEFInd
     ext2fs driver</a> so that it could handle ext4fs. I'm including this as
     a separate driver from the ext2fs driver, although the ext4fs version
-    can handle ext2fs and ext3fs, too. (I may eventually retire the
-    original ext2fs driver, but I want to be conservative about this in
-    case there's an undiscovered problem with the new driver.) This driver
-    has some limitations. Most notably, for various reasons it maxes out at
-    16TiB and won't mount any ext4 filesystem that's larger than this. As
-    of version 0.6.1, this driver supports the <tt>meta_bg</tt> feature,
-    which can also be used on ext2fs and ext3fs. Thus, it can handle some
-    ext2fs and ext3fs partitions that the ext2fs driver can't handle. You
-    can learn about your ext2/3/4 filesystem features by typing <tt
+    can handle ext2fs and ext3fs, too. Providing both drivers enables
+    easy filesystem separation&mdash;for instance, you can use ext2fs on a
+    <tt>/boot</tt> partition and ext4fs on your root (<tt>/</tt>)
+    partition, to have the EFI scan only the former. This driver has some
+    limitations. Most notably, for various reasons it maxes out at 16TiB
+    and won't mount any ext4 filesystem that's larger than this. As of
+    version 0.6.1, this driver supports the <tt>meta_bg</tt> feature, which
+    can also be used on ext2fs and ext3fs. Thus, it can handle some ext2fs
+    and ext3fs partitions that the ext2fs driver can't handle. You can
+    learn about your ext2/3/4 filesystem features by typing <tt
     class="userinput">dumpe2fs <i>/dev/sda2</i> | grep features</tt>,
     changing <tt class="userinput"><i>/dev/sda2</i></tt> to your
     filesystem's device.</li>
 
 <li><b>Btrfs</b>&mdash;</b>Samuel Liao contributed this driver, which is
     based on the rEFIt/rEFInd driver framework and algorithms from the GRUB
-    2.0 Btrfs driver. As of rEFInd 0.7.0, this driver is new and should be
-    considered experimental. I've tested this driver with a simple
-    one-partition filesystem and with a filesystem that spans two physical
-    devices (although I've made no attempt to ensure that the driver can
-    actually read files written to both devices). Lamuel Liao has used the
-    driver with a compressed Btrfs volume. The driver will handle
-    subvolumes, but you may need to add kernel options if you're booting a
-    Linux kernel directly from a filesystem that uses subvolumes. For
-    instance, on a test installation of Ubuntu 14.04 alpha on such a
-    system, I needed to set <tt>also_scan_dirs + @/boot</tt> in
-    <tt>refind.conf</tt> and add <tt>rootflags=subvol=@</tt> to the kernel
-    options in my <tt>refind_linux.conf</tt> file. Without the first of
-    these options, rEFInd could not locate my kernel; and without the
-    second, the boot failed with a message to the effect that the initial
-    RAM disk could not find <tt>/sbin/init</tt>.</li>
+    2.0 Btrfs driver. I've tested this driver with a simple one-partition
+    filesystem and with a filesystem that spans two physical devices
+    (although I've made no attempt to ensure that the driver can actually
+    read files written to both devices). Lamuel Liao has used the driver
+    with a compressed Btrfs volume. The driver will handle subvolumes, but
+    you may need to add kernel options if you're booting a Linux kernel
+    directly from a filesystem that uses subvolumes. For instance, on a
+    test installation of Ubuntu 14.04 alpha on such a system, I needed to
+    set <tt>also_scan_dirs + @/boot</tt> in <tt>refind.conf</tt> and add
+    <tt>rootflags=subvol=@</tt> to the kernel options in my
+    <tt>refind_linux.conf</tt> file. Without the first of these options,
+    rEFInd could not locate my kernel; and without the second, the boot
+    failed with a message to the effect that the initial RAM disk could not
+    find <tt>/sbin/init</tt>.</li>
 
 <li><b>ISO-9660</b>&mdash;This driver originated with rEFIt's author, but
     he never released a final version. Its code was improved by Oracle for

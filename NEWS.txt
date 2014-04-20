@@ -1,4 +1,4 @@
-0.7.9 (?/??/2014):
+0.7.9 (4/20/2014):
 ------------------
 
 - Attempt to fix rEFInd perpetually re-scanning after ejecting a disc on
