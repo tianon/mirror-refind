@@ -159,7 +159,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.9");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.9.1");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -1110,7 +1110,7 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
    VolName = NULL;
 
    // See if Volume is in GlobalConfig.DontScanDirs....
-   while ((DontScanDir = FindCommaDelimited(GlobalConfig.DontScanDirs, i++)) && ScanIt) {
+   while (ScanIt && (DontScanDir = FindCommaDelimited(GlobalConfig.DontScanDirs, i++))) {
       SplitVolumeAndFilename(&DontScanDir, &VolName);
       CleanUpPathNameSlashes(DontScanDir);
       VolumeNumberToName(Volume, &VolName);
@@ -1124,6 +1124,7 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
       MyFreePool(DontScanDir);
       MyFreePool(VolName);
       DontScanDir = NULL;
+      VolName = NULL;
    } // while()
 
    return ScanIt;
