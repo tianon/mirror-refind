@@ -664,13 +664,18 @@ VOID ReadConfig(CHAR16 *FileName)
 // that volume. If not, leaves it unchanged.
 // Returns TRUE if a match was found, FALSE if not.
 static BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier) {
-   UINTN     i = 0, CountedVolumes = 0;
+   UINTN     i = 0, CountedVolumes = 0, Length;
    INTN      Number = -1;
-   BOOLEAN   Found = FALSE;
+   BOOLEAN   Found = FALSE, IdIsGuid = FALSE;
+   EFI_GUID  VolGuid, NullGuid = NULL_GUID_VALUE;
 
-   if ((StrLen(Identifier) >= 2) && (Identifier[StrLen(Identifier) - 1] == L':') &&
+   VolGuid = StringAsGuid(Identifier);
+   Length = StrLen(Identifier);
+   if ((Length >= 2) && (Identifier[Length - 1] == L':') &&
        (Identifier[0] >= L'0') && (Identifier[0] <= L'9')) {
       Number = (INTN) Atoi(Identifier);
+   } else if (IsGuid(Identifier)) {
+      IdIsGuid = TRUE;
    }
    while ((i < VolumesCount) && (!Found)) {
       if (Number >= 0) { // User specified a volume by number
@@ -681,10 +686,16 @@ static BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier) {
             }
             CountedVolumes++;
          } // if
-      } else { // User specified a volume by label
+      } else { // User specified a volume by label or GUID
          if (StriCmp(Identifier, Volumes[i]->VolName) == 0) {
             *Volume = Volumes[i];
             Found = TRUE;
+         } // if
+         if (IdIsGuid && !Found) {
+            if (GuidsAreEqual(&VolGuid, &(Volumes[i]->PartGuid)) && !GuidsAreEqual(&NullGuid, &(Volumes[i]->PartGuid))) {
+               *Volume = Volumes[i];
+               Found = TRUE;
+            } // if
          } // if
       } // if/else
       i++;

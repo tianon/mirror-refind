@@ -764,6 +764,19 @@ static CHAR16 *GetVolumeName(IN REFIT_VOLUME *Volume) {
    return FoundName;
 } // static CHAR16 *GetVolumeName()
 
+// Determine the unique GUID of the volume and store it.
+static VOID SetPartGuid(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *DevicePath) {
+   HARDDRIVE_DEVICE_PATH    *HdDevicePath;
+
+   if (Volume == NULL)
+      return;
+
+   if ((DevicePath->Type == MEDIA_DEVICE_PATH) && (DevicePath->SubType == MEDIA_HARDDRIVE_DP)) {
+      HdDevicePath = (HARDDRIVE_DEVICE_PATH*) DevicePath;
+      Volume->PartGuid = *((EFI_GUID*) HdDevicePath->Signature);
+   }
+} // VOID SetPartGuid()
+
 VOID ScanVolume(REFIT_VOLUME *Volume)
 {
     EFI_STATUS              Status;
@@ -805,6 +818,9 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     while (DevicePath != NULL && !IsDevicePathEndType(DevicePath)) {
         NextDevicePath = NextDevicePathNode(DevicePath);
 
+        if (DevicePathType(DevicePath) == MEDIA_DEVICE_PATH) {
+           SetPartGuid(Volume, DevicePath);
+        }
         if (DevicePathType(DevicePath) == MESSAGING_DEVICE_PATH &&
             (DevicePathSubType(DevicePath) == MSG_USB_DP ||
              DevicePathSubType(DevicePath) == MSG_USB_CLASS_DP ||
@@ -966,7 +982,7 @@ VOID ScanVolumes(VOID)
     UINTN                   SectorSum, i, VolNumber = 0;
     UINT8                   *SectorBuffer1, *SectorBuffer2;
     EFI_GUID                *UuidList;
-    EFI_GUID                NullUuid = { 00000000, 0000, 0000, {0000, 0000, 0000, 0000} };
+    EFI_GUID                NullUuid = NULL_GUID_VALUE;
 
     MyFreePool(Volumes);
     Volumes = NULL;
@@ -1842,6 +1858,68 @@ BOOLEAN EjectMedia(VOID) {
    return (Ejected > 0);
 } // VOID EjectMedia()
 
+// Converts consecutive characters in the input string into a
+// number, interpreting the string as a hexadecimal number, starting
+// at the specified position and continuing for the specified number
+// of characters or until the end of the string, whichever is first.
+// NumChars must be between 1 and 16. Ignores invalid characters.
+UINT64 StrToHex(CHAR16 *Input, UINTN Pos, UINTN NumChars) {
+   UINT64 retval = 0x00;
+   UINTN  NumDone = 0;
+   CHAR16 a;
+
+   if ((Input == NULL) || (StrLen(Input) < Pos) || (NumChars == 0) || (NumChars > 16)) {
+      return 0;
+   }
+
+   while ((StrLen(Input) >= Pos) && (NumDone < NumChars)) {
+      a = Input[Pos];
+      if ((a >= '0') && (a <= '9')) {
+         retval *= 0x10;
+         retval += (a - '0');
+         NumDone++;
+      }
+      if ((a >= 'a') && (a <= 'f')) {
+         retval *= 0x10;
+         retval += (a - 'a' + 0x0a);
+         NumDone++;
+      }
+      if ((a >= 'A') && (a <= 'F')) {
+         retval *= 0x10;
+         retval += (a - 'A' + 0x0a);
+         NumDone++;
+      }
+      Pos++;
+   } // while()
+   return retval;
+} // StrToHex()
+
+// Returns TRUE if UnknownString can be interpreted as a GUID, FALSE otherwise.
+// Note that the input string must have no extraneous spaces and must be
+// conventionally formatted as a 36-character GUID, complete with dashes in
+// appropriate places.
+BOOLEAN IsGuid(CHAR16 *UnknownString) {
+   UINTN   Length, i;
+   BOOLEAN retval = TRUE;
+   CHAR16  a;
+
+   if (UnknownString == NULL)
+      return FALSE;
+
+   Length = StrLen(UnknownString);
+   if (Length != 36)
+      return FALSE;
+
+   for (i = 0; i < Length; i++) {
+      a = UnknownString[i];
+      if (((i == 8) || (i == 13) || (i == 18) || (i == 23)) && (a != '-')) {
+         retval = FALSE;
+      } else if (((a < 'a') || (a > 'f')) && ((a < 'A') || (a > 'F')) && ((a < '0') && (a > '9'))) {
+         retval = FALSE;
+      } // if/else
+   } // for
+   return retval;
+} // BOOLEAN IsGuid()
 
 // Return the GUID as a string, suitable for display to the user. Note that the calling
 // function is responsible for freeing the allocated memory.
@@ -1858,3 +1936,34 @@ CHAR16 * GuidAsString(EFI_GUID *GuidData) {
    }
    return TheString;
 } // GuidAsString(EFI_GUID *GuidData)
+
+EFI_GUID StringAsGuid(CHAR16 * InString) {
+   EFI_GUID  Guid = NULL_GUID_VALUE;
+
+   if (!IsGuid(InString)) {
+      return Guid;
+   }
+
+   Guid.Data1 = (UINT32) StrToHex(InString, 0, 8);
+   Guid.Data2 = (UINT16) StrToHex(InString, 9, 4);
+   Guid.Data3 = (UINT16) StrToHex(InString, 14, 4);
+   Guid.Data4[0] = (UINT8) StrToHex(InString, 19, 2);
+   Guid.Data4[1] = (UINT8) StrToHex(InString, 21, 2);
+   Guid.Data4[2] = (UINT8) StrToHex(InString, 23, 2);
+   Guid.Data4[3] = (UINT8) StrToHex(InString, 26, 2);
+   Guid.Data4[4] = (UINT8) StrToHex(InString, 28, 2);
+   Guid.Data4[5] = (UINT8) StrToHex(InString, 30, 2);
+   Guid.Data4[6] = (UINT8) StrToHex(InString, 32, 2);
+   Guid.Data4[7] = (UINT8) StrToHex(InString, 34, 2);
+
+   return Guid;
+} // EFI_GUID StringAsGuid()
+
+// Returns TRUE if the two GUIDs are equal, FALSE otherwise
+BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2) {
+   return ((Guid1->Data1 == Guid2->Data1) && (Guid1->Data2 == Guid2->Data2) && (Guid1->Data3 == Guid2->Data3) &&
+           (Guid1->Data4[0] == Guid2->Data4[0]) && (Guid1->Data4[1] == Guid2->Data4[1]) &&
+           (Guid1->Data4[2] == Guid2->Data4[2]) && (Guid1->Data4[3] == Guid2->Data4[3]) &&
+           (Guid1->Data4[4] == Guid2->Data4[4]) && (Guid1->Data4[5] == Guid2->Data4[5]) &&
+           (Guid1->Data4[6] == Guid2->Data4[6]) && (Guid1->Data4[7] == Guid2->Data4[7]));
+} // BOOLEAN CompareGuids()

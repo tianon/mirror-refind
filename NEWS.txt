@@ -1,6 +1,10 @@
 0.7.10 (?/??/2014):
 -------------------
 
+- It's now possible to specify a volume by partition GUID number in a
+  manual boot stanza. This should be more reliable (albeit also more
+  awkward) than using a filesystem number (such as fs0: or fs1:).
+
 - Fixed memory-allocation bug that could cause error message displays,
   and possibly hangs, when re-scanning boot loaders.
 

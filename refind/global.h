@@ -148,6 +148,8 @@
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi"
 
+#define NULL_GUID_VALUE { 00000000, 0000, 0000, {0000, 0000, 0000, 0000} };
+
 //
 // global definitions
 //
@@ -173,6 +175,7 @@ typedef struct {
    EFI_FILE            *RootDir;
    CHAR16              *VolName;
    EFI_GUID            VolUuid;
+   EFI_GUID            PartGuid;
    UINTN               VolNumber;
    EG_IMAGE            *VolIconImage;
    EG_IMAGE            *VolBadgeImage;
