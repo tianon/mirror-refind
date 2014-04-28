@@ -48,7 +48,7 @@
 #include "screen.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/RemovableMedia.h"
-//#include "../include/UsbMass.h"
+#include "gpt.h"
 
 #ifdef __MAKEWITH_GNUEFI
 #define EfiReallocatePool ReallocatePool
@@ -86,6 +86,7 @@ CHAR16           *SelfDirPath;
 REFIT_VOLUME     *SelfVolume = NULL;
 REFIT_VOLUME     **Volumes = NULL;
 UINTN            VolumesCount = 0;
+extern GPT_DATA *gPartitions;
 
 // Maximum size for disk sectors
 #define SECTOR_SIZE 4096
@@ -712,7 +713,7 @@ static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
 // this information can be extracted.
 // The calling function is responsible for freeing the memory allocated
 // for the name string.
-static CHAR16 *GetVolumeName(IN REFIT_VOLUME *Volume) {
+static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
    EFI_FILE_SYSTEM_INFO    *FileSystemInfoPtr;
    CHAR16                  *FoundName = NULL;
    CHAR16                  *SISize, *TypeName;
@@ -723,14 +724,21 @@ static CHAR16 *GetVolumeName(IN REFIT_VOLUME *Volume) {
           FoundName = StrDuplicate(FileSystemInfoPtr->VolumeLabel);
        }
 
-       // Special case: rEFInd HFS+ driver always returns label of "HFS+ volume", so wipe
+       // Special case: Old versions of the rEFInd HFS+ driver always returns label of "HFS+ volume", so wipe
        // this so that we can build a new name that includes the size....
        if ((FoundName != NULL) && (StrCmp(FoundName, L"HFS+ volume") == 0) && (Volume->FSType == FS_TYPE_HFSPLUS)) {
           MyFreePool(FoundName);
           FoundName = NULL;
        } // if rEFInd HFS+ driver suspected
 
-       if (FoundName == NULL) { // filesystem has no name, so use fs type and size
+       // If no filesystem name, try to use the partition name....
+       if ((FoundName == NULL) && (Volume->PartName != NULL) && (StrLen(Volume->PartName) > 0) &&
+           !IsIn(Volume->PartName, IGNORE_PARTITION_NAMES)) {
+          FoundName = StrDuplicate(Volume->PartName);
+       } // if use partition name
+
+       // No filesystem or acceptable partition name, so use fs type and size
+       if (FoundName == NULL) {
           FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
           if (FoundName != NULL) {
              SISize = SizeInIEEEUnits(FileSystemInfoPtr->VolumeSize);
@@ -765,7 +773,7 @@ static CHAR16 *GetVolumeName(IN REFIT_VOLUME *Volume) {
 } // static CHAR16 *GetVolumeName()
 
 // Determine the unique GUID of the volume and store it.
-static VOID SetPartGuid(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *DevicePath) {
+static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *DevicePath) {
    HARDDRIVE_DEVICE_PATH    *HdDevicePath;
 
    if (Volume == NULL)
@@ -773,8 +781,11 @@ static VOID SetPartGuid(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *DevicePa
 
    if ((DevicePath->Type == MEDIA_DEVICE_PATH) && (DevicePath->SubType == MEDIA_HARDDRIVE_DP)) {
       HdDevicePath = (HARDDRIVE_DEVICE_PATH*) DevicePath;
-      Volume->PartGuid = *((EFI_GUID*) HdDevicePath->Signature);
-   }
+      if (HdDevicePath->SignatureType == SIGNATURE_TYPE_GUID) {
+         Volume->PartGuid = *((EFI_GUID*) HdDevicePath->Signature);
+         Volume->PartName = PartNameFromGuid(&(Volume->PartGuid));
+      } // if
+   } // if
 } // VOID SetPartGuid()
 
 VOID ScanVolume(REFIT_VOLUME *Volume)
@@ -819,7 +830,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
         NextDevicePath = NextDevicePathNode(DevicePath);
 
         if (DevicePathType(DevicePath) == MEDIA_DEVICE_PATH) {
-           SetPartGuid(Volume, DevicePath);
+           SetPartGuidAndName(Volume, DevicePath);
         }
         if (DevicePathType(DevicePath) == MESSAGING_DEVICE_PATH &&
             (DevicePathSubType(DevicePath) == MSG_USB_DP ||
@@ -861,7 +872,8 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
                 }
 
                 // look at the BlockIO protocol
-                Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle, &BlockIoProtocol, (VOID **) &Volume->WholeDiskBlockIO);
+                Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle, &BlockIoProtocol,
+                                             (VOID **) &Volume->WholeDiskBlockIO);
                 if (!EFI_ERROR(Status)) {
 
                     // check the media block size
@@ -987,11 +999,11 @@ VOID ScanVolumes(VOID)
     MyFreePool(Volumes);
     Volumes = NULL;
     VolumesCount = 0;
+    ForgetPartitionTables();
 
     // get all filesystem handles
     Status = LibLocateHandle(ByProtocol, &BlockIoProtocol, NULL, &HandleCount, &Handles);
     UuidList = AllocateZeroPool(sizeof(EFI_GUID) * HandleCount);
-    // was: &FileSystemProtocol
     if (Status == EFI_NOT_FOUND) {
         return;  // no filesystems. strange, but true...
     }
@@ -1002,6 +1014,7 @@ VOID ScanVolumes(VOID)
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Volume = AllocateZeroPool(sizeof(REFIT_VOLUME));
         Volume->DeviceHandle = Handles[HandleIndex];
+        AddPartitionTable(Volume);
         ScanVolume(Volume);
         if (UuidList) {
            UuidList[HandleIndex] = Volume->VolUuid;
@@ -1097,7 +1110,6 @@ VOID ScanVolumes(VOID)
             MyFreePool(SectorBuffer1);
             MyFreePool(SectorBuffer2);
         }
-
     } // for
 } /* VOID ScanVolumes() */
 
@@ -1961,9 +1973,6 @@ EFI_GUID StringAsGuid(CHAR16 * InString) {
 
 // Returns TRUE if the two GUIDs are equal, FALSE otherwise
 BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2) {
-   return ((Guid1->Data1 == Guid2->Data1) && (Guid1->Data2 == Guid2->Data2) && (Guid1->Data3 == Guid2->Data3) &&
-           (Guid1->Data4[0] == Guid2->Data4[0]) && (Guid1->Data4[1] == Guid2->Data4[1]) &&
-           (Guid1->Data4[2] == Guid2->Data4[2]) && (Guid1->Data4[3] == Guid2->Data4[3]) &&
-           (Guid1->Data4[4] == Guid2->Data4[4]) && (Guid1->Data4[5] == Guid2->Data4[5]) &&
-           (Guid1->Data4[6] == Guid2->Data4[6]) && (Guid1->Data4[7] == Guid2->Data4[7]));
+   return (CompareMem(Guid1, Guid2, 16) == 0);
 } // BOOLEAN CompareGuids()
+

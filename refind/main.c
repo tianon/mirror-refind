@@ -49,6 +49,7 @@
 #include "icns.h"
 #include "menu.h"
 #include "mok.h"
+#include "gpt.h"
 #include "security_policy.h"
 #include "../include/Handle.h"
 #include "../include/refit_call_wrapper.h"
@@ -143,6 +144,8 @@ REFIT_CONFIG GlobalConfig = { FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
+GPT_DATA *gPartitions = NULL;
+
 // Structure used to hold boot loader filenames and time stamps in
 // a linked list; used to sort entries within a directory.
 struct LOADER_LIST {
@@ -159,7 +162,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.9.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.9.3");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -1329,11 +1332,11 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
    BOOLEAN                 ScanFallbackLoader = TRUE;
    BOOLEAN                 FoundBRBackup = FALSE;
 
-   MatchPatterns = StrDuplicate(LOADER_MATCH_PATTERNS);
-   if (GlobalConfig.ScanAllLinux)
-      MergeStrings(&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
-
    if ((Volume->RootDir != NULL) && (Volume->VolName != NULL) && (Volume->IsReadable)) {
+      MatchPatterns = StrDuplicate(LOADER_MATCH_PATTERNS);
+      if (GlobalConfig.ScanAllLinux)
+         MergeStrings(&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
+
       // check for Mac OS X boot loader
       if (ShouldScan(Volume, L"System\\Library\\CoreServices")) {
          StrCpy(FileName, MACOSX_LOADER_PATH);

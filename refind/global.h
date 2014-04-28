@@ -174,6 +174,7 @@ typedef struct {
    EFI_HANDLE          DeviceHandle;
    EFI_FILE            *RootDir;
    CHAR16              *VolName;
+   CHAR16              *PartName;
    EFI_GUID            VolUuid;
    EFI_GUID            PartGuid;
    UINTN               VolNumber;

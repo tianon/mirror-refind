@@ -659,9 +659,9 @@ VOID ReadConfig(CHAR16 *FileName)
     MyFreePool(File.Buffer);
 } /* VOID ReadConfig() */
 
-// Finds a volume with the specified Identifier (a volume label or a number
-// followed by a colon, for the moment). If found, sets *Volume to point to
-// that volume. If not, leaves it unchanged.
+// Finds a volume with the specified Identifier (a filesystem label, a
+// partition name, a partition GUID, or a number followed by a colon). If
+// found, sets *Volume to point to that volume. If not, leaves it unchanged.
 // Returns TRUE if a match was found, FALSE if not.
 static BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier) {
    UINTN     i = 0, CountedVolumes = 0, Length;
@@ -687,7 +687,8 @@ static BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier) {
             CountedVolumes++;
          } // if
       } else { // User specified a volume by label or GUID
-         if (StriCmp(Identifier, Volumes[i]->VolName) == 0) {
+         if ((StriCmp(Identifier, Volumes[i]->VolName) == 0) ||
+             (StriCmp(Identifier, Volumes[i]->PartName) == 0)) {
             *Volume = Volumes[i];
             Found = TRUE;
          } // if

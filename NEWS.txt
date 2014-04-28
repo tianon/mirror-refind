@@ -1,6 +1,13 @@
 0.7.10 (?/??/2014):
 -------------------
 
+- rEFInd now uses the partition's name (as stored in the GPT data
+  structures) as a fallback for the filesystem's name if the latter can't
+  be found. Exceptions are if the partition name is one of three generic
+  names used by GPT fdisk: "Microsoft basic data", "Linux filesystem", or
+  "Apple HFS/HFS+". These are ignored in favor of the descriptive fallback
+  (e.g., "20 GiB Btrfs volume")
+
 - It's now possible to specify a volume by partition GUID number in a
   manual boot stanza. This should be more reliable (albeit also more
   awkward) than using a filesystem number (such as fs0: or fs1:).

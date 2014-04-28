@@ -48,35 +48,7 @@
 #ifdef __MAKEWITH_GNUEFI
 #include "efi.h"
 #include "efilib.h"
-#pragma pack(1)
-
-/**
-  This protocol can be used on any device handle to obtain generic path/location
-  information concerning the physical device or logical device. If the handle does
-  not logically map to a physical device, the handle may not necessarily support
-  the device path protocol. The device path describes the location of the device
-  the handle is for. The size of the Device Path can be determined from the structures
-  that make up the Device Path.
-**/
-typedef struct {
-  UINT8 Type;       ///< 0x01 Hardware Device Path.
-                    ///< 0x02 ACPI Device Path.
-                    ///< 0x03 Messaging Device Path.
-                    ///< 0x04 Media Device Path.
-                    ///< 0x05 BIOS Boot Specification Device Path.
-                    ///< 0x7F End of Hardware Device Path.
-
-  UINT8 SubType;    ///< Varies by Type
-                    ///< 0xFF End Entire Device Path, or
-                    ///< 0x01 End This Instance of a Device Path and start a new
-                    ///< Device Path.
-
-  UINT8 Length[2];  ///< Specific Device Path data. Type and Sub-Type define
-                    ///< type of data. Size of data is included in Length.
-
-} EFI_DEVICE_PATH_PROTOCOL;
-
-#pragma pack()
+#define EFI_DEVICE_PATH_PROTOCOL EFI_DEVICE_PATH
 #else
 #include "../include/tiano_includes.h"
 #endif
@@ -105,6 +77,9 @@ typedef struct {
 #define VOL_UNREADABLE 999
 
 #define IS_EXTENDED_PART_TYPE(type) ((type) == 0x05 || (type) == 0x0f || (type) == 0x85)
+
+// Partition names to be ignored when setting volume name
+#define IGNORE_PARTITION_NAMES L"Microsoft basic data,Linux filesystem,Apple HFS/HFS+"
 
 EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle);
 VOID UninitRefitLib(VOID);
