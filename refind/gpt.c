@@ -14,6 +14,7 @@
 #include "gpt.h"
 #include "lib.h"
 #include "screen.h"
+#include "crc32.h"
 #include "../include/refit_call_wrapper.h"
 
 #ifdef __MAKEWITH_TIANO
@@ -22,6 +23,10 @@
 
 extern GPT_DATA *gPartitions;
 
+// Allocate data for the main GPT_DATA structure, as well as the ProtectiveMBR
+// and Header structures it contains. This function does *NOT*, however,
+// allocate memory for the Entries data structure, since its size is variable
+// and is determined by the contents of Header.
 GPT_DATA * AllocateGptData(VOID) {
    GPT_DATA *GptData;
 
@@ -39,6 +44,8 @@ GPT_DATA * AllocateGptData(VOID) {
    return GptData;
 } // GPT_DATA * AllocateGptData()
 
+// Unallocate a single GPT_DATA structure. This does NOT follow the
+// linked list, though.
 VOID ClearGptData(GPT_DATA *Data) {
    if (Data) {
       if (Data->ProtectiveMBR)
@@ -51,24 +58,49 @@ VOID ClearGptData(GPT_DATA *Data) {
    } // if
 } // VOID ClearGptData()
 
-// TODO: Add more tests, like a CRC check.
+// TODO: Make this work on big-endian systems; at the moment, it contains
+// little-endian assumptions!
 // Returns TRUE if the GPT header data appear valid, FALSE otherwise.
-static BOOLEAN GptHeaderValid(GPT_HEADER *Header) {
-   BOOLEAN IsValid = TRUE;
+static BOOLEAN GptHeaderValid(GPT_DATA *GptData) {
+   BOOLEAN IsValid;
+   UINT32 CrcValue, StoredCrcValue;
+   UINTN HeaderSize = sizeof(GPT_HEADER);
 
-   if ((Header->signature != 0x5452415020494645ULL) || (Header->entry_count > 2048))
-      IsValid = FALSE;
+   IsValid = ((GptData != NULL) && (GptData->ProtectiveMBR != NULL) && (GptData->Header != NULL));
+   IsValid = IsValid && (GptData->ProtectiveMBR->MBRSignature == 0xAA55);
+   IsValid = IsValid && ((GptData->ProtectiveMBR->partitions[0].type == 0xEE) ||
+                         (GptData->ProtectiveMBR->partitions[1].type == 0xEE) ||
+                         (GptData->ProtectiveMBR->partitions[2].type == 0xEE) ||
+                         (GptData->ProtectiveMBR->partitions[3].type == 0xEE));
+   IsValid = IsValid && (GptData->Header->signature == 0x5452415020494645ULL);
+
+   // Looks good so far; check CRC value....
+   if (IsValid) {
+      if (GptData->Header->header_size < HeaderSize)
+         HeaderSize = GptData->Header->header_size;
+      StoredCrcValue = GptData->Header->header_crc32;
+      GptData->Header->header_crc32 = 0;
+      CrcValue = crc32(0x0, GptData->Header, HeaderSize);
+      if (CrcValue != StoredCrcValue)
+         IsValid = FALSE;
+      GptData->Header->header_crc32 = StoredCrcValue;
+   } // if
 
    return IsValid;
-} // BOOLEAN GptHeaderValid
+} // BOOLEAN GptHeaderValid()
 
 // Read GPT data from Volume and store it in Data. Note that this function
-// may be called on a Volume that is not in fact the protective MBR of a GPT
-// disk, in which case it will return EFI_LOAD_ERROR or some other error
-// condition. In this case, *Data will be left alone.
+// may be called on a Volume that is not in fact a GPT disk (an MBR disk,
+// a partition, etc.), in which case it will return EFI_LOAD_ERROR or some
+// other error condition. In this case, *Data will be left alone.
+// Note also that this function checks CRCs and does other sanity checks
+// on the input data, but does NOT resort to using the backup data if the
+// primary data structures are damaged.
 EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
    EFI_STATUS Status = EFI_SUCCESS;
    UINT64     BufferSize;
+   UINT32     TableCrc;
+   UINTN      i;
    GPT_DATA   *GptData; // Temporary holding storage; transferred to *Data later
 
    if ((Volume == NULL) || (Data == NULL))
@@ -80,7 +112,7 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
       if (EFI_ERROR(Status)) {
          Volume->BlockIO = NULL;
          Print(L"Warning: Can't get BlockIO protocol.\n");
-         Status = EFI_INVALID_PARAMETER;
+         Status = EFI_NOT_READY;
       }
    } // if
 
@@ -88,7 +120,7 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
       Status = EFI_NO_MEDIA;
 
    if (Status == EFI_SUCCESS) {
-      GptData = AllocateGptData();
+      GptData = AllocateGptData(); // Note: All but GptData->Entries
       if (GptData == NULL) {
          Status = EFI_OUT_OF_RESOURCES;
       } // if
@@ -100,20 +132,16 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
                                    0, 512, (VOID*) GptData->ProtectiveMBR);
    }
 
-   // If it looks like a valid protective MBR, try to do more with it....
-   if ((Status == EFI_SUCCESS) && (GptData->ProtectiveMBR->MBRSignature == 0xAA55) &&
-       ((GptData->ProtectiveMBR->partitions[0].type == 0xEE) || (GptData->ProtectiveMBR->partitions[1].type == 0xEE) ||
-        (GptData->ProtectiveMBR->partitions[2].type = 0xEE) || (GptData->ProtectiveMBR->partitions[3].type == 0xEE))) {
+   // Read the GPT header and store it in GptData->Header.
+   if (Status == EFI_SUCCESS) {
       Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO, Volume->BlockIO->Media->MediaId,
                                    1, sizeof(GPT_HEADER), GptData->Header);
+   }
 
-      // Do basic sanity check on GPT header.
-      if ((Status == EFI_SUCCESS) && !GptHeaderValid(GptData->Header)) {
-         Status = EFI_UNSUPPORTED;
-      }
-
-      // Load actual GPT table....
-      if (Status == EFI_SUCCESS) {
+   // If it looks like a valid protective MBR, try to do more with it....
+   if (Status == EFI_SUCCESS) {
+      if (GptHeaderValid(GptData)) {
+         // Load actual GPT table....
          BufferSize = GptData->Header->entry_count * 128;
          if (GptData->Entries != NULL)
             MyFreePool(GptData->Entries);
@@ -121,16 +149,28 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
          if (GptData->Entries == NULL) {
             Status = EFI_OUT_OF_RESOURCES;
          } // if
-      } // if
 
-      if (Status == EFI_SUCCESS) {
-         Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO, Volume->BlockIO->Media->MediaId,
-                                      GptData->Header->header_lba, BufferSize, GptData->Entries);
-      } // if
+         if (Status == EFI_SUCCESS) {
+            Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO, Volume->BlockIO->Media->MediaId,
+                                         GptData->Header->entry_lba, BufferSize, GptData->Entries);
+         } // if
 
-   } else {
-      Status = EFI_LOAD_ERROR;
-   } // if/else
+         // Check CRC status of table
+         if (Status == EFI_SUCCESS) {
+            TableCrc = crc32(0x0, GptData->Entries, BufferSize);
+            if (TableCrc != GptData->Header->entry_crc32)
+               Status = EFI_CRC_ERROR;
+         } // if
+
+         // Now, ensure that every name is null-terminated....
+         if (Status == EFI_SUCCESS) {
+            for (i = 0; i < GptData->Header->entry_count; i++)
+               GptData->Entries[i].name[35] = '\0';
+         } // if
+      } else {
+         Status = EFI_UNSUPPORTED;
+      } // if/else valid header
+   } // if header read OK
 
    if (Status == EFI_SUCCESS) {
       // Everything looks OK, so copy it over
@@ -184,6 +224,7 @@ VOID ForgetPartitionTables(VOID) {
 VOID AddPartitionTable(REFIT_VOLUME *Volume) {
    GPT_DATA    *GptData = NULL, *GptList;
    EFI_STATUS  Status;
+   UINTN       NumTables = 1;
 
    Status = ReadGptData(Volume, &GptData);
    if (Status == EFI_SUCCESS) {
@@ -193,11 +234,16 @@ VOID AddPartitionTable(REFIT_VOLUME *Volume) {
          GptList = gPartitions;
          while (GptList->NextEntry != NULL) {
             GptList = GptList->NextEntry;
+            NumTables++;
          } // while
          GptList->NextEntry = GptData;
+         NumTables++;
       } // if/else
    } else if (GptData != NULL) {
       ClearGptData(GptData);
+      NumTables = 0;
    } // if/else
+   Print(L"In AddPartitionTable(), total number of tables is %d\n", NumTables);
+   PauseForKey();
 } // VOID AddPartitionTable()
 

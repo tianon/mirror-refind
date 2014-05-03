@@ -162,7 +162,7 @@ static VOID AboutrEFInd(VOID)
 {
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.9.3");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.9.4");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -2191,7 +2191,7 @@ static VOID ScanForBootloaders(VOID) {
 //       PauseForKey();
 //    }
 
-   ScanVolumes();
+//   ScanVolumes();
 
    // scan for loaders and tools, add them to the menu
    for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
@@ -2512,7 +2512,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
     SetConfigFilename(ImageHandle);
     ReadConfig(GlobalConfig.ConfigFilename);
-    ScanVolumes();
+//    ScanVolumes();
 
     InitScreen();
     WarnIfLegacyProblems();
@@ -2524,6 +2524,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     // further bootstrap (now with config available)
     MokProtocol = SecureBootSetup();
     LoadDrivers();
+    ScanVolumes();
     ScanForBootloaders();
     ScanForTools();
     SetupScreen();
