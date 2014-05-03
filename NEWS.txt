@@ -1,6 +1,11 @@
 0.7.10 (?/??/2014):
 -------------------
 
+- rEFInd now limits the length of the firmware name string shown in the
+  system information screen to 65 characters. This is done because at least
+  one EFI presents a longer string by default, and this causes the entire
+  information display to come up empty on 800x600 displays.
+
 - rEFInd now uses the partition's name (as stored in the GPT data
   structures) as a fallback for the filesystem's name if the latter can't
   be found. Exceptions are if the partition name is one of three generic

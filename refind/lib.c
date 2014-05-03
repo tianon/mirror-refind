@@ -1582,6 +1582,89 @@ CHAR16 *FindPath(IN CHAR16* FullPath) {
    return (PathOnly);
 }
 
+/*++
+ * 
+ * Routine Description:
+ *
+ *  Find a substring.
+ *
+ * Arguments: 
+ *
+ *  String      - Null-terminated string to search.
+ *  StrCharSet  - Null-terminated string to search for.
+ *
+ * Returns:
+ *  The address of the first occurrence of the matching substring if successful, or NULL otherwise.
+ * --*/
+CHAR16* MyStrStr (CHAR16  *String, CHAR16  *StrCharSet)
+{
+   CHAR16 *Src;
+   CHAR16 *Sub;
+
+   if ((String == NULL) || (StrCharSet == NULL))
+      return NULL;
+
+   Src = String;
+   Sub = StrCharSet;
+
+   while ((*String != L'\0') && (*StrCharSet != L'\0')) {
+      if (*String++ != *StrCharSet) {
+         String = ++Src;
+         StrCharSet = Sub;
+      } else {
+         StrCharSet++;
+      }
+   }
+   if (*StrCharSet == L'\0') {
+      return Src;
+   } else {
+      return NULL;
+   }
+} // CHAR16 *MyStrStr()
+
+// Restrict TheString to at most Limit characters.
+// Does this in two ways:
+// - Locates stretches of two or more spaces and compresses
+//   them down to one space.
+// - Truncates TheString
+// Returns TRUE if changes were made, FALSE otherwise
+BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
+   CHAR16    *SubString, *TempString;
+   UINTN     i;
+   BOOLEAN   HasChanged = FALSE;
+
+   // SubString will be NULL or point WITHIN TheString
+   SubString = MyStrStr(TheString, L"  ");
+   while (SubString != NULL) {
+      i = 0;
+      while (SubString[i] == L' ')
+         i++;
+      if (i >= StrLen(SubString)) {
+         SubString[0] = '\0';
+         HasChanged = TRUE;
+      } else {
+         TempString = StrDuplicate(&SubString[i]);
+         if (TempString != NULL) {
+            StrCpy(&SubString[1], TempString);
+            MyFreePool(TempString);
+            HasChanged = TRUE;
+         } else {
+            // memory allocation problem; abort to avoid potentially infinite loop!
+            break;
+         } // if/else
+      } // if/else
+      SubString = MyStrStr(TheString, L"  ");
+   } // while
+
+   // If the string is still too long, truncate it....
+   if (StrLen(TheString) > Limit) {
+      TheString[Limit] = '\0';
+      HasChanged = TRUE;
+   } // if
+
+   return HasChanged;
+} // BOOLEAN LimitStringLength()
+
 // Takes an input loadpath, splits it into disk and filename components, finds a matching
 // DeviceVolume, and returns that and the filename (*loader).
 VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **DeviceVolume, OUT CHAR16 **loader) {

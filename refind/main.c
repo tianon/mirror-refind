@@ -160,9 +160,11 @@ struct LOADER_LIST {
 
 static VOID AboutrEFInd(VOID)
 {
+    CHAR16 *FirmwareVendor;
+
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.9.4");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.9.5");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -179,7 +181,9 @@ static VOID AboutrEFInd(VOID)
 #else
         AddMenuInfoLine(&AboutMenu, L" Platform: unknown");
 #endif
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", ST->FirmwareVendor, ST->FirmwareRevision >> 16,
+        FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
+        LimitStringLength(FirmwareVendor, 65); // More than ~65 causes empty info page on 800x600 display
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor, ST->FirmwareRevision >> 16,
                                               ST->FirmwareRevision & ((1 << 16) - 1)));
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", egScreenDescription()));
         AddMenuInfoLine(&AboutMenu, L"");
@@ -1094,7 +1098,7 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
    UINTN    i = 0;
    BOOLEAN  ScanIt = TRUE;
 
-   if (IsIn(Volume->VolName, GlobalConfig.DontScanVolumes))
+   if ((IsIn(Volume->VolName, GlobalConfig.DontScanVolumes)) || (IsIn(Volume->PartName, GlobalConfig.DontScanVolumes)))
       return FALSE;
 
    if ((StriCmp(Path, SelfDirPath) == 0) && (Volume->DeviceHandle == SelfVolume->DeviceHandle))

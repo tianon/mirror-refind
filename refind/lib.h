@@ -114,6 +114,7 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
 CHAR16 *FindExtension(IN CHAR16 *Path);
 CHAR16 *FindLastDirName(IN CHAR16 *Path);
 CHAR16 *FindPath(IN CHAR16* FullPath);
+BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit);
 VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **DeviceVolume, OUT CHAR16 **loader);
 BOOLEAN SplitVolumeAndFilename(IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
 CHAR16 *FindNumbers(IN CHAR16 *InString);

@@ -60,19 +60,25 @@ VOID ClearGptData(GPT_DATA *Data) {
 
 // TODO: Make this work on big-endian systems; at the moment, it contains
 // little-endian assumptions!
-// Returns TRUE if the GPT header data appear valid, FALSE otherwise.
+// Returns TRUE if the GPT protective MBR and header data appear valid,
+// FALSE otherwise.
 static BOOLEAN GptHeaderValid(GPT_DATA *GptData) {
    BOOLEAN IsValid;
    UINT32 CrcValue, StoredCrcValue;
    UINTN HeaderSize = sizeof(GPT_HEADER);
 
-   IsValid = ((GptData != NULL) && (GptData->ProtectiveMBR != NULL) && (GptData->Header != NULL));
-   IsValid = IsValid && (GptData->ProtectiveMBR->MBRSignature == 0xAA55);
+   if ((GptData == NULL) || (GptData->ProtectiveMBR == NULL) || (GptData->Header == NULL))
+      return FALSE;
+
+   IsValid = (GptData->ProtectiveMBR->MBRSignature == 0xAA55);
    IsValid = IsValid && ((GptData->ProtectiveMBR->partitions[0].type == 0xEE) ||
                          (GptData->ProtectiveMBR->partitions[1].type == 0xEE) ||
                          (GptData->ProtectiveMBR->partitions[2].type == 0xEE) ||
                          (GptData->ProtectiveMBR->partitions[3].type == 0xEE));
-   IsValid = IsValid && (GptData->Header->signature == 0x5452415020494645ULL);
+
+   IsValid = IsValid && ((GptData->Header->signature == 0x5452415020494645ULL) &&
+                         (GptData->Header->spec_revision == 0x00010000) &&
+                         (GptData->Header->entry_size == 128));
 
    // Looks good so far; check CRC value....
    if (IsValid) {
@@ -89,29 +95,32 @@ static BOOLEAN GptHeaderValid(GPT_DATA *GptData) {
    return IsValid;
 } // BOOLEAN GptHeaderValid()
 
-// Read GPT data from Volume and store it in Data. Note that this function
+// Read GPT data from Volume and store it in *Data. Note that this function
 // may be called on a Volume that is not in fact a GPT disk (an MBR disk,
 // a partition, etc.), in which case it will return EFI_LOAD_ERROR or some
 // other error condition. In this case, *Data will be left alone.
 // Note also that this function checks CRCs and does other sanity checks
 // on the input data, but does NOT resort to using the backup data if the
-// primary data structures are damaged.
+// primary data structures are damaged. The intent is that the function
+// be very conservative about reading GPT data. Currently (version 0.7.10),
+// rEFInd uses the data only to provide access to partition names. This is
+// non-critical data, so it's OK to return nothing, but having the program
+// hang on reading garbage or return nonsense could be very bad.
 EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
    EFI_STATUS Status = EFI_SUCCESS;
    UINT64     BufferSize;
-   UINT32     TableCrc;
    UINTN      i;
    GPT_DATA   *GptData; // Temporary holding storage; transferred to *Data later
 
    if ((Volume == NULL) || (Data == NULL))
-      Status = EFI_INVALID_PARAMETER;
+      return EFI_INVALID_PARAMETER;
 
    // get block i/o
    if ((Status == EFI_SUCCESS) && (Volume->BlockIO == NULL)) {
       Status = refit_call3_wrapper(BS->HandleProtocol, Volume->DeviceHandle, &BlockIoProtocol, (VOID **) &(Volume->BlockIO));
       if (EFI_ERROR(Status)) {
          Volume->BlockIO = NULL;
-         Print(L"Warning: Can't get BlockIO protocol.\n");
+         Print(L"Warning: Can't get BlockIO protocol in ReadGptData().\n");
          Status = EFI_NOT_READY;
       }
    } // if
@@ -129,7 +138,7 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
    // Read the MBR and store it in GptData->ProtectiveMBR.
    if (Status == EFI_SUCCESS) {
       Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO, Volume->BlockIO->Media->MediaId,
-                                   0, 512, (VOID*) GptData->ProtectiveMBR);
+                                   0, sizeof(MBR_RECORD), (VOID*) GptData->ProtectiveMBR);
    }
 
    // Read the GPT header and store it in GptData->Header.
@@ -138,29 +147,22 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
                                    1, sizeof(GPT_HEADER), GptData->Header);
    }
 
-   // If it looks like a valid protective MBR, try to do more with it....
+   // If it looks like a valid protective MBR & GPT header, try to do more with it....
    if (Status == EFI_SUCCESS) {
       if (GptHeaderValid(GptData)) {
          // Load actual GPT table....
          BufferSize = GptData->Header->entry_count * 128;
-         if (GptData->Entries != NULL)
-            MyFreePool(GptData->Entries);
          GptData->Entries = AllocatePool(BufferSize);
-         if (GptData->Entries == NULL) {
+         if (GptData->Entries == NULL)
             Status = EFI_OUT_OF_RESOURCES;
-         } // if
 
-         if (Status == EFI_SUCCESS) {
+         if (Status == EFI_SUCCESS)
             Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO, Volume->BlockIO->Media->MediaId,
                                          GptData->Header->entry_lba, BufferSize, GptData->Entries);
-         } // if
 
          // Check CRC status of table
-         if (Status == EFI_SUCCESS) {
-            TableCrc = crc32(0x0, GptData->Entries, BufferSize);
-            if (TableCrc != GptData->Header->entry_crc32)
-               Status = EFI_CRC_ERROR;
-         } // if
+         if ((Status == EFI_SUCCESS) && (crc32(0x0, GptData->Entries, BufferSize) != GptData->Header->entry_crc32))
+            Status = EFI_CRC_ERROR;
 
          // Now, ensure that every name is null-terminated....
          if (Status == EFI_SUCCESS) {
@@ -243,7 +245,5 @@ VOID AddPartitionTable(REFIT_VOLUME *Volume) {
       ClearGptData(GptData);
       NumTables = 0;
    } // if/else
-   Print(L"In AddPartitionTable(), total number of tables is %d\n", NumTables);
-   PauseForKey();
 } // VOID AddPartitionTable()
 
