@@ -18,6 +18,9 @@
 #ifndef __LEGACY_H_
 #define __LEGACY_H_
 
+#define BBS_MEDIA_PRESENT        0x0800
+#define BBS_MEDIA_MAYBE_PRESENT  0x0400
+
 typedef UINT8 BBS_TYPE;
 
 #define VAR_FLAG  EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_NON_VOLATILE
@@ -64,20 +67,19 @@ BdsDeleteAllInvalidLegacyBootOptions (
   VOID
   );
 
-/**
-  Add the legacy boot devices from BBS table into 
-  the legacy device boot order.
+BOOLEAN
+BdsIsLegacyBootOption (
+   IN UINT8                 *BootOptionVar,
+   OUT BBS_TABLE            **BbsEntry,
+   OUT UINT16               *BbsIndex
+);
 
-  @retval EFI_SUCCESS           The boot devices are added successfully.
-  @retval EFI_NOT_FOUND         The legacy boot devices are not found.
-  @retval EFI_OUT_OF_RESOURCES  Memmory or storage is not enough.
-  @retval EFI_DEVICE_ERROR      Fail to add the legacy device boot order into EFI variable
-                                because of hardware error.
-**/
-EFI_STATUS
-EFIAPI
-BdsUpdateLegacyDevOrder (
-  VOID
-  );
+VOID
+BdsBuildLegacyDevNameString (
+   IN  BBS_TABLE                 *CurBBSEntry,
+   IN  UINTN                     Index,
+   IN  UINTN                     BufSize,
+   OUT CHAR16                    *BootString
+);
 
 #endif

@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-4/20/2014, referencing rEFInd 0.7.9</p>
+5/4/2014, referencing rEFInd 0.8.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -168,11 +168,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Another way to hide a boot loader is to move it into rEFInd's own directory. In order to keep rEFInd from showing up in its own menu, it ignores boot loaders in its own directory. This obviously includes the rEFInd binary file itself, but also anything else you might store there.</p>
 
+<p>You can also use the <tt>dont_scan_volumes</tt>, <tt>dont_scan_dirs</tt>, and <tt>dont_scan_files</tt> tokens in <tt>refind.conf</tt> to hide entire volumes, directories, and individual files, respectively. Note that <tt>dont_scan_volumes</tt> works with both EFI and legacy scans, whereas the other two options make sense for hiding only EFI-mode boot loaders.</p>
+
 <a name="icons">
 <h2>Setting OS Icons</h2>
 </a>
 
-<p>In addition to hiding boot loaders, you can adjust their icons. You can do this in any of six ways for auto-detected boot loaders:</p>
+<p>In addition to hiding boot loaders, you can adjust their icons. You can do this in any of seven ways for auto-detected boot loaders:</p>
 
 <ul>
 
@@ -183,6 +185,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <li>You can place a boot loader in a directory with a name that matches one of rEFInd's standard icons, which take names of the form <tt>os_<tt class="variable">name</tt>.icns</tt> or <tt>os_<tt class="variable">name</tt>.png</tt>. To use such an icon, you would place the boot loader in the directory called <tt class="variable">name</tt>.</li>
 
 <li>You can give the filesystem from which the boot loader is loaded a name that matches the OS name component of the icon filename. For instance, if you call your boot filesystem <tt>CentOS</tt>, it matches the <tt>os_centos.icns</tt> icon. This match is performed on a word-by-word basis within the name, with "words" being delimited by spaces, dashes (<tt>-</tt>), and underscores (<tt>_</tt>). Thus, a volume called <tt>Debian-boot</tt> will match <tt>os_debian.icns</tt> or <tt>os_boot.icns</tt>.</li>
+
+<li>You can give the GPT partition from which the boot loader is loaded a name that matches the OS name component of the icon filename. This works much like the previous method, except that you'd use a tool like <tt>gdisk</tt> or <tt>parted</tt> to set the partition's name, rather than <tt>tune2fs</tt> or GParted to set the filesystem's name.</li>
 
 <li>rEFInd attempts to guess the Linux distribution based on data in the <tt>/etc/os-release</tt> file. This file will only be accessible if a separate <tt>/boot</tt> partition is <i>not</i> used, though. Manually adjusting the <tt>os-release</tt> file to change an OS icon in rEFInd is <i>not</i> recommended.</li>
 
@@ -321,7 +325,7 @@ timeout 20
 <tr>
    <td><tt>dont_scan_volumes</tt> or <tt>don't_scan_volumes</tt></td>
    <td>filesystem or partition label(s)</td>
-   <td>Adds the specified volume or volumes to a volume "blacklist"&mdash;these filesystems are <i>not</i> scanned for EFI boot loaders. This may be useful to keep unwanted EFI boot entries, such as for a Macintosh recovery partition, from appearing on the main list of boot loaders. The default value is <tt>"Recovery HD", LRS_ESP</tt>, to keep the Mac OS X and Lenovo Windows recovery volumes from appearing. (These should get their own tools icon instead&mdash;see the <tt>showtools</tt> token.) Note that on a Macintosh with whole-disk encryption, you may need to uncomment this token and leave <tt>"Recovery HD"</tt> <i>off</i> the list to boot the system.</td>
+   <td>Adds the specified volume or volumes to a volume "blacklist"&mdash;these filesystems are <i>not</i> scanned for EFI boot loaders. This may be useful to keep unwanted EFI boot entries, such as for a Macintosh recovery partition, from appearing on the main list of boot loaders. The default value is <tt>"Recovery HD", LRS_ESP</tt>, to keep the Mac OS X and Lenovo Windows recovery volumes from appearing. (These should get their own tools icon instead&mdash;see the <tt>showtools</tt> token.) Note that on a Macintosh with whole-disk encryption, you may need to uncomment this token and leave <tt>"Recovery HD"</tt> <i>off</i> the list to boot the system. You can use <tt>dont_scan_volumes</tt> to hide disks or partitions from legacy-mode scans, too. In this case, you can enter any part of the description that appears beneath the icons to hide entries that include the string you specify.</td>
 </tr>
 <tr>
    <td><tt>dont_scan_dirs</tt> or <tt>don't_scan_dirs</tt></td>
@@ -379,7 +383,7 @@ default_selection elilo
 <h2>Creating OS Stanzas</h2>
 </a>
 
-<p>OS stanzas in rEFInd are similar to those in GRUB Legacy, GRUB 2, or ELILO. You can use them to add configuration options to those that are auto-detected. You cannot modify the auto-detected options, though; if you just want to tweak one OS's configuration, you have several options, none of which is ideal:</p>
+<p>OS stanzas in rEFInd are similar to those in GRUB Legacy, GRUB 2, or ELILO. You can use them to add EFI boot loaders to those that are auto-detected. rEFInd does not yet support manual boot stanzas for BIOS-mode boot loaders. You also cannot modify the auto-detected options; if you just want to tweak one OS's configuration, you have several options, none of which is ideal:</p>
 
 <ul>
 

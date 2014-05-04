@@ -230,10 +230,13 @@ timeout 20
 #
 #also_scan_dirs boot,ESP2:EFI/linux/kernels
 
-# Partitions to omit from scans. You must specify a volume by its
-# label, which you can obtain in an EFI shell by typing "vol", from
-# Linux by typing "blkid /dev/{devicename}", or by examining the
-# disk's label in various OSes' file browsers.
+# Partitions (or whole disks, for legacy-mode boots) to omit from scans.
+# For EFI-mode scans, you must specify a volume by its label, which you
+# can obtain in an EFI shell by typing "vol", from Linux by typing
+# "blkid /dev/{devicename}", or by examining the disk's label in various
+# OSes' file browsers.
+# For legacy-mode scans, you can specify any subset of the boot loader
+# description shown when you highlight the option in rEFInd.
 # The default is "Recovery HD,LRS_ESP".
 #
 #dont_scan_volumes "Recovery HD"

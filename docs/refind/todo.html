@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-4/20/2014, referencing rEFInd 0.7.9</p>
+5/4/2014, referencing rEFInd 0.8.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -177,6 +177,11 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	like to add detection for Itanium and ARM systems, but I have no
 	way to test such changes.</li>
 
+    <li>Further to the preceding, rEFInd's GPT-scanning code (used to
+	extract partition names) includes assumptions about byte order, and
+	so will work only on little-endian CPUs such as the x86 and
+	x86-64.</li>
+
     <li>A way to set the color of the font would be useful for theming
         purposes.</li>
 
@@ -185,20 +190,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	characters, and by enabling use of variable-width as well as
 	monospace fonts.</li>
 
-    <li>I would like to be able to specify the volume on which a boot
-	loader resides using a partition GUID value, but extracting a GUID
-	from the partition data is harder than extracting the volume's
-	label or counting up the filesystem numbers.</li>
-
-    <li>Currently, if a filesystem's label comes up empty, rEFInd
-	substitutes the size, so you get displays like <tt>boot
-	EFI\foo\bar.efi from 90 GiB volume</tt>. I'd like to add more
-	checks to substitute the GPT <i>partition</i> label if the
-	<i>filesystem</i> label comes up empty.</li>
-
-    <li>Along the lines of the previous item, the
-	<tt>default_selection</tt> might be expanded to support some form
-	of specification of disk types, as in a special entry for any
+    <li>The <tt>default_selection</tt> might be expanded to support some
+	form of specification of disk types, as in a special entry for any
 	optical disk or any external disk, no matter what its name is.</li>
 
     <li>It would be useful to be able to specify paths to boot loaders
@@ -300,7 +293,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	<tt>pmset</tt> to disable the <tt>autopoweroff</tt> option</a> is
 	<a
 	href="http://apple.stackexchange.com/questions/91529/macbook-air-not-waking-up-from-suspend-sleep-with-refind-boot-manager-installed">claimed
-	by some</a> to at least partially fix the problem, though.</li>
+	by some</a> to at least partially fix the problem, though. Using
+	the <tt>--ownhfs</tt> installation option may also help in some
+	cases.</li>
 
     </ul></li> <!-- Known bugs -->
 
@@ -367,9 +362,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	BSDs, especially if BSD developers create a boot loader similar to
 	Linux's EFI stub loader). Also along these lines, adding drivers
 	for Linux LVM and RAID setups would be useful.</li>
-
-    <li>The HFS+ driver returns a volume label of "HFS+ volume", no matter
-        what the volume's real label is.</li>
 
     <li>This may not be possible, or it may require a new driver, but a way
 	to have the drivers access files (like a Linux loopback mount) is

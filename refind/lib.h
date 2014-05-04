@@ -122,6 +122,7 @@ CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index);
 INTN FindSubString(IN CHAR16 *SmallString, IN CHAR16 *BigString);
 VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename);
 BOOLEAN IsIn(IN CHAR16 *Filename, IN CHAR16 *List);
+BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List);
 BOOLEAN FilenameIn(IN REFIT_VOLUME *Volume, IN CHAR16 *Directory, IN CHAR16 *Filename, IN CHAR16 *List);
 BOOLEAN VolumeNumberToName(REFIT_VOLUME *Volume, CHAR16 **VolName);
 VOID MyFreePool(IN OUT VOID *Pointer);

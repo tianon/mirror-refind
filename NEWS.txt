@@ -1,5 +1,13 @@
-0.7.10 (?/??/2014):
--------------------
+0.8.0 (5/4/2014):
+-----------------
+
+- The "dont_scan_volumes" parameter now also works with legacy-boot
+  volumes. Unlike with EFI volumes, where the option you pass must exactly
+  match an entire volume name, when applied to legacy-boot volumes, it
+  matches any part of the description that appears beneath the item when
+  you select it in the rEFInd main menu.
+
+- Can now boot in legacy mode from second (and probably later) hard disks!
 
 - rEFInd now limits the length of the firmware name string shown in the
   system information screen to 65 characters. This is done because at least

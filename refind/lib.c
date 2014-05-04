@@ -1061,8 +1061,9 @@ VOID ScanVolumes(VOID)
             Volume->BlockIO != Volume->WholeDiskBlockIO) {
             for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
                 if (Volumes[VolumeIndex2]->BlockIO == Volume->WholeDiskBlockIO &&
-                    Volumes[VolumeIndex2]->BlockIOOffset == 0)
+                    Volumes[VolumeIndex2]->BlockIOOffset == 0) {
                     WholeDiskVolume = Volumes[VolumeIndex2];
+                }
             }
         }
 
@@ -1862,8 +1863,25 @@ BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
             Found = TRUE;
       } // while
    } // if
-      return Found;
+   return Found;
 } // BOOLEAN IsIn()
+
+// Returns TRUE if any element of List can be found as a substring of
+// BigString, FALSE otherwise. Performs comparisons case-insensitively.
+BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
+   UINTN   i = 0, ElementLength;
+   BOOLEAN Found = FALSE;
+   CHAR16  *OneElement;
+
+   if (BigString && List) {
+      while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
+         ElementLength = StrLen(OneElement);
+         if ((ElementLength <= StrLen(BigString)) && (StriSubCmp(OneElement, BigString)))
+            Found = TRUE;
+      } // while
+   } // if
+   return Found;
+} // BOOLEAN IsSubstringIn()
 
 // Returns TRUE if specified Volume, Directory, and Filename correspond to an
 // element in the comma-delimited List, FALSE otherwise. Note that Directory and

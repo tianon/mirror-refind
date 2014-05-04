@@ -164,7 +164,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.7.9.5");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.0");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -1653,16 +1653,8 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
 #ifdef __MAKEWITH_TIANO
 static VOID StartLegacyUEFI(LEGACY_ENTRY *Entry)
 {
-//     UINTN ExitDataSize = 0;
-//     CHAR16 *ExitData = NULL;
-//     EFI_STATUS Status;
-
     BeginExternalScreen(TRUE, L"Booting Legacy OS (UEFI mode)");
-//    Print(L"Launching from '%s'\n", DevicePathToStr(Entry->BdsOption->DevicePath));
-//    PauseForKey();
 
-//    Status = BdsLibBootViaBootOption(Entry->BdsOption, Entry->BdsOption->DevicePath, &ExitDataSize, &ExitData);
-//    Print(L"BdsLibBootViaBootOption() returned %d\n", Status);
     BdsLibConnectDevicePath (Entry->BdsOption->DevicePath);
     BdsLibDoLegacyBoot(Entry->BdsOption);
 
@@ -1677,7 +1669,7 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
 {
     LEGACY_ENTRY            *Entry, *SubEntry;
     REFIT_MENU_SCREEN       *SubScreen;
-    CHAR16                  *VolDesc;
+    CHAR16                  *VolDesc, *LegacyTitle;
     CHAR16                  ShortcutLetter = 0;
 
     if (LoaderTitle == NULL) {
@@ -1693,10 +1685,17 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
     else
         VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
 
+    LegacyTitle = AllocateZeroPool(256 * sizeof(CHAR16));
+    if (LegacyTitle != NULL)
+       SPrint(LegacyTitle, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
+    if (IsInSubstring(LegacyTitle, GlobalConfig.DontScanVolumes)) {
+       MyFreePool(LegacyTitle);
+       return NULL;
+    } // if
+
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    Entry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(Entry->me.Title, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
+    Entry->me.Title = LegacyTitle;
     Entry->me.Tag          = TAG_LEGACY;
     Entry->me.Row          = 0;
     Entry->me.ShortcutLetter = ShortcutLetter;
@@ -1766,6 +1765,9 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
     CHAR16                  ShortcutLetter = 0;
     CHAR16 *LegacyDescription = BdsOption->Description;
 
+    if (IsInSubstring(LegacyDescription, GlobalConfig.DontScanVolumes))
+       return NULL;
+
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
     Entry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
@@ -1820,10 +1822,11 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
     UINTN                     Index = 0;
     CHAR16                    BootOption[10];
     UINTN                     BootOrderSize = 0;
-    CHAR16            Buffer[20];
-    BDS_COMMON_OPTION *BdsOption;
-    LIST_ENTRY        TempList;
-    BBS_BBS_DEVICE_PATH * BbsDevicePath = NULL;
+    CHAR16                    Buffer[20];
+    BDS_COMMON_OPTION         *BdsOption;
+    LIST_ENTRY                TempList;
+    BBS_BBS_DEVICE_PATH       *BbsDevicePath = NULL;
+    BOOLEAN                   SearchingForUsb = FALSE;
 
     InitializeListHead (&TempList);
     ZeroMem (Buffer, sizeof (Buffer));
@@ -1833,6 +1836,14 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
     Status = gBS->LocateProtocol(&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
     if (EFI_ERROR (Status))
         return;
+
+    // EFI calls USB drives BBS_HARDDRIVE, but we want to distinguish them,
+    // so we set DiskType inappropriately elsewhere in the program and
+    // "translate" it here.
+    if (DiskType == BBS_USB) {
+       DiskType = BBS_HARDDISK;
+       SearchingForUsb = TRUE;
+    } // if
 
     // Grab the boot order
     BootOrder = BdsLibGetVariableAndSize(L"BootOrder", &gEfiGlobalVariableGuid, &BootOrderSize);
@@ -1850,18 +1861,27 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
 
         if (BdsOption != NULL) {
            BbsDevicePath = (BBS_BBS_DEVICE_PATH *)BdsOption->DevicePath;
-
            // Only add the entry if it is of a requested type (e.g. USB, HD)
-
            // Two checks necessary because some systems return EFI boot loaders
            // with a DeviceType value that would inappropriately include them
            // as legacy loaders....
            if ((BbsDevicePath->DeviceType == DiskType) && (BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS)) {
-              AddLegacyEntryUEFI(BdsOption, BbsDevicePath->DeviceType);
-           }
-        }
+              // USB flash drives appear as hard disks with certain media flags set.
+              // Look for this, and if present, pass it on with the (technically
+              // incorrect, but internally useful) BBS_TYPE_USB flag set.
+              if (DiskType == BBS_HARDDISK) {
+                 if (SearchingForUsb && (BbsDevicePath->StatusFlag & (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))) {
+                    AddLegacyEntryUEFI(BdsOption, BBS_USB);
+                 } else if (!SearchingForUsb && !(BbsDevicePath->StatusFlag & (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))) {
+                    AddLegacyEntryUEFI(BdsOption, DiskType);
+                 }
+              } else {
+                 AddLegacyEntryUEFI(BdsOption, DiskType);
+              } // if/else
+           } // if
+        } // if (BdsOption != NULL)
         Index++;
-    }
+    } // while
 } /* static VOID ScanLegacyUEFI() */
 #endif // __MAKEWITH_GNUEFI
 
@@ -1927,6 +1947,8 @@ static VOID ScanLegacyInternal(VOID)
                ScanLegacyVolume(Volume, VolumeIndex);
        } // for
     } else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+       // TODO: This actually picks up USB flash drives, too; try to find
+       // a way to differentiate the two....
        ScanLegacyUEFI(BBS_HARDDISK);
     }
 } /* static VOID ScanLegacyInternal() */
@@ -1945,6 +1967,8 @@ static VOID ScanLegacyExternal(VOID)
             ScanLegacyVolume(Volume, VolumeIndex);
       } // for
    } else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+      // TODO: This actually doesn't do anything useful; leaving in hopes of
+      // fixing it later....
       ScanLegacyUEFI(BBS_USB);
    }
 } /* static VOID ScanLegacyExternal() */
@@ -2182,20 +2206,24 @@ static VOID WarnIfLegacyProblems() {
 
 // Locates boot loaders. NOTE: This assumes that GlobalConfig.LegacyType is set correctly.
 static VOID ScanForBootloaders(VOID) {
-   UINTN  i;
+   UINTN    i;
+#ifdef __MAKEWITH_TIANO
+   CHAR8    s;
+   BOOLEAN  ScanForLegacy = FALSE;
 
-//    if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
-//       Print(L"About to call BdsDeleteAllInvalidLegacyBootOptions()\n");
-//       BdsDeleteAllInvalidLegacyBootOptions();
-//       Print(L"About to call BdsAddNonExistingLegacyBootOptions()\n");
-//       BdsAddNonExistingLegacyBootOptions();
-//       Print(L"About to call BdsUpdateLegacyDevOrder()\n");
-// //      BdsUpdateLegacyDevOrder(); // EXTREME CAUTION: HOSED ONE FIRMWARE!
-//       Print(L"Done with legacy boot updates!\n");
-//       PauseForKey();
-//    }
+   // Determine up-front if we'll be scanning for legacy loaders....
+   for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
+      s = GlobalConfig.ScanFor[i];
+      if ((s == 'c') || (s == 'C') || (s == 'h') || (s == 'H') || (s == 'b') || (s == 'B'))
+         ScanForLegacy = TRUE;
+   } // for
 
-//   ScanVolumes();
+   // If UEFI & scanning for legacy loaders, update NVRAM boot manager list
+   if ((GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) && ScanForLegacy) {
+      BdsDeleteAllInvalidLegacyBootOptions();
+      BdsAddNonExistingLegacyBootOptions();
+   } // if
+#endif
 
    // scan for loaders and tools, add them to the menu
    for (i = 0; i < NUM_SCAN_OPTIONS; i++) {

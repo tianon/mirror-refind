@@ -709,7 +709,6 @@ BdsAddNonExistingLegacyBootOptions (
   UINT16                    OptionNumber;
   BOOLEAN                   Exist;
 
-  Print(L"Entering BdsAddNonExistingLegacyBootOptions()\n");
   HddCount      = 0;
   BbsCount      = 0;
   LocalHddInfo  = NULL;
@@ -762,7 +761,6 @@ BdsAddNonExistingLegacyBootOptions (
               &BbsIndex,
               &OptionNumber
               );
-    Print(L"Boot entry #%d %s exist.\n", Index, Exist ? L"does" : L"does not");
     if (!Exist) {
       //
       // Not found such type of legacy device in boot options or we found but it's disabled
@@ -820,8 +818,6 @@ BdsAddNonExistingLegacyBootOptions (
   if (BootOrder != NULL) {
     FreePool (BootOrder);
   }
-
-  Print(L"Exiting BdsAddNonExistingLegacyBootOptions()\n");
 
   return Status;
 }
@@ -963,7 +959,6 @@ BdsDeleteAllInvalidLegacyBootOptions (
         //
         // Update BootOrder
         //
-        Print(L"About to call BdsDeleteBootOption() on Index == %d\n", Index);
         BdsDeleteBootOption (
           BootOrder[Index],
           BootOrder,
@@ -1018,7 +1013,6 @@ BdsDeleteAllInvalidLegacyBootOptions (
     //
     // should delete
     //
-    Print(L"Second About to call BdsDeleteBootOption(), Index = %d\n", Index);
     BdsDeleteBootOption (
       BootOrder[Index],
       BootOrder,
@@ -1211,346 +1205,3 @@ BdsCreateDevOrder (
 
   return Status;
 }
-
-/**
-  Add the legacy boot devices from BBS table into 
-  the legacy device boot order.
-
-  @retval EFI_SUCCESS           The boot devices are added successfully.
-  @retval EFI_NOT_FOUND         The legacy boot devices are not found.
-  @retval EFI_OUT_OF_RESOURCES  Memmory or storage is not enough.
-  @retval EFI_DEVICE_ERROR      Fail to add the legacy device boot order into EFI variable
-                                because of hardware error.
-**/
-EFI_STATUS
-EFIAPI
-BdsUpdateLegacyDevOrder (
-  VOID
-  )
-{
-  LEGACY_DEV_ORDER_ENTRY      *DevOrder;
-  LEGACY_DEV_ORDER_ENTRY      *NewDevOrder;
-  LEGACY_DEV_ORDER_ENTRY      *Ptr;
-  LEGACY_DEV_ORDER_ENTRY      *NewPtr;
-  UINTN                       DevOrderSize;
-  EFI_LEGACY_BIOS_PROTOCOL    *LegacyBios;
-  EFI_STATUS                  Status;
-  UINT16                      HddCount;
-  UINT16                      BbsCount;
-  HDD_INFO                    *LocalHddInfo;
-  BBS_TABLE                   *LocalBbsTable;
-  INTN                        Index;
-  INTN                        Index2;
-  UINTN                       *Idx;
-  UINTN                       FDCount;
-  UINTN                       HDCount;
-  UINTN                       CDCount;
-  UINTN                       NETCount;
-  UINTN                       BEVCount;
-  UINTN                       TotalSize;
-  UINTN                       HeaderSize;
-  UINT16                      *NewFDPtr;
-  UINT16                      *NewHDPtr;
-  UINT16                      *NewCDPtr;
-  UINT16                      *NewNETPtr;
-  UINT16                      *NewBEVPtr;
-  UINT16                      *NewDevPtr;
-  UINTN                       FDIndex;
-  UINTN                       HDIndex;
-  UINTN                       CDIndex;
-  UINTN                       NETIndex;
-  UINTN                       BEVIndex;
-
-  Print(L"Entering BdsUpdateLegacyDevOrder()\n");
-
-  Idx           = NULL;
-  FDCount       = 0;
-  HDCount       = 0;
-  CDCount       = 0;
-  NETCount      = 0;
-  BEVCount      = 0;
-  TotalSize     = 0;
-  HeaderSize    = sizeof (BBS_TYPE) + sizeof (UINT16);
-  FDIndex       = 0;
-  HDIndex       = 0;
-  CDIndex       = 0;
-  NETIndex      = 0;
-  BEVIndex      = 0;
-  NewDevPtr     = NULL;
-
-  Print(L"About to call EfiLibLocateProtocol()\n");
-  Status        = EfiLibLocateProtocol (&gEfiLegacyBiosProtocolGuid, (VOID **) &LegacyBios);
-  if (EFI_ERROR (Status)) {
-    return Status;
-  }
-
-  Print(L"About to call GetBbsInfo()\n");
-  Status = LegacyBios->GetBbsInfo (
-                         LegacyBios,
-                         &HddCount,
-                         &LocalHddInfo,
-                         &BbsCount,
-                         &LocalBbsTable
-                         );
-  if (EFI_ERROR (Status)) {
-    return Status;
-  }
-
-  Print(L"About to call BdsLibGetVariableAndSize()\n");
-  DevOrder = BdsLibGetVariableAndSize (
-               VAR_LEGACY_DEV_ORDER,
-               &gEfiLegacyDevOrderVariableGuid,
-               &DevOrderSize
-               );
-  if (NULL == DevOrder) {
-    Print(L"DevOrder was NULL\n");
-    return BdsCreateDevOrder (LocalBbsTable, BbsCount);
-  }
-  //
-  // First we figure out how many boot devices with same device type respectively
-  //
-  Print(L"About to enter for() loop, BbsCount = %d\n", BbsCount);
-  for (Index = 0; Index < BbsCount; Index++) {
-//    Print(L" Loop: %d\n", Index);
-    if ((LocalBbsTable[Index].BootPriority == BBS_IGNORE_ENTRY) ||
-        (LocalBbsTable[Index].BootPriority == BBS_DO_NOT_BOOT_FROM)
-        ) {
-      continue;
-    }
-
-    switch (LocalBbsTable[Index].DeviceType) {
-    case BBS_FLOPPY:
-      FDCount++;
-      break;
-
-    case BBS_HARDDISK:
-      HDCount++;
-      break;
-
-    case BBS_CDROM:
-      CDCount++;
-      break;
-
-    case BBS_EMBED_NETWORK:
-      NETCount++;
-      break;
-
-    case BBS_BEV_DEVICE:
-      BEVCount++;
-      break;
-
-    default:
-      break;
-    }
-  }
-
-  Print(L"Done with for() loop; counted:\n Floppies: %d\n Hard disks: %d\n CD-ROMs: %d\n", FDCount, HDCount, CDCount);
-  TotalSize += (HeaderSize + FDCount * sizeof (UINT16));
-  TotalSize += (HeaderSize + HDCount * sizeof (UINT16));
-  TotalSize += (HeaderSize + CDCount * sizeof (UINT16));
-  TotalSize += (HeaderSize + NETCount * sizeof (UINT16));
-  TotalSize += (HeaderSize + BEVCount * sizeof (UINT16));
-
-  Print(L"About to allocate memory for NewDevOrder\n");
-  NewDevOrder = AllocateZeroPool (TotalSize);
-  if (NULL == NewDevOrder) {
-    return EFI_OUT_OF_RESOURCES;
-  }
-
-
-  Print(L"About to copy FD entries\n");
-  //
-  // copy FD
-  //
-  Ptr             = DevOrder;
-  NewPtr          = NewDevOrder;
-  NewPtr->BbsType = Ptr->BbsType;
-  NewPtr->Length  = (UINT16) (sizeof (UINT16) + FDCount * sizeof (UINT16));
-  Print(L" Copying FD entries; about to loop from 0 to %d\n", Ptr->Length / sizeof (UINT16) - 1);
-  for (Index = 0; Index < (INTN) (Ptr->Length / sizeof (UINT16) - 1); Index++) {
-//    Print(L"  Looping: Index = %d\n", Index);
-    if (LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_IGNORE_ENTRY ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_DO_NOT_BOOT_FROM ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].DeviceType != BBS_FLOPPY
-        ) {
-      continue;
-    }
-
-//    Print(L"  About to set data\n");
-    NewPtr->Data[FDIndex] = Ptr->Data[Index];
-    FDIndex++;
-  }
-  Print(L" Done with for() loop\n");
-  NewFDPtr = NewPtr->Data;
-
-  Print(L"About to copy HD entries\n");
-  //
-  // copy HD
-  //
-  Ptr             = (LEGACY_DEV_ORDER_ENTRY *) (&Ptr->Data[Ptr->Length / sizeof (UINT16) - 1]);
-  NewPtr          = (LEGACY_DEV_ORDER_ENTRY *) (&NewPtr->Data[NewPtr->Length / sizeof (UINT16) -1]);
-  NewPtr->BbsType = Ptr->BbsType;
-  NewPtr->Length  = (sizeof (UINT16) + HDCount * sizeof (UINT16));
-  for (Index = 0; Index < (INTN) (Ptr->Length / sizeof (UINT16) - 1); Index++) {
-    if (LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_IGNORE_ENTRY ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_DO_NOT_BOOT_FROM ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_LOWEST_PRIORITY ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].DeviceType != BBS_HARDDISK
-        ) {
-      continue;
-    }
-
-    NewPtr->Data[HDIndex] = Ptr->Data[Index];
-    HDIndex++;
-  }
-  NewHDPtr = NewPtr->Data;
-
-  Print(L"About to copy CD entries\n");
-  //
-  // copy CD
-  //
-  Ptr    = (LEGACY_DEV_ORDER_ENTRY *) (&Ptr->Data[Ptr->Length / sizeof (UINT16) - 1]);
-  NewPtr = (LEGACY_DEV_ORDER_ENTRY *) (&NewPtr->Data[NewPtr->Length / sizeof (UINT16) -1]);
-  NewPtr->BbsType = Ptr->BbsType;
-  NewPtr->Length  = (UINT16) (sizeof (UINT16) + CDCount * sizeof (UINT16));
-  for (Index = 0; Index < (INTN) (Ptr->Length / sizeof (UINT16) - 1); Index++) {
-    if (LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_IGNORE_ENTRY ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_DO_NOT_BOOT_FROM ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_LOWEST_PRIORITY ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].DeviceType != BBS_CDROM
-        ) {
-      continue;
-    }
-
-    NewPtr->Data[CDIndex] = Ptr->Data[Index];
-    CDIndex++;
-  }
-  NewCDPtr = NewPtr->Data;
-
-  //
-  // copy NET
-  //
-  Ptr    = (LEGACY_DEV_ORDER_ENTRY *) (&Ptr->Data[Ptr->Length / sizeof (UINT16) - 1]);
-  NewPtr = (LEGACY_DEV_ORDER_ENTRY *) (&NewPtr->Data[NewPtr->Length / sizeof (UINT16) -1]);
-  NewPtr->BbsType = Ptr->BbsType;
-  NewPtr->Length  = (UINT16) (sizeof (UINT16) + NETCount * sizeof (UINT16));
-  for (Index = 0; Index < (INTN) (Ptr->Length / sizeof (UINT16) - 1); Index++) {
-    if (LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_IGNORE_ENTRY ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_DO_NOT_BOOT_FROM ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_LOWEST_PRIORITY ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].DeviceType != BBS_EMBED_NETWORK
-        ) {
-      continue;
-    }
-
-    NewPtr->Data[NETIndex] = Ptr->Data[Index];
-    NETIndex++;
-  }
-  NewNETPtr = NewPtr->Data;
-  
-  //
-  // copy BEV
-  //
-  Ptr    = (LEGACY_DEV_ORDER_ENTRY *) (&Ptr->Data[Ptr->Length / sizeof (UINT16) - 1]);
-  NewPtr = (LEGACY_DEV_ORDER_ENTRY *) (&NewPtr->Data[NewPtr->Length / sizeof (UINT16) -1]);
-  NewPtr->BbsType = Ptr->BbsType;
-  NewPtr->Length  = (UINT16) (sizeof (UINT16) + BEVCount * sizeof (UINT16));
-  for (Index = 0; Index < (INTN) (Ptr->Length / sizeof (UINT16) - 1); Index++) {
-    if (LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_IGNORE_ENTRY ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_DO_NOT_BOOT_FROM ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].BootPriority == BBS_LOWEST_PRIORITY ||
-        LocalBbsTable[Ptr->Data[Index] & 0xFF].DeviceType != BBS_BEV_DEVICE
-        ) {
-      continue;
-    }
-
-    NewPtr->Data[BEVIndex] = Ptr->Data[Index];
-    BEVIndex++;
-  }
-  NewBEVPtr = NewPtr->Data;
-
-  Print(L"About to enter another loop; BbsCount = %d\n", BbsCount);
-  for (Index = 0; Index < BbsCount; Index++) {
-//    Print(L" Looping: Index = %d\n", Index);
-    if ((LocalBbsTable[Index].BootPriority == BBS_IGNORE_ENTRY) ||
-        (LocalBbsTable[Index].BootPriority == BBS_DO_NOT_BOOT_FROM)
-        ) {
-      continue;
-    }
-
-    switch (LocalBbsTable[Index].DeviceType) {
-    case BBS_FLOPPY:
-      Idx       = &FDIndex;
-      NewDevPtr = NewFDPtr;
-      break;
-
-    case BBS_HARDDISK:
-      Idx       = &HDIndex;
-      NewDevPtr = NewHDPtr;
-      break;
-
-    case BBS_CDROM:
-      Idx       = &CDIndex;
-      NewDevPtr = NewCDPtr;
-      break;
-
-    case BBS_EMBED_NETWORK:
-      Idx       = &NETIndex;
-      NewDevPtr = NewNETPtr;
-      break;
-
-    case BBS_BEV_DEVICE:
-      Idx       = &BEVIndex;
-      NewDevPtr = NewBEVPtr;
-      break;
-
-    default:
-      Idx = NULL;
-      break;
-    }
-    //
-    // at this point we have copied those valid indexes to new buffer
-    // and we should check if there is any new appeared boot device
-    //
-    Print(L" Checking for new devices\n");
-    if (Idx != NULL) {
-      for (Index2 = 0; Index2 < *Idx; Index2++) {
-        if ((NewDevPtr[Index2] & 0xFF) == (UINT16) Index) {
-          break;
-        }
-      }
-
-      if (Index2 == *Idx) {
-        //
-        // Index2 == *Idx means we didn't find Index
-        // so Index is a new appeared device's index in BBS table
-        // insert it before disabled indexes.
-        //
-        for (Index2 = 0; Index2 < *Idx; Index2++) {
-          if ((NewDevPtr[Index2] & 0xFF00) == 0xFF00) {
-            break;
-          }
-        }
-        CopyMem (&NewDevPtr[Index2 + 1], &NewDevPtr[Index2], (*Idx - Index2) * sizeof (UINT16));
-        NewDevPtr[Index2] = (UINT16) (Index & 0xFF);
-        (*Idx)++;
-      }
-    }
-  }
-
-  FreePool (DevOrder);
-
-  Print(L"About to call SetVariable()\n");
-  Status = gRT->SetVariable (
-                  VAR_LEGACY_DEV_ORDER,
-                  &gEfiLegacyDevOrderVariableGuid,
-                  VAR_FLAG,
-                  TotalSize,
-                  NewDevOrder
-                  );
-  FreePool (NewDevOrder);
-
-  Print(L"Returning from BdsUpdateLegacyDevOrder()\n");
-  return Status;
-}
-
