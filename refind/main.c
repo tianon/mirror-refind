@@ -61,13 +61,15 @@
 #define EFI_SECURITY_VIOLATION    EFIERR (26)
 #endif
 #endif
-//#else
+
 #include "../EfiLib/BdsHelper.h"
 #include "../EfiLib/legacy.h"
 
 #ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
-#else
+#endif
+
+#ifdef __MAKEWITH_TIANO
 #define LibLocateHandle gBS->LocateHandleBuffer
 #endif
 
@@ -166,7 +168,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.0.3");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.0.5");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -2038,6 +2040,7 @@ static UINTN ScanDriverDir(IN CHAR16 *Path)
     return (NumFound);
 }
 
+#ifdef __MAKEWITH_GNUEFI
 static EFI_STATUS ConnectAllDriversToAllControllers(VOID)
 {
     EFI_STATUS           Status;
@@ -2105,6 +2108,12 @@ Done:
     MyFreePool (AllHandleBuffer);
     return Status;
 } /* EFI_STATUS ConnectAllDriversToAllControllers() */
+#else
+static EFI_STATUS ConnectAllDriversToAllControllers(VOID) {
+   BdsLibConnectAllDriversToAllControllers();
+   return 0;
+}
+#endif
 
 // Load all EFI drivers from rEFInd's "drivers" subdirectory and from the
 // directories specified by the user in the "scan_driver_dirs" configuration
@@ -2163,8 +2172,7 @@ static VOID FindLegacyBootType(VOID) {
       GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
 } // static VOID FindLegacyBootType
 
-// Warn the user if legacy OS scans are enabled but the firmware or this
-// application can't support them....
+// Warn the user if legacy OS scans are enabled but the firmware can't support them....
 static VOID WarnIfLegacyProblems() {
    BOOLEAN  found = FALSE;
    UINTN    i = 0;

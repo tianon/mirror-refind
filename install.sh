@@ -474,7 +474,6 @@ SetupMacHfs() {
    cp -n "$InstallDir/$TargetDir/boot.efi" "$InstallDir/$TargetDir/boot.efi-backup" &> /dev/null
    ln -f "$InstallDir/$TargetDir/$1" "$InstallDir/$TargetDir/boot.efi"
    touch "$InstallDir/mach_kernel"
-   cp -n "$RefindDir/icons/os_refind.icns" "$InstallDir/.VolumeIcon.icns" &> /dev/null
    rm "$InstallDir/$TargetDir/SystemVersion.plist" &> /dev/null
    cat - << ENDOFHERE >> "$InstallDir/$TargetDir/SystemVersion.plist"
 <xml version="1.0" encoding="UTF-8"?>

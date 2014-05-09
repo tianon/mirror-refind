@@ -230,23 +230,6 @@ BdsLibBuildOptionFromShell (
   IN OUT LIST_ENTRY              *BdsBootOptionList
   );
 
-// //
-// // Bds misc lib functions
-// //
-// /**
-//   Get boot mode by looking up the configuration table and parsing the HOB list.
-// 
-//   @param  BootMode              The boot mode from PEI handoff HOB.
-// 
-//   @retval EFI_SUCCESS           Successfully got boot mode.
-// 
-// **/
-// EFI_STATUS
-// EFIAPI
-// BdsLibGetBootMode (
-//   OUT EFI_BOOT_MODE       *BootMode
-//   );
-
 
 /**
   The function will go through the driver option link list, and then load and start
@@ -362,6 +345,19 @@ BdsLibConnectDevicePath (
   IN EFI_DEVICE_PATH_PROTOCOL  *DevicePathToConnect
   );
 
+
+//
+// Bds connect and disconnect driver lib funcions
+//
+/**
+ This function connects all system drivers with the corresponding controllers. 
+
+ **/
+VOID
+EFIAPI
+BdsLibConnectAllDriversToAllControllers (
+   VOID
+);
 
 /**
   This function will connect console device based on the console
