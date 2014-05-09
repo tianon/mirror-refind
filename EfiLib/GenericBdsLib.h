@@ -18,7 +18,11 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #ifndef _GENERIC_BDS_LIB_H_
 #define _GENERIC_BDS_LIB_H_
 
-#include <Protocol/UserManager.h>
+#ifdef __MAKEWITH_GNUEFI
+#include "gnuefi-helper.h"
+#endif
+
+//#include <Protocol/UserManager.h>
 
 ///
 /// Constants which are variable names used to access variables.
@@ -70,7 +74,11 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 //
 // This data structure is the part of BDS_CONNECT_ENTRY
 //
+#ifdef __MAKEWITH_TIANO
 #define BDS_LOAD_OPTION_SIGNATURE SIGNATURE_32 ('B', 'd', 'C', 'O')
+#else
+#define BDS_LOAD_OPTION_SIGNATURE EFI_SIGNATURE_32 ('B', 'd', 'C', 'O')
+#endif
 
 typedef struct {
 
@@ -290,7 +298,6 @@ BdsLibBuildOptionFromVar (
 
 **/
 VOID *
-EFIAPI
 BdsLibGetVariableAndSize (
   IN  CHAR16              *Name,
   IN  EFI_GUID            *VendorGuid,
@@ -309,12 +316,12 @@ BdsLibGetVariableAndSize (
   @retval EFI_STATUS            Return the status of the ConOut->OutputString ().
 
 **/
-EFI_STATUS
-EFIAPI
-BdsLibOutputStrings (
-  IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL   *ConOut,
-  ...
-  );
+// EFI_STATUS
+// EFIAPI
+// BdsLibOutputStrings (
+//   IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL   *ConOut,
+//   ...
+//   );
 
 /**
   Build the boot#### or driver#### option from the VariableName. The
@@ -330,60 +337,11 @@ BdsLibOutputStrings (
 
 **/
 BDS_COMMON_OPTION *
-EFIAPI
 BdsLibVariableToOption (
   IN OUT LIST_ENTRY                   *BdsCommonOptionList,
   IN  CHAR16                          *VariableName
   );
 
-/**
-  This function registers the new boot#### or driver#### option based on
-  the VariableName. The new registered boot#### or driver#### will be linked
-  to BdsOptionList and also update to the VariableName. After the boot#### or
-  driver#### updated, the BootOrder or DriverOrder will also be updated.
-
-  @param  BdsOptionList         The header of the boot#### or driver#### link list.
-  @param  DevicePath            The device path that the boot#### or driver####
-                                option present.
-  @param  String                The description of the boot#### or driver####.
-  @param  VariableName          Indicate if the boot#### or driver#### option.
-
-  @retval EFI_SUCCESS           The boot#### or driver#### have been successfully
-                                registered.
-  @retval EFI_STATUS            Return the status of gRS->SetVariable ().
-
-**/
-EFI_STATUS
-EFIAPI
-BdsLibRegisterNewOption (
-  IN  LIST_ENTRY                     *BdsOptionList,
-  IN  EFI_DEVICE_PATH_PROTOCOL       *DevicePath,
-  IN  CHAR16                         *String,
-  IN  CHAR16                         *VariableName
-  );
-
-//
-// Bds connect and disconnect driver lib funcions
-//
-/**
-  This function connects all system drivers with the corresponding controllers. 
-
-**/
-VOID
-EFIAPI
-BdsLibConnectAllDriversToAllControllers (
-  VOID
-  );
-
-/**
-  This function connects all system drivers to controllers.
-
-**/
-VOID
-EFIAPI
-BdsLibConnectAll (
-  VOID
-  );
 
 /**
   This function creates all handles associated with the given device
@@ -400,53 +358,8 @@ BdsLibConnectAll (
 
 **/
 EFI_STATUS
-EFIAPI
 BdsLibConnectDevicePath (
   IN EFI_DEVICE_PATH_PROTOCOL  *DevicePathToConnect
-  );
-
-/**
-  This function will connect all current system handles recursively.     
-  gBS->ConnectController() service is invoked for each handle exist in system handler buffer.  
-  If the handle is bus type handler, all childrens also will be connected recursively  by gBS->ConnectController().
-  
-  @retval EFI_SUCCESS           All handles and child handles have been
-                                connected.  
-  @retval EFI_STATUS            Return the status of gBS->LocateHandleBuffer().
-**/
-EFI_STATUS
-EFIAPI
-BdsLibConnectAllEfi (
-  VOID
-  );
-
-/**
-  This function will disconnect all current system handles.     
-  gBS->DisconnectController() is invoked for each handle exists in system handle buffer.  
-  If handle is a bus type handle, all childrens also are disconnected recursively by  gBS->DisconnectController().
-  
-  @retval EFI_SUCCESS           All handles have been disconnected.
-  @retval EFI_STATUS            Error status returned by of gBS->LocateHandleBuffer().
-
-**/
-EFI_STATUS
-EFIAPI
-BdsLibDisconnectAllEfi (
-  VOID
-  );
-
-//
-// Bds console related lib functions
-//
-/**
-  This function will search every simpletxt device in the current system,
-  and make every simpletxt device a potential console device.
-
-**/
-VOID
-EFIAPI
-BdsLibConnectAllConsoles (
-  VOID
   );
 
 
@@ -568,6 +481,7 @@ DevicePathToStr (
   IN EFI_DEVICE_PATH_PROTOCOL     *DevPath
   );
 
+#ifdef __MAKEWITH_TIANO
 //
 // Internal definitions
 //
@@ -576,6 +490,7 @@ typedef struct {
   UINTN   Len;
   UINTN   Maxlen;
 } POOL_PRINT;
+#endif
 
 typedef
 VOID
@@ -627,7 +542,6 @@ typedef struct {
 
 **/
 EFI_STATUS
-EFIAPI
 BdsDeleteAllInvalidLegacyBootOptions (
   VOID
   );
@@ -642,7 +556,6 @@ BdsDeleteAllInvalidLegacyBootOptions (
   @return Other value          LegacyBoot options are not added.
 **/
 EFI_STATUS
-EFIAPI
 BdsAddNonExistingLegacyBootOptions (
   VOID
   );
@@ -691,7 +604,6 @@ BdsRefreshBbsTableForBoot (
   @retval  EFI_NOT_FOUND         The Boot Option Variable was not found.
 **/
 EFI_STATUS
-EFIAPI
 BdsDeleteBootOption (
   IN UINTN                       OptionNumber,
   IN OUT UINT16                  *BootOrder,
@@ -964,11 +876,11 @@ BdsLibSaveMemoryTypeInformation (
   @retval EFI_ACCESS_DENIED   The user was not successfully identified.
 
 **/
-EFI_STATUS
-EFIAPI
-BdsLibUserIdentify (
-  OUT EFI_USER_PROFILE_HANDLE         *User
-  );  
+// EFI_STATUS
+// EFIAPI
+// BdsLibUserIdentify (
+//   OUT EFI_USER_PROFILE_HANDLE         *User
+//   );  
 
 /**
   This function checks if a Fv file device path is valid, according to a file GUID. If it is invalid,

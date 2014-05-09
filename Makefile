@@ -19,6 +19,7 @@ all:	tiano
 gnuefi:
 	+make -C $(LIBEG_DIR)
 	+make -C $(MOK_DIR)
+	+make -C $(EFILIB_DIR)
 	+make -C $(LOADER_DIR)
 	+make -C $(GPTSYNC_DIR) gnuefi
 #	+make -C $(FS_DIR) all_gnuefi

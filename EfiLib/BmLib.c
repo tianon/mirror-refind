@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
 
+#ifdef __MAKEWITH_TIANO
 #include "Platform.h"
+#else
+#include "gnuefi-helper.h"
+#endif
+#include "refit_call_wrapper.h"
+
 /**
 
   Find the first instance of this Protocol
@@ -35,7 +41,7 @@ EfiLibLocateProtocol (
 {
   EFI_STATUS  Status;
 
-  Status = gBS->LocateProtocol (
+  Status = refit_call3_wrapper(gBS->LocateProtocol,
                   ProtocolGuid,
                   NULL,
                   (VOID **) Interface
@@ -66,7 +72,7 @@ EfiLibOpenRoot (
   //
   // File the file system interface to the device
   //
-  Status = gBS->HandleProtocol (
+  Status = refit_call3_wrapper(gBS->HandleProtocol,
                   DeviceHandle,
                   &gEfiSimpleFileSystemProtocolGuid,
                   (VOID **) &Volume
@@ -88,36 +94,6 @@ EfiLibOpenRoot (
 }
 
 /**
-
-  Function gets the file system information from an open file descriptor,
-  and stores it in a buffer allocated from pool.
-
-
-  @param FHand           The file handle.
-
-  @return                A pointer to a buffer with file information.
-  @retval                NULL is returned if failed to get Volume Label Info.
-
-**/
-EFI_FILE_SYSTEM_VOLUME_LABEL *
-EfiLibFileSystemVolumeLabelInfo (
-  IN EFI_FILE_HANDLE      FHand
-  )
-{
-  EFI_STATUS    Status;
-  EFI_FILE_SYSTEM_VOLUME_LABEL *VolumeInfo = NULL;
-  UINTN         Size = 0;
-  
-  Status = FHand->GetInfo (FHand, &gEfiFileSystemVolumeLabelInfoIdGuid, &Size, VolumeInfo);
-  if (Status == EFI_BUFFER_TOO_SMALL) {
-    VolumeInfo = AllocateZeroPool (Size);
-    Status = FHand->GetInfo (FHand, &gEfiFileSystemVolumeLabelInfoIdGuid, &Size, VolumeInfo);
-  }
-  
-  return EFI_ERROR(Status)?NULL:VolumeInfo;  
-}
-
-/**
   Duplicate a string.
 
   @param Src             The source.
@@ -136,13 +112,13 @@ EfiStrDuplicate (
 
   Size  = StrSize (Src); //at least 2bytes
   Dest  = AllocateZeroPool (Size);
-//  ASSERT (Dest != NULL);
   if (Dest != NULL) {
     CopyMem (Dest, Src, Size);
   }
 
   return Dest;
 }
+
 //Compare strings case insensitive
 INTN
 EFIAPI
@@ -158,7 +134,6 @@ StriCmp (
 	}
 	return *FirstString - *SecondString;
 }
-
 
 /**
 
@@ -196,41 +171,14 @@ EfiLibFileSystemInfo (
   EFI_STATUS    Status;
   EFI_FILE_SYSTEM_INFO *FileSystemInfo = NULL;
   UINTN         Size = 0;
-  
+
   Status = FHand->GetInfo (FHand, &gEfiFileSystemInfoGuid, &Size, FileSystemInfo);
   if (Status == EFI_BUFFER_TOO_SMALL) {
     FileSystemInfo = AllocateZeroPool (Size);
     Status = FHand->GetInfo (FHand, &gEfiFileSystemInfoGuid, &Size, FileSystemInfo);
   }
-  
+
   return EFI_ERROR(Status)?NULL:FileSystemInfo;
-}
-
-/**
-  Function is used to determine the number of device path instances
-  that exist in a device path.
-
-
-  @param DevicePath      A pointer to a device path data structure.
-
-  @return This function counts and returns the number of device path instances
-          in DevicePath.
-
-**/
-UINTN
-EfiDevicePathInstanceCount (
-  IN EFI_DEVICE_PATH_PROTOCOL      *DevicePath
-  )
-{
-  UINTN Count;
-  UINTN Size;
-
-  Count = 0;
-  while (GetNextDevicePathInstance (&DevicePath, &Size) != NULL) {
-    Count += 1;
-  }
-
-  return Count;
 }
 
 /**
@@ -269,57 +217,3 @@ EfiReallocatePool (
 
   return NewPool;
 }
-
-/**
-  Compare two EFI_TIME data.
-
-
-  @param FirstTime       - A pointer to the first EFI_TIME data.
-  @param SecondTime      - A pointer to the second EFI_TIME data.
-
-  @retval  TRUE              The FirstTime is not later than the SecondTime.
-  @retval  FALSE             The FirstTime is later than the SecondTime.
-
-**/
-BOOLEAN
-TimeCompare (
-  IN EFI_TIME               *FirstTime,
-  IN EFI_TIME               *SecondTime
-  )
-{
-  if (FirstTime->Year != SecondTime->Year) {
-    return (BOOLEAN) (FirstTime->Year < SecondTime->Year);
-  } else if (FirstTime->Month != SecondTime->Month) {
-    return (BOOLEAN) (FirstTime->Month < SecondTime->Month);
-  } else if (FirstTime->Day != SecondTime->Day) {
-    return (BOOLEAN) (FirstTime->Day < SecondTime->Day);
-  } else if (FirstTime->Hour != SecondTime->Hour) {
-    return (BOOLEAN) (FirstTime->Hour < SecondTime->Hour);
-  } else if (FirstTime->Minute != SecondTime->Minute) {
-    return (BOOLEAN) (FirstTime->Minute < FirstTime->Minute);
-  } else if (FirstTime->Second != SecondTime->Second) {
-    return (BOOLEAN) (FirstTime->Second < SecondTime->Second);
-  }
-
-  return (BOOLEAN) (FirstTime->Nanosecond <= SecondTime->Nanosecond);
-}
-
-/**
-  Get a string from the Data Hub record based on 
-  a device path.
-
-  @param DevPath         The device Path.
-
-  @return A string located from the Data Hub records based on
-          the device path.
-  @retval NULL  If failed to get the String from Data Hub.
-
-**/
-/*
-UINT16 *
-EfiLibStrFromDatahub (
-  IN EFI_DEVICE_PATH_PROTOCOL                 *DevPath
-  )
-{
-  return NULL;
-}*/

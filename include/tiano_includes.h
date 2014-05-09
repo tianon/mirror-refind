@@ -143,22 +143,12 @@ INTN EFIAPI StriCmp (
 extern EFI_FILE_INFO * EfiLibFileInfo (IN EFI_FILE_HANDLE      FHand);
 extern EFI_FILE_SYSTEM_INFO * EfiLibFileSystemInfo (IN EFI_FILE_HANDLE   Root);
 
-extern UINTN
-EfiDevicePathInstanceCount (
-   IN EFI_DEVICE_PATH_PROTOCOL      *DevicePath
-);
 
 extern VOID *
 EfiReallocatePool (
    IN VOID                 *OldPool,
    IN UINTN                OldSize,
    IN UINTN                NewSize
-);
-
-extern BOOLEAN
-TimeCompare (
-   IN EFI_TIME               *FirstTime,
-   IN EFI_TIME               *SecondTime
 );
 
 #define PoolPrint(...) CatSPrint(NULL, __VA_ARGS__)

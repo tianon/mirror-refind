@@ -15,8 +15,20 @@
  *
  */
 
-#include "../include/tiano_includes.h"
+#ifdef __MAKEWITH_GNUEFI
+#include "efi.h"
+#include "efilib.h"
+#include "gnuefi-helper.h"
+#define EFI_DEVICE_PATH_PROTOCOL EFI_DEVICE_PATH
+#define EfiReallocatePool ReallocatePool
+#define EfiLibLocateProtocol LibLocateProtocol
+#else
+#include "tiano_includes.h"
+#endif
 #include "legacy.h"
+#include "GenericBdsLib.h"
+#include "../refind/global.h"
+#include "../include/refit_call_wrapper.h"
 
 BOOT_OPTION_BBS_MAPPING  *mBootOptionBbsMapping     = NULL;
 UINTN                    mBootOptionBbsMappingCount = 0;
@@ -244,7 +256,7 @@ BdsFindLegacyBootOptionByDevTypeAndName (
   )
 {
   UINTN     Index;
-  CHAR16    BootOption[9];
+  CHAR16    BootOption[10];
   UINTN     BootOptionSize;
   UINT8     *BootOptionVar;
   BBS_TABLE *BbsEntry;
@@ -268,7 +280,7 @@ BdsFindLegacyBootOptionByDevTypeAndName (
                       &BootOptionSize
                       );
     if (NULL == BootOptionVar) {
-      continue;
+       continue;
     }
 
     //
@@ -448,7 +460,7 @@ BdsCreateLegacyBootOption (
   Ptr += sizeof (BBS_TABLE);
   *((UINT16 *) Ptr) = (UINT16) Index;
 
-  Status = gRT->SetVariable (
+  Status = refit_call5_wrapper(gRT->SetVariable,
                   BootString,
                   &gEfiGlobalVariableGuid,
                   VAR_FLAG,
@@ -646,7 +658,7 @@ EfiLibGetVariable (
 
   @param VarName           A Null-terminated Unicode string that is
                            the name of the vendor's variable.
-                         
+
   @param VarGuid           A unique identifier for the vendor.
 
   @retval  EFI_SUCCESS           The variable was found and removed
@@ -671,7 +683,7 @@ EfiLibDeleteVariable (
     //
     // Delete variable from Storage
     //
-    Status = gRT->SetVariable (VarName, VarGuid, VAR_FLAG, 0, NULL);
+    Status = refit_call5_wrapper(gRT->SetVariable, VarName, VarGuid, VAR_FLAG, 0, NULL);
     ASSERT (!EFI_ERROR (Status));
     FreePool (VarBuf);
   }
@@ -689,7 +701,6 @@ EfiLibDeleteVariable (
   @return Other value          LegacyBoot options are not added.
 **/
 EFI_STATUS
-EFIAPI
 BdsAddNonExistingLegacyBootOptions (
   VOID
   )
@@ -726,7 +737,7 @@ BdsAddNonExistingLegacyBootOptions (
     mBootOptionBbsMappingCount = 0;
   }
 
-  LegacyBios->GetBbsInfo (
+  refit_call5_wrapper(LegacyBios->GetBbsInfo,
                 LegacyBios,
                 &HddCount,
                 &LocalHddInfo,
@@ -783,10 +794,10 @@ BdsAddNonExistingLegacyBootOptions (
     //
     // Save the BbsIndex
     //
-    mBootOptionBbsMapping = ReallocatePool (
+    mBootOptionBbsMapping = EfiReallocatePool (
+                              mBootOptionBbsMapping,
                               mBootOptionBbsMappingCount * sizeof (BOOT_OPTION_BBS_MAPPING),
-                              (mBootOptionBbsMappingCount + 1) * sizeof (BOOT_OPTION_BBS_MAPPING),
-                              mBootOptionBbsMapping
+                              (mBootOptionBbsMappingCount + 1) * sizeof (BOOT_OPTION_BBS_MAPPING)
                               );
     ASSERT (mBootOptionBbsMapping != NULL);
     mBootOptionBbsMapping[mBootOptionBbsMappingCount].BootOptionNumber = OptionNumber;
@@ -804,7 +815,7 @@ BdsAddNonExistingLegacyBootOptions (
     );
 
   if (BootOrderSize > 0) {
-    Status = gRT->SetVariable (
+    Status = refit_call5_wrapper(gRT->SetVariable,
                     L"BootOrder",
                     &gEfiGlobalVariableGuid,
                     VAR_FLAG,
@@ -835,7 +846,6 @@ BdsAddNonExistingLegacyBootOptions (
   @retval  EFI_NOT_FOUND         The Boot Option Variable was not found
 **/
 EFI_STATUS
-EFIAPI
 BdsDeleteBootOption (
   IN UINTN                       OptionNumber,
   IN OUT UINT16                  *BootOrder,
@@ -885,7 +895,6 @@ BdsDeleteBootOption (
   @retval EFI_NOT_FOUND           Fail to retrive variable of boot order.
 **/
 EFI_STATUS
-EFIAPI
 BdsDeleteAllInvalidLegacyBootOptions (
   VOID
   )
@@ -921,7 +930,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
     return Status;
   }
 
-  LegacyBios->GetBbsInfo (
+  refit_call5_wrapper(LegacyBios->GetBbsInfo,
                 LegacyBios,
                 &HddCount,
                 &LocalHddInfo,
@@ -948,7 +957,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
                       );
     if (NULL == BootOptionVar) {
       BootOptionSize = 0;
-      Status = gRT->GetVariable (
+      Status = refit_call5_wrapper(gRT->GetVariable,
                       BootOption,
                       &gEfiGlobalVariableGuid,
                       NULL,
@@ -1024,7 +1033,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
   // Adjust the number of boot options.
   //
   if (BootOrderSize != 0) {
-    Status = gRT->SetVariable (
+    Status = refit_call5_wrapper(gRT->SetVariable,
                     L"BootOrder",
                     &gEfiGlobalVariableGuid,
                     VAR_FLAG,
@@ -1077,131 +1086,4 @@ BdsFillDevOrderBuf (
   }
 
   return Buf;
-}
-
-/**
-  Create the device order buffer.
-
-  @param BbsTable        The BBS table.
-  @param BbsCount        The BBS Count.
-
-  @retval EFI_SUCCES             The buffer is created and the EFI variable named 
-                                 VAR_LEGACY_DEV_ORDER and gEfiLegacyDevOrderVariableGuid is
-                                 set correctly.
-  @retval EFI_OUT_OF_RESOURCES   Memmory or storage is not enough.
-  @retval EFI_DEVICE_ERROR       Fail to add the device order into EFI variable fail
-                                 because of hardware error.
-**/
-EFI_STATUS
-BdsCreateDevOrder (
-  IN BBS_TABLE                  *BbsTable,
-  IN UINT16                     BbsCount
-  )
-{
-  UINTN                       Index;
-  UINTN                       FDCount;
-  UINTN                       HDCount;
-  UINTN                       CDCount;
-  UINTN                       NETCount;
-  UINTN                       BEVCount;
-  UINTN                       TotalSize;
-  UINTN                       HeaderSize;
-  LEGACY_DEV_ORDER_ENTRY      *DevOrder;
-  LEGACY_DEV_ORDER_ENTRY      *DevOrderPtr;
-  EFI_STATUS                  Status;
-
-  FDCount     = 0;
-  HDCount     = 0;
-  CDCount     = 0;
-  NETCount    = 0;
-  BEVCount    = 0;
-  TotalSize   = 0;
-  HeaderSize  = sizeof (BBS_TYPE) + sizeof (UINT16);
-  DevOrder    = NULL;
-  Status      = EFI_SUCCESS;
-
-  //
-  // Count all boot devices
-  //
-  for (Index = 0; Index < BbsCount; Index++) {
-    if (BbsTable[Index].BootPriority == BBS_IGNORE_ENTRY) {
-      continue;
-    }
-
-    switch (BbsTable[Index].DeviceType) {
-    case BBS_FLOPPY:
-      FDCount++;
-      break;
-
-    case BBS_HARDDISK:
-      HDCount++;
-      break;
-
-    case BBS_CDROM:
-      CDCount++;
-      break;
-
-    case BBS_EMBED_NETWORK:
-      NETCount++;
-      break;
-
-    case BBS_BEV_DEVICE:
-      BEVCount++;
-      break;
-
-    default:
-      break;
-    }
-  }
-
-  TotalSize += (HeaderSize + sizeof (UINT16) * FDCount);
-  TotalSize += (HeaderSize + sizeof (UINT16) * HDCount);
-  TotalSize += (HeaderSize + sizeof (UINT16) * CDCount);
-  TotalSize += (HeaderSize + sizeof (UINT16) * NETCount);
-  TotalSize += (HeaderSize + sizeof (UINT16) * BEVCount);
-
-  //
-  // Create buffer to hold all boot device order
-  //
-  DevOrder = AllocateZeroPool (TotalSize);
-  if (NULL == DevOrder) {
-    return EFI_OUT_OF_RESOURCES;
-  }
-  DevOrderPtr          = DevOrder;
-
-  DevOrderPtr->BbsType = BBS_FLOPPY;
-  DevOrderPtr->Length  = (UINT16) (sizeof (DevOrderPtr->Length) + FDCount * sizeof (UINT16));
-  DevOrderPtr          = (LEGACY_DEV_ORDER_ENTRY *) BdsFillDevOrderBuf (BbsTable, BBS_FLOPPY, BbsCount, DevOrderPtr->Data);
-
-  DevOrderPtr->BbsType = BBS_HARDDISK;
-  DevOrderPtr->Length  = (UINT16) (sizeof (UINT16) + HDCount * sizeof (UINT16));
-  DevOrderPtr          = (LEGACY_DEV_ORDER_ENTRY *) BdsFillDevOrderBuf (BbsTable, BBS_HARDDISK, BbsCount, DevOrderPtr->Data);
-  
-  DevOrderPtr->BbsType = BBS_CDROM;
-  DevOrderPtr->Length  = (UINT16) (sizeof (UINT16) + CDCount * sizeof (UINT16));
-  DevOrderPtr          = (LEGACY_DEV_ORDER_ENTRY *) BdsFillDevOrderBuf (BbsTable, BBS_CDROM, BbsCount, DevOrderPtr->Data);
-  
-  DevOrderPtr->BbsType = BBS_EMBED_NETWORK;
-  DevOrderPtr->Length  = (UINT16) (sizeof (UINT16) + NETCount * sizeof (UINT16));
-  DevOrderPtr          = (LEGACY_DEV_ORDER_ENTRY *) BdsFillDevOrderBuf (BbsTable, BBS_EMBED_NETWORK, BbsCount, DevOrderPtr->Data);
-
-  DevOrderPtr->BbsType = BBS_BEV_DEVICE;
-  DevOrderPtr->Length  = (UINT16) (sizeof (UINT16) + BEVCount * sizeof (UINT16));
-  DevOrderPtr          = (LEGACY_DEV_ORDER_ENTRY *) BdsFillDevOrderBuf (BbsTable, BBS_BEV_DEVICE, BbsCount, DevOrderPtr->Data);
-
-  ASSERT (TotalSize == (UINTN) ((UINT8 *) DevOrderPtr - (UINT8 *) DevOrder));
-
-  //
-  // Save device order for legacy boot device to variable.
-  //
-  Status = gRT->SetVariable (
-                  VAR_LEGACY_DEV_ORDER,
-                  &gEfiLegacyDevOrderVariableGuid,
-                  VAR_FLAG,
-                  TotalSize,
-                  DevOrder
-                  );
-  FreePool (DevOrder);
-
-  return Status;
 }

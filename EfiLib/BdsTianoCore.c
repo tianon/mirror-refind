@@ -12,7 +12,139 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
 
+#ifdef __MAKEWITH_TIANO
 #include "../include/tiano_includes.h"
+#else
+#include "BdsHelper.h"
+#include "gnuefi-helper.h"
+#endif
+#include "refit_call_wrapper.h"
+
+EFI_GUID EfiDevicePathProtocolGuid = { 0x09576E91, 0x6D3F, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
+
+/**
+  This function will create all handles associate with every device
+  path node. If the handle associate with one device path node can not
+  be created success, then still give one chance to do the dispatch,
+  which load the missing drivers if possible.
+
+  @param  DevicePathToConnect   The device path which will be connected, it can be
+                                a multi-instance device path
+
+  @retval EFI_SUCCESS           All handles associate with every device path  node
+                                have been created
+  @retval EFI_OUT_OF_RESOURCES  There is no resource to create new handles
+  @retval EFI_NOT_FOUND         Create the handle associate with one device  path
+                                node failed
+
+**/
+EFI_STATUS
+BdsLibConnectDevicePath (
+  IN EFI_DEVICE_PATH_PROTOCOL  *DevicePathToConnect
+  )
+{
+  EFI_STATUS                Status;
+  EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
+  EFI_DEVICE_PATH_PROTOCOL  *CopyOfDevicePath;
+  EFI_DEVICE_PATH_PROTOCOL  *Instance;
+  EFI_DEVICE_PATH_PROTOCOL  *RemainingDevicePath;
+  EFI_DEVICE_PATH_PROTOCOL  *Next;
+  EFI_HANDLE                Handle;
+  EFI_HANDLE                PreviousHandle;
+  UINTN                     Size;
+
+  if (DevicePathToConnect == NULL) {
+    return EFI_SUCCESS;
+  }
+
+  DevicePath        = DuplicateDevicePath (DevicePathToConnect);
+  if (DevicePath == NULL) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+  CopyOfDevicePath  = DevicePath;
+
+  do {
+    //
+    // The outer loop handles multi instance device paths.
+    // Only console variables contain multiple instance device paths.
+    //
+    // After this call DevicePath points to the next Instance
+    //
+    Instance  = GetNextDevicePathInstance (&DevicePath, &Size);
+    if (Instance == NULL) {
+      FreePool (CopyOfDevicePath);
+      return EFI_OUT_OF_RESOURCES;
+    }
+
+    Next      = Instance;
+    while (!IsDevicePathEndType (Next)) {
+      Next = NextDevicePathNode (Next);
+    }
+
+    SetDevicePathEndNode (Next);
+
+    //
+    // Start the real work of connect with RemainingDevicePath
+    //
+    PreviousHandle = NULL;
+    do {
+      //
+      // Find the handle that best matches the Device Path. If it is only a
+      // partial match the remaining part of the device path is returned in
+      // RemainingDevicePath.
+      //
+      RemainingDevicePath = Instance;
+      Status              = refit_call3_wrapper(gBS->LocateDevicePath, &EfiDevicePathProtocolGuid, &RemainingDevicePath, &Handle);
+
+      if (!EFI_ERROR (Status)) {
+#ifdef __MAKEWITH_TIANO
+         if (Handle == PreviousHandle) {
+          //
+          // If no forward progress is made try invoking the Dispatcher.
+          // A new FV may have been added to the system an new drivers
+          // may now be found.
+          // Status == EFI_SUCCESS means a driver was dispatched
+          // Status == EFI_NOT_FOUND means no new drivers were dispatched
+          //
+          Status = gDS->Dispatch ();
+        }
+#endif
+
+        if (!EFI_ERROR (Status)) {
+          PreviousHandle = Handle;
+          //
+          // Connect all drivers that apply to Handle and RemainingDevicePath,
+          // the Recursive flag is FALSE so only one level will be expanded.
+          //
+          // Do not check the connect status here, if the connect controller fail,
+          // then still give the chance to do dispatch, because partial
+          // RemainingDevicepath may be in the new FV
+          //
+          // 1. If the connect fail, RemainingDevicepath and handle will not
+          //    change, so next time will do the dispatch, then dispatch's status
+          //    will take effect
+          // 2. If the connect success, the RemainingDevicepath and handle will
+          //    change, then avoid the dispatch, we have chance to continue the
+          //    next connection
+          //
+          refit_call4_wrapper(gBS->ConnectController, Handle, NULL, RemainingDevicePath, FALSE);
+        }
+      }
+      //
+      // Loop until RemainingDevicePath is an empty device path
+      //
+    } while (!EFI_ERROR (Status) && !IsDevicePathEnd (RemainingDevicePath));
+
+  } while (DevicePath != NULL);
+
+  if (CopyOfDevicePath != NULL) {
+    FreePool (CopyOfDevicePath);
+  }
+  //
+  // All handle with DevicePath exists in the handle database
+  //
+  return Status;
+}
 
 /**
   Build the boot#### or driver#### option from the VariableName, the
@@ -28,7 +160,6 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
 BDS_COMMON_OPTION *
-EFIAPI
 BdsLibVariableToOption (
   IN OUT LIST_ENTRY                   *BdsCommonOptionList,
   IN  CHAR16                          *VariableName
@@ -160,7 +291,6 @@ BdsLibVariableToOption (
 
 **/
 VOID *
-EFIAPI
 BdsLibGetVariableAndSize (
   IN  CHAR16              *Name,
   IN  EFI_GUID            *VendorGuid,
@@ -177,7 +307,7 @@ BdsLibGetVariableAndSize (
   // Pass in a zero size buffer to find the required buffer size.
   //
   BufferSize  = 0;
-  Status      = gRT->GetVariable (Name, VendorGuid, NULL, &BufferSize, Buffer);
+  Status      = refit_call5_wrapper(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
   if (Status == EFI_BUFFER_TOO_SMALL) {
     //
     // Allocate the buffer to return
@@ -189,7 +319,7 @@ BdsLibGetVariableAndSize (
     //
     // Read variable into the allocated buffer.
     //
-    Status = gRT->GetVariable (Name, VendorGuid, NULL, &BufferSize, Buffer);
+    Status = refit_call5_wrapper(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
     if (EFI_ERROR (Status)) {
       BufferSize = 0;
     }

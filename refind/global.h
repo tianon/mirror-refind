@@ -50,8 +50,8 @@
 #include <efilib.h>
 #else
 #include "../include/tiano_includes.h"
-#include "../EfiLib/GenericBdsLib.h"
 #endif
+#include "../EfiLib/GenericBdsLib.h"
 
 #include "libeg.h"
 
@@ -236,9 +236,9 @@ typedef struct {
 typedef struct {
    REFIT_MENU_ENTRY  me;
    REFIT_VOLUME      *Volume;
-#ifndef __MAKEWITH_GNUEFI
+//#ifndef __MAKEWITH_GNUEFI
    BDS_COMMON_OPTION *BdsOption;
-#endif
+//#endif
    CHAR16            *LoadOptions;
    BOOLEAN           Enabled;
 } LEGACY_ENTRY;

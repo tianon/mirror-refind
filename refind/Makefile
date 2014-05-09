@@ -22,8 +22,8 @@ ifeq ($(ARCH),x86_64)
 endif
 
 LOCAL_CPPFLAGS  = -I$(SRCDIR) -I$(SRCDIR)/../include -I$(SRCDIR)/../libeg -I$(SRCDIR)/../mok
-LOCAL_LDFLAGS   = -L$(SRCDIR)/../libeg/ -L$(SRCDIR)/../mok/
-LOCAL_LIBS      = -leg -lmok
+LOCAL_LDFLAGS   = -L$(SRCDIR)/../libeg/ -L$(SRCDIR)/../mok/ -L$(SRCDIR)/../EfiLib/
+LOCAL_LIBS      = -leg -lmok -lEfiLib
 
 OBJS            = main.o config.o menu.o screen.o icns.o gpt.o crc32.o lib.o driver_support.o
 #OBJS            = main.o config.o menu.o screen.o icns.o lib.o mok.o driver_support.o variables.o sha256.o pecoff.o simple_file.o security_policy.o guid.o

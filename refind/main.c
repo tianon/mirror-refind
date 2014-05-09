@@ -60,13 +60,15 @@
 #ifndef EFI_SECURITY_VIOLATION
 #define EFI_SECURITY_VIOLATION    EFIERR (26)
 #endif
-#else
+#endif
+//#else
 #include "../EfiLib/BdsHelper.h"
 #include "../EfiLib/legacy.h"
-#endif // __MAKEWITH_GNUEFI
 
 #ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
+#else
+#define LibLocateHandle gBS->LocateHandleBuffer
 #endif
 
 //
@@ -164,7 +166,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.0");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.0.3");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -907,10 +909,12 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
 
    // locate a custom icon for the loader
    // Anything found here takes precedence over the "hints" in the OSIconName variable
-   if (!Entry->me.Image)
+   if (!Entry->me.Image) {
       Entry->me.Image = egLoadIconAnyType(Volume->RootDir, PathOnly, NoExtension, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-   if (!Entry->me.Image)
+   }
+   if (!Entry->me.Image) {
       Entry->me.Image = egCopyImage(Volume->VolIconImage);
+   }
 
    // Begin creating icon "hints" by using last part of directory path leading
    // to the loader
@@ -960,9 +964,6 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
       Entry->OSType = 'R';
       ShortcutLetter = 'R';
    } else if (StriCmp(LoaderPath, MACOSX_LOADER_PATH) == 0) {
-      if (Volume->VolIconImage != NULL) { // custom icon file found
-         Entry->me.Image = Volume->VolIconImage;
-      }
       MergeStrings(&OSIconName, L"mac", L',');
       Entry->OSType = 'M';
       ShortcutLetter = 'M';
@@ -1650,7 +1651,6 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
 } /* static VOID StartLegacy() */
 
 // Start a device on a non-Mac using the EFI_LEGACY_BIOS_PROTOCOL
-#ifdef __MAKEWITH_TIANO
 static VOID StartLegacyUEFI(LEGACY_ENTRY *Entry)
 {
     BeginExternalScreen(TRUE, L"Booting Legacy OS (UEFI mode)");
@@ -1663,7 +1663,6 @@ static VOID StartLegacyUEFI(LEGACY_ENTRY *Entry)
     PauseForKey();
     FinishExternalScreen();
 } // static VOID StartLegacyUEFI()
-#endif // __MAKEWITH_TIANO
 
 static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume)
 {
@@ -1734,9 +1733,9 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
 } /* static LEGACY_ENTRY * AddLegacyEntry() */
 
 
-#ifdef __MAKEWITH_GNUEFI
-static VOID ScanLegacyUEFI(IN UINTN DiskType){}
-#else
+// #ifdef __MAKEWITH_GNUEFI
+// static VOID ScanLegacyUEFI(IN UINTN DiskType){}
+// #else
 // default volume badge icon based on disk kind
 static EG_IMAGE * GetDiskBadge(IN UINTN DiskType) {
    EG_IMAGE * Badge = NULL;
@@ -1833,9 +1832,9 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
 
     // If LegacyBios protocol is not implemented on this platform, then
     //we do not support this type of legacy boot on this machine.
-    Status = gBS->LocateProtocol(&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+    Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
     if (EFI_ERROR (Status))
-        return;
+       return;
 
     // EFI calls USB drives BBS_HARDDRIVE, but we want to distinguish them,
     // so we set DiskType inappropriately elsewhere in the program and
@@ -1883,7 +1882,7 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
         Index++;
     } // while
 } /* static VOID ScanLegacyUEFI() */
-#endif // __MAKEWITH_GNUEFI
+//#endif // __MAKEWITH_GNUEFI
 
 static VOID ScanLegacyVolume(REFIT_VOLUME *Volume, UINTN VolumeIndex) {
    UINTN VolumeIndex2;
@@ -2039,7 +2038,6 @@ static UINTN ScanDriverDir(IN CHAR16 *Path)
     return (NumFound);
 }
 
-#ifdef __MAKEWITH_GNUEFI
 static EFI_STATUS ConnectAllDriversToAllControllers(VOID)
 {
     EFI_STATUS           Status;
@@ -2107,12 +2105,6 @@ Done:
     MyFreePool (AllHandleBuffer);
     return Status;
 } /* EFI_STATUS ConnectAllDriversToAllControllers() */
-#else
-static EFI_STATUS ConnectAllDriversToAllControllers(VOID) {
-   BdsLibConnectAllDriversToAllControllers();
-   return 0;
-}
-#endif
 
 // Load all EFI drivers from rEFInd's "drivers" subdirectory and from the
 // directories specified by the user in the "scan_driver_dirs" configuration
@@ -2151,20 +2143,16 @@ static VOID LoadDrivers(VOID)
 
 // Determine what (if any) type of legacy (BIOS) boot support is available
 static VOID FindLegacyBootType(VOID) {
-#ifdef __MAKEWITH_TIANO
    EFI_STATUS                Status;
    EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
-#endif
 
    GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
 
    // UEFI-style legacy BIOS support is available only with the TianoCore EDK2
    // build environment, and then only with some EFI implementations....
-#ifdef __MAKEWITH_TIANO
-   Status = gBS->LocateProtocol (&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+   Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
    if (!EFI_ERROR (Status))
       GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
-#endif
 
    // Macs have their own system. If the firmware vendor code contains the
    // string "Apple", assume it's available. Note that this overrides the
@@ -2189,16 +2177,8 @@ static VOID WarnIfLegacyProblems() {
       } while ((i < NUM_SCAN_OPTIONS) && (!found));
       if (found) {
          Print(L"NOTE: refind.conf's 'scanfor' line specifies scanning for one or more legacy\n");
-         Print(L"(BIOS) boot options; however, this is not possible because ");
-#ifdef __MAKEWITH_TIANO
-         Print(L"your computer lacks\n");
+         Print(L"(BIOS) boot options; however, this is not possible because your computer lacks\n");
          Print(L"the necessary Compatibility Support Module (CSM) support.\n");
-#else
-         Print(L"this program was\n");
-         Print(L"compiled without the necessary support. Please visit\n");
-         Print(L"http://www.rodsbooks.com/refind/getting.html and download and install a rEFInd\n");
-         Print(L"binary built with the TianoCore EDK2 to enable legacy boot support.\n");
-#endif
          PauseForKey();
       } // if (found)
    } // if no legacy support
@@ -2207,7 +2187,6 @@ static VOID WarnIfLegacyProblems() {
 // Locates boot loaders. NOTE: This assumes that GlobalConfig.LegacyType is set correctly.
 static VOID ScanForBootloaders(VOID) {
    UINTN    i;
-#ifdef __MAKEWITH_TIANO
    CHAR8    s;
    BOOLEAN  ScanForLegacy = FALSE;
 
@@ -2223,7 +2202,6 @@ static VOID ScanForBootloaders(VOID) {
       BdsDeleteAllInvalidLegacyBootOptions();
       BdsAddNonExistingLegacyBootOptions();
    } // if
-#endif
 
    // scan for loaders and tools, add them to the menu
    for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
@@ -2445,7 +2423,7 @@ static VOID InitializeLib(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *System
    gRT = SystemTable->RuntimeServices; // Some BDS functions need gRT to be set
    EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
 
-   InitializeConsoleSim();
+//   InitializeConsoleSim();
 }
 
 #endif
@@ -2611,11 +2589,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 StartLegacy((LEGACY_ENTRY *)ChosenEntry);
                 break;
 
-#ifdef __MAKEWITH_TIANO
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
                 StartLegacyUEFI((LEGACY_ENTRY *)ChosenEntry);
                 break;
-#endif
 
             case TAG_TOOL:     // Start a EFI tool
                 StartTool((LOADER_ENTRY *)ChosenEntry);

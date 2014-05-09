@@ -1,3 +1,18 @@
+0.8.1 (5/??/2014):
+------------------
+
+- Reversed order of search for icons by extension: rEFInd now searches
+  for PNG files before ICNS files, rather than the other way around. This
+  makes it possible to override a volume icon for rEFInd by giving it the
+  name .VolumeIcon.png, even when a .VolumeIcon.icns file exists on the
+  volume and is used by OS X.
+
+- Fixed bug that caused .VolumeIcon.icns to take higher-than-intended
+  precedence in icon setting for OS X.
+
+- Chainloading to BIOS-mode boot loaders now works on UEFI-based PCs when
+  rEFInd is built with GNU-EFI, not just when built with Tianocore.
+
 0.8.0 (5/4/2014):
 -----------------
 

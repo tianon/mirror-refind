@@ -43,36 +43,6 @@ EfiLibFileSystemInfo (
   IN EFI_FILE_HANDLE                FHand
   );
 
-/*EFI_FILE_SYSTEM_VOLUME_LABEL_INFO *
-LibFileSystemVolumeLabelInfo (
-  IN EFI_FILE_HANDLE                FHand
-  );
-
-EFI_STATUS
-LibScanHandleDatabase (
-  EFI_HANDLE  DriverBindingHandle, OPTIONAL
-  UINT32      *DriverBindingHandleIndex, OPTIONAL
-  EFI_HANDLE  ControllerHandle, OPTIONAL
-  UINT32      *ControllerHandleIndex, OPTIONAL
-  UINTN       *HandleCount,
-  EFI_HANDLE  **HandleBuffer,
-  UINT32      **HandleType
-  );
-
-EFI_STATUS
-LibGetManagingDriverBindingHandles (
-  EFI_HANDLE  ControllerHandle,
-  UINTN       *DriverBindingHandleCount,
-  EFI_HANDLE  **DriverBindingHandleBuffer
-  );
-
-EFI_STATUS
-LibGetParentControllerHandles (
-  EFI_HANDLE  ControllerHandle,
-  UINTN       *ParentControllerHandleCount,
-  EFI_HANDLE  **ParentControllerHandleBuffer
-  );
-*/
 EFI_STATUS
 LibGetManagedChildControllerHandles (
   EFI_HANDLE  DriverBindingHandle,

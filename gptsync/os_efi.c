@@ -149,8 +149,6 @@ UINTN input_boolean(CHARN *prompt, BOOLEAN *bool_out)
 
 #ifdef __MAKEWITH_TIANO
 
-extern EFI_DXE_SERVICES  *gDS;
-
 // EFI_GUID gEfiDxeServicesTableGuid = { 0x05AD34BA, 0x6F02, 0x4214, { 0x95, 0x2E, 0x4D, 0xA0, 0x39, 0x8E, 0x2B, 0xB9 }};
 
 // Minimal initialization function
@@ -160,7 +158,6 @@ static VOID InitializeLib(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *System
    gBS            = SystemTable->BootServices;
    //    gRS            = SystemTable->RuntimeServices;
    gRT = SystemTable->RuntimeServices; // Some BDS functions need gRT to be set
-//   EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
 
 //   InitializeConsoleSim();
 }

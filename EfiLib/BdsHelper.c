@@ -8,6 +8,7 @@
 #include "BdsHelper.h"
 #include "legacy.h"
 #include "../refind/screen.h"
+#include "refit_call_wrapper.h"
 
 EFI_GUID gEfiLegacyBootProtocolGuid     = { 0xdb9a1e3d, 0x45cb, 0x4abb, { 0x85, 0x3b, 0xe5, 0x38, 0x7f, 0xdb, 0x2e, 0x2d }};
 
@@ -38,13 +39,13 @@ VOID UpdateBbsTable (BDS_COMMON_OPTION *Option) {
    BBS_BBS_DEVICE_PATH       *OptionBBS;
    CHAR16                    Desc[100];
 
-   Status = gBS->LocateProtocol (&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+   Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
    if (EFI_ERROR (Status) || (Option == NULL)) {
       return;
    }
 
    OptionBBS = (BBS_BBS_DEVICE_PATH *) Option->DevicePath;
-   Status = LegacyBios->GetBbsInfo (LegacyBios, &HddCount, &HddInfo, &BbsCount, &LocalBbsTable);
+   Status = refit_call5_wrapper(LegacyBios->GetBbsInfo, LegacyBios, &HddCount, &HddInfo, &BbsCount, &LocalBbsTable);
 
 //    Print (L"\n");
 //    Print (L" NO  Prio bb/dd/ff cl/sc Type Stat segm:offs\n");
@@ -108,13 +109,13 @@ BdsLibDoLegacyBoot (
     EFI_STATUS                Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
-    Status = gBS->LocateProtocol (&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+    Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
     if (EFI_ERROR (Status)) {
       return EFI_UNSUPPORTED;
     }
 
     UpdateBbsTable(Option);
 
-    return LegacyBios->LegacyBoot(LegacyBios, (BBS_BBS_DEVICE_PATH *) Option->DevicePath,
+    return refit_call4_wrapper(LegacyBios->LegacyBoot, LegacyBios, (BBS_BBS_DEVICE_PATH *) Option->DevicePath,
                                   Option->LoadOptionsSize, Option->LoadOptions);
 }

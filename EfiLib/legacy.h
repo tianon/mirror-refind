@@ -15,6 +15,8 @@
  *
  */
 
+#include "LegacyBios.h"
+
 #ifndef __LEGACY_H_
 #define __LEGACY_H_
 
@@ -49,7 +51,6 @@ typedef struct {
 #pragma pack()
 
 EFI_STATUS
-EFIAPI
 BdsAddNonExistingLegacyBootOptions (
    VOID
 );
@@ -62,7 +63,6 @@ BdsAddNonExistingLegacyBootOptions (
   @retval EFI_NOT_FOUND           Fail to retrive variable of boot order.
 **/
 EFI_STATUS
-EFIAPI
 BdsDeleteAllInvalidLegacyBootOptions (
   VOID
   );
