@@ -1,6 +1,15 @@
 0.8.1 (5/??/2014):
 ------------------
 
+- Changed icons from ICNS to PNG form. There are several reasons to do
+  this, all of them minor; but together they're enough to warrant a change.
+  PNG is more common, and therefore more accessible to most users --
+  particularly those who don't use OS X. The PNG files are smaller than
+  their ICNS equivalents. PNG supports a wider range of sizes (although I'm
+  not now using anything that ICNS doesn't support, I might in the future).
+  The icon-scaling support added a few versions ago makes ICNS's support
+  for multiple icon sizes relatively unimportant.
+
 - Reversed order of search for icons by extension: rEFInd now searches
   for PNG files before ICNS files, rather than the other way around. This
   makes it possible to override a volume icon for rEFInd by giving it the

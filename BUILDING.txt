@@ -38,19 +38,16 @@ To compile rEFInd, you'll need the following:
     compile it, and install it locally. Between rEFInd version 0.2.7 and
     0.6.1, the Makefiles assumed a locally-compiled GNU-EFI package, but
     older and more recent versions assume GNU-EFI installation in typical
-    locations for distribution-provided packages. The legacy BIOS boot
-    support on UEFI-based PCs doesn't work when rEFInd is compiled under
-    GNU-EFI, so as of rEFInd 0.4.6, GNU-EFI is no longer the primary build
-    environment, although it's easier to set up on a Linux system.
+    locations for distribution-provided packages.
 
 Of the two toolkits, I prefer to use TianoCore because it produces binaries
-that can boot BIOS/legacy-mode OSes and because the TianoCore-produced
-binaries are about 20-30KiB smaller than those made by GNU-EFI. Also, I've
+that are about 20-30KiB smaller than those made by GNU-EFI, and I can
+easily build 32-bit binaries on my 64-bit Linux installations. Also, I've
 had problems on a 32-bit Mac Mini with the drivers produced by GNU-EFI
 hanging the system if I try to load more than one of them. (I haven't
 encountered this problem on UEFI-based PCs.) That said, the TianoCore EDK2
-package is much harder to install, so if you don't need the ability to boot
-BIOS/legacy OSes from rEFInd, GNU-EFI can work as well.
+package is much harder to install, so you may prefer to use GNU-EFI unless
+you have a specific need for the TianoCore toolkit.
 
 It's possible to use a non-Linux platform to compile rEFInd. To the best of
 my knowledge, the rEFInd code doesn't rely on anything Linux-specific in
@@ -73,18 +70,17 @@ GCC or Microsoft's C compiler, but I haven't tested this.
 Preparing Your Development Kit
 ==============================
 
-If you don't care about booting BIOS-based OSes on UEFI PCs and if you're
-using Linux, GNU-EFI is the easiest way to compile rEFInd. I don't describe
-GNU-EFI's setup here because it's likely to be fairly easy. If your
-distribution provides a recent enough version, you should be able to
-install a package called gnu-efi and be done with it. If not, you'll need
-to download the source code tarball, build it, and install it. This process
-is fairly typical of Linux packages. Read the GNU-EFI documentation if you
-need help. If you're using GNU-EFI, you can skip the rest of this section.
+If you're using Linux, GNU-EFI is the easiest way to compile rEFInd. I
+don't describe GNU-EFI's setup here because it's likely to be fairly easy.
+If your distribution provides a recent enough version, you should be able
+to install a package called gnu-efi and be done with it. If not, you'll
+need to download the source code tarball, build it, and install it. This
+process is fairly typical of Linux packages. Read the GNU-EFI documentation
+if you need help. If you're using GNU-EFI, you can skip the rest of this
+section.
 
-If you need support for booting BIOS-based OSes on UEFI PCs, the TianoCore
-toolkit is required. You might also want to use it if you have problems
-with GNU-EFI or if you want to build rEFInd on a non-Linux platform.
+You might also want to use the TianoCore toolkit if you have problems with
+GNU-EFI or if you want to build rEFInd on a non-Linux platform.
 Unfortunately, the TianoCore toolkit is weird by Linux programming
 standards. It's also quite large -- it's intended as a means to develop a
 complete EFI firmware implementation, so it contains much more code than is
