@@ -68,7 +68,11 @@ VOID UpdateBbsTable (BDS_COMMON_OPTION *Option) {
             // in priority. Done mainly as a fallback in case of string-matching weirdness.
             LocalBbsTable[Idx].BootPriority = 1;
          } // if/else
-      } // if
+      } else if (LocalBbsTable[Idx].BootPriority <= 1) {
+         // Something's got a high enough boot priority to interfere with booting
+         // our chosen entry, so bump it down a bit....
+         LocalBbsTable[Idx].BootPriority = 2;
+      } // if/else if
 
 //          Print (
 //            L" %02x: %04x %02x/%02x/%02x %02x/%02x %04x %04x %04x:%04x\n",
@@ -89,6 +93,7 @@ VOID UpdateBbsTable (BDS_COMMON_OPTION *Option) {
 //          Print(L"%s\n", Desc);
 
    } // for
+//    PauseForKey();
 }
 
 /**

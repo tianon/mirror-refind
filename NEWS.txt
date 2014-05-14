@@ -1,6 +1,20 @@
 0.8.1 (5/??/2014):
 ------------------
 
+- Added two new bitmap fonts to those distributed with rEFInd: Ubuntu Mono
+  and Nimbus Mono. Both come in 12-, 14-, 16-, and 24-point sizes.
+
+- Messages about pauses for scanning and re-scanning of boot loaders are
+  now suppressed when doing an initial delayed scan when scan_delay is 1
+  second.
+
+- Improved centering of legacy boot option descriptions on some systems'
+  screens.
+
+- Fixed bug that could cause a BIOS-mode boot to launch an inappropriate
+  device if that device had an innately high boot priority (as set by the
+  firmware).
+
 - Changed icons from ICNS to PNG form. There are several reasons to do
   this, all of them minor; but together they're enough to warrant a change.
   PNG is more common, and therefore more accessible to most users --

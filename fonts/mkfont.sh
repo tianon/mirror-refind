@@ -39,6 +39,7 @@ fi
 
 Height=$2
 let CellWidth=(${Height}*6+5)/10
+#let CellWidth=(${Height}*5)/10
 let Width=${CellWidth}*96
 echo "Creating ${Width}x${Height} font bitmap...."
 $Convert -size ${Width}x${Height} xc:transparent -gravity NorthWest -font $1 -pointsize $2 \

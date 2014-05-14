@@ -228,7 +228,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>rEFInd's default font is a 14-point (12-point in 0.6.5 and earlier) serif monospaced font. I also include a handful of alternatives in the <tt>fonts</tt> subdirectory. rEFInd's font support is extremely rudimentary, though; it reads a PNG file that holds the glyphs from ASCII 32 (space) through ASCII 126 (tilde, <tt>~</tt>), plus a glyph that's displayed for all characters outside of this range. Thus, rEFInd can't currently display non-ASCII characters or use proportional (variable-width) fonts. You can change the font from one monospaced font to another and change the font size, though.</p>
 
-<p>If you want to create your own fonts, you can do so. If you're using Linux, the <tt>mkfont.sh</tt> script in the <tt>fonts</tt> subdirectory will convert an installed <i>monospace</i> font into a suitable format. You can use it like this:</p>
+<p>If you want to create your own fonts, you can do so. If you're using Linux, the <tt>mkfont.sh</tt> script in the <tt>fonts</tt> subdirectory will convert an installed <i>monospace</i> font into a suitable format. (This script works properly for most fonts, but if a font is unusually thin or wide, you will have to adjust the <tt>let CellWidth=</tt> line near the end of the file.) You can use it like this:</p>
 
 <pre class="listing">
 $ <tt class="userinput">./mkfont.sh Liberation-Mono-Italic 14 -1 liberation-mono-italic-14.png</tt>
@@ -272,7 +272,7 @@ to be tedious.</p>
 
 <p>I used icons from the Oxygen Icons project, both from the <a href="http://deviantdark.deviantart.com/art/Oxygen-Refit-70199755">Oxygen Refit</a> package and from Gentoo's <tt>oxygen-icons</tt> package. These icons supplemented or replaced icons that rEFIt used; however, many OS icons (such as those for Windows and Mac OS) are carried over from rEFIt. I've also used a handful of icons for individual Linux distributions from other sources&mdash;usually documentation associated with the distribution in question.</p>
 
-<p>In addition to this default icon set, I've received word of three other rEFInd themes:</p>
+<p>In addition to this default icon set, I've received word of a few other rEFInd themes:</p>
 
 <ul>
 
@@ -285,6 +285,8 @@ to be tedious.</p>
 <li>Evan Purkhiser's <a href="https://github.com/EvanPurkhiser/rEFInd-minimal-theme">Minimal theme</a> uses black icons on a gray background of varied brightness.</li>
 
 <li>Sean Gibbons' <a href="http://sdbinwiiexe.deviantart.com/art/rEFInd-Next-Theme-407754566">rEFInd Next</a> theme is "inspired by both iOS 7 and Windows 8 interfaces." It includes both a background image and a number of OS icons.</li>
+
+<li>Zhu Qunying has created a <a href="http://zhu-qy.blogspot.com/2014/02/a-slackware-banner-logo-for-refind-boot.html">Slackware-themed banner logo</a> for rEFInd. Although it's not a full theme, I thought I'd mention it here.</li>
 
 </ul>
 

@@ -734,10 +734,8 @@ static VOID DrawTextWithTransparency(IN CHAR16 *Text, IN UINTN XPos, IN UINTN YP
     }
 
     TextBuffer = egCropImage(GlobalConfig.ScreenBackground, XPos, YPos, TextWidth, TextLineHeight());
-    if (TextBuffer == NULL) {
-       Print(L"Error: NULL TextBuffer in DrawTextWithTransparency()\n");
+    if (TextBuffer == NULL)
        return;
-    }
 
     // render the text
     egRenderText(Text, TextBuffer, 0, 0, AverageBrightness(TextBuffer));

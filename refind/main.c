@@ -168,7 +168,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.0.5");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.0.6");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -1704,7 +1704,7 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
     Entry->me.BadgeImage   = Volume->VolBadgeImage;
     Entry->Volume          = Volume;
     Entry->LoadOptions     = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" :
-        ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
+                              ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
     Entry->Enabled         = TRUE;
 
     // create the submenu
@@ -1764,10 +1764,15 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
     LEGACY_ENTRY            *Entry, *SubEntry;
     REFIT_MENU_SCREEN       *SubScreen;
     CHAR16                  ShortcutLetter = 0;
-    CHAR16 *LegacyDescription = BdsOption->Description;
+    CHAR16 *LegacyDescription = StrDuplicate(BdsOption->Description);
 
     if (IsInSubstring(LegacyDescription, GlobalConfig.DontScanVolumes))
        return NULL;
+
+    // Remove stray spaces, since many EFIs produce descriptions with lots of
+    // extra spaces, especially at the end; this throws off centering of the
+    // description on the screen....
+    LimitStringLength(LegacyDescription, 100);
 
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
@@ -2157,8 +2162,7 @@ static VOID FindLegacyBootType(VOID) {
 
    GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
 
-   // UEFI-style legacy BIOS support is available only with the TianoCore EDK2
-   // build environment, and then only with some EFI implementations....
+   // UEFI-style legacy BIOS support is available only with some EFI implementations....
    Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
    if (!EFI_ERROR (Status))
       GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
@@ -2173,20 +2177,23 @@ static VOID FindLegacyBootType(VOID) {
 } // static VOID FindLegacyBootType
 
 // Warn the user if legacy OS scans are enabled but the firmware can't support them....
-static VOID WarnIfLegacyProblems() {
+static VOID WarnIfLegacyProblems(VOID) {
    BOOLEAN  found = FALSE;
    UINTN    i = 0;
 
    if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
       do {
-         if (GlobalConfig.ScanFor[i] == 'h' || GlobalConfig.ScanFor[i] == 'b' || GlobalConfig.ScanFor[i] == 'c')
+         if (GlobalConfig.ScanFor[i] == 'h' || GlobalConfig.ScanFor[i] == 'b' || GlobalConfig.ScanFor[i] == 'c' ||
+             GlobalConfig.ScanFor[i] == 'H' || GlobalConfig.ScanFor[i] == 'B' || GlobalConfig.ScanFor[i] == 'C')
             found = TRUE;
          i++;
       } while ((i < NUM_SCAN_OPTIONS) && (!found));
+
       if (found) {
          Print(L"NOTE: refind.conf's 'scanfor' line specifies scanning for one or more legacy\n");
          Print(L"(BIOS) boot options; however, this is not possible because your computer lacks\n");
-         Print(L"the necessary Compatibility Support Module (CSM) support.\n");
+         Print(L"the necessary Compatibility Support Module (CSM) support or that support is\n");
+         Print(L"disabled in your firmware.\n");
          PauseForKey();
       } // if (found)
    } // if no legacy support
@@ -2401,14 +2408,15 @@ static VOID ScanForTools(VOID) {
 } // static VOID ScanForTools
 
 // Rescan for boot loaders
-VOID RescanAll(VOID) {
+static VOID RescanAll(BOOLEAN DisplayMessage) {
    EG_PIXEL           BGColor;
 
    BGColor.b = 255;
    BGColor.g = 175;
    BGColor.r = 100;
    BGColor.a = 0;
-   egDisplayMessage(L"Scanning for new boot loaders; please wait....", &BGColor);
+   if (DisplayMessage)
+      egDisplayMessage(L"Scanning for new boot loaders; please wait....", &BGColor);
    FreeList((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
    MainMenu.Entries = NULL;
    MainMenu.EntryCount = 0;
@@ -2530,7 +2538,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
     SetConfigFilename(ImageHandle);
     ReadConfig(GlobalConfig.ConfigFilename);
-//    ScanVolumes();
 
     InitScreen();
     WarnIfLegacyProblems();
@@ -2552,10 +2559,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        BGColor.g = 175;
        BGColor.r = 100;
        BGColor.a = 0;
-       egDisplayMessage(L"Pausing before disk scan; please wait....", &BGColor);
+       if (GlobalConfig.ScanDelay > 1)
+          egDisplayMessage(L"Pausing before disk scan; please wait....", &BGColor);
        for (i = 0; i < GlobalConfig.ScanDelay; i++)
           refit_call1_wrapper(BS->Stall, 1000000);
-       RescanAll();
+       RescanAll(GlobalConfig.ScanDelay > 1);
     } // if
 
     if (GlobalConfig.DefaultSelection)
@@ -2567,7 +2575,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         // The Escape key triggers a re-scan operation....
         if (MenuExit == MENU_EXIT_ESCAPE) {
             MenuExit = 0;
-            RescanAll();
+            RescanAll(TRUE);
             continue;
         }
 
