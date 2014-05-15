@@ -1,6 +1,9 @@
 0.8.1 (5/??/2014):
 ------------------
 
+- Fixed bug that could cause rEFInd to fail to detect boot loaders stored
+  on the root directory of a partition.
+
 - Added two new bitmap fonts to those distributed with rEFInd: Ubuntu Mono
   and Nimbus Mono. Both come in 12-, 14-, 16-, and 24-point sizes.
 

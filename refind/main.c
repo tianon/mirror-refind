@@ -168,7 +168,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.0.6");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.0.7");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -1248,9 +1248,12 @@ static BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN
    MergeStrings(&NewFile, Path, 0);
    MergeStrings(&NewFile, Filename, L'\\');
    MergeStrings(&NewFile, L".efi.signed", 0);
-   if (FileExists(Volume->RootDir, NewFile))
-      retval = TRUE;
-   MyFreePool(NewFile);
+   if (NewFile != NULL) {
+      CleanUpPathNameSlashes(NewFile);
+      if (FileExists(Volume->RootDir, NewFile))
+         retval = TRUE;
+      MyFreePool(NewFile);
+   } // if
 
    return retval;
 } // BOOLEAN HasSignedCounterpart()
@@ -1270,8 +1273,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
     BOOLEAN                 FoundFallbackDuplicate = FALSE;
 
     if ((!SelfDirPath || !Path || ((StriCmp(Path, SelfDirPath) == 0) && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
-           (StriCmp(Path, SelfDirPath) != 0)) &&
-           (ShouldScan(Volume, Path))) {
+           (StriCmp(Path, SelfDirPath) != 0)) && (ShouldScan(Volume, Path))) {
        // look through contents of the directory
        DirIterOpen(Volume->RootDir, Path, &DirIter);
        while (DirIterNext(&DirIter, 2, Pattern, &DirEntry)) {
