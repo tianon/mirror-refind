@@ -1,5 +1,12 @@
-refind (0.7.8-0ubuntu1) UNRELEASED; urgency=low
+refind (0.8.0-0ubuntu1) trusty; urgency=medium
 
+  * Updated for version 0.8.0
+
+ -- Rod Smith <rodsmith@louiswu.rodsbooks.com>  Fri, 16 May 2014 09:01:45 -0400
+
+refind (0.7.8-0ubuntu1) trusty; urgency=low
+
+  [ Roderick W. Smith ]
   * Initial release. (Closes: #1136112)
 
- -- Roderick W. Smith <rod.smith@canonical.com>  Sun, 9 Mar 2014 07:59:50 -0500
+ -- Rod Smith <rodsmith@louiswu.rodsbooks.com>  Sun, 9 Mar 2014 07:59:50 -0500
