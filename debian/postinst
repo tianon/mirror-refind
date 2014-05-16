@@ -1,0 +1,42 @@
+#!/bin/bash
+# Post-installation script (run on USER'S system after installing the
+# main rEFInd package)
+
+set -e
+
+# Remove any existing NVRAM entry for rEFInd, to avoid creating a duplicate.
+ExistingEntry=`efibootmgr | grep "rEFInd Boot Manager" | cut -c 5-8`
+if [[ -n $ExistingEntry ]] ; then
+   efibootmgr --bootnum $ExistingEntry --delete-bootnum
+fi
+
+cd /usr/share/refind-0.8.1
+
+declare VarFile=`ls -d /sys/firmware/efi/vars/SecureBoot* 2> /dev/null`
+# Note: Two find operations for ShimFile favors shim over PreLoader -- if both are
+# present, the script uses shim rather than PreLoader.
+declare ShimFile=`find /boot -name shim\.efi -o -name shimx64\.efi -o -name PreLoader\.efi 2> /dev/null | head -n 1`
+if [[ ! -n $ShimFile ]] ; then
+   declare ShimFile=`find /boot -name PreLoader\.efi 2> /dev/null | head -n 1`
+fi
+declare SBSign=`which sbsign 2> /dev/null`
+declare OpenSSL=`which openssl 2> /dev/null`
+
+# Run the rEFInd installation script. Do so with the --shim option
+# if Secure Boot mode is suspected and if a shim program can be
+# found, or without it if not. If a shim installation is attempted
+# and the sbsign and openssl programs can be found, do the install
+# using a local signing key. Note that this option is undesirable
+# for a distribution, since it would then require the user to
+# enroll an extra MOK. I'm including it here because I'm NOT a
+# distribution maintainer, and I want to encourage users to use
+# their own local keys.
+if [[ -n $VarFile && -n $ShimFile ]] ; then
+   if [[ -n $SBSign && -n $OpenSSL ]] ; then
+      ./install.sh --shim $ShimFile --localkeys --yes
+   else
+      ./install.sh --shim $ShimFile --yes
+   fi
+else
+   ./install.sh --yes
+fi
