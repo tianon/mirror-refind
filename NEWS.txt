@@ -1,4 +1,4 @@
-0.8.1 (5/??/2014):
+0.8.1 (5/15/2014):
 ------------------
 
 - Fixed bug that could cause rEFInd to fail to detect boot loaders stored
@@ -14,7 +14,7 @@
 - Improved centering of legacy boot option descriptions on some systems'
   screens.
 
-- Fixed bug that could cause a BIOS-mode boot to launch an inappropriate
+- Fixed bug that could cause a BIOS-mode boot to boot from an inappropriate
   device if that device had an innately high boot priority (as set by the
   firmware).
 
