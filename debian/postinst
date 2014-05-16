@@ -10,7 +10,7 @@ if [[ -n $ExistingEntry ]] ; then
    efibootmgr --bootnum $ExistingEntry --delete-bootnum
 fi
 
-cd /usr/share/refind-0.8.1
+cd /usr/share/refind
 
 declare VarFile=`ls -d /sys/firmware/efi/vars/SecureBoot* 2> /dev/null`
 # Note: Two find operations for ShimFile favors shim over PreLoader -- if both are

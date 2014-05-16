@@ -1,7 +1,6 @@
 #!/bin/bash
 
 BUILD_ROOT=$1
-VERSION=0.8.1
 KEYDIR=/mnt/refind
 
 UNAMEARCH=`uname -m`
@@ -14,37 +13,37 @@ else
 fi
 
 rm -rf $BUILD_ROOT
-mkdir -p $BUILD_ROOT/usr/share/refind-$VERSION/refind/
+mkdir -p $BUILD_ROOT/usr/share/refind/refind/
 
-# Copy the rEFInd binaries (rEFInd proper and drivers) to /usr/share/refind-$VERSION,
+# Copy the rEFInd binaries (rEFInd proper and drivers) to /usr/share/refind,
 # including signing the binaries if sbsign is installed and a $KEYDIR/refind.key file
 # is available
 declare SBSign=`which sbsign 2> /dev/null`
 if [[ -f $KEYDIR/refind.key && -x $SBSign ]] ; then
-   $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind-$VERSION/refind/refind_$EFIARCH.efi refind/refind_$EFIARCH.efi
-   mkdir -p $BUILD_ROOT/usr/share/refind-$VERSION/refind/drivers_$EFIARCH
+   $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind/refind/refind_$EFIARCH.efi refind/refind_$EFIARCH.efi
+   mkdir -p $BUILD_ROOT/usr/share/refind/refind/drivers_$EFIARCH
    for File in `ls drivers_$EFIARCH/*_x64.efi` ; do
-      $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind-$VERSION/refind/$File $File
+      $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind/refind/$File $File
    done
-   mkdir -p $BUILD_ROOT/usr/share/refind-$VERSION/refind/tools_$EFIARCH
-   $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind-$VERSION/refind/tools_$EFIARCH/gptsync_$EFIARCH.efi gptsync/gptsync_$EFIARCH.efi
+   mkdir -p $BUILD_ROOT/usr/share/refind/refind/tools_$EFIARCH
+   $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind/refind/tools_$EFIARCH/gptsync_$EFIARCH.efi gptsync/gptsync_$EFIARCH.efi
 else
-   install -Dp -m0644 refind/refind*.efi $BUILD_ROOT/usr/share/refind-$VERSION/refind/
-   mkdir -p $BUILD_ROOT/usr/share/refind-$VERSION/refind/drivers_$EFIARCH
-   cp -a drivers_$EFIARCH/* $BUILD_ROOT/usr/share/refind-$VERSION/refind/drivers_$EFIARCH/
-   mkdir -p $BUILD_ROOT/usr/share/refind-$VERSION/refind/tools_$EFIARCH
-   install -Dp -m0644 gptsync/gptsync_$EFIARCH.efi $BUILD_ROOT/usr/share/refind-$VERSION/refind/tools_$EFIARCH/gptsync_$EFIARCH.efi
+   install -Dp -m0644 refind/refind*.efi $BUILD_ROOT/usr/share/refind/refind/
+   mkdir -p $BUILD_ROOT/usr/share/refind/refind/drivers_$EFIARCH
+   cp -a drivers_$EFIARCH/* $BUILD_ROOT/usr/share/refind/refind/drivers_$EFIARCH/
+   mkdir -p $BUILD_ROOT/usr/share/refind/refind/tools_$EFIARCH
+   install -Dp -m0644 gptsync/gptsync_$EFIARCH.efi $BUILD_ROOT/usr/share/refind/refind/tools_$EFIARCH/gptsync_$EFIARCH.efi
 fi
 
-# Copy configuration and support files to /usr/share/refind-$VERSION
-install -Dp -m0644 refind.conf-sample $BUILD_ROOT/usr/share/refind-$VERSION/refind/
-cp -a icons $BUILD_ROOT/usr/share/refind-$VERSION/refind/
-install -Dp -m0755 install.sh $BUILD_ROOT/usr/share/refind-$VERSION/
+# Copy configuration and support files to /usr/share/refind
+install -Dp -m0644 refind.conf-sample $BUILD_ROOT/usr/share/refind/refind/
+cp -a icons $BUILD_ROOT/usr/share/refind/refind/
+install -Dp -m0755 install.sh $BUILD_ROOT/usr/share/refind/
 
-# Copy documentation to /usr/share/doc/refind-$VERSION
-mkdir -p $BUILD_ROOT/usr/share/doc/refind-$VERSION
-cp -a docs/* $BUILD_ROOT/usr/share/doc/refind-$VERSION/
-install -Dp -m0644 NEWS.txt COPYING.txt LICENSE.txt README.txt CREDITS.txt $BUILD_ROOT/usr/share/doc/refind-$VERSION
+# Copy documentation to /usr/share/doc/refind
+mkdir -p $BUILD_ROOT/usr/share/doc/refind
+cp -a docs/* $BUILD_ROOT/usr/share/doc/refind/
+install -Dp -m0644 NEWS.txt COPYING.txt LICENSE.txt README.txt CREDITS.txt $BUILD_ROOT/usr/share/doc/refind
 
 # Copy keys to /etc/refind.d/keys
 mkdir -p $BUILD_ROOT/etc/refind.d/keys
@@ -55,7 +54,7 @@ mkdir -p $BUILD_ROOT/usr/sbin
 install -Dp -m0755 mkrlconf.sh $BUILD_ROOT/usr/sbin/
 install -Dp -m0755 mvrefind.sh $BUILD_ROOT/usr/sbin/
 
-# Copy banners and fonts to /usr/share/refind-$VERSION
-cp -a banners $BUILD_ROOT/usr/share/refind-$VERSION/
-cp -a fonts $BUILD_ROOT/usr/share/refind-$VERSION/
+# Copy banners and fonts to /usr/share/refind
+cp -a banners $BUILD_ROOT/usr/share/refind/
+cp -a fonts $BUILD_ROOT/usr/share/refind/
 

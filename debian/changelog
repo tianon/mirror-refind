@@ -1,12 +1,18 @@
-refind (0.8.0-0ubuntu1) trusty; urgency=medium
+refind (0.8.1-0ppa2) trusty; urgency=medium
+
+  * Revised Debian package to not use version numbers in /usr/share directory names
+
+ -- Rod Smith <rodsmith@louiswu.rodsbooks.com>  Fri, 16 May 2014 14:57:11 -0400
+
+refind (0.8.0-0ppa1) trusty; urgency=medium
 
   * Updated for version 0.8.0
 
- -- Rod Smith <rodsmith@louiswu.rodsbooks.com>  Fri, 16 May 2014 09:01:45 -0400
+ -- Rod Smith <rod.smith@canonical.com>  Fri, 16 May 2014 09:01:45 -0400
 
-refind (0.7.8-0ubuntu1) trusty; urgency=low
+refind (0.7.8-0ppa1) trusty; urgency=low
 
   [ Roderick W. Smith ]
   * Initial release. (Closes: #1136112)
 
- -- Rod Smith <rodsmith@louiswu.rodsbooks.com>  Sun, 9 Mar 2014 07:59:50 -0500
+ -- Rod Smith <rod.smith@canonical.com>  Sun, 9 Mar 2014 07:59:50 -0500
