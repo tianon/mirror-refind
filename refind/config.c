@@ -510,7 +510,7 @@ VOID ReadConfig(CHAR16 *FileName)
                  GlobalConfig.ScanFor[i] = ' ';
            }
 
-        } else if (StriCmp(TokenList[0], L"deep_uefi_legacy_scan") == 0) {
+        } else if (StriCmp(TokenList[0], L"uefi_deep_legacy_scan") == 0) {
            GlobalConfig.DeepLegacyScan = HandleBoolean(TokenList, TokenCount);
 
         } else if ((StriCmp(TokenList[0], L"scan_delay") == 0) && (TokenCount == 2)) {
