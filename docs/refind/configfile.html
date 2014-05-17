@@ -284,8 +284,8 @@ timeout 20
 </tr>
 <tr>
    <td><tt>textonly</tt></td>
-   <td>none or <tt>0</tt></td>
-   <td>rEFInd defaults to a graphical mode; however, if you prefer to do without the flashy graphics, you can run it in text mode by including this option. Passing any option but <tt>0</tt> causes text mode to be used; passing a <tt>0</tt> causes graphics mode to be used. (This could be useful if you want to override a text-mode setting in an included secondary configuration file.)</td>
+   <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
+   <td>rEFInd defaults to a graphical mode; however, if you prefer to do without the flashy graphics, you can run it in text mode by including this option (alone or with <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>). Passing <tt>false</tt>, <tt>off</tt>, or <tt>0</tt> causes graphics mode to be used. (This could be useful if you want to override a text-mode setting in an included secondary configuration file.)</td>
 </tr>
 <tr>
    <td><tt>textmode</tt></td>
@@ -311,6 +311,11 @@ timeout 20
    <td><tt>scanfor</tt></td>
    <td><tt>internal</tt>, <tt>external</tt>, <tt>optical</tt>, <tt>hdbios</tt>, <tt>biosexternal</tt>, <tt>cd</tt>, and <tt>manual</tt></td>
    <td>Tells rEFInd what methods to use to locate boot loaders. The <tt>internal</tt>, <tt>external</tt>, and <tt>optical</tt> parameters tell rEFInd to scan for EFI boot loaders on internal, external, and optical (CD, DVD, and Blu-ray) devices, respectively. The <tt>hdbios</tt>, <tt>biosexternal</tt>, and <tt>cd</tt> parameters are similar, but scan for BIOS boot loaders. (Note that the BIOS options scan more thoroughly and actively on Macs than on UEFI-based PCs; for the latter, only options in the firmware's boot list are scanned, as described on the <a href="using.html">Using rEFInd</a> page.) The <tt>manual</tt> parameter tells rEFInd to scan the configuration file for manual settings. You can specify multiple parameters to have the program scan for multiple boot loader types. When you do so, the order determines the order in which the boot loaders appear in the menu. The default is <tt>internal, external, optical, manual</tt> on most systems, but <tt>internal, hdbios, external, biosexternal, optical, cd, manual</tt> on Macs.</td>
+</tr>
+<tr>
+   <td><tt>deep_uefi_legacy_scan</tt></td>
+   <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
+   <td>Tells rEFInd how aggressively to scan for BIOS/CSM/legacy boot loaders on UEFI-based PCs. Ordinarily or if this option is set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, rEFInd presents only those options that were available in the NVRAM when it launched. When uncommented with no option or with <tt>true</tt>, <tt>on</tt>, or <tt>1</tt> set, rEFInd adds every possible BIOS-mode boot device (of types specified by <tt>scanfor</tt>) as a BIOS/CSM/legacy boot option. This latter behavior is sometimes required to detect USB flash drives or hard disks beyond the first one.</td>
 </tr>
 <tr>
    <td><tt>scan_delay</tt></td>
@@ -344,8 +349,8 @@ timeout 20
 </tr>
 <tr>
    <td><tt>scan_all_linux_kernels</tt></td>
-   <td>none or <tt>0</tt></td>
-   <td>When set, causes rEFInd to add Linux kernels (files with names that begin with <tt>vmlinuz</tt> or <tt>bzImage</tt>) to the list of EFI boot loaders, even if they lack <tt>.efi</tt> filename extensions. This simplifies use of rEFInd on most Linux distributions, which usually provide kernels with EFI stub loader support but don't give those kernels names that end in <tt>.efi</tt>. Of course, the kernels must still be stored on a filesystem that rEFInd can read, and in a directory that it scans. (<a href="drivers.html">Drivers</a> and the <tt>also_scan_dirs</tt> options can help with those issues.) As of version 0.5.0, this option is enabled in the default configuration file. The program default remains to not scan for such kernels, though, so you can delete or uncomment this option to keep them from appearing in your boot menu. Passing any option but <tt>0</tt> causes scans for all kernels to occur; passing a <tt>0</tt> causes these kernels to not be scanned. (This could be useful if you want to override a setting of <tt>scan_all_linux_kernels</tt> in an included secondary configuration file.)</td>
+   <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
+   <td>When uncommented or set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, causes rEFInd to add Linux kernels (files with names that begin with <tt>vmlinuz</tt> or <tt>bzImage</tt>) to the list of EFI boot loaders, even if they lack <tt>.efi</tt> filename extensions. This simplifies use of rEFInd on most Linux distributions, which usually provide kernels with EFI stub loader support but don't give those kernels names that end in <tt>.efi</tt>. Of course, the kernels must still be stored on a filesystem that rEFInd can read, and in a directory that it scans. (<a href="drivers.html">Drivers</a> and the <tt>also_scan_dirs</tt> options can help with those issues.) As of version 0.5.0, this option is enabled in the default configuration file. The program default remains to not scan for such kernels, though, so you can delete or uncomment this option to keep them from appearing in your boot menu. Passing <tt>false</tt>, <tt>off</tt>, or <tt>0</tt> causes these kernels to not be scanned. (This could be useful if you want to override a setting of <tt>scan_all_linux_kernels</tt> in an included secondary configuration file.)</td>
 </tr>
 <tr>
    <td><tt>max_tags</tt></td>

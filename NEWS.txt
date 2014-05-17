@@ -1,3 +1,14 @@
+0.8.2 (5/??/2014):
+------------------
+
+- Added "deep_uefi_legacy_scan" token. When not set (the default), rEFInd
+  does not modify EFI NVRAM settings when scanning for BIOS-mode boot
+  loaders on UEFI-based (non-Mac) computers. Some computers require
+  uncommenting this setting for rEFInd to reliably detect some BIOS-mode
+  boot devices. Passing "0", "off", or "false" as an option resets it to
+  the default value (useful in a loaded secondary configuration file to
+  override a setting in the main file).
+
 0.8.1 (5/15/2014):
 ------------------
 

@@ -207,6 +207,15 @@ timeout 20
 #
 #scanfor internal,external,optical,manual
 
+# By default, rEFInd relies on the UEFI firmware to detect BIOS-mode boot
+# devices. This sometimes doesn't detect all the available devices, though.
+# For these cases, deep_uefi_legacy_scan results in a forced scan and
+# modification of NVRAM variables on each boot. Adding "0", "off", or
+# "false" resets to the default value. This token has no effect on Macs or
+# when no BIOS-mode options are set via scanfor.
+# Default is unset (or "deep_uefi_legacy_scan true")
+#deep_uefi_legacy_scan
+
 # Delay for the specified number of seconds before scanning disks.
 # This can help some users who find that some of their disks
 # (usually external or optical discs) aren't detected initially,

@@ -139,7 +139,7 @@ static REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL
                                             L"Insert or F2 for more options; Esc to refresh" };
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
-REFIT_CONFIG GlobalConfig = { FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
+REFIT_CONFIG GlobalConfig = { FALSE, FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
                               { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE }, BANNER_NOSCALE,
                               NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY, TAG_MOK_TOOL,
@@ -168,7 +168,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.1");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.1.1");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -1737,9 +1737,6 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
 } /* static LEGACY_ENTRY * AddLegacyEntry() */
 
 
-// #ifdef __MAKEWITH_GNUEFI
-// static VOID ScanLegacyUEFI(IN UINTN DiskType){}
-// #else
 // default volume badge icon based on disk kind
 static EG_IMAGE * GetDiskBadge(IN UINTN DiskType) {
    EG_IMAGE * Badge = NULL;
@@ -1891,7 +1888,6 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
         Index++;
     } // while
 } /* static VOID ScanLegacyUEFI() */
-//#endif // __MAKEWITH_GNUEFI
 
 static VOID ScanLegacyVolume(REFIT_VOLUME *Volume, UINTN VolumeIndex) {
    UINTN VolumeIndex2;
@@ -2214,8 +2210,8 @@ static VOID ScanForBootloaders(VOID) {
          ScanForLegacy = TRUE;
    } // for
 
-   // If UEFI & scanning for legacy loaders, update NVRAM boot manager list
-   if ((GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) && ScanForLegacy) {
+   // If UEFI & scanning for legacy loaders & deep legacy scan, update NVRAM boot manager list
+   if ((GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) && ScanForLegacy && GlobalConfig.DeepLegacyScan) {
       BdsDeleteAllInvalidLegacyBootOptions();
       BdsAddNonExistingLegacyBootOptions();
    } // if

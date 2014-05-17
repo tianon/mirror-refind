@@ -372,6 +372,18 @@ static UINTN HandleTime(IN CHAR16 *TimeString) {
    return (Hour * 60 + Minute);
 } // BOOLEAN HandleTime()
 
+static BOOLEAN HandleBoolean(IN CHAR16 **TokenList, IN UINTN TokenCount) {
+   BOOLEAN TruthValue = TRUE;
+
+   if ((TokenCount >= 2) && ((StriCmp(TokenList[1], L"0") == 0) ||
+                             (StriCmp(TokenList[1], L"false") == 0) ||
+                             (StriCmp(TokenList[1], L"off") == 0))) {
+      TruthValue = FALSE;
+   } // if
+
+   return TruthValue;
+} // BOOLEAN HandleBoolean
+
 // Sets the default boot loader IF the current time is within the bounds
 // defined by the third and fourth tokens in the TokenList.
 static VOID SetDefaultByTime(IN CHAR16 **TokenList, OUT CHAR16 **Default) {
@@ -498,6 +510,9 @@ VOID ReadConfig(CHAR16 *FileName)
                  GlobalConfig.ScanFor[i] = ' ';
            }
 
+        } else if (StriCmp(TokenList[0], L"deep_uefi_legacy_scan") == 0) {
+           GlobalConfig.DeepLegacyScan = HandleBoolean(TokenList, TokenCount);
+
         } else if ((StriCmp(TokenList[0], L"scan_delay") == 0) && (TokenCount == 2)) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.ScanDelay));
 
@@ -595,11 +610,12 @@ VOID ReadConfig(CHAR16 *FileName)
            }
 
         } else if (StriCmp(TokenList[0], L"textonly") == 0) {
-           if ((TokenCount >= 2) && (StriCmp(TokenList[1], L"0") == 0)) {
-              GlobalConfig.TextOnly = FALSE;
-           } else {
-              GlobalConfig.TextOnly = TRUE;
-           }
+           GlobalConfig.TextOnly = HandleBoolean(TokenList, TokenCount);
+//            if ((TokenCount >= 2) && (StriCmp(TokenList[1], L"0") == 0)) {
+//               GlobalConfig.TextOnly = FALSE;
+//            } else {
+//               GlobalConfig.TextOnly = TRUE;
+//            }
 
         } else if (StriCmp(TokenList[0], L"textmode") == 0) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.RequestedTextMode));
@@ -635,11 +651,12 @@ VOID ReadConfig(CHAR16 *FileName)
            egLoadFont(TokenList[1]);
 
         } else if (StriCmp(TokenList[0], L"scan_all_linux_kernels") == 0) {
-           if ((TokenCount >= 2) && (StriCmp(TokenList[1], L"0") == 0)) {
-              GlobalConfig.ScanAllLinux = FALSE;
-           } else {
-              GlobalConfig.ScanAllLinux = TRUE;
-           }
+           GlobalConfig.ScanAllLinux = HandleBoolean(TokenList, TokenCount);
+//            if ((TokenCount >= 2) && (StriCmp(TokenList[1], L"0") == 0)) {
+//               GlobalConfig.ScanAllLinux = FALSE;
+//            } else {
+//               GlobalConfig.ScanAllLinux = TRUE;
+//            }
 
         } else if (StriCmp(TokenList[0], L"max_tags") == 0) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.MaxTags));
