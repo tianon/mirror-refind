@@ -47,7 +47,7 @@
 #include "../refind/lib.h"
 #include "../include/refit_call_wrapper.h"
 #include "libeg.h"
-#include "Handle.h"
+#include "../include/Handle.h"
 
 #include <efiUgaDraw.h>
 #include <efiConsoleControl.h>

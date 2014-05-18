@@ -17,7 +17,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #else
 #include "gnuefi-helper.h"
 #endif
-#include "refit_call_wrapper.h"
+#include "../include/refit_call_wrapper.h"
 
 /**
 

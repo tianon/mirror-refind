@@ -29,7 +29,7 @@ ifeq ($(ARCH),x86_64)
   LD_CODE = elf_x86_64
 endif
 
-EDK2BASE = /usr/local/UDK2010/MyWorkSpace
+EDK2BASE = /usr/local/UDK2014/MyWorkSpace
 #EDK2BASE = /usr/local/edk2
 
 # Below file defines TARGET (RELEASE or DEBUG) and TOOL_CHAIN_TAG (GCC44, GCC45, or GCC46)
@@ -100,7 +100,7 @@ $(DLL_TARGET): $(OBJS)
 	$(LD) -o gptsync_$(FILENAME_CODE).dll $(LDFLAGS) --start-group $(ALL_EFILIBS) $(OBJS) --end-group
 
 $(BUILDME): $(DLL_TARGET)
-	$(OBJCOPY) --strip-unneeded $(DLL_TARGET)
+	$(OBJCOPY) --strip-unneeded -R .eh_frame $(DLL_TARGET)
 	$(GENFW) -e UEFI_APPLICATION -o $(BUILDME) $(DLL_TARGET)
 
 endif

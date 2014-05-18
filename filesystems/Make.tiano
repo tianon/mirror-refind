@@ -29,7 +29,7 @@ ifeq ($(ARCH),x86_64)
   LD_CODE = elf_x86_64
 endif
 
-EDK2BASE = /usr/local/UDK2010/MyWorkSpace
+EDK2BASE = /usr/local/UDK2014/MyWorkSpace
 #EDK2BASE = /usr/local/edk2
 
 # Below file defines TARGET (RELEASE or DEBUG) and TOOL_CHAIN_TAG (GCC44, GCC45, or GCC46)
@@ -92,7 +92,7 @@ $(DLL_TARGET): $(OBJS) fsw_$(DRIVERNAME).obj
 	$(LD) -o $(DRIVERNAME)_$(FILENAME_CODE).dll $(LDFLAGS) --start-group $(ALL_EFILIBS) $(OBJS) fsw_$(DRIVERNAME).obj --end-group
 
 $(BUILDME): $(DLL_TARGET)
-	$(OBJCOPY) --strip-unneeded $(DLL_TARGET)
+	$(OBJCOPY) --strip-unneeded -R .eh_frame $(DLL_TARGET)
 	$(GENFW) -e UEFI_DRIVER -o $(BUILDME) $(DLL_TARGET)
 #	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel \
 #		   -j .rela -j .reloc --rename-section .data=.hii --target=efi-bsdrv-$(ARCH) $< $@

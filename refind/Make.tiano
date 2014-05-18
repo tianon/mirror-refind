@@ -26,6 +26,7 @@ ALL_EFILIBS     = $(EFILIB)/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevel
                   $(EFILIB)/DxeHobLib/DxeHobLib/OUTPUT/DxeHobLib.lib \
                   $(EFILIB)/BaseIoLibIntrinsic/BaseIoLibIntrinsic/OUTPUT/BaseIoLibIntrinsic.lib \
                   $(EFILIB)/BasePeCoffLib/BasePeCoffLib/OUTPUT/BasePeCoffLib.lib
+#		  $(EFILIB)/BasePerformanceLibNull/BasePerformanceLibNull/OUTPUT/BasePerformanceLibNull.lib \
 #		  /usr/local/UDK2010/MyWorkSpace/Build/Mde/RELEASE_GCC46/X64/MdePkg/Library/SecPeiDxeTimerLibCpu/SecPeiDxeTimerLibCpu/OUTPUT/SecPeiDxeTimerLibCpu.lib \
 #		  /usr/local/UDK2010/MyWorkSpace/Build/MdeModule/RELEASE_GCC46/X64/MdeModulePkg/Core/Dxe/DxeMain/OUTPUT/DxeCore.lib \
 #		  /usr/local/UDK2010/MyWorkSpace/Build/Mde/RELEASE_GCC46/X64/MdePkg/Library/BaseCacheMaintenanceLib/BaseCacheMaintenanceLib/OUTPUT/BaseCacheMaintenanceLib.lib \
@@ -46,7 +47,7 @@ $(DLL_TARGET)_$(FILENAME_CODE).dll: $(OBJS) ../libeg/libeg.lib ../EfiLib/EfiLib.
 	$(LD) -o $(DLL_TARGET)_$(FILENAME_CODE).dll $(LDFLAGS) --start-group $(ALL_EFILIBS) $(OBJS) ../libeg/libeg.lib ../EfiLib/EfiLib.lib ../mok/mok.lib --end-group
 
 $(BUILDME): $(DLL_TARGET)_$(FILENAME_CODE).dll
-	$(OBJCOPY) --strip-unneeded $(DLL_TARGET)_$(FILENAME_CODE).dll
+	$(OBJCOPY) --strip-unneeded -R .eh_frame $(DLL_TARGET)_$(FILENAME_CODE).dll
 	$(GENFW) -e UEFI_APPLICATION -o $(BUILDME)_$(FILENAME_CODE).efi $(DLL_TARGET)_$(FILENAME_CODE).dll
 
 clean:

@@ -49,7 +49,7 @@ when paired with Linux kernels that provide EFI stub support.
 %setup -q
 
 %build
-if [[ -d /usr/local/UDK2010 ]] ; then
+if [[ -d /usr/local/UDK2014 ]] ; then
    make
    make fs
 else

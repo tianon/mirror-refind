@@ -15,30 +15,22 @@ To compile rEFInd, you'll need the following:
 * One of the following:
 
   * The TianoCore EDK2 package
-    (http://sourceforge.net/projects/tianocore/). I've tested using the
-    UDK2010.SR1 and UDK2010.SR1.UP1 variants
-    (http://sourceforge.net/apps/mediawiki/tianocore/index.php?title=UDK2010),
-    which are "frozen," rather than the main EDK2 development branch, which
-    is changing as the developers add features, fix bugs, and so on. Using
-    TianoCore EDK2 is supported in rEFInd version 0.4.3 and later (0.4.0
-    and later for the filesystem drivers only). See below for TianoCore
-    setup instructions.
+    (http://sourceforge.net/projects/tianocore/). I initially used the
+    UDK2010 package and others in that series, but beginning with rEFInd
+    0.8.2, I've been using UDK2014
+    (http://sourceforge.net/apps/mediawiki/tianocore/index.php?title=UDK2014).
+    All of the UDK release are "frozen," rather than the main EDK2
+    development branch, which is changing as the developers add features,
+    fix bugs, and so on. See below for TianoCore setup instructions.
 
   * The GNU-EFI package (http://sourceforge.net/projects/gnu-efi/). You can
     install this from a package called "gnu-efi"; however, rEFInd relies on
-    features that were added in (I think) 3.0l to provide driver-loading
-    capabilities. The versions I've used and that work are 3.0p, 3.0q,
-    3.0r, 3.0s, and 3.0u, with a caveat: The new time-sensitive
-    default_selection feature causes rEFInd to hang when using 3.0s and
-    earlier. 3.0u works fine for this (tested with compilation on three
-    computers). I don't know if 3.0t would work. Through mid-to-late 2012,
-    most Linux distributions delivered rather elderly versions of GNU-EFI,
-    but many are catching up by late 2012. You should check your GNU-EFI
-    version number; you may need to download the latest source code,
-    compile it, and install it locally. Between rEFInd version 0.2.7 and
-    0.6.1, the Makefiles assumed a locally-compiled GNU-EFI package, but
-    older and more recent versions assume GNU-EFI installation in typical
-    locations for distribution-provided packages.
+    features that were added sometime between version 3.0s and 3.0u, so I
+    recommend using 3.0u (or conceivably later). You should check your
+    GNU-EFI version number; you may need to download the latest source
+    code, compile it, and install it locally. The Makefiles assume a
+    GNU-EFI package installed via a package manager. If you install from
+    source code, you may need to adjust those Makefiles' paths.
 
 Of the two toolkits, I prefer to use TianoCore because it produces binaries
 that are about 20-30KiB smaller than those made by GNU-EFI, and I can
@@ -47,7 +39,9 @@ had problems on a 32-bit Mac Mini with the drivers produced by GNU-EFI
 hanging the system if I try to load more than one of them. (I haven't
 encountered this problem on UEFI-based PCs.) That said, the TianoCore EDK2
 package is much harder to install, so you may prefer to use GNU-EFI unless
-you have a specific need for the TianoCore toolkit.
+you have a specific need for the TianoCore toolkit. Automated build tools
+like the OpenSUSE Build Service (OBS) and the Ubuntu Personal Package
+Archive (PPA) mechanism don't yet support TianoCore.
 
 It's possible to use a non-Linux platform to compile rEFInd. To the best of
 my knowledge, the rEFInd code doesn't rely on anything Linux-specific in
@@ -90,21 +84,21 @@ you MUST install the kit from source code using its own unusual compilation
 procedure. The installation documentation also omits at least one step and
 is a bit unclear about others. Here's how I installed the toolkit:
 
-1) Download UDK2010.SR1.UP1.P1 from
-   https://sourceforge.net/apps/mediawiki/tianocore/index.php?title=UDK2010.
+1) Download UDK2014.SR1.UP1.P1 from
+   https://sourceforge.net/apps/mediawiki/tianocore/index.php?title=UDK2014.
 
-2) Type "mkdir /usr/local/UDK2010". You can use another directory, but the
+2) Type "mkdir /usr/local/UDK2014". You can use another directory, but the
    Makefile for rEFInd's EFI drivers assumes this location. You'll need to
    edit the EDK2BASE line in the Make.tiano file if you install somewhere
    else.
 
-3) Type "cd /usr/local/UDK2010".
+3) Type "cd /usr/local/UDK2014".
 
-4) Unzip the downloaded file (UDK2010.SR1.UP1.P1.Complete.MyWorkSpace.zip)
-   in the current directory (/usr/local/UDK2010). This creates a handful of
+4) Unzip the downloaded file (UDK2014.SR1.UP1.P1.Complete.MyWorkSpace.zip)
+   in the current directory (/usr/local/UDK2014). This creates a handful of
    files, including a tarball and a couple of .zip files.
 
-5) Type "unzip UDK2010.SR1.UP1.MyWorkSpace.zip". This extracts the
+5) Type "unzip UDK2014.SR1.UP1.MyWorkSpace.zip". This extracts the
    platform-neutral portion of the development kit.
 
 6) Type "cd MyWorkSpace".
@@ -144,12 +138,15 @@ is a bit unclear about others. Here's how I installed the toolkit:
     to:
     *_GCC46_X64_ASM_FLAGS            = DEF(GCC46_ASM_FLAGS) -m64
 
-12) Type "make -C /usr/local/UDK2010/MyWorkSpace/BaseTools/Source/C".
+12) Type "make -C /usr/local/UDK2014/MyWorkSpace/BaseTools/Source/C".
     (This step is not documented on the EDK Web page.) Note that this
     requires the g++ compiler and UUID development libraries.
     
 13) Type "build" to build the main set of EDK2 files. This process is
-    likely to take a few minutes.
+    likely to take a few minutes. This step requires Python 2; if you have
+    Python 3 installed, you may need to adjust the default python for this
+    build (for instance, by typing "eselect python set python2.7" in
+    Gentoo).
 
 If you installed in a location other than the one I've specified, you must
 edit the EDK2BASE variable in the Make.tiano and filesystems/Make.tiano
@@ -203,13 +200,13 @@ to the various GNU-EFI include files and libraries. Since rEFInd 0.6.2, the
 default Make.common file includes the following definitions:
 
 EFIINC          = /usr/include/efi
-GNUEFILIB       = /usr/lib64
-EFILIB          = /usr/lib64
-EFICRT0         = /usr/lib64
+GNUEFILIB       = /usr/lib
+EFILIB          = /usr/lib
+EFICRT0         = /usr/lib
 
 If you've installed GNU-EFI from source code, you may need to add "local"
 to those paths, as in "/usr/local/include/efi". You might need to change
-references to "lib64" to "lib32" or "lib" on some systems. Recall that you
+references to "lib" to "lib32" or "lib64" on some systems. Recall that you
 need at least GNU-EFI version 3.0l to build rEFInd, and until very
 recently, most distributions provided out-of-date versions of this package.
 

@@ -1,9 +1,9 @@
 ## @file
 #
-# refind.inf file to build rEFInd using the EDK2/UDK2010 development
+# refind.inf file to build rEFInd using the EDK2/UDK2010/UDK2014 development
 # kit.
 #
-# Copyright (c) 2012 by Roderick W. Smith
+# Copyright (c) 2012-2014 by Roderick W. Smith
 # Released under the terms of the GPLv3, a copy of which should come
 # with this file.
 #
@@ -32,7 +32,7 @@
   EfiLib/BdsConnect.c #included into GenericBdsLib
   EfiLib/BdsHelper.c
   EfiLib/BdsTianoCore.c
-  EfiLib/Console.c
+  EfiLib/legacy.c
   mok/mok.c
   mok/guid.c
   mok/security_policy.c
@@ -44,6 +44,8 @@
   refind/menu.c
   refind/screen.c
   refind/driver_support.c
+  refind/gpt.c
+  refind/crc32.c
   libeg/image.c
   libeg/load_bmp.c
   libeg/load_icns.c

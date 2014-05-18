@@ -1159,7 +1159,7 @@ DevPathFvFilePath (
 
 **/
 VOID
-DevPathRelativeOffsetRange (
+MyDevPathRelativeOffsetRange (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1459,7 +1459,7 @@ DEVICE_PATH_STRING_TABLE  DevPathTable[] = {
   {
     MEDIA_DEVICE_PATH,
     MEDIA_RELATIVE_OFFSET_RANGE_DP,
-    DevPathRelativeOffsetRange,
+    MyDevPathRelativeOffsetRange,
   },
   {
     BBS_DEVICE_PATH,

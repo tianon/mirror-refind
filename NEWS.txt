@@ -1,6 +1,9 @@
 0.8.2 (5/??/2014):
 ------------------
 
+- I've updated my personal build system, and therefore the rEFInd Makefiles
+  and related files, to use TianoCore UDK2014 rather than UDK2010.
+
 - Added "deep_uefi_legacy_scan" token. When not set (the default), rEFInd
   does not modify EFI NVRAM settings when scanning for BIOS-mode boot
   loaders on UEFI-based (non-Mac) computers. Some computers require

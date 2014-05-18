@@ -23,7 +23,7 @@
 #define EfiReallocatePool ReallocatePool
 #define EfiLibLocateProtocol LibLocateProtocol
 #else
-#include "tiano_includes.h"
+#include "../include/tiano_includes.h"
 #endif
 #include "legacy.h"
 #include "GenericBdsLib.h"
