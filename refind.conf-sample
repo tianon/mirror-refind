@@ -392,7 +392,7 @@ scan_all_linux_kernels
 # specification. Also note that a leading slash is optional in file
 # specifications.
 menuentry Linux {
-	icon EFI/refind/icons/os_linux.icns
+	icon EFI/refind/icons/os_linux.png
 	volume KERNELS
 	loader bzImage-3.3.0-rc7
 	initrd initrd-3.3.0.img
@@ -404,7 +404,7 @@ menuentry Linux {
 # its GRUB 2 boot loader. Note uses of Linux-style forward slashes
 menuentry Ubuntu {
 	loader /EFI/ubuntu/grubx64.efi
-	icon /EFI/refined/icons/os_linux.icns
+	icon /EFI/refined/icons/os_linux.png
 	disabled
 }
 
@@ -429,7 +429,7 @@ menuentry "Windows 7" {
 # could initialize hardware and then launch an OS, or it could
 # do something entirely different.
 menuentry "Windows via shell script" {
-	icon \EFI\refind\icons\os_win.icns
+	icon \EFI\refind\icons\os_win.png
 	loader \EFI\tools\shell.efi
 	options "fs0:\EFI\tools\launch_windows.nsh"
 	disabled
@@ -442,7 +442,7 @@ menuentry "Windows via shell script" {
 # certainly need to change the "volume" line for this example
 # to work.
 menuentry "My Mac OS X" {
-	icon \EFI\refind\icons\os_mac.icns
+	icon \EFI\refind\icons\os_mac.png
 	volume "OS X boot"
 	loader \System\Library\CoreServices\boot.efi
 	disabled

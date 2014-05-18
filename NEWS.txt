@@ -1,6 +1,9 @@
 0.8.2 (5/??/2014):
 ------------------
 
+- Fixed bug that could misidentify a not-quite-GUID as a GUID in a
+  manual boot stanza's "volume" line.
+
 - I've updated my personal build system, and therefore the rEFInd Makefiles
   and related files, to use TianoCore UDK2014 rather than UDK2010.
 

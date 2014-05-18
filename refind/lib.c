@@ -2025,11 +2025,12 @@ BOOLEAN IsGuid(CHAR16 *UnknownString) {
 
    for (i = 0; i < Length; i++) {
       a = UnknownString[i];
-      if (((i == 8) || (i == 13) || (i == 18) || (i == 23)) && (a != '-')) {
-         retval = FALSE;
+      if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
+         if (a != '-')
+            retval = FALSE;
       } else if (((a < 'a') || (a > 'f')) && ((a < 'A') || (a > 'F')) && ((a < '0') && (a > '9'))) {
          retval = FALSE;
-      } // if/else
+      } // if/else if
    } // for
    return retval;
 } // BOOLEAN IsGuid()
