@@ -446,7 +446,27 @@ MountDefaultTarget() {
 MountOSXESP() {
    # Identify the ESP. Note: This returns the FIRST ESP found;
    # if the system has multiple disks, this could be wrong!
-   Temp=`diskutil list | grep " EFI " | grep -o 'disk.*'`
+   Temp=$(mount | sed -n -E "/^(\/dev\/disk[0-9]+s[0-9]+) on \/ \(.*$/s//\1/p")
+   if [ $Temp ]; then
+      Temp=$(diskutil list $Temp | sed -n -E '/^ *[0-9]+:[ ]+EFI EFI[ ]+[0-9.]+ [A-Z]+[ ]+(disk[0-9]+s[0-9]+)$/ { s//\1/p
+             q
+         }' )
+      if [ -z $Temp ]; then
+         echo "Warning: root device doesn't have an EFI partition"
+      fi
+   else
+      echo "Warning: root device could not be found"
+   fi
+   if [ -z $Temp ]; then
+      Temp=$(diskutil list | sed -n -E '/^ *[0-9]+:[ ]+EFI EFI[ ]+[0-9.]+ [A-Z]+[ ]+(disk[0-9]+s[0-9]+)$/ { s//\1/p
+             q
+         }' )
+
+      if [ -z $Temp ]; then
+         echo "Could not find an EFI partition. Aborting!"
+         exit 1
+      fi
+   fi
    Esp=/dev/`echo $Temp`
    # If the ESP is mounted, use its current mount point....
    Temp=`df -P | grep "$Esp"`

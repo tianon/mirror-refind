@@ -266,6 +266,43 @@ static EFI_STATUS FinishInitRefitLib(VOID)
 }
 
 //
+// EFI variable read and write functions
+//
+
+// From gummiboot: Retrieve a raw EFI variable.
+// Returns EFI status
+EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *size) {
+   CHAR8 *buf;
+   UINTN l;
+   EFI_STATUS err;
+
+   l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
+   buf = AllocatePool(l);
+   if (!buf)
+      return EFI_OUT_OF_RESOURCES;
+
+   err = refit_call5_wrapper(RT->GetVariable, name, vendor, NULL, &l, buf);
+   if (EFI_ERROR(err) == EFI_SUCCESS) {
+      *buffer = buf;
+      if (size)
+         *size = l;
+   } else
+      MyFreePool(buf);
+   return err;
+} // EFI_STATUS EfivarGetRaw()
+
+// From gummiboot: Set an EFI variable
+EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
+   UINT32 flags;
+
+   flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+   if (persistent)
+      flags |= EFI_VARIABLE_NON_VOLATILE;
+
+   return refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
+} // EFI_STATUS EfivarSetRaw()
+
+//
 // list functions
 //
 

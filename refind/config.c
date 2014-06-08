@@ -50,6 +50,7 @@
 #include "config.h"
 #include "screen.h"
 #include "../include/refit_call_wrapper.h"
+#include "../mok/mok.h"
 
 // constants
 
@@ -430,6 +431,7 @@ VOID ReadConfig(CHAR16 *FileName)
     CHAR16          *FlagName;
     CHAR16          *TempStr = NULL;
     UINTN           TokenCount, i;
+    EFI_GUID        RefindGuid = REFIND_GUID_VALUE;
 
     // Set a few defaults only if we're loading the default file.
     if (StriCmp(FileName, GlobalConfig.ConfigFilename) == 0) {
@@ -454,6 +456,18 @@ VOID ReadConfig(CHAR16 *FileName)
        MyFreePool(GlobalConfig.DontScanVolumes);
        GlobalConfig.DontScanVolumes = StrDuplicate(DONT_SCAN_VOLUMES);
        GlobalConfig.WindowsRecoveryFiles = StrDuplicate(WINDOWS_RECOVERY_FILES);
+       if (GlobalConfig.DefaultSelection != NULL) {
+          MyFreePool(GlobalConfig.DefaultSelection);
+          GlobalConfig.DefaultSelection = NULL;
+       }
+//       GlobalConfig.DefaultSelection = AllocatePool(255 * sizeof(CHAR16));
+//       Print(L"About to call EfivarGetRaw()\n");
+       Status = EfivarGetRaw(&RefindGuid, L"PreviousBoot", (CHAR8**) &(GlobalConfig.DefaultSelection), &i);
+//       i = 255 * sizeof(CHAR16);
+//       Print(L"About to call RT->GetVariable()\n");
+//       Status = refit_call5_wrapper(RT->GetVariable, L"PreviousBoot", &RefindGuid, &Attributes, &i, GlobalConfig.DefaultSelection);
+       if (Status != EFI_SUCCESS)
+          GlobalConfig.DefaultSelection = NULL;
     } // if
 
     if (!FileExists(SelfDir, FileName)) {

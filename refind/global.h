@@ -148,7 +148,8 @@
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi"
 
-#define NULL_GUID_VALUE { 00000000, 0000, 0000, {0000, 0000, 0000, 0000} };
+#define NULL_GUID_VALUE { 0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} };
+#define REFIND_GUID_VALUE { 0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40} };
 
 //
 // global definitions

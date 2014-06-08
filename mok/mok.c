@@ -47,29 +47,9 @@
 #include "global.h"
 #include "mok.h"
 #include "../include/refit_call_wrapper.h"
+#include "../refind/lib.h"
+#include "../refind/screen.h"
 
-static EFI_STATUS get_variable (CHAR16 *name, EFI_GUID guid, UINT32 *attributes, UINTN *size, VOID **buffer)
-{
-   EFI_STATUS efi_status;
-   char allocate = !(*size);
-
-   efi_status = uefi_call_wrapper(RT->GetVariable, 5, name, &guid, attributes, size, buffer);
-
-   if (efi_status != EFI_BUFFER_TOO_SMALL || !allocate) {
-      return efi_status;
-   }
-
-   *buffer = AllocatePool(*size);
-
-   if (!*buffer) {
-      Print(L"Unable to allocate variable buffer\n");
-      return EFI_OUT_OF_RESOURCES;
-   }
-
-   efi_status = uefi_call_wrapper(RT->GetVariable, 5, name, &guid, attributes, size, *buffer);
-
-   return efi_status;
-} // get_variable()
 
 /*
  * Check whether we're in Secure Boot and user mode
@@ -79,19 +59,16 @@ BOOLEAN secure_mode (VOID)
    EFI_STATUS status;
    EFI_GUID global_var = EFI_GLOBAL_VARIABLE;
    UINTN charsize = sizeof(char);
-   UINT8 sb, setupmode;
-   UINT32 attributes;
+   UINT8 *sb = NULL, *setupmode = NULL;
 
-   status = get_variable(L"SecureBoot", global_var, &attributes, &charsize, (VOID *)&sb);
-
+   status = EfivarGetRaw(&global_var, L"SecureBoot", (CHAR8 **) &sb, &charsize);
    /* FIXME - more paranoia here? */
-   if (status != EFI_SUCCESS || sb != 1) {
+   if (status != EFI_SUCCESS || charsize != sizeof(CHAR8) || *sb != 1) {
       return FALSE;
    }
 
-   status = get_variable(L"SetupMode", global_var, &attributes, &charsize, (VOID *)&setupmode);
-
-   if (status == EFI_SUCCESS && setupmode == 1) {
+   status = EfivarGetRaw(&global_var, L"SetupMode", (CHAR8 **) &setupmode, &charsize);
+   if (status == EFI_SUCCESS && charsize == sizeof(CHAR8) && *setupmode == 1) {
       return FALSE;
    }
 

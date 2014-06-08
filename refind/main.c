@@ -147,6 +147,7 @@ REFIT_CONFIG GlobalConfig = { FALSE, FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MOD
                             };
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
+EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 
 GPT_DATA *gPartitions = NULL;
 
@@ -168,7 +169,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.1.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.1.3");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -385,39 +386,6 @@ static EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
     return StartEFIImageList(DevicePaths, LoadOptions, LoaderType, ImageTitle, OSType, ErrorInStep, Verbose);
 } /* static EFI_STATUS StartEFIImage() */
 
-// From gummiboot: Retrieve a raw EFI variable.
-// Returns EFI status
-static EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *size) {
-   CHAR8 *buf;
-   UINTN l;
-   EFI_STATUS err;
-
-   l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
-   buf = AllocatePool(l);
-   if (!buf)
-      return EFI_OUT_OF_RESOURCES;
-
-   err = refit_call5_wrapper(RT->GetVariable, name, vendor, NULL, &l, buf);
-   if (EFI_ERROR(err) == EFI_SUCCESS) {
-      *buffer = buf;
-      if (size)
-         *size = l;
-   } else
-      MyFreePool(buf);
-   return err;
-} // EFI_STATUS EfivarGetRaw()
-
-// From gummiboot: Set an EFI variable
-static EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
-   UINT32 flags;
-
-   flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
-   if (persistent)
-      flags |= EFI_VARIABLE_NON_VOLATILE;
-
-   return refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
-} // EFI_STATUS EfivarSetRaw()
-
 // From gummiboot: Reboot the computer into its built-in user interface
 static EFI_STATUS RebootIntoFirmware(VOID) {
    CHAR8 *b;
@@ -442,6 +410,20 @@ static EFI_STATUS RebootIntoFirmware(VOID) {
    return err;
 }
 
+// Record the value of the loader's name/description in rEFInd's "PreviousBoot" EFI variable.
+static VOID StoreLoaderName(IN CHAR16 *Name) {
+   EFI_STATUS   Status;
+   CHAR16       *OldName = NULL;
+   UINTN        Length;
+
+   if (Name) {
+      Status = EfivarGetRaw(&RefindGuid, L"PreviousBoot", (CHAR8**) &OldName, &Length);
+      if ((Status != EFI_SUCCESS) || (StrCmp(OldName, Name) != 0)) {
+         EfivarSetRaw(&RefindGuid, L"PreviousBoot", (CHAR8*) Name, StrLen(Name) * 2 + 2, TRUE);
+      } // if
+      MyFreePool(OldName);
+   } // if
+} // VOID StorePreviousLoader()
 
 //
 // EFI OS loader functions
@@ -452,6 +434,7 @@ static VOID StartLoader(LOADER_ENTRY *Entry)
     UINTN ErrorInStep = 0;
 
     BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
+    StoreLoaderName(Entry->me.Title);
     StartEFIImage(Entry->DevicePath, Entry->LoadOptions, TYPE_EFI,
                   Basename(Entry->LoaderPath), Entry->OSType, &ErrorInStep, !Entry->UseGraphicsMode);
     FinishExternalScreen();
@@ -1016,6 +999,8 @@ LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN 
    if (Entry != NULL) {
       Entry->Title = StrDuplicate((LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
       Entry->me.Title = AllocateZeroPool(sizeof(CHAR16) * 256);
+      // Extra space at end of Entry->me.Title enables searching on Volume->VolName even if another volume
+      // name is identical except for something added to the end (e.g., VolB1 vs. VolB12).
       SPrint(Entry->me.Title, 255, L"Boot %s from %s ", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath, Volume->VolName);
       Entry->me.Row = 0;
       Entry->me.BadgeImage = Volume->VolBadgeImage;
@@ -1642,6 +1627,7 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
 
     ExtractLegacyLoaderPaths(DiscoveredPathList, MAX_DISCOVERED_PATHS, LegacyLoaderList);
 
+    StoreLoaderName(Entry->me.Title);
     Status = StartEFIImageList(DiscoveredPathList, Entry->LoadOptions, TYPE_LEGACY, L"legacy loader", 0, &ErrorInStep, TRUE);
     if (Status == EFI_NOT_FOUND) {
         if (ErrorInStep == 1) {
@@ -1658,6 +1644,7 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
 static VOID StartLegacyUEFI(LEGACY_ENTRY *Entry)
 {
     BeginExternalScreen(TRUE, L"Booting Legacy OS (UEFI mode)");
+    StoreLoaderName(Entry->me.Title);
 
     BdsLibConnectDevicePath (Entry->BdsOption->DevicePath);
     BdsLibDoLegacyBoot(Entry->BdsOption);
@@ -1984,6 +1971,7 @@ static VOID ScanLegacyExternal(VOID)
 static VOID StartTool(IN LOADER_ENTRY *Entry)
 {
    BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
+   StoreLoaderName(Entry->me.Title);
    StartEFIImage(Entry->DevicePath, Entry->LoadOptions, TYPE_EFI,
                  Basename(Entry->LoaderPath), Entry->OSType, NULL, TRUE);
    FinishExternalScreen();

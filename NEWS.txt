@@ -1,6 +1,18 @@
 0.8.2 (5/??/2014):
 ------------------
 
+- Changed behavior when default_selection is not set: It now boots the
+  previously-booted loader, assuming it's still available; if not, rEFInd
+  boots the first loader (as it does now). Behavior is unchanged if
+  default_selection is set. Note that this behavior depends on the ability
+  of rEFInd to store an EFI variable in NVRAM. It therefore fails on
+  systems with flaky NVRAM storage. You can view the previously-booted
+  loader in the
+  /sys/firmware/efi/efivars/PreviousBoot-36d08fa7-cf0b-42f5-8f14-68df73ed3740
+  variable under Linux.
+
+- Added icon for Mageia Linux (os_mageia.png).
+
 - Fixed bug that could misidentify a not-quite-GUID as a GUID in a
   manual boot stanza's "volume" line.
 

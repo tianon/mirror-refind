@@ -24,6 +24,7 @@ typedef struct _SHIM_LOCK
 } SHIM_LOCK;
 #endif
 
+//EFI_STATUS get_variable (CHAR16 *name, EFI_GUID guid, UINT32 *attributes, UINTN *size, VOID **buffer);
 BOOLEAN ShimLoaded(void);
 BOOLEAN ShimValidate (VOID *data, UINT32 size);
 BOOLEAN secure_mode (VOID);
