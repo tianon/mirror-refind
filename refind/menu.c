@@ -1156,11 +1156,12 @@ UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
     return RunGenericMenu(Screen, Style, &DefaultEntry, ChosenEntry);
 }
 
-UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN CHAR16* DefaultSelection, OUT REFIT_MENU_ENTRY **ChosenEntry)
+UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_MENU_ENTRY **ChosenEntry)
 {
     MENU_STYLE_FUNC Style = TextMenuStyle;
     MENU_STYLE_FUNC MainStyle = TextMenuStyle;
     REFIT_MENU_ENTRY *TempChosenEntry;
+    CHAR16 *MenuTitle;
     UINTN MenuExit = 0;
     INTN DefaultEntryIndex = -1;
     INTN DefaultSubmenuIndex = -1;
@@ -1168,9 +1169,9 @@ UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN CHAR16* DefaultSelection, OUT
     TileSizes[0] = (GlobalConfig.IconSizes[ICON_SIZE_BIG] * 9) / 8;
     TileSizes[1] = (GlobalConfig.IconSizes[ICON_SIZE_SMALL] * 4) / 3;
 
-    if (DefaultSelection != NULL) {
+    if ((DefaultSelection != NULL) && (*DefaultSelection != NULL)) {
         // Find a menu entry that includes *DefaultSelection as a substring
-        DefaultEntryIndex = FindMenuShortcutEntry(Screen, DefaultSelection);
+        DefaultEntryIndex = FindMenuShortcutEntry(Screen, *DefaultSelection);
     }
 
     if (AllowGraphicsMode) {
@@ -1182,6 +1183,7 @@ UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN CHAR16* DefaultSelection, OUT
         MenuExit = RunGenericMenu(Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);
         Screen->TimeoutSeconds = 0;
 
+        MenuTitle = StrDuplicate(TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {
                MenuExit = RunGenericMenu(TempChosenEntry->SubScreen, Style, &DefaultSubmenuIndex, &TempChosenEntry);
@@ -1199,5 +1201,9 @@ UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN CHAR16* DefaultSelection, OUT
 
     if (ChosenEntry)
         *ChosenEntry = TempChosenEntry;
+    if (DefaultSelection) {
+       MyFreePool(*DefaultSelection);
+       *DefaultSelection = MenuTitle;
+    } // if
     return MenuExit;
 } /* UINTN RunMainMenu() */

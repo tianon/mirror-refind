@@ -319,10 +319,20 @@ static VOID HandleInt(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT UINTN *Val
 
 // handle a parameter with a single string argument
 static VOID HandleString(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16 **Target) {
-   if (TokenCount == 2) {
-      MyFreePool(*Target);
-      *Target = StrDuplicate(TokenList[1]);
+   if ((TokenCount == 2) && Target) {
+      if ((StrLen(TokenList[1]) > 1) && (TokenList[1][0] == L'+') &&
+          ((TokenList[1][1] == L',') || (TokenList[1][1] == L' '))) {
+         if (*Target) {
+            MergeStrings(Target, TokenList[1] + 2, L',');
+         } else {
+            *Target = StrDuplicate(TokenList[1] + 2);
+         } // if/else
+      } else {
+         MyFreePool(*Target);
+         *Target = StrDuplicate(TokenList[1]);
+      } // if/else
    } // if
+   PauseForKey();
 } // static VOID HandleString()
 
 // Handle a parameter with a series of string arguments, to replace or be added to a
@@ -460,12 +470,7 @@ VOID ReadConfig(CHAR16 *FileName)
           MyFreePool(GlobalConfig.DefaultSelection);
           GlobalConfig.DefaultSelection = NULL;
        }
-//       GlobalConfig.DefaultSelection = AllocatePool(255 * sizeof(CHAR16));
-//       Print(L"About to call EfivarGetRaw()\n");
        Status = EfivarGetRaw(&RefindGuid, L"PreviousBoot", (CHAR8**) &(GlobalConfig.DefaultSelection), &i);
-//       i = 255 * sizeof(CHAR16);
-//       Print(L"About to call RT->GetVariable()\n");
-//       Status = refit_call5_wrapper(RT->GetVariable, L"PreviousBoot", &RefindGuid, &Attributes, &i, GlobalConfig.DefaultSelection);
        if (Status != EFI_SUCCESS)
           GlobalConfig.DefaultSelection = NULL;
     } // if
@@ -625,11 +630,6 @@ VOID ReadConfig(CHAR16 *FileName)
 
         } else if (StriCmp(TokenList[0], L"textonly") == 0) {
            GlobalConfig.TextOnly = HandleBoolean(TokenList, TokenCount);
-//            if ((TokenCount >= 2) && (StriCmp(TokenList[1], L"0") == 0)) {
-//               GlobalConfig.TextOnly = FALSE;
-//            } else {
-//               GlobalConfig.TextOnly = TRUE;
-//            }
 
         } else if (StriCmp(TokenList[0], L"textmode") == 0) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.RequestedTextMode));

@@ -169,7 +169,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.1.3");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -410,7 +410,8 @@ static EFI_STATUS RebootIntoFirmware(VOID) {
    return err;
 }
 
-// Record the value of the loader's name/description in rEFInd's "PreviousBoot" EFI variable.
+// Record the value of the loader's name/description in rEFInd's "PreviousBoot" EFI variable,
+// if it's different from what's already stored there.
 static VOID StoreLoaderName(IN CHAR16 *Name) {
    EFI_STATUS   Status;
    CHAR16       *OldName = NULL;
@@ -423,18 +424,18 @@ static VOID StoreLoaderName(IN CHAR16 *Name) {
       } // if
       MyFreePool(OldName);
    } // if
-} // VOID StorePreviousLoader()
+} // VOID StoreLoaderName()
 
 //
 // EFI OS loader functions
 //
 
-static VOID StartLoader(LOADER_ENTRY *Entry)
+static VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName)
 {
     UINTN ErrorInStep = 0;
 
     BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
-    StoreLoaderName(Entry->me.Title);
+    StoreLoaderName(SelectionName);
     StartEFIImage(Entry->DevicePath, Entry->LoadOptions, TYPE_EFI,
                   Basename(Entry->LoaderPath), Entry->OSType, &ErrorInStep, !Entry->UseGraphicsMode);
     FinishExternalScreen();
@@ -1605,7 +1606,7 @@ static EFI_DEVICE_PATH *LegacyLoaderList[] = {
 
 #define MAX_DISCOVERED_PATHS (16)
 
-static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
+static VOID StartLegacy(IN LEGACY_ENTRY *Entry, IN CHAR16 *SelectionName)
 {
     EFI_STATUS          Status;
     EG_IMAGE            *BootLogoImage;
@@ -1627,7 +1628,7 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
 
     ExtractLegacyLoaderPaths(DiscoveredPathList, MAX_DISCOVERED_PATHS, LegacyLoaderList);
 
-    StoreLoaderName(Entry->me.Title);
+    StoreLoaderName(SelectionName);
     Status = StartEFIImageList(DiscoveredPathList, Entry->LoadOptions, TYPE_LEGACY, L"legacy loader", 0, &ErrorInStep, TRUE);
     if (Status == EFI_NOT_FOUND) {
         if (ErrorInStep == 1) {
@@ -1641,10 +1642,10 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
 } /* static VOID StartLegacy() */
 
 // Start a device on a non-Mac using the EFI_LEGACY_BIOS_PROTOCOL
-static VOID StartLegacyUEFI(LEGACY_ENTRY *Entry)
+static VOID StartLegacyUEFI(LEGACY_ENTRY *Entry, CHAR16 *SelectionName)
 {
     BeginExternalScreen(TRUE, L"Booting Legacy OS (UEFI mode)");
-    StoreLoaderName(Entry->me.Title);
+    StoreLoaderName(SelectionName);
 
     BdsLibConnectDevicePath (Entry->BdsOption->DevicePath);
     BdsLibDoLegacyBoot(Entry->BdsOption);
@@ -2508,7 +2509,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     BOOLEAN            MokProtocol;
     REFIT_MENU_ENTRY   *ChosenEntry;
     UINTN              MenuExit, i;
-    CHAR16             *Selection = NULL;
+    CHAR16             *SelectionName = NULL;
     EG_PIXEL           BGColor;
 
     // bootstrap
@@ -2553,10 +2554,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     } // if
 
     if (GlobalConfig.DefaultSelection)
-       Selection = StrDuplicate(GlobalConfig.DefaultSelection);
+       SelectionName = StrDuplicate(GlobalConfig.DefaultSelection);
 
     while (MainLoopRunning) {
-        MenuExit = RunMainMenu(&MainMenu, Selection, &ChosenEntry);
+        MenuExit = RunMainMenu(&MainMenu, &SelectionName, &ChosenEntry);
 
         // The Escape key triggers a re-scan operation....
         if (MenuExit == MENU_EXIT_ESCAPE) {
@@ -2584,15 +2585,15 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 break;
 
             case TAG_LOADER:   // Boot OS via .EFI loader
-                StartLoader((LOADER_ENTRY *)ChosenEntry);
+                StartLoader((LOADER_ENTRY *)ChosenEntry, SelectionName);
                 break;
 
             case TAG_LEGACY:   // Boot legacy OS
-                StartLegacy((LEGACY_ENTRY *)ChosenEntry);
+                StartLegacy((LEGACY_ENTRY *)ChosenEntry, SelectionName);
                 break;
 
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
-                StartLegacyUEFI((LEGACY_ENTRY *)ChosenEntry);
+                StartLegacyUEFI((LEGACY_ENTRY *)ChosenEntry, SelectionName);
                 break;
 
             case TAG_TOOL:     // Start a EFI tool
@@ -2613,8 +2614,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 break;
 
         } // switch()
-        MyFreePool(Selection);
-        Selection = (ChosenEntry->Title) ? StrDuplicate(ChosenEntry->Title) : NULL;
     } // while()
 
     // If we end up here, things have gone wrong. Try to reboot, and if that

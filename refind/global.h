@@ -237,9 +237,7 @@ typedef struct {
 typedef struct {
    REFIT_MENU_ENTRY  me;
    REFIT_VOLUME      *Volume;
-//#ifndef __MAKEWITH_GNUEFI
    BDS_COMMON_OPTION *BdsOption;
-//#endif
    CHAR16            *LoadOptions;
    BOOLEAN           Enabled;
 } LEGACY_ENTRY;

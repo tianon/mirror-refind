@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-5/15/2014, referencing rEFInd 0.8.1</p>
+6/8/2014, referencing rEFInd 0.8.2</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -180,7 +180,7 @@ suitable CSM support (as of version 0.4.6, with significant improvements in
 version 0.8.0). Note that some UEFI PCs,
 such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
 
-<li>Improved flexibility in setting the default OS to boot. rEFInd enables specifying the default by any substring in the description. You can also specify multiple defaults, so that if the first isn't available, another will take its place (which is useful when using removable disks). You can also add time specifications to set a default to be used only during certain hours of the day.</li>
+<li>Improved flexibility in setting the default OS to boot. rEFInd enables specifying the default by any substring in the description. You can also specify multiple defaults, so that if the first isn't available, another will take its place (which is useful when using removable disks). You can also add time specifications to set a default to be used only during certain hours of the day. If no default loader is set, rEFInd defaults to the last-booted loader.</li>
 
 <li>Support for partition names or GUID values as fallbacks for filesystem labels in certain configuration file settings. Partition names may be shown as values to be displayed as part of the descriptive text for boot tags on the main menu, too, if a filesystem has no label.</li>
 

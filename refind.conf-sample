@@ -316,10 +316,13 @@ scan_all_linux_kernels
 # default loader using:
 #  - A digit between 1 and 9, in which case the Nth loader in the menu
 #    will be the default. 
+#  - A "+" symbol at the start of the string, which refers to the most
+#    recently booted loader.
 #  - Any substring that corresponds to a portion of the loader's title
 #    (usually the OS's name or boot loader's path).
 # You may also specify multiple selectors by separating them with commas
-# and enclosing the list in quotes.
+# and enclosing the list in quotes. (The "+" option is only meaningful in
+# this context.)
 # If you follow the selector(s) with two times, in 24-hour format, the
 # default will apply only between those times. The times are in the
 # motherboard's time standard, whether that's UTC or local time, so if
@@ -329,10 +332,11 @@ scan_all_linux_kernels
 # case the last one to match takes precedence. Thus, you can set a main
 # option without a time followed by one or more that include times to
 # set different defaults for different times of day.
+# The default behavior is to boot the previously-booted OS.
 #
 #default_selection 1
 #default_selection Microsoft
-#default_selection "bzImage,vmlinuz"
+#default_selection "+,bzImage,vmlinuz"
 #default_selection Maintenance 23:30 2:00
 #default_selection "Maintenance,OS X" 1:00 2:30
 

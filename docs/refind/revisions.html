@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 5/15/2014</p>
+<p>Last Web page update: 6/8/2014</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.8.2 (6/8/2014)</b>&mdash;I've continued to refine the UEFI BIOS-mode boot code with this version; it now uses the BIOS-mode boot entries provided by the firmware by default, and actively scans for new entries only if the <tt>deep_uefi_legacy_scan</tt> token is present in <tt>refind.conf</tt>. This change is motivated by reports I've received of BIOS-mode boot entries multiplying on some systems; however, a deep scan is required to detect the second and subsequent disks on other computers. A second important change is that the default selection is now the last-booted item rather than the first item in the list. You can still set a fixed default via the <tt>default_selection</tt> token, and in fact if you provide a list that begins with <tt>+</tt>, the default will be the previously-booted item unless it can't be found, in which case the subsequent items in the list will be tried. Minor changes include the addition of an icon for Mageia Linux, a minor bug fix in GUID-parsing code, and an update of my personal build system from TianoCore UDK2010.SR1.UP1.P1 to UDK2014. This last item will affect anybody else who uses TianoCore to build rEFInd, since some default paths have changed, so you may need to update yourself or adjust the path in <tt>Make.tiano</tt>.</li>
 
 <li><b>0.8.1 (5/15/2014)</b>&mdash;The biggest code change in this version is that rEFInd's UEFI-style BIOS-mode boot code now works when rEFInd is built with GNU-EFI as well as when built with Tianocore. This change won't affect users of my binary builds, which have long been made with Tianocore, but if your distribution builds rEFInd with GNU-EFI, it might interest you. Some user-noticeable bug fixes include a fix to a bug that could cause rEFInd to omit boot loaders on a partition's root directory, a fix to a bug that caused <tt>.VolumeIcon.icns</tt> to take a higher-than-intended precedence on OS X boot volumes, a fix to a bug that could cause a BIOS-mode boot from the wrong device in UEFI mode, and improved centering of BIOS-mode boot descriptions on the screen. Other changes include two new optional bitmap fonts (Ubuntu Mono and Nimbus Mono), omission of messages about scanning of boot loaders when <tt>scan_delay</tt> is set to <tt>1</tt>, a change to the search order for icons (PNG files now override ICNS files), and a conversion of all the icons in the icons directory from ICNS to PNG format. Note that this last change may necessitate changing manual boot stanzas if you refer to icons in the default icon directory, depending on how you upgrade rEFInd.</li>
 

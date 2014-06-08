@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-5/15/2014, referencing rEFInd 0.8.1</p>
+6/8/2014, referencing rEFInd 0.8.2</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -206,19 +206,27 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Installing rEFInd Using an RPM or Debian Package File</h2>
 </a>
 
-<p>Beginning with version 0.6.2, I've included RPM and Debian package files for rEFInd. If you have a working RPM-based or Debian-based Linux installation that boots in EFI mode, using one of these files is likely to be the easiest way to install rEFInd: You need only download the file and issue an appropriate installation command. In some cases, double-clicking the package in your file manager will install it. If that doesn't work, a command like the following will install the RPM on an RPM-based system:</p>
+<p>Beginning with version 0.6.2, I've included RPM and Debian package files for rEFInd; and starting with version 0.8.2, I'm maintaining an Ubuntu PPA for rEFInd. If you have a working RPM-based or Debian-based Linux installation that boots in EFI mode, using one of these files is likely to be the easiest way to install rEFInd: You need only download the file and issue an appropriate installation command. In some cases, double-clicking the package in your file manager will install it. If that doesn't work, a command like the following will install the RPM on an RPM-based system:</p>
 
-<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.8.1-1.x86_64.rpm</tt></pre>
+<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.8.2-1.x86_64.rpm</tt></pre>
 
 <p>On a Debian-based system, the equivalent command is:</p>
 
-<pre class="listing"># <tt class="userinput">dpkg -i refind_0.8.1-1_amd64.deb</tt></pre>
+<pre class="listing"># <tt class="userinput">dpkg -i refind_0.8.2-1_amd64.deb</tt></pre>
 
 <p>Either command produces output similar to that described for <a href="#installsh">using the <tt>install.sh</tt> script,</a> so you can check it for error messages and other signs of trouble. The package file installs rEFInd and registers it with the EFI to be the default boot loader. The script that runs as part of the installation process tries to determine if you're using Secure Boot, and if so it will try to configure rEFInd to launch using shim; however, this won't work correctly on all systems. Ubuntu 12.10 users who are booting with Secure Boot active should be wary, since the resulting installation will probably try to use Ubuntu's version of shim, which won't work correctly with rEFInd.</p>
 
+<p>If you're using Ubuntu, you should be able to install the PPA as follows:</p>
+
+<pre class="listing">$ <tt class="userinput">sudo apt-add-repository ppa:rodsmith/refind</tt>
+$ <tt class="userinput">sudo apt-get update</tt>
+$ <tt class="userinput">apt-get install refind</tt></pre></pre>
+
+<p>The PPA version will update automatically with your other software, which you might or might not want to have happen. It's also built with GNU-EFI rather than with TianoCore. This last detail <i>should</i> have no practical effects, but it might be important if you've got a buggy EFI or if there's some undiscovered rEFInd bug that interacts with the build environment.</p>
+
 <p>Since version 0.6.3, the installation script makes an attempt to install rEFInd in a bootable way even if you run the script from a BIOS-mode boot, and therefore the RPM and Debian packages do the same. I cannot guarantee that this will work, though, and even if it does, some of the tricks that <tt>install.sh</tt> uses might not last for long. You might therefore want to use <tt><a href="#mvrefind">mvrefind.sh</a></tt> to move your rEFInd installation to another name after you boot Linux for the first time from rEFInd.</p>
 
-<p>Since version 0.6.2-2, my package files have installed the rEFInd binaries to <tt>/usr/share/refind-<tt class="variable">version</tt></tt>, the documentation to <tt>/usr/share/doc/refind-<tt class="variable">version</tt></tt>, and a few miscellaneous files elsewhere. Upon installation, the package runs the <tt>install.sh</tt> script to copy the files to the ESP. This enables you to re-install rEFInd after the fact by running <tt>install.sh</tt>, should some other tool or OS wipe the ESP or should the installation go awry. In such cases you can <a href="#installsh">use <tt>install.sh</tt></a> or <a href="#manual">install manually.</a></p>
+<p>Since version 0.6.2-2, my package files have installed the rEFInd binaries to <tt>/usr/share/refind-<tt class="variable">version</tt></tt>, the documentation to <tt>/usr/share/doc/refind-<tt class="variable">version</tt></tt>, and a few miscellaneous files elsewhere. (The PPA package omits the version number from the file paths.) Upon installation, the package runs the <tt>install.sh</tt> script to copy the files to the ESP. This enables you to re-install rEFInd after the fact by running <tt>install.sh</tt>, should some other tool or OS wipe the ESP or should the installation go awry. In such cases you can <a href="#installsh">use <tt>install.sh</tt></a> or <a href="#manual">install manually.</a></p>
 
 <a name="installsh">
 <h2>Installing rEFInd Using <tt>install.sh</tt> under Linux or Mac OS X</h2>
