@@ -225,7 +225,7 @@ timeout 20
 <tr>
    <td><tt>timeout</tt></td>
    <td>numeric value</td>
-   <td>Sets the timeout period in seconds. If <tt>0</tt>, the timeout is disabled&mdash;rEFInd waits indefinitely for user input.</td>
+   <td>Sets the timeout period in seconds. If <tt>0</tt>, the timeout is disabled&mdash;rEFInd waits indefinitely for user input. If <tt>-1</tt>, rEFInd will normally boot to the default selection. However, if a shortcut key ('W' for Windows) is pressed, that system will boot. If any other key is pressed, the menu will show with no timeout.</td>
 </tr>
 <tr>
    <td><tt>screensaver</tt></td>
