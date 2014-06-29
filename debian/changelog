@@ -1,8 +1,14 @@
-refind (0.8.2-0ppa1) trusty; urgency=medium
+refind (0.8.2-0ppa3) trusty; urgency=medium
+
+  * Removed stray debugging code that caused pause during startup
+
+ -- Rod Smith <rodsmith@rodsbooks.com>  Sun, 08 Jun 2014 16:48:48 -0400
+
+refind (0.8.2-0ppa2) trusty; urgency=medium
 
   * Version bump
 
- -- Rod Smith <rodsmith@vbu1404>  Sun, 08 Jun 2014 12:32:48 -0400
+ -- Rod Smith <rodsmith@rodsbooks.com>  Sun, 08 Jun 2014 12:32:48 -0400
 
 refind (0.8.1-0ppa2) trusty; urgency=medium
 

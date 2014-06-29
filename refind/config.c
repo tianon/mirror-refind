@@ -332,7 +332,6 @@ static VOID HandleString(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16 
          *Target = StrDuplicate(TokenList[1]);
       } // if/else
    } // if
-   PauseForKey();
 } // static VOID HandleString()
 
 // Handle a parameter with a series of string arguments, to replace or be added to a
@@ -666,11 +665,6 @@ VOID ReadConfig(CHAR16 *FileName)
 
         } else if (StriCmp(TokenList[0], L"scan_all_linux_kernels") == 0) {
            GlobalConfig.ScanAllLinux = HandleBoolean(TokenList, TokenCount);
-//            if ((TokenCount >= 2) && (StriCmp(TokenList[1], L"0") == 0)) {
-//               GlobalConfig.ScanAllLinux = FALSE;
-//            } else {
-//               GlobalConfig.ScanAllLinux = TRUE;
-//            }
 
         } else if (StriCmp(TokenList[0], L"max_tags") == 0) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.MaxTags));

@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-6/8/2014, referencing rEFInd 0.8.2</p>
+6/23/2014, referencing rEFInd 0.8.2</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -193,6 +193,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
    <li class="tight"><a href="#fallback">Using the Fallback Filename</a></li>
 
    <li class="tight"><a href="#clearing">Clearing the NVRAM Entries</a></li>
+
+   <li class="tight"><a href="#wakeprobs">Fixing Wake Problems</a></li>
 
    </ul></li>
 
@@ -943,10 +945,10 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 <p>I've seen links to other versions of these tools from time to time on the Web, so if you try one of these programs and it crashes or behaves strangely, try performing a Web search; you may turn up something that works better for you than the one to which I've linked.</p>
 
 <a name="sluggish">
-<h2>Fixing a Sluggish Macintosh Boot</h2>
+<h2>Fixing Macintosh Boot Problems</h2>
 </a>
 
-<p>I've received a few reports of a sluggish boot process (a delay of about 30 seconds before starting rEFInd) on some Macs after installing rEFInd. I've been unable to replicate this problem myself, and its true cause remains mysterious to me. I have found three possible solutions, though: <a href="#moving">moving rEFInd to an HFS+ volume,</a> <a href="#fallback">using the fallback filename,</a> and <a href="#clearing">clearing NVRAM entries.</a></p>
+<p>I've received a few reports of a sluggish boot process (a delay of about 30 seconds before starting rEFInd) on some Macs after installing rEFInd, as well as some other Mac-specific peculiarities. I've been unable to replicate this problem myself, and its true cause remains mysterious to me. I have found three possible solutions, though: <a href="#moving">moving rEFInd to an HFS+ volume,</a> <a href="#fallback">using the fallback filename,</a> and <a href="#clearing">clearing NVRAM entries.</a></p>
 
 <a name="moving">
 <h3>Moving rEFInd to an HFS+ Volume</h3>
@@ -985,6 +987,22 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 </ol>
 
 <p>Some sources suggest that delayed launches of rEFInd on Macs are more common when installing rEFInd to the ESP, so if you've done this, you could try re-installing it to your OS X boot partition.</p>
+
+<a name="wakeprobs">
+<h3>Fixing Wake Problems</h3>
+</a>
+
+<p>Some people have reported that installing rEFInd causes problems with resuming from a suspended OS X session. I know of two workarounds to such problems:</p>
+
+<ul>
+
+<li>Install rEFInd to an HFS+ volume using the <tt>--ownhfs</tt> option to <tt>install.sh</tt>. Unfortunately, this solution requires either creating a small HFS+ volume for rEFInd or using an already-existing non-bootable HFS+ volume (if you've got one for data storage, for example).</li>
+
+<li>Type <tt class="userinput">sudo pmset -a autopoweroff 0</tt> in a Terminal window. This solution is likely to work if sleep operations work normally up to a point, but fail after about three hours.</li>
+
+</ul>
+
+<p>Unfortunately, I lack a recent Mac and so can't investigate these issues myself, so I'm dependent upon others (mostly non-programmers) to offer workarounds. This is the type of problem that really requires hands-on interactive debugging sessions with the code to stand any chance of finding a better solution.</p>
 
 <a name="uninstalling">
 <h2>Uninstalling rEFInd</h2>

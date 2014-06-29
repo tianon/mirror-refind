@@ -1,3 +1,28 @@
+0.8.3 (?/??/2014):
+------------------
+
+- Fixed bug that caused rEFInd to unload drivers immediately after loading
+  them. This didn't affect rEFInd's own drivers because they didn't include
+  the unload hooks, but it did affect some other drivers.
+
+- Changed default scan_all_linux_kernels setting from "false" to "true",
+  and commented the option out in refind.conf-sample. This should not
+  affect most people, since refind.conf-sample had this option commented
+  out, and most rEFInd users either use it that way or don't have Linux
+  kernels installed at all. I've made this change because I want rEFInd to
+  "do the right thing" by default in as many cases as possible. For a while
+  now, rEFInd has been excluding non-bootable files from its menu, and most
+  kernels "in the wild" now include the EFI stub. Thus, enabling this
+  support by default seems worthwhile. If you prefer to not scan Linux
+  kernels by default, simply uncomment the "scan_all_linux_kernels" line
+  and ensure it's set to "false".
+
+0.8.2.1 (6/8/2014):
+-------------------
+
+- Removed stray bit of debugging code that caused a prompt to press a
+  key to appear at rEFInd startup.
+
 0.8.2 (6/8/2014):
 -----------------
 

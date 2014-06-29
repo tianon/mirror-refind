@@ -139,7 +139,7 @@ static REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL
                                             L"Insert or F2 for more options; Esc to refresh" };
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
-REFIT_CONFIG GlobalConfig = { FALSE, FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
+REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
                               { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE }, BANNER_NOSCALE,
                               NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY, TAG_MOK_TOOL,
@@ -169,7 +169,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.2.3");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -267,7 +267,8 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
                                     IN CHAR16 *LoadOptions, IN UINTN LoaderType,
                                     IN CHAR16 *ImageTitle, IN CHAR8 OSType,
                                     OUT UINTN *ErrorInStep,
-                                    IN BOOLEAN Verbose)
+                                    IN BOOLEAN Verbose,
+                                    IN BOOLEAN IsDriver)
 {
     EFI_STATUS              Status, ReturnStatus;
     EFI_HANDLE              ChildImageHandle;
@@ -366,7 +367,8 @@ static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
 
 bailout_unload:
     // unload the image, we don't care if it works or not...
-    Status = refit_call1_wrapper(BS->UnloadImage, ChildImageHandle);
+    if (!IsDriver)
+       Status = refit_call1_wrapper(BS->UnloadImage, ChildImageHandle);
 
 bailout:
     MyFreePool(FullLoadOptions);
@@ -377,13 +379,15 @@ static EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
                                 IN CHAR16 *LoadOptions, IN UINTN LoaderType,
                                 IN CHAR16 *ImageTitle, IN CHAR8 OSType,
                                 OUT UINTN *ErrorInStep,
-                                IN BOOLEAN Verbose)
+                                IN BOOLEAN Verbose,
+                                IN BOOLEAN IsDriver
+                               )
 {
     EFI_DEVICE_PATH *DevicePaths[2];
 
     DevicePaths[0] = DevicePath;
     DevicePaths[1] = NULL;
-    return StartEFIImageList(DevicePaths, LoadOptions, LoaderType, ImageTitle, OSType, ErrorInStep, Verbose);
+    return StartEFIImageList(DevicePaths, LoadOptions, LoaderType, ImageTitle, OSType, ErrorInStep, Verbose, IsDriver);
 } /* static EFI_STATUS StartEFIImage() */
 
 // From gummiboot: Reboot the computer into its built-in user interface
@@ -437,7 +441,7 @@ static VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName)
     BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
     StoreLoaderName(SelectionName);
     StartEFIImage(Entry->DevicePath, Entry->LoadOptions, TYPE_EFI,
-                  Basename(Entry->LoaderPath), Entry->OSType, &ErrorInStep, !Entry->UseGraphicsMode);
+                  Basename(Entry->LoaderPath), Entry->OSType, &ErrorInStep, !Entry->UseGraphicsMode, FALSE);
     FinishExternalScreen();
 }
 
@@ -1629,7 +1633,7 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry, IN CHAR16 *SelectionName)
     ExtractLegacyLoaderPaths(DiscoveredPathList, MAX_DISCOVERED_PATHS, LegacyLoaderList);
 
     StoreLoaderName(SelectionName);
-    Status = StartEFIImageList(DiscoveredPathList, Entry->LoadOptions, TYPE_LEGACY, L"legacy loader", 0, &ErrorInStep, TRUE);
+    Status = StartEFIImageList(DiscoveredPathList, Entry->LoadOptions, TYPE_LEGACY, L"legacy loader", 0, &ErrorInStep, TRUE, FALSE);
     if (Status == EFI_NOT_FOUND) {
         if (ErrorInStep == 1) {
             Print(L"\nPlease make sure that you have the latest firmware update installed.\n");
@@ -1974,7 +1978,7 @@ static VOID StartTool(IN LOADER_ENTRY *Entry)
    BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
    StoreLoaderName(Entry->me.Title);
    StartEFIImage(Entry->DevicePath, Entry->LoadOptions, TYPE_EFI,
-                 Basename(Entry->LoaderPath), Entry->OSType, NULL, TRUE);
+                 Basename(Entry->LoaderPath), Entry->OSType, NULL, TRUE, FALSE);
    FinishExternalScreen();
 } /* static VOID StartTool() */
 
@@ -2022,7 +2026,7 @@ static UINTN ScanDriverDir(IN CHAR16 *Path)
         SPrint(FileName, 255, L"%s\\%s", Path, DirEntry->FileName);
         NumFound++;
         Status = StartEFIImage(FileDevicePath(SelfLoadedImage->DeviceHandle, FileName),
-                               L"", TYPE_EFI, DirEntry->FileName, 0, NULL, FALSE);
+                               L"", TYPE_EFI, DirEntry->FileName, 0, NULL, FALSE, TRUE);
     }
     Status = DirIterClose(&DirIter);
     if (Status != EFI_NOT_FOUND) {

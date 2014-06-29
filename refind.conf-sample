@@ -214,6 +214,7 @@ timeout 20
 # "false" resets to the default value. This token has no effect on Macs or
 # when no BIOS-mode options are set via scanfor.
 # Default is unset (or "uefi_deep_legacy_scan true")
+#
 #uefi_deep_legacy_scan
 
 # Delay for the specified number of seconds before scanning disks.
@@ -291,16 +292,14 @@ timeout 20
 # useful for better integration with Linux distributions that provide
 # kernels with EFI stub loaders but that don't give those kernels filenames
 # that end in ".efi", particularly if the kernels are stored on a
-# filesystem that the EFI can read. When uncommented, this option causes
-# all files in scanned directories with names that begin with "vmlinuz"
-# or "bzImage" to be included as loaders, even if they lack ".efi"
-# extensions. The drawback to this option is that it can pick up kernels
-# that lack EFI stub loader support and other files. Passing this option
-# a "0" value causes kernels without ".efi" extensions to NOT be scanned;
-# passing it alone or with any other value causes all kernels to be scanned.
-# Default is to NOT scan for kernels without ".efi" extensions.
+# filesystem that the EFI can read. When set to "1", "true", or "on", this
+# option causes all files in scanned directories with names that begin with
+# "vmlinuz" or "bzImage" to be included as loaders, even if they lack ".efi"
+# extensions. Passing this option a "0", "false", or "off" value causes
+# kernels without ".efi" extensions to NOT be scanned.
+# Default is "true" -- to scan for kernels without ".efi" extensions.
 #
-scan_all_linux_kernels
+#scan_all_linux_kernels false
 
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, rEFInd shows
