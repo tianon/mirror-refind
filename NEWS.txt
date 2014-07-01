@@ -1,6 +1,14 @@
 0.8.3 (?/??/2014):
 ------------------
 
+- Removed GPLv2 code from the FSW core files. This was done because the
+  Btrfs driver is derived from the GRUB Btrfs driver, which is licensed
+  under the GPLv3. Ironically, the GPLv2 and GPLv3 are incompatible
+  licenses, so ensuring that the Btrfs driver doesn't rely on GPLv2 code
+  was legally necessary. In most cases, I reverted to the original rEFIt
+  code, although I kept my own cache code; since I wrote it, I can
+  change its license to a BSD license.
+
 - Fixed bug that caused rEFInd to unload drivers immediately after loading
   them. This didn't affect rEFInd's own drivers because they didn't include
   the unload hooks, but it did affect some other drivers.

@@ -1,23 +1,9 @@
-/* $Id: fsw_efi_base.h 29125 2010-05-06 09:43:05Z vboxsync $ */
-/** @file
- * fsw_efi_base.h - Base definitions for the EFI host environment.
- */
-
-/*
- * Copyright (C) 2010 Oracle Corporation
- *
- * This file is part of VirtualBox Open Source Edition (OSE), as
- * available from http://www.virtualbox.org. This file is free software;
- * you can redistribute it and/or modify it under the terms of the GNU
- * General Public License (GPL) as published by the Free Software
- * Foundation, in version 2 as it comes in the "COPYING" file of the
- * VirtualBox OSE distribution. VirtualBox OSE is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
+/**
+ * \file fsw_efi_base.h
+ * Base definitions for the EFI host environment.
  */
 
 /*-
- * This code is based on:
- *
  * Copyright (c) 2006 Christoph Pfisterer
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +45,6 @@
 // Intel EFI Toolkit
 #include <efi.h>
 #include <efilib.h>
-//#define PROTO_NAME(x) x
 #endif
 
 #define FSW_LITTLE_ENDIAN (1)

@@ -1,23 +1,9 @@
-/* $Id: fsw_efi_lib.c 29125 2010-05-06 09:43:05Z vboxsync $ */
-/** @file
- * fsw_efi_lib.c - EFI host environment library functions.
- */
-
-/*
- * Copyright (C) 2010 Oracle Corporation
- *
- * This file is part of VirtualBox Open Source Edition (OSE), as
- * available from http://www.virtualbox.org. This file is free software;
- * you can redistribute it and/or modify it under the terms of the GNU
- * General Public License (GPL) as published by the Free Software
- * Foundation, in version 2 as it comes in the "COPYING" file of the
- * VirtualBox OSE distribution. VirtualBox OSE is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
+/**
+ * \file fsw_efi_lib.c
+ * EFI host environment library functions.
  */
 
 /*-
- * This code is based on:
- *
  * Copyright (c) 2006 Christoph Pfisterer
  *
  * Redistribution and use in source and binary forms, with or without
@@ -138,23 +124,6 @@ VOID fsw_efi_strcpy(CHAR16 *Dest, struct fsw_string *src)
         // TODO: coerce, recurse
         Dest[0] = 0;
     }
-}
-
-int fsw_streq_ISO88591_UTF16(void *s1data, void *s2data, int len)
-{
-    int i;
-    fsw_u8 *p1 = (fsw_u8 *)s1data;
-    fsw_u16 *p2 = (fsw_u16 *)s2data;
-
-    for (i = 0; i<len; i++)
-    {
-        if (fsw_to_lower(p1[i]) != fsw_to_lower(p2[i]))
-        {
-            return 0;
-        }
-    }
-
-    return 1;
 }
 
 // EOF

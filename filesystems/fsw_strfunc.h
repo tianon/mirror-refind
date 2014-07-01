@@ -26,7 +26,6 @@ static int fsw_streq_ISO88591_UTF8(void *s1data, void *s2data, int len)
     return 1;
 }
 
-#ifdef __MAKEWITH_TIANO
 static int fsw_streq_ISO88591_UTF16(void *s1data, void *s2data, int len)
 {
     int i;
@@ -42,7 +41,6 @@ static int fsw_streq_ISO88591_UTF16(void *s1data, void *s2data, int len)
     }
     return 1;
 }
-#endif
 
 static int fsw_streq_ISO88591_UTF16_SWAPPED(void *s1data, void *s2data, int len)
 {

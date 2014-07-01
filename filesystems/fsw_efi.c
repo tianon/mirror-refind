@@ -34,6 +34,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Changes by Roderick Smith are licensed under the preceding terms.
+ */
 
 #include "fsw_efi.h"
 #include "fsw_core.h"

@@ -1,23 +1,9 @@
-/* $Id: fsw_core.h 33540 2010-10-28 09:27:05Z vboxsync $ */
-/** @file
- * fsw_core.h - Core file system wrapper abstraction layer header.
- */
-
-/*
- * Copyright (C) 2010 Oracle Corporation
- *
- * This file is part of VirtualBox Open Source Edition (OSE), as
- * available from http://www.virtualbox.org. This file is free software;
- * you can redistribute it and/or modify it under the terms of the GNU
- * General Public License (GPL) as published by the Free Software
- * Foundation, in version 2 as it comes in the "COPYING" file of the
- * VirtualBox OSE distribution. VirtualBox OSE is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
+/**
+ * \file fsw_core.h
+ * Core file system wrapper abstraction layer header.
  */
 
 /*-
- * This code is based on:
- *
  * Copyright (c) 2006 Christoph Pfisterer
  * Portions Copyright (c) The Regents of the University of California.
  * Portions Copyright (c) UNIX System Laboratories, Inc.
@@ -60,12 +46,7 @@
 #endif
 
 /** Maximum size for a path, specifically symlink target paths. */
-#ifndef HOST_EFI_EDK2
 #define FSW_PATH_MAX (4096)
-#else
-/* Too big allocations are handled with alloca() */
-#define FSW_PATH_MAX (2048)
-#endif
 
 /** Helper macro for token concatenation. */
 #define FSW_CONCAT3(a,b,c) a##b##c
@@ -480,9 +461,9 @@ fsw_status_t fsw_strdup_coerce(struct fsw_string *dest, int type, struct fsw_str
 void         fsw_strsplit(struct fsw_string *lookup_name, struct fsw_string *buffer, char separator);
 
 void         fsw_strfree(struct fsw_string *s);
-fsw_u16      fsw_to_lower(fsw_u16 ch);
 
 /*@}*/
+
 
 /**
  * \name Posix Mode Macros
