@@ -76,7 +76,7 @@
 # include <Protocol/ComponentName.h>
 
 # define BS gBS
-# define PROTO_NAME(x) gEfi ## x ## Guid
+//# define PROTO_NAME(x) gEfi ## x ## Guid
 # define GUID_NAME(x) gEfi ## x ## Guid
 
 # define EFI_FILE_HANDLE_REVISION EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION

@@ -1,24 +1,10 @@
-/* $Id: fsw_efi.h 33540 2010-10-28 09:27:05Z vboxsync $ */
-/** @file
- * fsw_efi.h - EFI host environment header.
- */
-
-/*
- * Copyright (C) 2010 Oracle Corporation
- *
- * This file is part of VirtualBox Open Source Edition (OSE), as
- * available from http://www.virtualbox.org. This file is free software;
- * you can redistribute it and/or modify it under the terms of the GNU
- * General Public License (GPL) as published by the Free Software
- * Foundation, in version 2 as it comes in the "COPYING" file of the
- * VirtualBox OSE distribution. VirtualBox OSE is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
- */
+/**
+ * \file fsw_efi.h
+ * EFI host environment header.
+*/
 
 /*-
- * This code is based on:
- *
- * Copyright (c) 2006 Christoph Pfisterer
+  * Copyright (c) 2006 Christoph Pfisterer
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -57,9 +43,6 @@
 #ifdef __MAKEWITH_GNUEFI
 #define CompareGuid(a, b) CompareGuid(a, b)==0
 #endif
-
-// extern CHAR8     *msgCursor;
-// extern MESSAGE_LOG_PROTOCOL *Msg;
 
 /**
  * EFI Host: Private per-volume structure.

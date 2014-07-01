@@ -59,7 +59,7 @@
 // Intel EFI Toolkit
 #include <efi.h>
 #include <efilib.h>
-#define PROTO_NAME(x) x
+//#define PROTO_NAME(x) x
 #endif
 
 #define FSW_LITTLE_ENDIAN (1)
