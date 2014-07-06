@@ -1,6 +1,13 @@
 0.8.3 (?/??/2014):
 ------------------
 
+- Added new icons for Clover boot loader and for Mythbuntu Linux
+  distribution.
+
+- rEFInd now displays the partition's label, when one is available, when
+  offering a BIOS-mode boot option for a partition with no filesystem
+  driver. This works only on Macs doing BIOS-mode booting.
+
 - Removed GPLv2 code from the FSW core files. This was done because the
   Btrfs driver is derived from the GRUB Btrfs driver, which is licensed
   under the GPLv3. Ironically, the GPLv2 and GPLv3 are incompatible

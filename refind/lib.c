@@ -751,42 +751,45 @@ static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
 // The calling function is responsible for freeing the memory allocated
 // for the name string.
 static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
-   EFI_FILE_SYSTEM_INFO    *FileSystemInfoPtr;
+   EFI_FILE_SYSTEM_INFO    *FileSystemInfoPtr = NULL;
    CHAR16                  *FoundName = NULL;
    CHAR16                  *SISize, *TypeName;
 
-   FileSystemInfoPtr = LibFileSystemInfo(Volume->RootDir);
-   if (FileSystemInfoPtr != NULL) { // we have filesystem information (size, label)....
-       if ((FileSystemInfoPtr->VolumeLabel != NULL) && (StrLen(FileSystemInfoPtr->VolumeLabel) > 0)) {
-          FoundName = StrDuplicate(FileSystemInfoPtr->VolumeLabel);
-       }
+   if (Volume->RootDir != NULL) {
+      FileSystemInfoPtr = LibFileSystemInfo(Volume->RootDir);
+   }
 
-       // Special case: Old versions of the rEFInd HFS+ driver always returns label of "HFS+ volume", so wipe
-       // this so that we can build a new name that includes the size....
-       if ((FoundName != NULL) && (StrCmp(FoundName, L"HFS+ volume") == 0) && (Volume->FSType == FS_TYPE_HFSPLUS)) {
-          MyFreePool(FoundName);
-          FoundName = NULL;
-       } // if rEFInd HFS+ driver suspected
+   if ((FileSystemInfoPtr != NULL) && (FileSystemInfoPtr->VolumeLabel != NULL) &&
+       (StrLen(FileSystemInfoPtr->VolumeLabel) > 0)) {
+      FoundName = StrDuplicate(FileSystemInfoPtr->VolumeLabel);
+   }
 
-       // If no filesystem name, try to use the partition name....
-       if ((FoundName == NULL) && (Volume->PartName != NULL) && (StrLen(Volume->PartName) > 0) &&
-           !IsIn(Volume->PartName, IGNORE_PARTITION_NAMES)) {
-          FoundName = StrDuplicate(Volume->PartName);
-       } // if use partition name
+   // Special case: Old versions of the rEFInd HFS+ driver always returns label of "HFS+ volume", so wipe
+   // this so that we can build a new name that includes the size....
+   if ((FoundName != NULL) && (StrCmp(FoundName, L"HFS+ volume") == 0) && (Volume->FSType == FS_TYPE_HFSPLUS)) {
+      MyFreePool(FoundName);
+      FoundName = NULL;
+   } // if rEFInd HFS+ driver suspected
 
-       // No filesystem or acceptable partition name, so use fs type and size
-       if (FoundName == NULL) {
-          FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
-          if (FoundName != NULL) {
-             SISize = SizeInIEEEUnits(FileSystemInfoPtr->VolumeSize);
-             SPrint(FoundName, 255, L"%s%s volume", SISize, FSTypeName(Volume->FSType));
-             MyFreePool(SISize);
-          } // if allocated memory OK
-       } // if (FoundName == NULL)
+   // If no filesystem name, try to use the partition name....
+   if ((FoundName == NULL) && (Volume->PartName != NULL) && (StrLen(Volume->PartName) > 0) &&
+       !IsIn(Volume->PartName, IGNORE_PARTITION_NAMES)) {
+      FoundName = StrDuplicate(Volume->PartName);
+   } // if use partition name
 
-       FreePool(FileSystemInfoPtr);
+   // No filesystem or acceptable partition name, so use fs type and size
+   if ((FoundName == NULL) && (FileSystemInfoPtr != NULL)) {
+      FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
+      if (FoundName != NULL) {
+         SISize = SizeInIEEEUnits(FileSystemInfoPtr->VolumeSize);
+         SPrint(FoundName, 255, L"%s%s volume", SISize, FSTypeName(Volume->FSType));
+         MyFreePool(SISize);
+      } // if allocated memory OK
+   } // if (FoundName == NULL)
 
-   } else { // fs driver not returning info; fall back on our own information....
+   MyFreePool(FileSystemInfoPtr);
+
+   if (FoundName == NULL) {
       FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
       if (FoundName != NULL) {
          TypeName = FSTypeName(Volume->FSType); // NOTE: Don't free TypeName; function returns constant
@@ -799,7 +802,6 @@ static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
 
    // TODO: Above could be improved/extended, in case filesystem name is not found,
    // such as:
-   //  - use partition label
    //  - use or add disk/partition number (e.g., "(hd0,2)")
 
    // Desperate fallback name....
@@ -942,14 +944,14 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     // Set volume icon based on .VolumeBadge icon or disk kind
     SetVolumeBadgeIcon(Volume);
 
+    Volume->VolName = GetVolumeName(Volume);
+
     if (Volume->RootDir == NULL) {
         Volume->IsReadable = FALSE;
         return;
     } else {
         Volume->IsReadable = TRUE;
     }
-
-    Volume->VolName = GetVolumeName(Volume);
 
     // get custom volume icons if present
     if (!Volume->VolIconImage)
