@@ -361,6 +361,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
     UINTN index;
     INTN ShortcutEntry;
     BOOLEAN HaveTimeout = FALSE;
+    BOOLEAN WaitForRelease = FALSE;
     UINTN TimeoutCountdown = 0;
     INTN PreviousTime = -1, CurrentTime, TimeSinceKeystroke = 0;
     CHAR16 TimeoutMessage[256];
@@ -382,6 +383,25 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
         if (GlobalConfig.ScreensaverTime != -1)
            UpdateScroll(&State, SCROLL_NONE);
     }
+
+    if (Screen->TimeoutSeconds == -1) {
+        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+        if (Status == EFI_NOT_READY) {
+            MenuExit = MENU_EXIT_TIMEOUT;
+        } else {
+            KeyAsString[0] = key.UnicodeChar;
+            KeyAsString[1] = 0;
+            ShortcutEntry = FindMenuShortcutEntry(Screen, KeyAsString);
+            if (ShortcutEntry >= 0) {
+                State.CurrentSelection = ShortcutEntry;
+                MenuExit = MENU_EXIT_ENTER;
+            } else {
+                WaitForRelease = TRUE;
+                HaveTimeout = FALSE;
+            }
+        }
+    }
+
     if (GlobalConfig.ScreensaverTime != -1)
         State.PaintAll = TRUE;
 
@@ -393,6 +413,19 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
         } else if (State.PaintSelection) {
             StyleFunc(Screen, &State, MENU_FUNCTION_PAINT_SELECTION, NULL);
             State.PaintSelection = FALSE;
+        }
+
+        if (WaitForRelease) {
+            Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+            if (Status == EFI_SUCCESS) {
+                // reset, because otherwise the buffer gets queued with keystrokes
+                refit_call2_wrapper(ST->ConIn->Reset, ST->ConIn, FALSE);
+                refit_call1_wrapper(BS->Stall, 100000);
+            } else {
+                WaitForRelease = FALSE;
+                refit_call2_wrapper(ST->ConIn->Reset, ST->ConIn, TRUE);
+            }
+            continue;
         }
 
         if (HaveTimeout) {
@@ -980,7 +1013,7 @@ static VOID PaintSelection(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State,
 } // static VOID MoveSelection(VOID)
 
 // Display a 48x48 icon at the specified location. Uses the image specified by
-// ExternalFilename if it's available, or BuiltInImage if it's not. The 
+// ExternalFilename if it's available, or BuiltInImage if it's not. The
 // Y position is specified as the center value, and so is adjusted by half
 // the icon's height. The X position is set along the icon's left
 // edge if Alignment == ALIGN_LEFT, and along the right edge if
