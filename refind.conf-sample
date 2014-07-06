@@ -4,7 +4,11 @@
 #
 
 # Timeout in seconds for the main menu screen. Setting the timeout to 0
-# disables automatic booting (i.e., no timeout).
+# disables automatic booting (i.e., no timeout). Setting it to -1 causes
+# an immediate boot to the default OS *UNLESS* a keypress is in the buffer
+# when rEFInd launches, in which case that keypress is interpreted as a
+# shortcut key. If no matching shortcut is found, rEFInd displays its
+# menu with no timeout.
 #
 timeout 20
 

@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 6/8/2014</p>
+<p>Last Web page update: 7/6/2014</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.8.3 (7/6/2014)</b>&mdash;This version introduces a number of minor bug fixes and feature improvements. The most user-visible of these are that on Macs, rEFInd now displays a partition's label for BIOS-bootable OSes on filesystems that rEFInd can't read; and you can now pass <tt>timeout = -1</tt> in <tt>refind.conf</tt> to have rEFInd boot the default OS immediately <i>unless</i> there's a keypress when rEFInd loads, in which case that keypress is read as a shortcut key. A change that's less likely to be noticed is that the default setting for <tt>scan_all_linux_kernels</tt> is now <tt>true</tt>. Since this option had been uncommented in the sample configuration file, this change will not affect most people. I've fixed a bug that caused rEFInd to unload drivers as soon as they were loaded. This didn't affect rEFInd's drivers because they ignored the relevant EFI calls; but this was preventing some other drivers from working. I've added two new icons, one for Mythbuntu and the other for the Clover boot manager. Finally, I've removed Oracle's GPLv2 code from the core filesystem driver code, since it was incompatible with the GPLv3 used by the Btrfs driver. This change <i>shouldn't</i> affect the operation of the drivers, but there's a slim chance that it will.</li>
 
 <li><b>0.8.2 (6/8/2014)</b>&mdash;I've continued to refine the UEFI BIOS-mode boot code with this version; it now uses the BIOS-mode boot entries provided by the firmware by default, and actively scans for new entries only if the <tt>deep_uefi_legacy_scan</tt> token is present in <tt>refind.conf</tt>. This change is motivated by reports I've received of BIOS-mode boot entries multiplying on some systems; however, a deep scan is required to detect the second and subsequent disks on other computers. A second important change is that the default selection is now the last-booted item rather than the first item in the list. You can still set a fixed default via the <tt>default_selection</tt> token, and in fact if you provide a list that begins with <tt>+</tt>, the default will be the previously-booted item unless it can't be found, in which case the subsequent items in the list will be tried. Minor changes include the addition of an icon for Mageia Linux, a minor bug fix in GUID-parsing code, and an update of my personal build system from TianoCore UDK2010.SR1.UP1.P1 to UDK2014. This last item will affect anybody else who uses TianoCore to build rEFInd, since some default paths have changed, so you may need to update yourself or adjust the path in <tt>Make.tiano</tt>.</li>
 

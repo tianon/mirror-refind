@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-6/8/2014, referencing rEFInd 0.8.2</p>
+7/6/2014, referencing rEFInd 0.8.3</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -321,6 +321,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
    <td>Launch OSes whose names begin with those letters, as described below</td>
 </tr>
 </table>
+
+<p class="sidebar"><b>Note:</b> If you set <tt>timeout = -1</tt> in <tt>refind.conf</tt>, rEFInd will immediately launch the default OS <i>unless</i> you press a key as rEFInd launches. In that case, if the key you pressed is a valid shortcut key, rEFInd will launch the associated entry. If not, rEFInd will show you its main menu.</p>
 
 <p>rEFInd assigns shortcut letters to most OS entries based on the first letter of the directory in which the OS's boot loader is stored. For instance, if you have a boot loader called <tt>/EFI/debian/elilo.efi</tt>, rEFInd attempts to assign it a shortcut letter of <i>D</i>. rEFInd overrides this default for Mac OS X, Windows, and for Linux's GRUB, ELILO, and EFI stub boot loaders if the distribution can't be more precisely identified, as noted in the preceding table. This method works well for many installations, but it can produce conflicts. For instance, if you have a Macintosh that holds both Mac OS X and Mandriva, both OSes would normally use the <tt>M</tt> shortcut key. In practice, which works depends on the order in which rEFInd detects the OSes.</p>
 

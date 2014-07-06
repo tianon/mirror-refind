@@ -1,5 +1,11 @@
-0.8.3 (?/??/2014):
-------------------
+0.8.3 (7/6/2014):
+-----------------
+
+- Added new feature: Setting "timeout = -1" in refind.conf causes rEFInd to
+  immediately boot the default option UNLESS a keypress is in the buffer
+  when rEFInd launches. In that case, if the keypress corresponds to a
+  shortcut key, the associated boot loader is launched; or if not, the menu
+  is displayed.
 
 - Added new icons for Clover boot loader and for Mythbuntu Linux
   distribution.

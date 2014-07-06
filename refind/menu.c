@@ -367,7 +367,6 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
     CHAR16 TimeoutMessage[256];
     CHAR16 KeyAsString[2];
     UINTN MenuExit;
-//     EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
 
     if (Screen->TimeoutSeconds > 0) {
         HaveTimeout = TRUE;

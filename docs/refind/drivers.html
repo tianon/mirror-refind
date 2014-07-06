@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-6/8/2014, referencing rEFInd 0.8.2</p>
+7/6/2014, referencing rEFInd 0.8.3</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -282,6 +282,8 @@ fs0: <tt class="userinput">map -r</tt>
 <p>As already noted, I know of no EFI drivers for EFI hardware, aside from those that are built into motherboards' EFI implementations. I do, however, know of a few EFI filesystem drivers, in addition to those provided with rEFInd:</p>
 
 <ul>
+
+<li><b><a href="https://github.com/pbatard/efifs">Pete Batard's efifs drivers</a></b>&mdash;This project is an EFI driver wrapper around GRUB 2's filesystem drivers. Once compiled, the result is that GRUB 2's drivers become standalone EFI filesystem drivers, loadable independently or by rEFInd. (rEFInd version 0.8.3 or later is required.) At present (early July, 2014), several drivers, including NTFS, exFAT, JFS, and XFS, are usable, albeit with some caveats. For instance, using a <tt>root=UUID={uuid-value}</tt> specification to tell a Linux kernel about its root partition doesn't work, although <tt>root=PARTUUID={guid=value}</tt> does work, as does <tt>root=/dev/sd{xy}</tt>. I have no doubt that these drivers will improve rapidly in usability in the near future.</li>
 
 <li><b><a href="http://refit.sourceforge.net">rEFIt's ext2fs and ReiserFS drivers</a></b>&mdash;You can gain read-only access to ext2fs, ext3fs, and ReiserFS volumes with these drivers, originally written by Christoph Pfisterer. You can use the binaries in the <tt>refit-bin-0.14/efi/tools/drivers</tt> directory of the binary package directly on a Mac. On a UEFI-based PC, though, you'll need to break the Mac-style "fat" binary into its 32- and 64-bit components. You can use my <a href="http://www.rodsbooks.com/thin/index.html"><tt>thin</tt></a> program for this job. As a practical matter, there's no advantage to using these drivers over rEFInd's drivers, since the latter are updated versions of the former.</li>
 
