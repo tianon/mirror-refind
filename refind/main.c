@@ -139,8 +139,8 @@ static REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL
                                             L"Insert or F2 for more options; Esc to refresh" };
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
-REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC, 0, 0,
-                              { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE }, BANNER_NOSCALE,
+REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC,
+                              0, 0, { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE }, BANNER_NOSCALE,
                               NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY, TAG_MOK_TOOL,
                                 TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0 }
@@ -169,7 +169,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.3");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.3.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -434,9 +434,32 @@ static VOID StoreLoaderName(IN CHAR16 *Name) {
 // EFI OS loader functions
 //
 
+// See http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
+// for information on Intel VMX features
+static VOID DoEnableAndLockVMX(VOID)
+{
+    UINT32 msr = 0x3a;
+    UINT32 low_bits = 0, high_bits = 0;
+
+    // is VMX active ?
+    __asm__ volatile ("rdmsr" : "=a" (low_bits), "=d" (high_bits) : "c" (msr));
+
+    // enable and lock vmx if not locked
+    if ((low_bits & 1) == 0) {
+        high_bits = 0;
+        low_bits = 0x05;
+        msr = 0x3a;
+        __asm__ volatile ("wrmsr" : : "c" (msr), "a" (low_bits), "d" (high_bits));
+    } 
+} // VOID DoEnableAndLockVMX
+
 static VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName)
 {
     UINTN ErrorInStep = 0;
+
+    if (GlobalConfig.EnableAndLockVMX) {
+        DoEnableAndLockVMX();
+    }
 
     BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
     StoreLoaderName(SelectionName);

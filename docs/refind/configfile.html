@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-7/6/2014, referencing rEFInd 0.8.3</p>
+7/28/2014, referencing rEFInd 0.8.3</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -130,7 +130,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <div style="float:right; width:55%">
 
-<p>Many casual users will be able to use rEFInd without making changes to its settings; in its default configuration, the boot manager automatically detects all the EFI boot loader programs you have on your ESP (or your OS X boot partition, in the case of Macs) and displays icons for them. On Macs, rEFInd also presents legacy BIOS boot options by default. Sometimes, though, you may want to tweak rEFInd's configuration. Sometimes you can obtain your desired results by adjusting the filenames of your boot loaders. Other times, you can edit rEFInd's configuration file, <tt>refind.conf</tt>, which resides in the same directory as its binary file (<tt>refind_x64.efi</tt> or whatever you've renamed it).</p>
+<p>Many casual users will be able to use rEFInd without making changes to its settings; in its default configuration, the boot manager automatically detects all the EFI boot loader programs you have on your EFI System Partition (ESP) (or your OS X boot partition, in the case of Macs) and displays icons for them. On Macs, rEFInd also presents legacy BIOS boot options by default. Sometimes, though, you may want to tweak rEFInd's configuration. Sometimes you can obtain your desired results by adjusting the filenames of your boot loaders. Other times, you can edit rEFInd's configuration file, <tt>refind.conf</tt>, which resides in the same directory as its binary file (<tt>refind_x64.efi</tt> or whatever you've renamed it).</p>
 
 </div>
 
@@ -330,12 +330,12 @@ timeout 20
 <tr>
    <td><tt>dont_scan_volumes</tt> or <tt>don't_scan_volumes</tt></td>
    <td>filesystem or partition label(s)</td>
-   <td>Adds the specified volume or volumes to a volume "blacklist"&mdash;these filesystems are <i>not</i> scanned for EFI boot loaders. This may be useful to keep unwanted EFI boot entries, such as for a Macintosh recovery partition, from appearing on the main list of boot loaders. The default value is <tt>"Recovery HD", LRS_ESP</tt>, to keep the Mac OS X and Lenovo Windows recovery volumes from appearing. (These should get their own tools icon instead&mdash;see the <tt>showtools</tt> token.) Note that on a Macintosh with whole-disk encryption, you may need to uncomment this token and leave <tt>"Recovery HD"</tt> <i>off</i> the list to boot the system. You can use <tt>dont_scan_volumes</tt> to hide disks or partitions from legacy-mode scans, too. In this case, you can enter any part of the description that appears beneath the icons to hide entries that include the string you specify.</td>
+   <td>Adds the specified volume or volumes to a volume "blacklist"&mdash;these filesystems are <i>not</i> scanned for EFI boot loaders. This may be useful to keep unwanted EFI boot entries, such as for a Macintosh recovery partition, from appearing on the main list of boot loaders. The default value is <tt>LRS_ESP</tt>, to keep the Lenovo Windows recovery volume from appearing. (This volume should get its own tools icon instead&mdash;see the <tt>showtools</tt> token.) You can use <tt>dont_scan_volumes</tt> to hide disks or partitions from legacy-mode scans, too. In this case, you can enter any part of the description that appears beneath the icons to hide entries that include the string you specify.</td>
 </tr>
 <tr>
    <td><tt>dont_scan_dirs</tt> or <tt>don't_scan_dirs</tt></td>
    <td>directory path(s)</td>
-   <td>Adds the specified directory or directories to a directory "blacklist"&mdash;these directories are <i>not</i> scanned for boot loaders. You may optionally precede a directory path with a volume name and a colon to limit the blacklist to that volume; otherwise all volumes are affected. For instance, <tt>EFI/BOOT</tt> prevents scanning the <tt>EFI/BOOT</tt> directory on <i>all</i> volumes, whereas <tt>ESP:EFI/BOOT</tt> blocks scans of <tt>EFI/BOOT</tt> on the volume called <tt>ESP</tt> but not on other volumes. You can use a filesystem number, as in <tt>fs0</tt>, in place of a volume name. This token may be useful to keep duplicate boot loaders out of the menu; or to keep drivers or utilities out of the boot menu, if you've stored them in a subdirectory of <tt>EFI</tt>. This option takes precedence over <tt>also_scan_dirs</tt>; if a directory appears in both lists, it will <i>not</i> be scanned. To add directories to the default list rather than replace the list, specify <tt>+</tt> as the first option, as in <tt>dont_scan_dirs + EFI/dontscan</tt>.</td>
+   <td>Adds the specified directory or directories to a directory "blacklist"&mdash;these directories are <i>not</i> scanned for boot loaders. You may optionally precede a directory path with a volume name and a colon to limit the blacklist to that volume; otherwise all volumes are affected. For instance, <tt>EFI/BOOT</tt> prevents scanning the <tt>EFI/BOOT</tt> directory on <i>all</i> volumes, whereas <tt>ESP:EFI/BOOT</tt> blocks scans of <tt>EFI/BOOT</tt> on the volume called <tt>ESP</tt> but not on other volumes. You can use a filesystem number, as in <tt>fs0</tt>, in place of a volume name. This token may be useful to keep duplicate boot loaders out of the menu; or to keep drivers or utilities out of the boot menu, if you've stored them in a subdirectory of <tt>EFI</tt>. This option takes precedence over <tt>also_scan_dirs</tt>; if a directory appears in both lists, it will <i>not</i> be scanned. To add directories to the default list rather than replace the list, specify <tt>+</tt> as the first option, as in <tt>dont_scan_dirs + EFI/dontscan</tt>. The default for this token is <tt>EFI/tools, EFI/tools/memtest86, EFI/tools/memtest, EFI/memtest86, EFI/memtest, com.apple.recovery.boot</tt>.</td>
 </tr>
 <tr>
    <td><tt>dont_scan_files</tt> or <tt>don't_scan_files</tt></td>

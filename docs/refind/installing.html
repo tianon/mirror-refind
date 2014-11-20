@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-7/6/2014, referencing rEFInd 0.8.3</p>
+8/14/2014, referencing rEFInd 0.8.3</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -132,7 +132,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p><b>Don't be scared by the length of this page!</b> Only portions of this page apply to any given user, and most people can install rEFInd from an RPM or Debian package in a matter of seconds or by using the <tt>install.sh</tt> script in minute or two.</p>
 
-<p>Once you've obtained a rEFInd binary file, you must install it to your computer's ESP (or conceivably to some other location). The details of how you do this depend on your OS and your computer (UEFI-based PC vs. Macintosh). The upcoming sections provide details. See the Contents sidebar to the left for links to specific installation procedures. For most Linux users, an RPM or Debian package is the best way to go. If your Linux system doesn't support these formats, though, or if you're running OS X, using the <tt>install.sh</tt> script can be a good way to go. If you're using Windows, you'll have to install manually.</p>
+<p>Once you've obtained a rEFInd binary file, you must install it to your computer's EFI System Partition (ESP) (or conceivably to some other location). The details of how you do this depend on your OS and your computer (UEFI-based PC vs. Macintosh). The upcoming sections provide details. See the Contents sidebar to the left for links to specific installation procedures. For most Linux users, an RPM or Debian package is the best way to go. If your Linux system doesn't support these formats, though, or if you're running OS X, using the <tt>install.sh</tt> script can be a good way to go. If you're using Windows, you'll have to install manually.</p>
 
 <p class="sidebar" style="width:95%"><b>Important:</b> A rEFInd zip file, when uncompressed, creates a directory called <tt>refind-<i>version</i></tt>, where <tt><i>version</i></tt> is the version number. This directory includes a subdirectory called <tt>refind</tt> that holds the boot loader, along with another that holds documentation, as well as miscellaneous files in <tt>refind-<i>version</i></tt> itself. When I refer to "the <tt>refind</tt> directory" on this page, I mean the directory with that precise name, not the <tt>refind-<i>version</i></tt> directory that is its parent.</p>
 
@@ -218,7 +218,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Either command produces output similar to that described for <a href="#installsh">using the <tt>install.sh</tt> script,</a> so you can check it for error messages and other signs of trouble. The package file installs rEFInd and registers it with the EFI to be the default boot loader. The script that runs as part of the installation process tries to determine if you're using Secure Boot, and if so it will try to configure rEFInd to launch using shim; however, this won't work correctly on all systems. Ubuntu 12.10 users who are booting with Secure Boot active should be wary, since the resulting installation will probably try to use Ubuntu's version of shim, which won't work correctly with rEFInd.</p>
 
-<p>If you're using Ubuntu, you should be able to install the PPA as follows:</p>
+<a name="ppa">
+<p>If you're using Ubuntu, you should be able to install the PPA as follows:</p></a>
 
 <pre class="listing">$ <tt class="userinput">sudo apt-add-repository ppa:rodsmith/refind</tt>
 $ <tt class="userinput">sudo apt-get update</tt>
@@ -584,13 +585,11 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <li>Type <b><tt>cd EFI\refind</tt></b> to change into the <tt>refind</tt> subdirectory</li>
 
-<li>Type <b><tt>del refind_ia32.efi</tt></b> to delete the unused 32-bit version of rEFInd. (Windows only supports EFI boots on 64-bit EFI implementations and in 64-bit versions of Windows.)</li>
-
-<li>Optionally type <tt class="userinput">rd /s drivers_ia32</tt> to delete the <tt>drivers_ia32</tt> directory and its contents. You may also want to selectively delete some of the drivers in the <tt>drivers_x64</tt> directory, depending on your needs. Unnecessary drivers may slow the rEFInd start process. See the <a href="drivers.html">page on drivers</a> for more on this topic.</li>
+<li>You may want to selectively delete some of the drivers in the <tt>drivers_x64</tt> or <tt>drivers_ia32</tt> directory, depending on your architecture and needs. Unnecessary drivers will slow the rEFInd start process. See the <a href="drivers.html">page on drivers</a> for more on this topic.</li>
 
 <li>Type <b><tt>rename refind.conf-sample refind.conf</tt></b> to rename rEFInd's configuration file.</li>
 
-<li>Type <b><tt>bcdedit /set {bootmgr} path \EFI\refind\refind_x64.efi</tt></b> to set rEFInd as the default EFI boot program. Note that <tt>{bootmgr}</tt> is entered as such; that's not a notation for a variable.</li>
+<li>Type <b><tt>bcdedit /set {bootmgr} path \EFI\refind\refind_x64.efi</tt></b> to set rEFInd as the default EFI boot program. Note that <tt>{bootmgr}</tt> is entered as such; that's not a notation for a variable. Also, change <tt>refind_x64.efi</tt> to <tt>refind_ia32.efi</tt> on systems with 32-bit EFIs. Such computers are rare, and most of them are tablets. Check your Windows bit depth to determine which binary you should use.</li>
 
 <li>If you like, type <b><tt>bcdedit /set {bootmgr} description "<i>rEFInd description</i>"</tt></b> to set a description (change <tt><i>rEFInd description</i></tt> as you see fit).</li>
 
@@ -602,7 +601,7 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <li>You can rename files on the ESP. as described in the next section, <a href="#naming">Alternative Naming Options.</a></li>
 
-<li>You can boot from an optical disc into an emergency OS to do the job. Ubuntu, for instance, provides an EFI-bootable installer with a "try before installation" mode. You'll need to type <b><tt>sudo apt-get install efibootmgr</tt></b> to install <tt>efibootmgr</tt>, but you can then use that program as described <a href="#efibootmgr">earlier</a>. (If you're using Ubuntu, you'll need to precede the command with <b><tt>sudo</tt></b>.</li>
+<li>You can boot from an optical disc into an emergency OS to do the job. Ubuntu, for instance, provides an EFI-bootable installer with a "try before installation" mode. You'll need to type <b><tt>sudo apt-get install efibootmgr</tt></b> to install <tt>efibootmgr</tt>, but you can then use that program as described <a href="#efibootmgr">earlier</a>. (If you're using Ubuntu, you'll need to precede the command with <b><tt>sudo</tt></b>. If you use an Ubuntu image, you can install rEFInd <a href="#ppa">via its PPA,</a> which is an easy way to do the job. (In fact, the rEFInd PPA depends on the <tt>efibootmgr</tt> package, so you shouldn't need to manually install it.) The PPA approach may even be easier than installing from Windows using its tools, at least if you're familiar with Linux and have an Ubuntu desktop image handy.</li>
 
 <li>You may be able to use rEFInd's bootable CD image to use rEFInd to boot an OS that's been installed but rendered inoperable because of changes to your boot order. You can then use <tt>efibootmgr</tt>, <tt>bless</tt>, or some other tool to restore rEFInd as the default boot loader.</li>
 
@@ -1057,7 +1056,7 @@ Boot0007* CD/DVD Drive</pre>
 
 <p><a href="index.html">Go to the main rEFInd page</a></p>
 
-<p><a href="using.html">Learn how to use rEFInd</a></p>
+<p><a href="yosemite.html">Comments on rEFInd and OS X 10.10 (Yosemite)</a></p>
 
   <p><a href="http://www.rodsbooks.com/">Return</a> to my main Web page.</p>
 </body>

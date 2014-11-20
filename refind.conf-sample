@@ -251,26 +251,25 @@ timeout 20
 # OSes' file browsers.
 # For legacy-mode scans, you can specify any subset of the boot loader
 # description shown when you highlight the option in rEFInd.
-# The default is "Recovery HD,LRS_ESP".
+# The default is "LRS_ESP".
 #
 #dont_scan_volumes "Recovery HD"
 
 # Directories that should NOT be scanned for boot loaders. By default,
 # rEFInd doesn't scan its own directory, the EFI/tools directory, the
-# EFI/memtest directory, or the EFI/memtest86 directory. Using the
-# dont_scan_dirs option enables you to "blacklist" other directories;
-# but note that using this option removes the EFI/memtest and
-# EFI/memtest86 directories, so if you don't want them scanned, be
-# sure to include them in your new list. You might use this token to
-# keep EFI/boot/bootx64.efi out of the menu if that's a duplicate of
-# another boot loader or to exclude a directory that holds drivers
-# or non-bootloader utilities provided by a hardware manufacturer. If
-# a directory is listed both here and in also_scan_dirs, dont_scan_dirs
-# takes precedence. Note that this blacklist applies to ALL the
-# filesystems that rEFInd scans, not just the ESP, unless you precede
-# the directory name by a filesystem name, as in "myvol:EFI/somedir"
-# to exclude EFI/somedir from the scan on the myvol volume but not on
-# other volumes.
+# EFI/memtest directory, the EFI/memtest86 directory, or the
+# com.apple.recovery.boot directory. Using the dont_scan_dirs option
+# enables you to "blacklist" other directories; but be sure to use "+"
+# as the first element if you want to continue blacklisting existing
+# directories. You might use this token to keep EFI/boot/bootx64.efi out
+# of the menu if that's a duplicate of another boot loader or to exclude
+# a directory that holds drivers or non-bootloader utilities provided by
+# a hardware manufacturer. If a directory is listed both here and in
+# also_scan_dirs, dont_scan_dirs takes precedence. Note that this
+# blacklist applies to ALL the filesystems that rEFInd scans, not just
+# the ESP, unless you precede the directory name by a filesystem name,
+# as in "myvol:EFI/somedir" to exclude EFI/somedir from the scan on the
+# myvol volume but not on other volumes.
 #
 #dont_scan_dirs ESP:/EFI/boot,EFI/Dell,EFI/memtest86
 
@@ -343,6 +342,17 @@ timeout 20
 #default_selection Maintenance 23:30 2:00
 #default_selection "Maintenance,OS X" 1:00 2:30
 
+# Enable VMX bit and lock the CPU MSR if unlocked.
+# On some Intel Apple computers, the firmware does not lock the MSR 0x3A.
+# The symptom on Windows is Hyper-V not working even if the CPU
+# meets the minimum requirements (HW assisted virtualization and SLAT)
+# DO NOT SET THIS EXCEPT ON INTEL CPUs THAT SUPPORT VMX! See
+# http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature!
+# for more on this subject.
+# The default is false: Don't try to enable and lock the MSR.
+#
+#enable_and_lock_vmx false
+
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its options appeared at the point of the "include"
 # token itself, so if you want to override a setting in the main file,
@@ -411,7 +421,7 @@ menuentry Linux {
 # its GRUB 2 boot loader. Note uses of Linux-style forward slashes
 menuentry Ubuntu {
 	loader /EFI/ubuntu/grubx64.efi
-	icon /EFI/refined/icons/os_linux.png
+	icon /EFI/refind/icons/os_linux.png
 	disabled
 }
 

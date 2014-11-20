@@ -669,6 +669,9 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (StriCmp(TokenList[0], L"max_tags") == 0) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.MaxTags));
 
+	} else if (StriCmp(TokenList[0], L"enable_and_lock_vmx") == 0) {
+	   GlobalConfig.EnableAndLockVMX = HandleBoolean(TokenList, TokenCount);
+
         } else if ((StriCmp(TokenList[0], L"include") == 0) && (TokenCount == 2) &&
                    (StriCmp(FileName, GlobalConfig.ConfigFilename) == 0)) {
            if (StriCmp(TokenList[1], FileName) != 0) {

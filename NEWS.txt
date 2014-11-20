@@ -1,3 +1,17 @@
+0.8.4 (11/??/2014):
+-------------------
+
+- Tweaked default for dont_scan_volumes: Removed "Recovery HD". This change
+  better suits the needs of OS X 10.10 ("Yosemite") installations, but may
+  result in some stray Recovery HD entries on some Macs.
+
+- Updated icons for Fedora and Ubuntu and added an icon for Xubuntu.
+
+- Added new configuration option, "enable_and_lock_vmx", which sets an
+  Intel CPU feature that's required for some types of virtualization to
+  work. Most EFIs enable setting this feature in their own setup utilities,
+  but some (such as most Macs) don't.
+
 0.8.3 (7/6/2014):
 -----------------
 

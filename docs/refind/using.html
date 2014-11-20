@@ -148,6 +148,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="#legacy">Booting Legacy OSes</a></li>
 
+<li class="tight"><a href="#delays">Reducing Startup Delays</a></li>
+
 </ul>
 
 </div>
@@ -266,7 +268,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 </tr>
 <tr>
    <td><i>F10</i></td>
-   <td>Saves an image of the current screen in the file <tt>screenshot_<tt class="variable">###</tt>.bmp</tt>, where <tt class="variable">###</tt> is a sequence number starting with <tt>001</tt>, in the ESP's root directory</td>
+   <td>Saves an image of the current screen in the file <tt>screenshot_<tt class="variable">###</tt>.bmp</tt>, where <tt class="variable">###</tt> is a sequence number starting with <tt>001</tt>, in the EFI System Partition's (ESP's) root directory</td>
 </tr>
 <tr>
    <td><i>F12</i> or (on some keyboards) <i>Eject</i></td>
@@ -345,6 +347,36 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>On Macs, rEFInd uses a flexible scanning algorithm inherited from rEFIt. This procedure detects most legacy OSes on most disks, although it can sometimes miss an OS. This scanning algorithm can often identify the legacy OS you've installed and present a suitable icon. On UEFI PCs, rEFInd relies on the computer's NVRAM settings to determine which legacy boot loaders to scan, but rEFInd does tell the firmware to find every BIOS-mode boot option and add it to its NVRAM list. On most UEFI PCs, at least one hard disk and your optical drive appear as options. On one computer I tested (a Lenovo laptop), the internal hard disk appears in the rEFInd menu as a removable disk, and selecting any BIOS-mode option causes the computer to attempt a network boot. Three other computers I've tested behave more sensibly. If you opt to scan for BIOS-mode optical disks (<tt>scanfor cd</tt>) on UEFI-based PCs, an icon will appear whether or not your drive holds a CD. The UEFI scanning procedure is also incapable of detecting the OS type, so you'll see a generic legacy OS icon, as shown at the right.</p>
 
 <p>On both PCs and Macs, if you see non-functional legacy boot options, you can remove them by using the <tt>dont_scan_volumes</tt> token in <tt>refind.conf</tt>: Add any substring from the description that appears when you highlight the non-functional option to the set of options to have rEFInd ignore that entry. (Note that you must provide a complete volume name when excluding EFI volumes from scanning. The legacy-mode exclusion operation is more flexible in this regard.)</p>
+
+<a name="delays">
+<h2>Reducing Startup Delays</h2>
+</a>
+
+<p>You may discover that rEFInd takes a while to appear on the screen compared to other boot managers and boot loaders. Ultimately, the reason is that rEFInd is doing more&mdash;it's reading more filesystems, scanning for bootable files, and so on. In most cases, rEFInd takes just a second or two longer than other boot loaders, but I've heard of (and seen) much longer delays on computers that are configured sub-optimally. Some things you can do to reduce these delays include:</p>
+
+<ul>
+
+<li><b>Remove unnecessary drivers</b>&mdash;Simply loading a driver takes a certain amount of time, and if a filesystem driver finds a filesystem to read, rEFInd will spend time scanning that filesystem for bootable files. If there are no such files, or if you're not using them, then this is wasted time. Thus, you should check the <tt>drivers</tt>, <tt>drivers_x64</tt>, or other architecture-specific drivers subdirectory to be sure it doesn't hold unnecessary drivers.</li>
+
+<li><b>Use FAT for <tt>/boot</tt></b>&mdash;This tip is a corollary of the preceding one. If you use rEFInd to boot the Linux kernel directly, and if you rely on a driver to read the Linux kernel, then you'll have to live with the time to load the driver and to scan at least one extra filesystem. If you mount your ESP at <tt>/boot</tt>, or even if you create a separate FAT <tt>/boot</tt> partition, you'll save a little time. Note, however, that most Linux distributions don't allow you to install to a system with a FAT <tt>/boot</tt> partition, so you may need to set this up after doing your initial installation. If you see symbolic links in <tt>/boot</tt>, be wary; your distribution may rely upon them, and because FAT doesn't support symbolic links, this action may cause problems when upgrading kernels. On Macs, you can use HFS+ for this purpose, since Apple's EFI implementation includes an HFS+ driver.</li>
+
+<li><b>Minimize the number of scanned filesystems</b>&mdash;There's overhead associated with every additional filesystem rEFInd scans. Thus, if you have, say, separate ext4fs root (<tt>/</tt>), <tt>/boot</tt>, <tt>/usr</tt>, <tt>/home</tt>, and <tt>/var</tt> filesystems, and if you install rEFInd's ext4fs driver, rEFInd will end up scanning at least six filesystems (counting the FAT ESP), although only one of those has Linux kernels. You can use FAT for <tt>/boot</tt> and remove the ext4fs driver to speed up the boot process, as just described; but if you prefer to avoid the downsides of that action, you can switch <tt>/boot</tt> to some other filesystem, such as ext2fs or ReiserFS. This plan will reduce the number of filesystems to be scanned and improve boot time. Alternatively, if you re-install Linux, you can reduce the number of partitions or use LVM (which rEFInd can't read) for all of your filesystems except for <tt>/boot</tt>.</li>
+
+<li><b>Use a speedier filesystem</b>&mdash;In my tests, rEFInd's ReiserFS driver is the fastest and ext2fs is the slowest, with Btrfs and ext4fs falling in-between these two. The difference is trivial on some computers but it's noticeable on others. Filesystem speed differences are more likely to be noticeable in the time it takes to boot the OS; rEFInd's own startup time is less likely to be affected by a filesystem change.</li>
+
+<li><b>Use a speedier driver</b>&mdash;rEFInd 0.7.0 introduced a read-ahead cache in its filesystem drivers, which greatly improved their speed on some systems. If you're using an older driver, try using a newer one. Pete Batard's <a href="https://github.com/pbatard/efifs">efifs drivers</a> are an alternative to rEFInd's drivers. The efifs drivers are still very new and rapidly changing. My initial impression is that some of them are quite speedy, but others are very slow.</li>
+
+<li><b>Delete or move files and directories</b>&mdash;By default, rEFInd scans the root (<tt>/</tt>) directory, <tt>/boot</tt>, and most subdirectories of <tt>/EFI</tt> on every partition that it scans. If these locations exist but contain no bootable files, they'll just slow rEFInd down. Likewise, if you use <tt>dont_scan_files</tt> to keep unused boot loaders out of the menu, rEFInd will still do much of the work of scanning those files. In all of these cases, deleting or moving the directories or files that are being scanned but that don't contain bootable options you want to see can speed things up.</li>
+
+<li><b>Use the <tt>also_scan_dirs</tt> option sparingly</b>&mdash;Using <tt>also_scan_dirs</tt> is useful in some situations, but it does add to rEFInd's task list. Use it only if you must.</li>
+
+<li><b>Reduce the <tt>scanfor</tt> list</b>&mdash;Removing items from the <tt>scanfor</tt> list in <tt>refind.conf</tt> can speed things up a bit. This is especially true on Macs, which scan for BIOS-mode boot loaders by default. If you never boot a Mac in BIOS mode, try uncommending <tt>scanfor</tt> and ensure that the <tt>hdbios</tt>, <tt>biosexternal</tt>, and <tt>cd</tt> options are <i>not</i> present. The <tt>external</tt> and <tt>optical</tt> items won't add delays <i>unless</i> the relevant media are inserted, which brings us to....</li>
+
+<li><b>Don't boot with removable media attached (unless you intend to boot from them)</b>&mdash;If you insert an optical disc into your drive or plug in a removable device like a USB flash drive, rEFInd will attempt to scan it. This will slow down rEFInd's startup process, so you shouldn't make a habit of booting with such media inserted. In fact, there's another reason not to boot with external media attached: If such a medium is infected with malware, and if your firmware is configured to boot from external media first, you'll end up running the malware, possibly infecting your computer.</li>
+
+</ul>
+
+<p>I hope these tips will help you to overcome any speed problems you're experiencing. As I said, rEFInd is reasonably fast on many computers, so you might not run into problems in the first place. If you do, though, reducing rEFInd's workload can help.</p>
 
 <hr />
 

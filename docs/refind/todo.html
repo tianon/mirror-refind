@@ -329,6 +329,17 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	stanzas override auto-detected boot loader definitions for the same
 	boot loader file.</li>
 
+    <li>Along similar lines, some users have asked for a way to take
+	detected boot programs and create a set of manual boot stanzas for
+	them, so that they can be modified manually.</li>
+
+    <li>GRUB provides a configuration-file command called <tt>outb</tt>
+	that enables manipulating hardware registers. Something similar,
+	via the <tt>mm</tt> command, can be done in the EFI shell. I'd like
+	to add such a feature to rEFInd, since it enables doing things like
+	disabling one or another video output on Macs with two video
+	cards.</li>
+
     <li>I have thoughts about creating an EFI configuration tool and
 	information utility&mdash;something to tell you about your hard
 	disks, enable you to manage MOKs, adjust boot loader priority in

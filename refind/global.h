@@ -246,6 +246,7 @@ typedef struct {
    BOOLEAN     TextOnly;
    BOOLEAN     ScanAllLinux;
    BOOLEAN     DeepLegacyScan;
+   BOOLEAN     EnableAndLockVMX;
    UINTN       RequestedScreenWidth;
    UINTN       RequestedScreenHeight;
    UINTN       BannerBottomEdge;

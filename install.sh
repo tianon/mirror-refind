@@ -765,7 +765,7 @@ FindMountedESP() {
    InstallDir=`echo $EspLine | cut -d " " -f 6`
 
    if [[ -n "$InstallDir" ]] ; then
-      EspFilesystem=`grep "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3`
+      EspFilesystem=`grep -w "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3`
    fi
    if [[ $EspFilesystem != 'vfat' ]] ; then
       FindLinuxESP
