@@ -50,6 +50,10 @@ Program (C source code) files:
   enabling Intel VMX support (the enable_and_lock_vmx token in
   refind.conf).
 
+* Rohan Sehgal (rohan.sehgal.su@gmail.com) wrote code to help rEFInd
+  detect network boot options and launch them, with the help of the
+  external ipxe.efi and ipxe_discover.efi programs.
+
 * Matthew J. Garrett (mjg@redhat.com) wrote the shim boot loader upon which
   rEFInd relies for its Secure Boot functionality. I took a few shim
   functions to help out on the rEFInd side, too; see the mok/mok.c source
@@ -76,6 +80,9 @@ Icons and graphics:
   These icons are released under the LGPLv3 or GPLv3. If I'm reading the
   pages correctly, the original creator was David Vignoni (aka
   "deviantdark" on the deviantart site).
+
+* Erik Kemperman provided the rEFInd icon, which is a combination of
+  the common refresh/reload icon and the search/find icon.
 
 * The keys icon for MOK keys management comes from the
   kdeartwork-iconthemes-4.8.5 package on Gentoo.
@@ -107,5 +114,9 @@ Icons and graphics:
   (http://en.wikipedia.org/wiki/File:Google_Chrome_icon_and_wordmark_%282011%29.svg),
   which in turn is Google's original work.
 
-* Erik Kemperman provided the rEFInd icon, which is a combination of
-  the common refresh/reload icon and the search/find icon.
+* The icon used (at different sizes) for both the generic network OS and
+  for the network-boot badge is from
+  https://www.iconfinder.com/icons/37048/intranet_network_icon.
+
+* The icon used for the network-boot tool on the second row comes from
+  https://cdn2.iconfinder.com/data/icons/oxygen/48x48/devices/network-wired.png.

@@ -1438,7 +1438,7 @@ static VOID ScanNetboot() {
       Location = RuniPXEDiscover(SelfVolume->DeviceHandle);
       if (Location != NULL && FileExists(SelfVolume->RootDir, iPXEFileName)) {
          NetVolume = AllocatePool(sizeof(REFIT_VOLUME));
-         NetVolume = CopyMem(NetVolume, SelfVolume, sizeof(REFIT_VOLUME));
+         CopyMem(NetVolume, SelfVolume, sizeof(REFIT_VOLUME));
          NetVolume->DiskKind = DISK_KIND_NET;
          NetVolume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_NET);
          NetVolume->PartName = NetVolume->VolName = NULL;
