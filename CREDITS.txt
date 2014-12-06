@@ -46,6 +46,10 @@ Program (C source code) files:
 * Samuel Liao ported the GRUB 2 Btrfs code into an EFI driver and
   contributed it to this project.
 
+* Emerson Barcelos (emerson_freitas@yahoo.com.br) wrote the code for
+  enabling Intel VMX support (the enable_and_lock_vmx token in
+  refind.conf).
+
 * Matthew J. Garrett (mjg@redhat.com) wrote the shim boot loader upon which
   rEFInd relies for its Secure Boot functionality. I took a few shim
   functions to help out on the rEFInd side, too; see the mok/mok.c source

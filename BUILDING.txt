@@ -297,3 +297,25 @@ Christoph Pfisterer. Most of the drivers seem to have passed through
 Oracle's VirtualBox project (https://www.virtualbox.org) and the Clover
 boot loader project (https://sourceforge.net/projects/cloverefiboot/),
 which I used as the source for this build.
+
+Adding Support for Network Boot
+===============================
+
+rEFInd provides EXPERIMENTAL support for booting over the network using
+iPXE (http://ipxe.org) as a means to receive the payload. In order to
+enable this feature you'll want to follow these instructions:
+
+* cd net/
+* make source
+* make netboot
+* copy bin/ipxe.efi and bin/ipxe_discover.efi to the EFI volume at EFI/tools/
+
+Note that you may need to install additional development packages, such as
+libiberty-dev and binutils-dev, in addition to those needed to build rEFInd
+itself.
+
+My own tests show this support to work under optimal conditions; however,
+architecture (EFI vs. BIOS) detection may not work, and some computers will
+hang or won't retrieve boot files from the network. For these reasons, this
+support is disabled by default in rEFInd, and I do not provide iPXE
+binaries.

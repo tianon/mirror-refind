@@ -73,6 +73,7 @@ typedef struct {
 #define DISK_KIND_INTERNAL  (0)
 #define DISK_KIND_EXTERNAL  (1)
 #define DISK_KIND_OPTICAL   (2)
+#define DISK_KIND_NET       (3)
 
 #define VOL_UNREADABLE 999
 
@@ -95,10 +96,10 @@ VOID FreeList(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount);
 
 VOID ExtractLegacyLoaderPaths(EFI_DEVICE_PATH **PathList, UINTN MaxPaths, EFI_DEVICE_PATH **HardcodedPathList);
 
+VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume);
 VOID ScanVolumes(VOID);
 
 BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath);
-BOOLEAN DirectoryExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath);
 
 EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry, IN UINTN FilterMode);
 

@@ -475,8 +475,12 @@ VOID ReadConfig(CHAR16 *FileName)
     } // if
 
     if (!FileExists(SelfDir, FileName)) {
-        Print(L"Configuration file '%s' missing!\n", FileName);
-        return;
+       Print(L"Configuration file '%s' missing!\n", FileName);
+       if (!FileExists(SelfDir, L"icons")) {
+          Print(L"Icons directory doesn't exist; setting textonly = TRUE!\n");
+          GlobalConfig.TextOnly = TRUE;
+       }
+       return;
     }
 
     Status = ReadFile(SelfDir, FileName, &File, &i);
@@ -585,6 +589,8 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.ShowTools[i - 1] = TAG_FIRMWARE;
                 } else if ((StriCmp(FlagName, L"memtest86") == 0) || (StriCmp(FlagName, L"memtest") == 0)) {
                    GlobalConfig.ShowTools[i - 1] = TAG_MEMTEST;
+                } else if (StriCmp(FlagName, L"netboot") == 0) {
+                   GlobalConfig.ShowTools[i - 1] = TAG_NETBOOT;
                 } else {
                    Print(L" unknown showtools flag: '%s'\n", FlagName);
                 }
@@ -685,6 +691,11 @@ VOID ReadConfig(CHAR16 *FileName)
     if ((GlobalConfig.DontScanFiles) && (GlobalConfig.WindowsRecoveryFiles))
        MergeStrings(&(GlobalConfig.DontScanFiles), GlobalConfig.WindowsRecoveryFiles, L',');
     MyFreePool(File.Buffer);
+
+    if (!FileExists(SelfDir, L"icons") && !FileExists(SelfDir, GlobalConfig.IconsDir)) {
+       Print(L"Icons directory doesn't exist; setting textonly = TRUE!\n");
+       GlobalConfig.TextOnly = TRUE;
+    }
 } /* VOID ReadConfig() */
 
 // Finds a volume with the specified Identifier (a filesystem label, a

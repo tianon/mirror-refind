@@ -198,6 +198,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
    </ul></li>
 
+<li class="tight"><a href="#winprob">Fixing Windows Boot Problems</a></li>
+
 <li class="tight"><a href="#uninstalling">Uninstalling rEFInd</a></li>
 
 </ul>
@@ -1002,6 +1004,38 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 </ul>
 
 <p>Unfortunately, I lack a recent Mac and so can't investigate these issues myself, so I'm dependent upon others (mostly non-programmers) to offer workarounds. This is the type of problem that really requires hands-on interactive debugging sessions with the code to stand any chance of finding a better solution.</p>
+
+<a name="winprob">
+<h2>Fixing Windows Boot Problems</h2>
+</a>
+
+<p>Most Windows boot problems are best addressed on Windows-specific sites, so I recommend you make the rounds of Windows forums to solve such problems. There is one that deserves mention here, though: If you accidentally erase the Windows boot loader file, <tt>EFI/Microsoft/Boot/bootmgfw.efi</tt>, you won't be able to boot Windows. The simplest solution is to restore this file from a backup you prepared ahead of time. If you don't have such a backup, though, you can restore it as follows:</p>
+
+<ol>
+
+<li>Boot from an emergency Windows recovery disk. If you don't have one, you can prepare one from a working Windows system as described <a href="http://windows.microsoft.com/en-us/windows7/create-a-system-repair-disc">here.</a></li>
+
+<li>Type <tt class="userinput">diskpart</tt> to enter the Windows disk-partitioning tool.</li>
+
+<li>In <tt>diskpart</tt>, type <tt class="userinput">sel disk 0</tt> followed by <tt>list vol</tt>. You should see a set of partitions. This step is intended to help you identify your ESP, which will probably be the only FAT32 partition on the disk. (If you have multiple disks, you may need to try again with <tt class="userinput">sel disk 1</tt> or higher.) Note the volume number of your ESP.</li>
+
+<li>Type <tt class="userinput">sel vol 1</tt>, changing <tt>1</tt> to whatever the ESP's volume number is.</li>
+
+<li>Type <tt class="userinput">assign letter=S:</tt> to assign the ESP a Windows disk identifier of <tt>S:</tt>. (You can use another letter if you prefer.)</li>
+
+<li>Type <tt class="userinput">exit</tt> to exit from <tt>diskutil</tt>.</li>
+
+<li>Type <tt class="userinput">cd /d s:\EFI\Microsoft\Boot\</tt> to change into the Windows boot loader directory. (If this directory doesn't exist, you may need to create it first with <tt>mkdir</tt>. If rEFInd or some other boot loader occupies this directory, back it up first.</li>
+
+<li>Type <tt class="userinput">bootrec /fixboot</tt>.</li>
+
+<li>Type <tt class="userinput">bcdboot c:\Windows /s s: /f ALL</tt>. Note that this command should set the Windows boot loader as the default. Omit <tt>/f ALL</tt> if you don't want to adjust the EFI's default boot program.</li>
+
+<li>Reboot and hope it works! If the computer boots straight to Windows and you want to use rEFInd, use <tt>bcdedit</tt> in Windows, as described in step 9 of the <a href="#windows">Installing rEFInd Manually Using Windows</a> section of this page.</li>
+
+</ol>
+
+<p>For more information, see <a href="http://superuser.com/questions/460762/how-can-i-repair-the-windows-8-efi-bootloader">this SuperUser question and answer.</a></p>
 
 <a name="uninstalling">
 <h2>Uninstalling rEFInd</h2>

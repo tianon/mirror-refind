@@ -81,6 +81,7 @@
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shell.efi,\\shellx64.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi"
 #define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi"
+#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
 #define MEMTEST_NAMES           L"memtest86.efi,memtest86_x64.efi,memtest86x64.efi,bootx64.efi"
 #define DRIVER_DIRS             L"drivers,drivers_x64"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
@@ -90,6 +91,7 @@
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellia32.efi,\\shell.efi,\\shellia32.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi"
 #define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_ia32.efi"
+#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
 #define MEMTEST_NAMES           L"memtest86.efi,memtest86_ia32.efi,memtest86ia32.efi,bootia32.efi"
 #define DRIVER_DIRS             L"drivers,drivers_ia32"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
@@ -99,12 +101,16 @@
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\shell.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi"
 #define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi"
+#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
 #define MEMTEST_NAMES           L"memtest86.efi"
 #define DRIVER_DIRS             L"drivers"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" /* Not really correct */
 #define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
 #endif
 #define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
+
+#define IPXE_DISCOVER_NAME      L"\\efi\\tools\\ipxe_discover.efi"
+#define IPXE_NAME               L"\\efi\\tools\\ipxe.efi"
 
 // Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
 // L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive
@@ -143,7 +149,7 @@ REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TE
                               0, 0, { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE }, BANNER_NOSCALE,
                               NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY, TAG_MOK_TOOL,
-                                TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0 }
+                                TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0, 0, 0 }
                             };
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
@@ -169,7 +175,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.3.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.3.4");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -451,7 +457,7 @@ static VOID DoEnableAndLockVMX(VOID)
         msr = 0x3a;
         __asm__ volatile ("wrmsr" : : "c" (msr), "a" (low_bits), "d" (high_bits));
     } 
-} // VOID DoEnableAndLockVMX
+} // VOID DoEnableAndLockVMX()
 
 static VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName)
 {
@@ -476,7 +482,7 @@ static VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName)
 // '\EFI\kernels\initramfs-3.3.0.img'. If the directory ALSO contains the file
 // initramfs-3.3.0-rc7.img or initramfs-13.3.0.img, those files will NOT match;
 // however, initmine-3.3.0.img might match. (FindInitrd() returns the first match it
-// finds). Thus, care should be taken to avoid placing duplicate matching files in
+// finds.) Thus, care should be taken to avoid placing duplicate matching files in
 // the kernel's directory.
 // If no matching init file can be found, returns NULL.
 static CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
@@ -912,61 +918,67 @@ static VOID GuessLinuxDistribution(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CH
 // code and shortcut letter. For Linux EFI stub loaders, also sets kernel options
 // that will (with luck) work fairly automatically.
 VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Volume) {
-   CHAR16      *FileName, *PathOnly, *NoExtension, *OSIconName = NULL, *Temp, *SubString;
+   CHAR16      *NameClues, *PathOnly, *NoExtension, *OSIconName = NULL, *Temp, *SubString;
    CHAR16      ShortcutLetter = 0;
    UINTN       i = 0, Length;
 
-   FileName = Basename(LoaderPath);
+   NameClues = Basename(LoaderPath);
    PathOnly = FindPath(LoaderPath);
-   NoExtension = StripEfiExtension(FileName);
+   NoExtension = StripEfiExtension(NameClues);
 
-   // locate a custom icon for the loader
-   // Anything found here takes precedence over the "hints" in the OSIconName variable
-   if (!Entry->me.Image) {
-      Entry->me.Image = egLoadIconAnyType(Volume->RootDir, PathOnly, NoExtension, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-   }
-   if (!Entry->me.Image) {
-      Entry->me.Image = egCopyImage(Volume->VolIconImage);
-   }
+   if (Volume->DiskKind == DISK_KIND_NET) {
+      MergeStrings(&NameClues, Entry->me.Title, L' ');
+   } else {
+      // locate a custom icon for the loader
+      // Anything found here takes precedence over the "hints" in the OSIconName variable
+      if (!Entry->me.Image) {
+         Entry->me.Image = egLoadIconAnyType(Volume->RootDir, PathOnly, NoExtension, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+      }
+      if (!Entry->me.Image) {
+         Entry->me.Image = egCopyImage(Volume->VolIconImage);
+      }
 
-   // Begin creating icon "hints" by using last part of directory path leading
-   // to the loader
-   Temp = FindLastDirName(LoaderPath);
-   MergeStrings(&OSIconName, Temp, L',');
-   MyFreePool(Temp);
-   Temp = NULL;
-   if (OSIconName != NULL) {
-      ShortcutLetter = OSIconName[0];
-   }
+      // Begin creating icon "hints" by using last part of directory path leading
+      // to the loader
+      Temp = FindLastDirName(LoaderPath);
+      MergeStrings(&OSIconName, Temp, L',');
+      MyFreePool(Temp);
+      Temp = NULL;
+      if (OSIconName != NULL) {
+         ShortcutLetter = OSIconName[0];
+      }
 
-   // Add every "word" in the volume label, delimited by spaces, dashes (-), or
-   // underscores (_), to the list of hints to be used in searching for OS
-   // icons.
-   if ((Volume->VolName) && (StrLen(Volume->VolName) > 0)) {
-      Temp = SubString = StrDuplicate(Volume->VolName);
-      if (Temp != NULL) {
-         Length = StrLen(Temp);
-         for (i = 0; i < Length; i++) {
-            if ((Temp[i] == L' ') || (Temp[i] == L'_') || (Temp[i] == L'-')) {
-               Temp[i] = 0;
-               if (StrLen(SubString) > 0)
-                  MergeStrings(&OSIconName, SubString, L',');
-               SubString = Temp + i + 1;
-            } // if
-         } // for
-         MergeStrings(&OSIconName, SubString, L',');
-         MyFreePool(Temp);
+      // Add every "word" in the volume label, delimited by spaces, dashes (-), or
+      // underscores (_), to the list of hints to be used in searching for OS
+      // icons.
+      if ((Volume->VolName) && (StrLen(Volume->VolName) > 0)) {
+         Temp = SubString = StrDuplicate(Volume->VolName);
+         if (Temp != NULL) {
+            Length = StrLen(Temp);
+            for (i = 0; i < Length; i++) {
+               if ((Temp[i] == L' ') || (Temp[i] == L'_') || (Temp[i] == L'-')) {
+                  Temp[i] = 0;
+                  if (StrLen(SubString) > 0)
+                     MergeStrings(&OSIconName, SubString, L',');
+                  SubString = Temp + i + 1;
+               } // if
+            } // for
+            MergeStrings(&OSIconName, SubString, L',');
+            MyFreePool(Temp);
+         } // if
       } // if
-   } // if
+   } // if/else network boot
 
    // detect specific loaders
-   if (StriSubCmp(L"bzImage", FileName) || StriSubCmp(L"vmlinuz", FileName)) {
-      GuessLinuxDistribution(&OSIconName, Volume, LoaderPath);
+   if (StriSubCmp(L"bzImage", NameClues) || StriSubCmp(L"vmlinuz", NameClues)) {
+      if (Volume->DiskKind != DISK_KIND_NET) {
+         GuessLinuxDistribution(&OSIconName, Volume, LoaderPath);
+         Entry->LoadOptions = GetMainLinuxOptions(LoaderPath, Volume);
+      }
       MergeStrings(&OSIconName, L"linux", L',');
       Entry->OSType = 'L';
       if (ShortcutLetter == 0)
          ShortcutLetter = 'L';
-      Entry->LoadOptions = GetMainLinuxOptions(LoaderPath, Volume);
       Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
    } else if (StriSubCmp(L"refit", LoaderPath)) {
       MergeStrings(&OSIconName, L"refit", L',');
@@ -981,33 +993,39 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
       Entry->OSType = 'M';
       ShortcutLetter = 'M';
       Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
-   } else if (StriCmp(FileName, L"diags.efi") == 0) {
+   } else if (StriCmp(NameClues, L"diags.efi") == 0) {
       MergeStrings(&OSIconName, L"hwtest", L',');
-   } else if (StriCmp(FileName, L"e.efi") == 0 || StriCmp(FileName, L"elilo.efi") == 0 || StriSubCmp(L"elilo", FileName)) {
+   } else if (StriCmp(NameClues, L"e.efi") == 0 || StriCmp(NameClues, L"elilo.efi") == 0 || StriSubCmp(L"elilo", NameClues)) {
       MergeStrings(&OSIconName, L"elilo,linux", L',');
       Entry->OSType = 'E';
       if (ShortcutLetter == 0)
          ShortcutLetter = 'L';
       Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-   } else if (StriSubCmp(L"grub", FileName)) {
+   } else if (StriSubCmp(L"grub", NameClues)) {
+      MergeStrings(&OSIconName, L"grub,linux", L',');
       Entry->OSType = 'G';
       ShortcutLetter = 'G';
       Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_GRUB;
-   } else if (StriCmp(FileName, L"cdboot.efi") == 0 ||
-              StriCmp(FileName, L"bootmgr.efi") == 0 ||
-              StriCmp(FileName, L"bootmgfw.efi") == 0 ||
-              StriCmp(FileName, L"bkpbootmgfw.efi") == 0) {
+   } else if (StriCmp(NameClues, L"cdboot.efi") == 0 ||
+              StriCmp(NameClues, L"bootmgr.efi") == 0 ||
+              StriCmp(NameClues, L"bootmgfw.efi") == 0 ||
+              StriCmp(NameClues, L"bkpbootmgfw.efi") == 0) {
       MergeStrings(&OSIconName, L"win", L',');
       Entry->OSType = 'W';
       ShortcutLetter = 'W';
       Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-   } else if (StriCmp(FileName, L"xom.efi") == 0) {
+   } else if (StriCmp(NameClues, L"xom.efi") == 0) {
       MergeStrings(&OSIconName, L"xom,win", L',');
       Entry->UseGraphicsMode = TRUE;
       Entry->OSType = 'X';
       ShortcutLetter = 'W';
       Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
    }
+   else if (StriSubCmp(L"ipxe", NameClues)) {
+      Entry->OSType = 'N';
+      ShortcutLetter = 'N';
+      MergeStrings(&OSIconName, L"network", L',');
+   } 
 
    if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z'))
       ShortcutLetter = ShortcutLetter - 'a' + 'A'; // convert lowercase to uppercase
@@ -1016,6 +1034,38 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
       Entry->me.Image = LoadOSIcon(OSIconName, L"unknown", FALSE);
    MyFreePool(PathOnly);
 } // VOID SetLoaderDefaults()
+
+// // Add a network (PXE) EFI boot loader to the list, using automatic settings
+// // for icons, options, etc.
+// LOADER_ENTRY * AddNetbootLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume) {
+//    LOADER_ENTRY      *Entry;
+// 
+//    Print(L"Adding iPXE entry for '%s'\n", LoaderTitle);
+//    PauseForKey();
+//    CleanUpPathNameSlashes(LoaderPath);
+//    Entry = InitializeLoaderEntry(NULL);
+//    if (Entry != NULL) {
+//       Entry->Title = StrDuplicate((LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
+//       Entry->me.Title = AllocateZeroPool(sizeof(CHAR16) * 256);
+//       // Extra space at end of Entry->me.Title enables searching on Volume->VolName even if another volume
+//       // name is identical except for something added to the end (e.g., VolB1 vs. VolB12).
+//       SPrint(Entry->me.Title, 255, L"NetBoot %s", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
+//       Entry->me.Row = 0;
+//       if ((LoaderPath != NULL) && (LoaderPath[0] != L'\\')) {
+//          Entry->LoaderPath = StrDuplicate(L"\\");
+//       } else {
+//          Entry->LoaderPath = NULL;
+//       }
+//       MergeStrings(&(Entry->LoaderPath), LoaderPath, 0);
+//       Entry->VolName = Volume->VolName;
+//       Entry->DevicePath = FileDevicePath(Volume->DeviceHandle, Entry->LoaderPath);
+//       SetLoaderDefaults(Entry, LoaderPath, Volume);
+//       GenerateSubScreen(Entry, Volume);
+//       AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+//    }
+// 
+//    return(Entry);
+// } // LOADER_ENTRY * AddLoaderEntry()
 
 // Add a specified EFI boot loader to the list, using automatic settings
 // for icons, options, etc.
@@ -1029,7 +1079,11 @@ LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN 
       Entry->me.Title = AllocateZeroPool(sizeof(CHAR16) * 256);
       // Extra space at end of Entry->me.Title enables searching on Volume->VolName even if another volume
       // name is identical except for something added to the end (e.g., VolB1 vs. VolB12).
-      SPrint(Entry->me.Title, 255, L"Boot %s from %s ", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath, Volume->VolName);
+      // Note: Volume->VolName will be NULL for network boot programs.
+      if (Volume->VolName)
+         SPrint(Entry->me.Title, 255, L"Boot %s from %s ", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath, Volume->VolName);
+      else
+         SPrint(Entry->me.Title, 255, L"Boot %s ", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
       Entry->me.Row = 0;
       Entry->me.BadgeImage = Volume->VolBadgeImage;
       if ((LoaderPath != NULL) && (LoaderPath[0] != L'\\')) {
@@ -1344,6 +1398,55 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
 
     return FoundFallbackDuplicate;
 } /* static VOID ScanLoaderDir() */
+
+// Run the IPXE_DISCOVER_NAME program, which obtains the IP address of the boot
+// server and the name of the boot file it delivers.
+CHAR16* RuniPXEDiscover(EFI_HANDLE Volume)
+{
+   EFI_STATUS       Status;
+   EFI_DEVICE_PATH  *FilePath;
+   EFI_HANDLE       iPXEHandle;
+   CHAR16           *boot_info;
+   UINTN            boot_info_size = 256 * sizeof(CHAR16);
+
+   FilePath = FileDevicePath (Volume, IPXE_DISCOVER_NAME);
+   Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, FilePath,
+                                NULL, 0, &iPXEHandle);
+   if (Status != 0) {
+      return NULL;
+   } // if
+
+   boot_info = AllocatePool(256 * sizeof(CHAR16));
+   Status = refit_call3_wrapper(BS->StartImage, iPXEHandle, &boot_info_size, &boot_info);
+
+   return boot_info;
+} // RuniPXEDiscover()
+
+// Scan for network (PXE) boot servers. This function relies on the presence
+// of the IPXE_DISCOVER_NAME and IPXE_NAME program files on the volume from
+// which rEFInd launched. As of December 6, 2014, these tools aren't entirely
+// reliable. See BUILDING.txt for information on building them.
+static VOID ScanNetboot() {
+   CHAR16        *iPXEFileName = IPXE_NAME;
+   CHAR16        *Location;
+   REFIT_VOLUME  *NetVolume;
+
+   if (FileExists(SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
+       FileExists(SelfVolume->RootDir, IPXE_NAME) &&
+       IsValidLoader(SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
+       IsValidLoader(SelfVolume->RootDir, IPXE_NAME)) {
+      Location = RuniPXEDiscover(SelfVolume->DeviceHandle);
+      if (Location != NULL && FileExists(SelfVolume->RootDir, iPXEFileName)) {
+         NetVolume = AllocatePool(sizeof(REFIT_VOLUME));
+         NetVolume = CopyMem(NetVolume, SelfVolume, sizeof(REFIT_VOLUME));
+         NetVolume->DiskKind = DISK_KIND_NET;
+         NetVolume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_NET);
+         NetVolume->PartName = NetVolume->VolName = NULL;
+         AddLoaderEntry(iPXEFileName, Location, NetVolume);
+         MyFreePool(NetVolume);
+      } // if support files exist and are valid
+   } 
+} // VOID ScanNetBoot()
 
 static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
    EFI_STATUS              Status;
@@ -2256,6 +2359,9 @@ static VOID ScanForBootloaders(VOID) {
          case 'o': case 'O':
             ScanOptical();
             break;
+         case 'n': case 'N':
+            ScanNetboot();
+            break;
       } // switch()
    } // for
 
@@ -2371,6 +2477,18 @@ static VOID ScanForTools(VOID) {
                if (FileExists(SelfRootDir, FileName)) {
                   AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"disk partitioning tool",
                                BuiltinIcon(BUILTIN_ICON_TOOL_PART), 'G', FALSE);
+               } // if
+               MyFreePool(FileName);
+            } // while
+            FileName = NULL;
+            break;
+         
+         case TAG_NETBOOT:
+            j = 0;
+            while ((FileName = FindCommaDelimited(NETBOOT_NAMES, j++)) != NULL) {
+               if (FileExists(SelfRootDir, FileName)) {
+                  AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"Netboot",
+                               BuiltinIcon(BUILTIN_ICON_TOOL_NETBOOT), 'N', FALSE);
                } // if
                MyFreePool(FileName);
             } // while

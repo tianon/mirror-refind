@@ -713,6 +713,9 @@ VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume)
           case DISK_KIND_OPTICAL:
              Volume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_OPTICAL);
              break;
+          case DISK_KIND_NET:
+             Volume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_NET);
+             break;
       } // switch()
    }
 } // VOID SetVolumeBadgeIcon()

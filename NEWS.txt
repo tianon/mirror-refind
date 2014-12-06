@@ -12,6 +12,15 @@
   work. Most EFIs enable setting this feature in their own setup utilities,
   but some (such as most Macs) don't.
 
+- If rEFInd can't locate an icons directory (either the default or one
+  specified by the icons_dir token), the program switches to text-only
+  mode.
+
+- If a loader contains the string "grub" and no other clue to the loader's
+  OS association exists, search for os_grub.{png|icns} (which is not
+  provided with rEFInd) or os_linux.{png|icns}. (Previous versions provided
+  a generic loader icon for GRUB.)
+
 0.8.3 (7/6/2014):
 -----------------
 
