@@ -1035,42 +1035,10 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
    MyFreePool(PathOnly);
 } // VOID SetLoaderDefaults()
 
-// // Add a network (PXE) EFI boot loader to the list, using automatic settings
-// // for icons, options, etc.
-// LOADER_ENTRY * AddNetbootLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume) {
-//    LOADER_ENTRY      *Entry;
-// 
-//    Print(L"Adding iPXE entry for '%s'\n", LoaderTitle);
-//    PauseForKey();
-//    CleanUpPathNameSlashes(LoaderPath);
-//    Entry = InitializeLoaderEntry(NULL);
-//    if (Entry != NULL) {
-//       Entry->Title = StrDuplicate((LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
-//       Entry->me.Title = AllocateZeroPool(sizeof(CHAR16) * 256);
-//       // Extra space at end of Entry->me.Title enables searching on Volume->VolName even if another volume
-//       // name is identical except for something added to the end (e.g., VolB1 vs. VolB12).
-//       SPrint(Entry->me.Title, 255, L"NetBoot %s", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
-//       Entry->me.Row = 0;
-//       if ((LoaderPath != NULL) && (LoaderPath[0] != L'\\')) {
-//          Entry->LoaderPath = StrDuplicate(L"\\");
-//       } else {
-//          Entry->LoaderPath = NULL;
-//       }
-//       MergeStrings(&(Entry->LoaderPath), LoaderPath, 0);
-//       Entry->VolName = Volume->VolName;
-//       Entry->DevicePath = FileDevicePath(Volume->DeviceHandle, Entry->LoaderPath);
-//       SetLoaderDefaults(Entry, LoaderPath, Volume);
-//       GenerateSubScreen(Entry, Volume);
-//       AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
-//    }
-// 
-//    return(Entry);
-// } // LOADER_ENTRY * AddLoaderEntry()
-
 // Add a specified EFI boot loader to the list, using automatic settings
 // for icons, options, etc.
 LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume) {
-   LOADER_ENTRY      *Entry;
+   LOADER_ENTRY  *Entry;
 
    CleanUpPathNameSlashes(LoaderPath);
    Entry = InitializeLoaderEntry(NULL);
@@ -1406,17 +1374,15 @@ CHAR16* RuniPXEDiscover(EFI_HANDLE Volume)
    EFI_STATUS       Status;
    EFI_DEVICE_PATH  *FilePath;
    EFI_HANDLE       iPXEHandle;
-   CHAR16           *boot_info;
-   UINTN            boot_info_size = 256 * sizeof(CHAR16);
+   CHAR16           *boot_info = NULL;
+   UINTN            boot_info_size = 0;
 
    FilePath = FileDevicePath (Volume, IPXE_DISCOVER_NAME);
    Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, FilePath,
                                 NULL, 0, &iPXEHandle);
-   if (Status != 0) {
+   if (Status != 0)
       return NULL;
-   } // if
 
-   boot_info = AllocatePool(256 * sizeof(CHAR16));
    Status = refit_call3_wrapper(BS->StartImage, iPXEHandle, &boot_info_size, &boot_info);
 
    return boot_info;
