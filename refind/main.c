@@ -76,7 +76,8 @@
 //
 // constants
 
-#define MACOSX_LOADER_PATH      L"System\\Library\\CoreServices\\boot.efi"
+#define MACOSX_LOADER_DIR      L"System\\Library\\CoreServices"
+#define MACOSX_LOADER_PATH      ( MACOSX_LOADER_DIR L"\\boot.efi" )
 #if defined (EFIX64)
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shell.efi,\\shellx64.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi"
@@ -1429,9 +1430,9 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
          MergeStrings(&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
 
       // check for Mac OS X boot loader
-      if (ShouldScan(Volume, L"System\\Library\\CoreServices")) {
+      if (ShouldScan(Volume, MACOSX_LOADER_DIR)) {
          StrCpy(FileName, MACOSX_LOADER_PATH);
-         if (FileExists(Volume->RootDir, FileName) && !FilenameIn(Volume, Directory, L"boot.efi", GlobalConfig.DontScanFiles)) {
+         if (FileExists(Volume->RootDir, FileName) && !FilenameIn(Volume, MACOSX_LOADER_DIR, L"boot.efi", GlobalConfig.DontScanFiles)) {
             AddLoaderEntry(FileName, L"Mac OS X", Volume);
             if (DuplicatesFallback(Volume, FileName))
                ScanFallbackLoader = FALSE;
@@ -1439,7 +1440,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
 
          // check for XOM
          StrCpy(FileName, L"System\\Library\\CoreServices\\xom.efi");
-         if (FileExists(Volume->RootDir, FileName) && !FilenameIn(Volume, Directory, L"boot.efi", GlobalConfig.DontScanFiles)) {
+         if (FileExists(Volume->RootDir, FileName) && !FilenameIn(Volume, MACOSX_LOADER_DIR, L"xom.efi", GlobalConfig.DontScanFiles)) {
             AddLoaderEntry(FileName, L"Windows XP (XoM)", Volume);
             if (DuplicatesFallback(Volume, FileName))
                ScanFallbackLoader = FALSE;
@@ -1449,7 +1450,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       // check for Microsoft boot loader/menu
       if (ShouldScan(Volume, L"EFI\\Microsoft\\Boot")) {
          StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bkpbootmgfw.efi");
-         if (FileExists(Volume->RootDir, FileName) &&  !FilenameIn(Volume, Directory, L"bkpbootmgfw.efi",
+         if (FileExists(Volume->RootDir, FileName) &&  !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bkpbootmgfw.efi",
              GlobalConfig.DontScanFiles)) {
             AddLoaderEntry(FileName, L"Microsoft EFI boot (Boot Repair backup)", Volume);
             FoundBRBackup = TRUE;
@@ -1457,7 +1458,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
                ScanFallbackLoader = FALSE;
          }
          StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bootmgfw.efi");
-         if (FileExists(Volume->RootDir, FileName) &&  !FilenameIn(Volume, Directory, L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
+         if (FileExists(Volume->RootDir, FileName) &&  !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
             if (FoundBRBackup)
                AddLoaderEntry(FileName, L"Supposed Microsoft EFI boot (probably GRUB)", Volume);
             else
