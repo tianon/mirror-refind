@@ -35,7 +35,7 @@
  */
 /* Changes copyright (c) 2013 Roderick W. Smith */
 
-#define VERSION L"0.8.3"
+#define VERSION L"0.8.4"
 
 //
 // config

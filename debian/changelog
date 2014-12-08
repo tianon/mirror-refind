@@ -1,8 +1,14 @@
+refind (0.8.4-0ppa1) trusty; urgency=medium
+
+  * Version bump
+
+ -- Rod Smith <rodsmith@rodsbooks.com>  Sun, 07 Dec 2014 12:28:56 -0400
+
 refind (0.8.3-0ppa1) trusty; urgency=medium
 
   * Version bump
 
- -- Rod Smith <rodsmith@vbu1404>  Sun, 06 Jul 2014 12:28:56 -0400
+ -- Rod Smith <rodsmith@rodsbooks.com>  Sun, 06 Jul 2014 12:28:56 -0400
 
 refind (0.8.2-0ppa3) trusty; urgency=medium
 

@@ -7,8 +7,8 @@
 # ./install.sh [options]
 #
 # options include:
-#    "--esp" to install to the ESP rather than to the system's root
-#           filesystem. This is the default on Linux.
+#    "--notesp" to install to the OS X root filesystem rather than to the ESP.
+#           This option may not be used under Linux.
 #    "--usedefault {devicefile}" to install as default
 #           (/EFI/BOOT/BOOTX64.EFI and similar) to the specified device
 #           (/dev/sdd1 or whatever) without registering with the NVRAM.
@@ -35,6 +35,7 @@
 #
 # Revision history:
 #
+# 0.8.4   -- OS X default changed to install to ESP under /EFI/BOOT
 # 0.7.9   -- Fixed bug that caused errors if dmraid utility not installed
 # 0.7.7   -- Fixed bug that created mangled refind_linux.conf file; added ability
 #            to locate and mount ESP on Linux, if it's not mounted
@@ -89,18 +90,17 @@ AlwaysYes=0
 #
 
 GetParams() {
-   InstallToEspOnMac=0
-   if [[ $OSName == "Linux" ]] ; then
-      # Install the driver required to read /boot, if it's available
-      InstallDrivers="boot"
-   else
-      InstallDrivers="none"
-   fi
+   InstallToEspOnMac=1
+   # Install the driver required to read Linux /boot, if it's available
+   # Note: Under OS X, this will be installed only if a Linux partition
+   # is detected, in which case the ext4fs driver will be installed.
+   InstallDrivers="boot"
    while [[ $# -gt 0 ]]; do
       case $1 in
-         --esp | --ESP) InstallToEspOnMac=1
+         --notesp) InstallToEspOnMac=0
               ;;
          --ownhfs) OwnHfs=1
+              InstallToEspOnMac=0
               TargetPart="$2"
               TargetDir=/System/Library/CoreServices
               shift
@@ -112,6 +112,7 @@ GetParams() {
               shift
               ;;
          --root) RootDir="$2"
+              InstallToEspOnMac=0
               shift
               ;;
          --localkeys) LocalKeys=1
@@ -126,7 +127,7 @@ GetParams() {
               ;;
          --yes) AlwaysYes=1
               ;;
-         * ) echo "Usage: $0 [--esp | --usedefault {device-file} | --root {directory} |"
+         * ) echo "Usage: $0 [--notesp | --usedefault {device-file} | --root {dir} |"
              echo "                     --ownhfs {device-file} ]"
              echo "                  [--nodrivers | --alldrivers] [--shim {shim-filename}]"
              echo "                  [--localkeys] [--yes]"
@@ -135,16 +136,8 @@ GetParams() {
       shift
    done
 
-   if [[ $InstallToEspOnMac == 1 && "$TargetDir" == '/EFI/BOOT' ]] ; then
-      echo "You may use --esp OR --usedefault, but not both! Aborting!"
-      exit 1
-   fi
    if [[ "$RootDir" != '/' && "$TargetDir" == '/EFI/BOOT' ]] ; then
       echo "You may use --usedefault OR --root, but not both! Aborting!"
-      exit 1
-   fi
-   if [[ "$RootDir" != '/' && $InstallToEspOnMac == 1 ]] ; then
-      echo "You may use --root OR --esp, but not both! Aborting!"
       exit 1
    fi
    if [[ "$TargetDir" != '/System/Library/CoreServices' && "$OwnHfs" == '1' ]] ; then
@@ -245,20 +238,43 @@ CopyKeys() {
    fi
 } # CopyKeys()
 
+# Determine (or guess) the filesystem used on the Linux /boot filesystem.
+# Store the result in the BootFS global variable.
+SetBootFS() {
+   local Blkid
+
+   Blkid=`which blkid 2> /dev/null`
+   BootFS=""
+   if [[ $OSName == 'Linux' && -x "$Blkid" ]] ; then
+      BootPart=`df /boot | grep dev | cut -f 1 -d " "`
+      BootFS=`$Blkid -o export $BootPart 2> /dev/null | grep TYPE= | cut -f 2 -d =`
+   fi
+   if [[ $OSName == 'Darwin' ]] ; then
+      # 0FC63DAF-8483-4772-8E79-3D69D8477DE4 = Linux filesystem
+      # BC13C2FF-59E6-4262-A352-B275FD6F7172 = Freedesktop $boot partition
+      # 933AC7E1-2EB4-4F13-B844-0E14E2AEF915 = Freedesktop Linux /home
+      # E6D6D379-F507-44C2-A23C-238F2A3DF928 = Linux LVM
+      # A19D880F-05FC-4D3B-A006-743F0F84911E = Linux RAID
+      # 0657FD6D-A4AB-43C4-84E5-0933C84B4F4F = Linux swap
+      Temp=$(diskutil list | grep -i '0FC63DAF-8483-4772-8E79-3D69D8477DE4\|BC13C2FF-59E6-4262-A352-B275FD6F7172\|933AC7E1-2EB4-4F13-B844-0E14E2AEF915\|E6D6D379-F507-44C2-A23C-238F2A3DF928\|A19D880F-05FC-4D3B-A006-743F0F84911E\|0657FD6D-A4AB-43C4-84E5-0933C84B4F4F\|Linux')
+      BootFS=""
+      if [[ -n $Temp ]] ; then
+         echo "Found suspected Linux partition(s); installing ext4fs driver."
+         BootFS="ext4"
+      fi
+   fi
+} # SetBootFS()
+
 # Copy drivers from $RefindDir/drivers_$1 to $InstallDir/$TargetDir/drivers_$1,
 # honoring the $InstallDrivers condition. Must be passed a suitable
 # architecture code (ia32 or x64).
 CopyDrivers() {
-   local Blkid
-
-   Blkid=`which blkid 2> /dev/null`
    if [[ $InstallDrivers == "all" ]] ; then
       mkdir -p "$InstallDir/$TargetDir/drivers_$1"
       cp "$ThisDir"/drivers_$1/*_$1.efi "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
       cp "$RefindDir"/drivers_$1/*_$1.efi "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
-   elif [[ "$InstallDrivers" == "boot" && -x "$Blkid" ]] ; then
-      BootPart=`df /boot | grep dev | cut -f 1 -d " "`
-      BootFS=`$Blkid -o export $BootPart 2> /dev/null | grep TYPE= | cut -f 2 -d =`
+   elif [[ "$InstallDrivers" == "boot" ]] ; then
+      SetBootFS
       DriverType=""
       case $BootFS in
          ext2 | ext3) DriverType="ext2"
@@ -282,7 +298,7 @@ CopyDrivers() {
          cp "$RefindDir/drivers_$1/${DriverType}_$1.efi" "$InstallDir/$TargetDir/drivers_$1"/ 2> /dev/null
       fi
    fi
-}
+} # CopyDrivers()
 
 # Copy tools (currently only gptsync, and that only on Macs) to the EFI/tools
 # directory on the ESP. Must be passed a suitable architecture code (ia32
@@ -318,7 +334,7 @@ CopyRefindFiles() {
       if [[ $InstallDrivers == "all" ]] ; then
          cp -r "$RefindDir"/drivers_* "$InstallDir/$TargetDir/" 2> /dev/null
          cp -r "$ThisDir"/drivers_* "$InstallDir/$TargetDir/" 2> /dev/null
-      elif [[ $Upgrade == 1 ]] ; then
+      elif [[ $Upgrade == 1 || $InstallToEspOnMac == 1 ]] ; then
          if [[ $Platform == 'EFI64' ]] ; then
             CopyDrivers x64
             CopyTools x64
@@ -328,6 +344,11 @@ CopyRefindFiles() {
          fi
       fi
       Refind=""
+      if [[ $Platform == 'EFI64' ]] ; then
+         Refind='bootx64.efi'
+      elif [[ $Platform == 'EFI32' ]] ; then
+         Refind='bootia32.efi'
+      fi
       CopyKeys
    elif [[ $Platform == 'EFI64' || $TargetDir == "/EFI/Microsoft/Boot" ]] ; then
       cp "$RefindDir/refind_x64.efi" "$InstallDir/$TargetDir/$TargetX64"
@@ -432,7 +453,6 @@ MountDefaultTarget() {
       rmdir "$InstallDir"
       exit 1
    fi
-   echo "UnmountEsp = $UnmountEsp"
 } # MountDefaultTarget()
 
 #
@@ -448,9 +468,7 @@ MountOSXESP() {
    # if the system has multiple disks, this could be wrong!
    Temp=$(mount | sed -n -E "/^(\/dev\/disk[0-9]+s[0-9]+) on \/ \(.*$/s//\1/p")
    if [ $Temp ]; then
-      Temp=$(diskutil list $Temp | sed -n -E '/^ *[0-9]+:[ ]+EFI EFI[ ]+[0-9.]+ [A-Z]+[ ]+(disk[0-9]+s[0-9]+)$/ { s//\1/p
-             q
-         }' )
+      Temp=$(diskutil list | grep " EFI " | grep -o 'disk.*' | head -n 1)
       if [ -z $Temp ]; then
          echo "Warning: root device doesn't have an EFI partition"
       fi
@@ -514,10 +532,10 @@ ENDOFHERE
 # Sets Problems=1 if problems found during the installation.
 InstallOnOSX() {
    echo "Installing rEFInd on OS X...."
-   if [[ "$TargetDir" == "/EFI/BOOT" || "$OwnHfs" == '1' ]] ; then
-      MountDefaultTarget
-   elif [[ "$InstallToEspOnMac" == "1" ]] ; then
+   if [[ "$InstallToEspOnMac" == "1" ]] ; then
       MountOSXESP
+   elif [[ "$TargetDir" == "/EFI/BOOT" || "$OwnHfs" == '1' ]] ; then
+      MountDefaultTarget
    else
       InstallDir="$RootDir/"
    fi
@@ -1057,11 +1075,20 @@ if [[ $OSName == 'Darwin' ]] ; then
       echo "The --localkeys option is not supported on OS X! Exiting!"
       exit 1
    fi
+   if [[ $InstallToEspOnMac == 1 ]] ; then
+      TargetDir=/EFI/BOOT
+      TargetX64="bootx64.efi"
+      TargetIA32="bootia32.efi"
+   fi
    InstallOnOSX $1
 elif [[ $OSName == 'Linux' ]] ; then
    InstallOnLinux
 else
    echo "Running on unknown OS; aborting!"
+   if [[ "$InstallToEspOnMac" == 0 ]] ; then
+      echo "The --notesp option is not supported on Linux! Exiting!"
+      exit 1
+   fi
 fi
 
 if [[ $Problems ]] ; then
