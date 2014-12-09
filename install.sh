@@ -35,6 +35,7 @@
 #
 # Revision history:
 #
+# 0.8.5   -- Refinement/cleanup of new OS X ESP-as-default policy
 # 0.8.4   -- OS X default changed to install to ESP under /EFI/BOOT
 # 0.7.9   -- Fixed bug that caused errors if dmraid utility not installed
 # 0.7.7   -- Fixed bug that created mangled refind_linux.conf file; added ability
@@ -306,7 +307,7 @@ CopyDrivers() {
 # directory on the ESP. Must be passed a suitable architecture code (ia32
 # or x64).
 CopyTools() {
-   mkdir -p $InstallDir/EFI/tools
+   mkdir -p "$InstallDir/EFI/tools"
    if [[ $OSName == 'Darwin' ]] ; then
       cp -f "$RefindDir/tools_$1/gptsync_$1.efi" "$InstallDir/EFI/tools/"
       if [[ -f "$InstallDir/EFI/tools/gptsync.efi" ]] ; then
@@ -494,9 +495,16 @@ MountOSXESP() {
    if [[ "$InstallDir" == '' ]] ; then
       mkdir /Volumes/ESP &> /dev/null
       mount -t msdos "$Esp" /Volumes/ESP
+      # Some systems have HFS+ "ESPs." They shouldn't, but they do. If this is
+      # detected, mount it as such and set appropriate options.
       if [[ $? != 0 ]] ; then
-         echo "Unable to mount ESP! Aborting!\n"
-         exit 1
+         mount -t hfs "$Esp" /Volumes/Esp
+         OwnHfs=1
+         InstallToEspOnMac=0
+         if [[ $? != 0 ]] ; then
+            echo "Unable to mount ESP! Aborting!\n"
+            exit 1
+         fi
       fi
       UnmountEsp=1
       InstallDir="/Volumes/ESP"

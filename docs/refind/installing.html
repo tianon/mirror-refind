@@ -1087,7 +1087,7 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 $ <tt class="userinput">sudo rm -r /Volumes/esp/EFI/refind</tt>
 </pre>
 
-<p>Many variants of both of these commands are possible on both OS X and Linux. For instance, you'd probably use <tt>sudo</tt> on Ubuntu.</p>
+<p>Many variants of both of these commands are possible on both OS X and Linux. For instance, you'd probably use <tt>sudo</tt> on Ubuntu. Note that dragging the rEFInd files to the Trash in OS X does <i>not</i> delete them; it just moves them to a different folder. Given the way that Macs reference boot loaders, this means that rEFInd may still launch. If you want to use the Finder to delete rEFInd, be sure to empty the trash after you drag the files there. That should do the job, provided there's no second installation hiding somewhere.</p>
 
 <p>If you installed via an RPM or Debian package in Linux, using your package manager will remove the package files, but not the files that the installer places on your ESP. Thus, you must uninstall those files manually, as just described. To complete the job, you'll also have to remove <tt>/boot/refind_linux.conf</tt>, and perhaps the <tt>/etc/refind.d</tt> directory.</p>
 
