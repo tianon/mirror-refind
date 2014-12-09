@@ -159,7 +159,7 @@ fi
 # wiping out the just-updated files.
 
 %changelog
-* Sun Dec 7 2014 R Smith <rodsmith@rodsbooks.com> - 0.8.4
+* Mon Dec 8 2014 R Smith <rodsmith@rodsbooks.com> - 0.8.4
 - Updated spec file for 0.8.4
 * Sun Jul 6 2014 R Smith <rodsmith@rodsbooks.com> - 0.8.3
 - Updated spec file for 0.8.3

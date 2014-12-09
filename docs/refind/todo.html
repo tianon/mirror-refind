@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-7/6/2014, referencing rEFInd 0.8.3</p>
+12/8/2014, referencing rEFInd 0.8.4</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -203,7 +203,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	upper-left corner of the screen. Having an option to support a
 	transparent background is desirable to some users.</li>
 
-    </ul></li> <!-- Improvements -->
+    <li>When delivering rEFInd as a boot loader from a network server,
+	rEFInd is limited to its default options and can boot only local
+	OSes, not network OSes. The cause is that the server delivers a
+	single file, so rEFInd is divorced from its configuration and
+	support files.</li>
+
+</ul></li> <!-- Improvements -->
 
 <li><b>Known bugs that need squashing:</b>
 
@@ -307,9 +313,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
     <ul>
 
-    <li>EFI supports network boots. rEFInd doesn't, but it would be nice if
-	it would.</li>
-
     <li>There's currently no way to create a manual boot stanza for a
 	BIOS-booted OS. This isn't a big priority for me personally, but I
 	can see how it could be for some people.</li>
@@ -408,6 +411,11 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	message that the copy was over the same file and an error message
 	that there were problems with the installation, although this isn't
 	really the case.</li>
+
+    <li>rEFInd's support for network booting is primitive and relies on the
+	external iPXE package. In my own testing, iPXE retrieves the
+	BIOS-mode boot loader from some servers that offer both, which
+	makes it useless on those networks.</li>
 
     <li>A Mac-specific package is highly desirable.</li>
 

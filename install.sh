@@ -136,15 +136,19 @@ GetParams() {
       shift
    done
 
+   if [[ "$InstallToEspOnMac" == 0 && "$RootDir" == '/' && "$TargetDir" == '/EFI/BOOT' ]] ; then
+      echo "You may use --notesp OR --usedefault, but not both! Aborting!"
+      exit 1
+   fi
    if [[ "$RootDir" != '/' && "$TargetDir" == '/EFI/BOOT' ]] ; then
-      echo "You may use --usedefault OR --root, but not both! Aborting!"
+      echo "You may use --root OR --usedefault, but not both! Aborting!"
       exit 1
    fi
    if [[ "$TargetDir" != '/System/Library/CoreServices' && "$OwnHfs" == '1' ]] ; then
       echo "If you use --ownhfs, you may NOT use --usedefault! Aborting!"
       exit 1
    fi
-
+   exit
    RLConfFile="$RootDir/boot/refind_linux.conf"
    EtcKeysDir="$RootDir/etc/refind.d/keys"
 } # GetParams()

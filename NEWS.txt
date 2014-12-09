@@ -1,5 +1,5 @@
-0.8.4 (11/??/2014):
--------------------
+0.8.4 (12/8/2014):
+------------------
 
 - Tweaked default for dont_scan_volumes: Removed "Recovery HD". This change
   better suits the needs of OS X 10.10 ("Yosemite") installations, but may
@@ -20,6 +20,13 @@
   OS association exists, search for os_grub.{png|icns} (which is not
   provided with rEFInd) or os_linux.{png|icns}. (Previous versions provided
   a generic loader icon for GRUB.)
+
+- Fixed bug that caused dont_scan_files to not work with special-case
+  boot loaders (for OS X and Windows) when specifying the complete path to
+  the loader (e.g., EFI/Microsoft/Boot/bootmgfw.efi).
+
+- Added support for the iPXE network boot tool (see BUILDING.txt for
+  building and basic use instructions).
 
 0.8.3 (7/6/2014):
 -----------------

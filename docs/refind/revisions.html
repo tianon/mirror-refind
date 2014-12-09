@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 7/6/2014</p>
+<p>Last Web page update: 12/8/2014</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.8.4 (12/8/2014)</b>&mdash;OS X 10.10 ("Yosemite") made changes that necessitated alterations to both rEFInd's <tt>install.sh</tt> script and rEFInd defaults. Specifically, Yosemite now uses a form of <a href="http://en.wikipedia.org/wiki/Logical_volume_management">logical volume management (LVM)</a> that makes installing rEFInd to the OS X root directory impossible, so the default location is changed to the ESP. Changes to the default for <tt>dont_scan_volumes</tt> are necessary to make the new location for the OS X boot loader show up. Another big change is in the new (but <i>experimental</i>) support for network booting, with the help of iPXE. See the <tt>BUILDING.txt</tt> file in the source package for details on how to build and install the necessary files. A new option for <tt>refind.conf</tt>, <tt>enable_and_lock_vmx</tt>, sets the VMX bit on Intel CPUs, which is necessary for booting some hypervisors, such as Hyper-V. This feature can be set on many computers' EFIs, but some, such as Macs, lack this ability. (<i>Do not</i> set this option on AMD CPUs or older Intel CPUs that lack this feature, though!) If rEFInd can't find its icons directory, it now drops back to text mode. A bug in <tt>dont_scan_files</tt> has been fixed, enabling you to specify a complete path to certain special-case boot loaders to omit them from scans. Finally, I've updated the icons for Fedora and Ubuntu and added an icon for Xubuntu.</li>
 
 <li><b>0.8.3 (7/6/2014)</b>&mdash;This version introduces a number of minor bug fixes and feature improvements. The most user-visible of these are that on Macs, rEFInd now displays a partition's label for BIOS-bootable OSes on filesystems that rEFInd can't read; and you can now pass <tt>timeout = -1</tt> in <tt>refind.conf</tt> to have rEFInd boot the default OS immediately <i>unless</i> there's a keypress when rEFInd loads, in which case that keypress is read as a shortcut key. A change that's less likely to be noticed is that the default setting for <tt>scan_all_linux_kernels</tt> is now <tt>true</tt>. Since this option had been uncommented in the sample configuration file, this change will not affect most people. I've fixed a bug that caused rEFInd to unload drivers as soon as they were loaded. This didn't affect rEFInd's drivers because they ignored the relevant EFI calls; but this was preventing some other drivers from working. I've added two new icons, one for Mythbuntu and the other for the Clover boot manager. Finally, I've removed Oracle's GPLv2 code from the core filesystem driver code, since it was incompatible with the GPLv3 used by the Btrfs driver. This change <i>shouldn't</i> affect the operation of the drivers, but there's a slim chance that it will.</li>
 

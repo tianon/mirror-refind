@@ -50,7 +50,7 @@ rm -rf debian/refind debian/*.log
 # Prepare a place and copy files there....
 mkdir -p ../snapshots/$1/refind-$1/icons
 cp --preserve=timestamps icons/*png ../snapshots/$1/refind-$1/icons/
-cp -a debian docs images keys fonts banners include EfiLib libeg mok refind filesystems gptsync refind.spec install.sh mkrlconf.sh mvrefind.sh CREDITS.txt NEWS.txt BUILDING.txt COPYING.txt LICENSE.txt README.txt refind.inf Make.tiano Make.common Makefile refind.conf-sample ../snapshots/$1/refind-$1
+cp -a debian docs images keys fonts banners include EfiLib libeg mok net refind filesystems gptsync refind.spec install.sh mkrlconf.sh mvrefind.sh CREDITS.txt NEWS.txt BUILDING.txt COPYING.txt LICENSE.txt README.txt refind.inf Make.tiano Make.common Makefile refind.conf-sample ../snapshots/$1/refind-$1
 
 # Go there and prepare a souce code zip file....
 cd ../snapshots/$1/
