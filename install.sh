@@ -135,7 +135,6 @@ GetParams() {
       esac
       shift
    done
-
    if [[ "$InstallToEspOnMac" == 0 && "$RootDir" == '/' && "$TargetDir" == '/EFI/BOOT' ]] ; then
       echo "You may use --notesp OR --usedefault, but not both! Aborting!"
       exit 1
@@ -148,7 +147,6 @@ GetParams() {
       echo "If you use --ownhfs, you may NOT use --usedefault! Aborting!"
       exit 1
    fi
-   exit
    RLConfFile="$RootDir/boot/refind_linux.conf"
    EtcKeysDir="$RootDir/etc/refind.d/keys"
 } # GetParams()
@@ -1053,7 +1051,6 @@ InstallOnLinux() {
 # performs a few startup checks, and then calls functions to
 # install under OS X or Linux, depending on the detected platform.
 #
-
 OSName=`uname -s`
 GetParams "$@"
 ThisDir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
