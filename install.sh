@@ -29,7 +29,7 @@
 # to the current OS X boot partition. Under Linux, this script
 # installs to the ESP by default.
 #
-# This program is copyright (c) 2012 by Roderick W. Smith
+# This program is copyright (c) 2012-2014 by Roderick W. Smith
 # It is released under the terms of the GNU GPL, version 3,
 # a copy of which should be included in the file COPYING.txt.
 #
@@ -240,6 +240,113 @@ CopyKeys() {
       cp "$EtcKeysDir/$LocalKeysBase.crt" "$InstallDir/$TargetDir/keys/"
    fi
 } # CopyKeys()
+
+# Set varaibles for installation in EFI/BOOT directory
+SetVarsForBoot() {
+   TargetDir="/EFI/BOOT"
+   if [[ $ShimSource == "none" ]] ; then
+      TargetX64="bootx64.efi"
+      TargetIA32="bootia32.efi"
+   else
+      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" ]] ; then
+         TargetX64="grubx64.efi"
+      elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
+         TargetX64="loader.efi"
+      else
+         echo "Unknown shim/PreBootloader type: $ShimType"
+         echo "Aborting!"
+         exit 1
+      fi
+      TargetIA32="bootia32.efi"
+      TargetShim="bootx64.efi"
+   fi
+} # SetVarsForBoot()
+
+# Set variables for installation in EFI/Microsoft/Boot directory
+SetVarsForMsBoot() {
+   TargetDir="/EFI/Microsoft/Boot"
+   if [[ $ShimSource == "none" ]] ; then
+      TargetX64="bootmgfw.efi"
+   else
+      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" ]] ; then
+         TargetX64="grubx64.efi"
+      elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
+         TargetX64="loader.efi"
+      else
+         echo "Unknown shim/PreBootloader type: $ShimType"
+         echo "Aborting!"
+         exit 1
+      fi
+      TargetShim="bootmgfw.efi"
+   fi
+} # SetVarsForMsBoot()
+
+# TargetDir defaults to /EFI/refind; however, this function adjusts it as follows:
+# - If an existing refind.conf is available in /EFI/BOOT or /EFI/Microsoft/Boot,
+#   install to that directory under the suitable name; but DO NOT do this if
+#   refind.conf is also in /EFI/refind.
+# - If booted in BIOS mode and the ESP lacks any other EFI files, install to
+#   /EFI/BOOT
+# - If booted in BIOS mode and there's no refind.conf file and there is a
+#   /EFI/Microsoft/Boot/bootmgfw.efi file, move it down one level and
+#   install under that name, "hijacking" the Windows boot loader filename
+DetermineTargetDir() {
+   Upgrade=0
+
+   if [[ -f $InstallDir/EFI/BOOT/refind.conf ]] ; then
+      SetVarsForBoot
+      Upgrade=1
+   fi
+   if [[ -f $InstallDir/EFI/Microsoft/Boot/refind.conf ]] ; then
+      SetVarsForMsBoot
+      Upgrade=1
+   fi
+   if [[ -f $InstallDir/EFI/refind/refind.conf ]] ; then
+      TargetDir="/EFI/refind"
+      if [[ "$OSName" == 'Darwin' ]] ; then
+         TargetX64="refind_x64.efi"
+         TargetIA32="refind_ia32.efi"
+      fi
+      Upgrade=1
+   fi
+   if [[ $Upgrade == 1 ]] ; then
+      echo "Found rEFInd installation in $InstallDir$TargetDir; upgrading it."
+   fi
+
+   if [[ ! -d /sys/firmware/efi && ! $OSName == 'Darwin' && $Upgrade == 0 ]] ; then     # BIOS-mode
+      FoundEfiFiles=`find "$InstallDir/EFI/BOOT" -name "*.efi" 2> /dev/null`
+      FoundConfFiles=`find "$InstallDir" -name "refind\.conf" 2> /dev/null`
+      if [[ ! -n "$FoundConfFiles" && -f "$InstallDir/EFI/Microsoft/Boot/bootmgfw.efi" ]] ; then
+         mv -n "$InstallDir/EFI/Microsoft/Boot/bootmgfw.efi" "$InstallDir/EFI/Microsoft" &> /dev/null
+         SetVarsForMsBoot
+         echo "Running in BIOS mode with a suspected Windows installation; moving boot loader"
+         echo "files so as to install to $InstallDir$TargetDir."
+      elif [[ ! -n "$FoundEfiFiles" ]] ; then  # In BIOS mode and no default loader; install as default loader
+         SetVarsForBoot
+         echo "Running in BIOS mode with no existing default boot loader; installing to"
+         echo $InstallDir$TargetDir
+      else
+         echo "Running in BIOS mode with an existing default boot loader; backing it up and"
+         echo "installing rEFInd in its place."
+         if [[ -d "$InstallDir/EFI/BOOT-rEFIndBackup" ]] ; then
+            echo ""
+            echo "Caution: An existing backup of a default boot loader exists! If the current"
+            echo "default boot loader and the backup are different boot loaders, the current"
+            echo "one will become inaccessible."
+            echo ""
+            echo -n "Do you want to proceed with installation (Y/N)? "
+            ReadYesNo
+            if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
+               echo "OK; continuing with the installation..."
+            else
+               exit 0
+            fi
+         fi
+         mv -n "$InstallDir/EFI/BOOT" "$InstallDir/EFI/BOOT-rEFIndBackup"
+         SetVarsForBoot
+      fi
+   fi # BIOS-mode
+} # DetermineTargetDir()
 
 # Determine (or guess) the filesystem used on the Linux /boot filesystem.
 # Store the result in the BootFS global variable.
@@ -550,6 +657,7 @@ InstallOnOSX() {
       InstallDir="$RootDir/"
    fi
    echo "Installing rEFInd to the partition mounted at $InstallDir"
+   DetermineTargetDir
    Platform=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
    CopyRefindFiles
    if [[ $InstallToEspOnMac == "1" ]] ; then
@@ -886,109 +994,6 @@ GenerateRefindLinuxConf() {
       echo "\"Boot with minimal options\"         \"ro root=$RootFS\"" >> $RLConfFile
    fi
 }
-
-# Set varaibles for installation in EFI/BOOT directory
-SetVarsForBoot() {
-   TargetDir="/EFI/BOOT"
-   if [[ $ShimSource == "none" ]] ; then
-      TargetX64="bootx64.efi"
-      TargetIA32="bootia32.efi"
-   else
-      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" ]] ; then
-         TargetX64="grubx64.efi"
-      elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
-         TargetX64="loader.efi"
-      else
-         echo "Unknown shim/PreBootloader type: $ShimType"
-         echo "Aborting!"
-         exit 1
-      fi
-      TargetIA32="bootia32.efi"
-      TargetShim="bootx64.efi"
-   fi
-} # SetFilenamesForBoot()
-
-# Set variables for installation in EFI/Microsoft/Boot directory
-SetVarsForMsBoot() {
-   TargetDir="/EFI/Microsoft/Boot"
-   if [[ $ShimSource == "none" ]] ; then
-      TargetX64="bootmgfw.efi"
-   else
-      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" ]] ; then
-         TargetX64="grubx64.efi"
-      elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
-         TargetX64="loader.efi"
-      else
-         echo "Unknown shim/PreBootloader type: $ShimType"
-         echo "Aborting!"
-         exit 1
-      fi
-      TargetShim="bootmgfw.efi"
-   fi
-}
-
-# TargetDir defaults to /EFI/refind; however, this function adjusts it as follows:
-# - If an existing refind.conf is available in /EFI/BOOT or /EFI/Microsoft/Boot,
-#   install to that directory under the suitable name; but DO NOT do this if
-#   refind.conf is also in /EFI/refind.
-# - If booted in BIOS mode and the ESP lacks any other EFI files, install to
-#   /EFI/BOOT
-# - If booted in BIOS mode and there's no refind.conf file and there is a
-#   /EFI/Microsoft/Boot/bootmgfw.efi file, move it down one level and
-#   install under that name, "hijacking" the Windows boot loader filename
-DetermineTargetDir() {
-   Upgrade=0
-
-   if [[ -f $InstallDir/EFI/BOOT/refind.conf ]] ; then
-      SetVarsForBoot
-      Upgrade=1
-   fi
-   if [[ -f $InstallDir/EFI/Microsoft/Boot/refind.conf ]] ; then
-      SetVarsForMsBoot
-      Upgrade=1
-   fi
-   if [[ -f $InstallDir/EFI/refind/refind.conf ]] ; then
-      TargetDir="/EFI/refind"
-      Upgrade=1
-   fi
-   if [[ $Upgrade == 1 ]] ; then
-      echo "Found rEFInd installation in $InstallDir$TargetDir; upgrading it."
-   fi
-
-   if [[ ! -d /sys/firmware/efi && $Upgrade == 0 ]] ; then     # BIOS-mode
-      FoundEfiFiles=`find "$InstallDir/EFI/BOOT" -name "*.efi" 2> /dev/null`
-      FoundConfFiles=`find "$InstallDir" -name "refind\.conf" 2> /dev/null`
-      if [[ ! -n "$FoundConfFiles" && -f "$InstallDir/EFI/Microsoft/Boot/bootmgfw.efi" ]] ; then
-         mv -n "$InstallDir/EFI/Microsoft/Boot/bootmgfw.efi" "$InstallDir/EFI/Microsoft" &> /dev/null
-         SetVarsForMsBoot
-         echo "Running in BIOS mode with a suspected Windows installation; moving boot loader"
-         echo "files so as to install to $InstallDir$TargetDir."
-      elif [[ ! -n "$FoundEfiFiles" ]] ; then  # In BIOS mode and no default loader; install as default loader
-         SetVarsForBoot
-         echo "Running in BIOS mode with no existing default boot loader; installing to"
-         echo $InstallDir$TargetDir
-      else
-         echo "Running in BIOS mode with an existing default boot loader; backing it up and"
-         echo "installing rEFInd in its place."
-         if [[ -d "$InstallDir/EFI/BOOT-rEFIndBackup" ]] ; then
-            echo ""
-            echo "Caution: An existing backup of a default boot loader exists! If the current"
-            echo "default boot loader and the backup are different boot loaders, the current"
-            echo "one will become inaccessible."
-            echo ""
-            echo -n "Do you want to proceed with installation (Y/N)? "
-            ReadYesNo
-            if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
-               echo "OK; continuing with the installation..."
-            else
-               exit 0
-            fi
-         fi
-         mv -n "$InstallDir/EFI/BOOT" "$InstallDir/EFI/BOOT-rEFIndBackup"
-         SetVarsForBoot
-      fi
-   fi # BIOS-mode
-} # DetermineTargetDir()
 
 # Controls rEFInd installation under Linux.
 # Sets Problems=1 if something goes wrong.

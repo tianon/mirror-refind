@@ -176,7 +176,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.4");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.4.1");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -2352,7 +2352,8 @@ static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINT
          PathName = StrDuplicate(DirName);
          MergeStrings(&PathName, FileName, (StriCmp(PathName, L"\\") == 0) ? 0 : L'\\');
          for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-            if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, PathName))) {
+            if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, PathName)) &&
+                IsValidLoader(Volumes[VolumeIndex]->RootDir, PathName)) {
                SPrint(FullDescription, 255, L"%s at %s on %s", Description, PathName, Volumes[VolumeIndex]->VolName);
                AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, PathName, FullDescription, BuiltinIcon(Icon), 'S', FALSE);
             } // if
