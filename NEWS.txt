@@ -1,11 +1,19 @@
-0.8.5 (??/??/201?):
+0.8.5 (??/??/2015):
 -------------------
 
 - Improved install.sh to make it smarter about figuring out where to
   install on Macs.
 
-- Added missing check of architecture type for MOK and memory test
-  utilities.
+- Added missing check of architecture type for several tools.
+
+- Applied rEFIt commit r472, which adds support for BMP images with negative
+  height fields, indicating that the image is NOT vertically flipped. This
+  commit and r467 were not incorporated in the original rEFInd because I
+  forked it from a Debian rEFIt package that had been patched to build
+  under GNU-EFI, and was apparently based on a slightly earlier version.
+
+- Applied rEFIt commit r467, which improves Mac handling of legacy boots
+  from other than the first hard disk.
 
 
 0.8.4 (12/8/2014):

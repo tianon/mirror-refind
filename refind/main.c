@@ -176,7 +176,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.4.1");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.4.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2014 Roderick W. Smith");
@@ -1646,6 +1646,21 @@ static EFI_STATUS ActivateMbrPartition(IN EFI_BLOCK_IO *BlockIO, IN UINTN Partit
     return EFI_SUCCESS;
 } /* static EFI_STATUS ActivateMbrPartition() */
 
+static EFI_GUID AppleVariableVendorID = { 0x7C436110, 0xAB2A, 0x4BBB, 0xA8, 0x80, 0xFE, 0x41, 0x99, 0x5C, 0x9F, 0x82 };
+
+static EFI_STATUS WriteBootDiskHint(IN EFI_DEVICE_PATH *WholeDiskDevicePath)
+{
+   EFI_STATUS          Status;
+
+   Status = refit_call5_wrapper(RT->SetVariable, L"BootCampHD", &AppleVariableVendorID,
+                                EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+                                GetDevicePathSize(WholeDiskDevicePath), WholeDiskDevicePath);
+   if (EFI_ERROR(Status))
+      return Status;
+
+   return EFI_SUCCESS;
+}
+
 // early 2006 Core Duo / Core Solo models
 static UINT8 LegacyLoaderDevicePath1Data[] = {
     0x01, 0x03, 0x18, 0x00, 0x0B, 0x00, 0x00, 0x00,
@@ -1719,9 +1734,11 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry, IN CHAR16 *SelectionName)
                       (UGAHeight - BootLogoImage->Height) >> 1,
                       &StdBackgroundPixel);
 
-    if (Entry->Volume->IsMbrPartition) {
+    if (Entry->Volume->IsMbrPartition)
         ActivateMbrPartition(Entry->Volume->WholeDiskBlockIO, Entry->Volume->MbrPartitionIndex);
-    }
+
+    if (Entry->Volume->DiskKind != DISK_KIND_OPTICAL && Entry->Volume->WholeDiskDevicePath != NULL)
+       WriteBootDiskHint(Entry->Volume->WholeDiskDevicePath);
 
     ExtractLegacyLoaderPaths(DiscoveredPathList, MAX_DISCOVERED_PATHS, LegacyLoaderList);
 
@@ -2419,7 +2436,7 @@ static VOID ScanForTools(VOID) {
          case TAG_SHELL:
             j = 0;
             while ((FileName = FindCommaDelimited(SHELL_NAMES, j++)) != NULL) {
-               if (FileExists(SelfRootDir, FileName)) {
+               if (FileExists(SelfRootDir, FileName) && IsValidLoader(SelfRootDir, FileName)) {
                   AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"EFI Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
                                'S', FALSE);
                }
@@ -2430,7 +2447,7 @@ static VOID ScanForTools(VOID) {
          case TAG_GPTSYNC:
             j = 0;
             while ((FileName = FindCommaDelimited(GPTSYNC_NAMES, j++)) != NULL) {
-               if (FileExists(SelfRootDir, FileName)) {
+               if (FileExists(SelfRootDir, FileName) && IsValidLoader(SelfRootDir, FileName)) {
                   AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"Hybrid MBR tool", BuiltinIcon(BUILTIN_ICON_TOOL_PART),
                                'P', FALSE);
                } // if
@@ -2442,7 +2459,7 @@ static VOID ScanForTools(VOID) {
          case TAG_GDISK:
             j = 0;
             while ((FileName = FindCommaDelimited(GDISK_NAMES, j++)) != NULL) {
-               if (FileExists(SelfRootDir, FileName)) {
+               if (FileExists(SelfRootDir, FileName) && IsValidLoader(SelfRootDir, FileName)) {
                   AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"disk partitioning tool",
                                BuiltinIcon(BUILTIN_ICON_TOOL_PART), 'G', FALSE);
                } // if
@@ -2454,7 +2471,7 @@ static VOID ScanForTools(VOID) {
          case TAG_NETBOOT:
             j = 0;
             while ((FileName = FindCommaDelimited(NETBOOT_NAMES, j++)) != NULL) {
-               if (FileExists(SelfRootDir, FileName)) {
+               if (FileExists(SelfRootDir, FileName) && IsValidLoader(SelfRootDir, FileName)) {
                   AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"Netboot",
                                BuiltinIcon(BUILTIN_ICON_TOOL_NETBOOT), 'N', FALSE);
                } // if
@@ -2466,7 +2483,8 @@ static VOID ScanForTools(VOID) {
          case TAG_APPLE_RECOVERY:
             FileName = StrDuplicate(L"\\com.apple.recovery.boot\\boot.efi");
             for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-               if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, FileName))) {
+               if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, FileName)) &&
+                   IsValidLoader(Volumes[VolumeIndex]->RootDir, FileName)) {
                   SPrint(Description, 255, L"Apple Recovery on %s", Volumes[VolumeIndex]->VolName);
                   AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
                                BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE), 'R', TRUE);
@@ -2482,6 +2500,7 @@ static VOID ScanForTools(VOID) {
                SplitVolumeAndFilename(&FileName, &VolName);
                for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                   if ((Volumes[VolumeIndex]->RootDir != NULL) && (FileExists(Volumes[VolumeIndex]->RootDir, FileName)) &&
+                      IsValidLoader(Volumes[VolumeIndex]->RootDir, FileName) &&
                       ((VolName == NULL) || (StriCmp(VolName, Volumes[VolumeIndex]->VolName) == 0))) {
                      SPrint(Description, 255, L"Microsoft Recovery on %s", Volumes[VolumeIndex]->VolName);
                      AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
