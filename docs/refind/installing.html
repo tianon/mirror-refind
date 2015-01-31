@@ -198,9 +198,19 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="#winprob">Fixing Windows Boot Problems</a></li>
 
-<li class="tight"><a href="#uninstalling">Uninstalling rEFInd</a></li>
+<li class="tight"><a href="#uninstalling">Uninstalling rEFInd</a>
 
-</ul>
+   <ul>
+
+   <li class="tight"><a href="#uinst_linux">Uninstalling rEFInd from Linux</a></li>
+
+   <li class="tight"><a href="#uinst_osx">Uninstalling rEFInd from OS X</a></li>
+
+   <li class="tight"><a href="#uinst_windows">Uninstalling rEFInd from Windows</a></li>
+
+   <li class="tight"><a href="#post_uninst">Post-Uninstallation Activity (UEFI-Based PCs)</a></li>
+
+</ul></ul></li>
 
 </div>
 
@@ -1073,27 +1083,79 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 <h2>Uninstalling rEFInd</h2>
 </a>
 
-<p>If you decide you don't want to keep rEFInd, you can uninstall it. Doing so is a matter of removing the rEFInd files from your ESP (or from your OS X boot partition, if you installed the program there). In Linux, a command like the following, typed as <tt>root</tt>, should do the trick:</p>
+<p>If you decide you don't want to keep rEFInd, you can uninstall it. Doing so is a matter of removing the rEFInd files from your ESP (or from your OS X boot partition, if you installed the program there). The exact details of how to do this vary from one OS to another, though; and in some cases there are alternatives to completely uninstalling rEFInd that are easier to implement.</p>
+
+<a name="uinst_linux">
+<h3>Uninstalling rEFInd from Linux</h3>
+</a>
+
+<p>In Linux, a command like the following, typed as <tt>root</tt>, should remove rEFInd:</p>
 
 <pre class="listing">
 # <tt class="userinput">rm -r /boot/efi/EFI/refind</tt>
 </pre>
 
-<p>This example assumes that your ESP is mounted at <tt>/boot/efi</tt> and that rEFInd is installed in <tt>EFI/refind</tt> on that partition. If you've mounted your ESP elsewhere, or installed rEFInd elsewhere, you should adjust the command appropriately.</p>
-
-<p>The same procedure works in OS X, with the caveat that the ESP isn't normally mounted in OS X. Thus, you must first mount the ESP, as described earlier, in the section on <a href="#osx">manually installing rEFInd in OS X.</a> (You can forego this step if you installed to the OS X root partition.) You'll also need to use <tt>sudo</tt> to acquire <tt>root</tt> privileges. Thus, you'd probably use a command like the following in OS X:</p>
-
-<pre class="listing">
-$ <tt class="userinput">sudo rm -r /Volumes/esp/EFI/refind</tt>
-</pre>
-
-<p>Many variants of both of these commands are possible on both OS X and Linux. For instance, you'd probably use <tt>sudo</tt> on Ubuntu. Note that dragging the rEFInd files to the Trash in OS X does <i>not</i> delete them; it just moves them to a different folder. Given the way that Macs reference boot loaders, this means that rEFInd may still launch. If you want to use the Finder to delete rEFInd, be sure to empty the trash after you drag the files there. That should do the job, provided there's no second installation hiding somewhere.</p>
+<p>You must type this command as <tt>root</tt> (or use <tt>sudo</tt> in some environments, such as under Ubuntu). This example assumes that your ESP is mounted at <tt>/boot/efi</tt> and that rEFInd is installed in <tt>EFI/refind</tt> on that partition. If you've mounted your ESP elsewhere, or installed rEFInd elsewhere, you should adjust the command appropriately.</p>
 
 <p>If you installed via an RPM or Debian package in Linux, using your package manager will remove the package files, but not the files that the installer places on your ESP. Thus, you must uninstall those files manually, as just described. To complete the job, you'll also have to remove <tt>/boot/refind_linux.conf</tt>, and perhaps the <tt>/etc/refind.d</tt> directory.</p>
 
+<a name="uinst_osx">
+<h3>Uninstalling rEFInd from OS X</h3>
+</a>
+
+<p>The easiest way to restore the standard OS X boot loader on a Mac is not to uninstall rEFInd; it's to bypass it. This can be accomplished with the Startup Disk item in the System Preferences panel:</p>
+
+    <br /><center><img src="startup-disk.png" align="center" width="668"
+    height="355" alt="The OS X Startup Disk tool enables you to reset a Mac
+    to use the standard OS X boot loader." border=2> </center><br />
+
+<p>Select your startup disk (<i>Macintosh HD OS X, 10.10.1</i> in this example) and then click Restart. The computer should reboot into OS X, bypassing rEFInd.</p>
+
+<p>I recommend stopping here, because the procedure for completely removing rEFInd from a Mac depends on your installation method and tends to be challenging for many Mac users, who are unfamiliar with the necessary command-line tools. Basically, you must reverse the steps described earlier, in <a href="#osx">Installing rEFInd Manually Using Mac OS X:</a></p>
+
+<ol>
+
+<li>You must first determine where rEFInd is installed. If you used the
+    default installation location, this will be <tt>/EFI/refind</tt> on
+    your main partition if you installed rEFInd 0.8.3 or earlier, or in
+    <tt>EFI/refind</tt> or <tt>EFI/BOOT</tt> on the ESP if you installed
+    rEFInd 0.8.4 with the default options. If you used the
+    <tt>--ownhfs</tt> option, rEFInd will be in the
+    <tt>System/Library/CoreServices</tt> directory on the volume you
+    specified.</li>
+
+<li>If necessary, mount the ESP or rEFInd-specific HFS+ volume, as
+    described in <a href="#osx">Installing rEFInd Manually Using Mac OS
+    X.</a></li>
+
+<li>Verify that rEFInd is installed in the directory noted in step #1. If a
+    <tt>refind.conf</tt> file is present, rEFInd is almost certainly
+    installed in that directory. If not, it's not rEFInd there and you
+    should <i>not</i> proceed. <b><i>Be extra cautious about deleting the
+    <tt>System/Library/CoreServices</tt> directory,</i></b> since that's
+    the default location of the OS X boot loader!</li>
+
+<li>Once you've identified the rEFInd directory, delete it, or at least the
+    rEFInd boot file. This file may be called <tt>refind_x64.efi</tt>,
+    <tt>bootx64.efi</tt>, <tt>boot.efi</tt>, or conceivably something else.
+    You may need to use <tt>sudo rm</tt> at the command line to accomplish
+    this task, as in <tt class="userinput">sudo rm -r
+    /Volumes/esp/EFI/refind</tt>. Note that dragging files to the Trash on
+    the Desktop may not be adequate unless you also empty the Trash.</li>
+
+</ol>
+
+<a name="uinst_windows">
+<h3>Uninstalling rEFInd from Windows</h3>
+</a>
+
 <p>From Windows, you must reverse the directions for <a href="#windows">installing in Windows</a>&mdash;type <tt class="userinput">mountvol S: /S</tt> to mount your ESP as <tt>S:</tt>, then navigate to the <tt>S:\EFI</tt> directory and delete the <tt>refind</tt> subdirectory.</p>
 
-<p>In any of these cases, when the computer boots and cannot find the rEFInd files, it should move on to the next boot loader in its list. In my experience, some EFI firmware implementations remove boot loaders they can't find from their NVRAM lists, so nothing else will be required, provided you have another working boot loader in your firmware's list. If your firmware doesn't automatically clean up its NVRAM entries, rEFInd's entry will do little harm; however, you can delete it with the <tt>efibootmgr</tt> utility in Linux:</p>
+<a name="post_uninst">
+<h3>Post-Uninstallation Activity (UEFI-Based PCs)</h3>
+</a>
+
+<p>On a UEFI-based PC, when the computer boots and cannot find the rEFInd files, it should move on to the next boot loader in its list. In my experience, some EFI firmware implementations remove boot loaders they can't find from their NVRAM lists, so nothing else will be required, provided you have another working boot loader in your firmware's list. If your firmware doesn't automatically clean up its NVRAM entries, rEFInd's entry will do little harm; however, you can delete it with the <tt>efibootmgr</tt> utility in Linux:</p>
 
 <pre class="listing">
 # <tt class="userinput">efibootmgr --verbose</tt>
@@ -1110,11 +1172,14 @@ Boot0007* CD/DVD Drive</pre>
 
 <p>This example shows use of <tt>efibootmgr</tt>'s <tt>--verbose</tt> (<tt>-v</tt>) option to display boot programs so as to identify which one is rEFInd, followed by <tt>--delete-bootnum</tt> (<tt>-B</tt>) to delete a boot program and <tt>--bootnum</tt> (<tt>-b</tt>) to identify which one to delete. Of course, in this example there's not much else left, so you'd presumably want to install another boot program at this point! If you already have another one installed, you may want to check the <tt>BootOrder</tt> line to determine which one will take precedence when you reboot. If you don't like what it shows, you can adjust it with the <tt>--bootorder</tt> (<tt>-o</tt>) option; consult <tt>efibootmgr</tt>'s <tt>man</tt> page for details.</p>
 
-<p>If you're not using Linux, you may be able to find a utility that serves a similar function. The OS X <tt>bless</tt> utility (or its GUI equivalent, the Startup Disk item in System Preferences) should do the trick; but Macs pick up standard OS X boot loaders when they boot and find that a configured non-standard boot loader is missing, so this shouldn't be necessary on Macs. Under Windows, the <tt>bcdedit</tt> command, described in the <a href="#windows">section on installing rEFInd under Windows,</a> may work, although I've not attempted this.</p>
+<p>If you're not using Linux, you may be able to find a utility that serves
+a similar function. Under Windows, the <tt>bcdedit</tt> command, described
+in the <a href="#windows">section on installing rEFInd under Windows,</a>
+may work, although I've not attempted this.</p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2014 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2015 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

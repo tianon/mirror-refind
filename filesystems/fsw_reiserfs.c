@@ -304,16 +304,16 @@ static fsw_status_t fsw_reiserfs_dnode_stat(struct fsw_reiserfs_volume *vol, str
             sb->used_bytes = 0;
         else
             sb->used_bytes = dno->sd_v1->u.sd_blocks * vol->g.log_blocksize;
-        sb->store_time_posix(sb, FSW_DNODE_STAT_CTIME, dno->sd_v1->sd_ctime);
-        sb->store_time_posix(sb, FSW_DNODE_STAT_ATIME, dno->sd_v1->sd_atime);
-        sb->store_time_posix(sb, FSW_DNODE_STAT_MTIME, dno->sd_v1->sd_mtime);
-        sb->store_attr_posix(sb, dno->sd_v1->sd_mode);
+        fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME, dno->sd_v1->sd_ctime);
+        fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME, dno->sd_v1->sd_atime);
+        fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME, dno->sd_v1->sd_mtime);
+        fsw_store_attr_posix(sb, dno->sd_v1->sd_mode);
     } else if (dno->sd_v2) {
         sb->used_bytes = dno->sd_v2->sd_blocks * vol->g.log_blocksize;
-        sb->store_time_posix(sb, FSW_DNODE_STAT_CTIME, dno->sd_v2->sd_ctime);
-        sb->store_time_posix(sb, FSW_DNODE_STAT_ATIME, dno->sd_v2->sd_atime);
-        sb->store_time_posix(sb, FSW_DNODE_STAT_MTIME, dno->sd_v2->sd_mtime);
-        sb->store_attr_posix(sb, dno->sd_v2->sd_mode);
+        fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME, dno->sd_v2->sd_ctime);
+        fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME, dno->sd_v2->sd_atime);
+        fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME, dno->sd_v2->sd_mtime);
+        fsw_store_attr_posix(sb, dno->sd_v2->sd_mode);
     }
 
     return FSW_SUCCESS;

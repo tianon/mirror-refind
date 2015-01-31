@@ -1087,7 +1087,7 @@ EFI_STATUS fsw_efi_dnode_getinfo(IN FSW_FILE_DATA *File,
  * appropriate member of the EFI_FILE_INFO structure that we're filling.
  */
 
-static void fsw_efi_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw_u32 posix_time)
+void fsw_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw_u32 posix_time)
 {
     EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
 
@@ -1105,12 +1105,19 @@ static void fsw_efi_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw_u
  * adjustments to the EFI_FILE_INFO structure that we're filling.
  */
 
-static void fsw_efi_store_attr_posix(struct fsw_dnode_stat *sb, fsw_u16 posix_mode)
+void fsw_store_attr_posix(struct fsw_dnode_stat *sb, fsw_u16 posix_mode)
 {
     EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
 
     if ((posix_mode & S_IWUSR) == 0)
         FileInfo->Attribute |= EFI_FILE_READ_ONLY;
+}
+
+void fsw_store_attr_efi(struct fsw_dnode_stat *sb, fsw_u16 attr)
+{
+    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
+
+    FileInfo->Attribute |= attr;
 }
 
 /**
@@ -1158,8 +1165,6 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
 
     // get the missing info from the fs driver
     ZeroMem(&sb, sizeof(struct fsw_dnode_stat));
-    sb.store_time_posix = fsw_efi_store_time_posix;
-    sb.store_attr_posix = fsw_efi_store_attr_posix;
     sb.host_data = FileInfo;
     Status = fsw_efi_map_status(fsw_dnode_stat(dno, &sb), Volume);
     if (EFI_ERROR(Status))

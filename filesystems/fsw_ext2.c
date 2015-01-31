@@ -257,10 +257,10 @@ static fsw_status_t fsw_ext2_dnode_stat(struct fsw_ext2_volume *vol, struct fsw_
                                         struct fsw_dnode_stat *sb)
 {
     sb->used_bytes = dno->raw->i_blocks * 512;   // very, very strange...
-    sb->store_time_posix(sb, FSW_DNODE_STAT_CTIME, dno->raw->i_ctime);
-    sb->store_time_posix(sb, FSW_DNODE_STAT_ATIME, dno->raw->i_atime);
-    sb->store_time_posix(sb, FSW_DNODE_STAT_MTIME, dno->raw->i_mtime);
-    sb->store_attr_posix(sb, dno->raw->i_mode);
+    fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME, dno->raw->i_ctime);
+    fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME, dno->raw->i_atime);
+    fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME, dno->raw->i_mtime);
+    fsw_store_attr_posix(sb, dno->raw->i_mode);
 
     return FSW_SUCCESS;
 }

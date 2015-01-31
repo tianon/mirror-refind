@@ -258,6 +258,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     mainly because it compiled cleanly with no extra work, aside from
     providing a Makefile entry for it.</li>
 
+<li><b>NTFS</b>&mdash;Samuel Liao contributed this driver, which uses the
+    rEFIt/rEFInd driver framework. My own testing of it is limited, but it
+    does work for me. Note that this driver is <i><b>not</b></i> required
+    to boot Windows with rEFInd, since Windows stores its boot loader on
+    the (FAT) ESP. You might use this driver if you want to store large
+    boot files, such as EFI-accessible RAM disk images, from Windows.</li>
+
 </ul>
 
 <p>All of these drivers rely on filesystem wrapper code written by rEFIt's author, Christoph Phisterer.</p>
@@ -283,7 +290,7 @@ fs0: <tt class="userinput">map -r</tt>
 
 <ul>
 
-<li><b><a href="https://github.com/pbatard/efifs">Pete Batard's efifs drivers</a></b>&mdash;This project is an EFI driver wrapper around GRUB 2's filesystem drivers. Once compiled, the result is that GRUB 2's drivers become standalone EFI filesystem drivers, loadable independently or by rEFInd. (rEFInd version 0.8.3 or later is required.) At present (early July, 2014), several drivers, including NTFS, exFAT, JFS, and XFS, are usable, albeit with some caveats. For instance, using a <tt>root=UUID={uuid-value}</tt> specification to tell a Linux kernel about its root partition doesn't work, although <tt>root=PARTUUID={guid=value}</tt> does work, as does <tt>root=/dev/sd{xy}</tt>. I have no doubt that these drivers will improve rapidly in usability in the near future.</li>
+<li><b><a href="http://efi.akeo.ie">Pete Batard's efifs drivers</a></b>&mdash;This project is an EFI driver wrapper around GRUB 2's filesystem drivers. Once compiled, the result is that GRUB 2's drivers become standalone EFI filesystem drivers, loadable independently or by rEFInd. (rEFInd version 0.8.3 or later is required.) At present (driver version 0.7; January 2015), several drivers, including NTFS, exFAT, ext2fs, ReiserFS, Btrfs, JFS, and XFS, are usable, albeit with some caveats. Some drivers are slow, and they hang on some computers, such as one of my Macs. I have no doubt that these drivers will improve rapidly in usability in the near future. Note that the ext2fs driver from this set works with ext3fs and ext4fs, too. In addition to the main link, you can check the <a href="https://github.com/pbatard/efifs">github repository</a> for the source code.</li>
 
 <li><b><a href="http://refit.sourceforge.net">rEFIt's ext2fs and ReiserFS drivers</a></b>&mdash;You can gain read-only access to ext2fs, ext3fs, and ReiserFS volumes with these drivers, originally written by Christoph Pfisterer. You can use the binaries in the <tt>refit-bin-0.14/efi/tools/drivers</tt> directory of the binary package directly on a Mac. On a UEFI-based PC, though, you'll need to break the Mac-style "fat" binary into its 32- and 64-bit components. You can use my <a href="http://www.rodsbooks.com/thin/index.html"><tt>thin</tt></a> program for this job. As a practical matter, there's no advantage to using these drivers over rEFInd's drivers, since the latter are updated versions of the former.</li>
 
@@ -299,9 +306,24 @@ fs0: <tt class="userinput">map -r</tt>
 
 </ul>
 
-<p>Most of these cross-project drivers appear to be related, and most of them have fed into rEFInd's drivers. I used the Clover package, which in turn was based on the VirtualBox drivers, as a starting point. Everybody else has dropped rEFIt's original ReiserFS driver, but I added that back. Of these drivers, only the Clover EFI Tools NTFS driver is missing from rEFInd. Specific versions can have their own quirks, though. For instance, the Clover (and I suspect VirtualBox) drivers don't return volume labels, which causes rEFInd to display loaders on those volumes as being on a disk called <tt>Unknown</tt>. (I fixed that bug for rEFInd's version, and it wasn't present in the original rEFIt drivers.) Most of these drivers also suffer from speed problems on some computers. This is worst with the ext2fs drivers under VirtualBox; on my main computer, that combination takes 3 minutes to load a Linux kernel and initial RAM disk file! Most real computers don't suffer nearly so badly, but some can take an extra five seconds or so to boot a kernel. I've fixed the speed problems in rEFInd's drivers as of version 0.7.0.</p>
+<p>The rEFIt, Clover, and VirtualBox drivers are related, and all of them
+have fed into rEFInd's drivers. Specific versions can have their own
+quirks, though. For instance, the Clover (and I suspect VirtualBox) drivers
+don't return volume labels, which causes rEFInd to display loaders on those
+volumes as being on a disk called <tt>Unknown</tt>. (I fixed that bug for
+rEFInd's version, and it wasn't present in the original rEFIt drivers.)
+Most of these drivers also suffer from speed problems on some computers.
+This is worst with the ext2fs drivers under VirtualBox; on my main
+computer, that combination takes 3 minutes to load a Linux kernel and
+initial RAM disk file! Most real computers don't suffer nearly so badly,
+but some can take an extra five seconds or so to boot a kernel. I've fixed
+the speed problems in rEFInd's drivers as of version 0.7.0.</p>
 
-<p>Driver availability could increase in the future. Source code to a wide variety of filesystems is available in GRUB Legacy, GRUB 2, Linux, various BSD kernels, and in other projects. Sooner or later somebody's likely to begin porting those drivers to EFI. If you do so, or if you know of additional EFI drivers, please <a href="mailto:rodsmith@rodsbooks.com">tell me about it,</a> so I can share the information here. Likewise if you know of a source for other EFI drivers&mdash;say, for a video card or disk controller card.</p>
+<p>Driver availability could increase in the future. If you know of
+additional EFI drivers, please <a href="mailto:rodsmith@rodsbooks.com">tell
+me about them,</a> so I can share the information here. Likewise if you
+know of a source for other EFI drivers&mdash;say, for a video card or disk
+controller card.</p>
 
 <p>Once you've obtained an EFI driver, you can install it in rEFInd just as you would install rEFInd's own drivers, as described earlier.</p>
 
@@ -309,9 +331,25 @@ fs0: <tt class="userinput">map -r</tt>
 <h2>Notes on Specific Drivers</h2>
 </a>
 
-<p>I've tested several of the drivers described on this page on a handful of systems. The Pfisterer ext2fs driver (from any source) works on both ext2fs and ext3fs, but not on ext4fs&mdash;but Agner's derivative ext4fs driver handles ext4fs, so that's not a problem. The ReiserFS driver is obviously useful only on ReiserFS partitions. (Reiser4 is not supported, as far as I know.) The Btrfs driver is the newest of the lot, and so I've tested it the least, but it's worked for me on two test systems. Given that ext2fs, ext3fs, and ReiserFS are getting a bit on in age by Linux standards, you might do well to use them on a separate Linux <tt>/boot</tt> partition; however, if you're willing to use ext3fs, ext4fs, Btrfs, or ReiserFS on your root (<tt>/</tt>) filesystem, you can use the EFI drivers to read your kernel from it. Note that this assumes you use conventional partitions; to the best of my knowledge, there's no EFI driver for Linux's Logical Volume Manager (LVM) or Redundant Array of Independent Disks (RAID) configurations, so the EFI can't access filesystems stored in these ways.</p>
+<p>I've tested several of the drivers described on this page on a handful
+of systems. The Pfisterer ext2fs driver (from any source) works on both
+ext2fs and ext3fs, but not on ext4fs&mdash;but Agner's derivative ext4fs
+driver handles ext4fs, so that's not a problem. The ReiserFS driver is
+obviously useful only on ReiserFS partitions. (Reiser4 is not supported, as
+far as I know.) The Btrfs driver is the newest of the Linux filesystem
+drivers included with rEFInd, and so I've tested it the least, but it's
+worked for me on several test systems. Given that ext2fs, ext3fs, and
+ReiserFS are getting a bit on in age by Linux standards, you might do well
+to use them on a separate Linux <tt>/boot</tt> partition; however, if
+you're willing to use ext3fs, ext4fs, Btrfs, or ReiserFS on your root
+(<tt>/</tt>) filesystem, you can use the EFI drivers to read your kernel
+from it. Note that this assumes you use conventional partitions; to the
+best of my knowledge, there's no EFI driver for Linux's Logical Volume
+Manager (LVM) or Redundant Array of Independent Disks (RAID)
+configurations, so the EFI can't access filesystems stored in these
+ways.</p>
 
-<p>As noted earlier, rEFInd's drivers prior to version 0.7.0, as well as related drivers from rEFIt, Clover, and VirtualBox, suffer from speed problems. These problems are mostly minor, adding a second or two to boot times; but on some computers, the speed problems can be dramatic, boosting kernel-load times up to as much as three minutes (under VirtualBox). If you run into excessive boot times with such a driver, try switching to the latest rEFInd driver instead.</p>
+<p>As noted earlier, rEFInd's drivers prior to version 0.7.0, as well as related drivers from rEFIt, Clover, and VirtualBox, suffer from speed problems. These problems are mostly minor, adding a second or two to boot times; but on some computers, the speed problems can be dramatic, boosting kernel-load times up to as much as three minutes (under VirtualBox). If you run into excessive boot times with such a driver, try switching to the latest rEFInd driver instead. You might also try Pete Batard's efifs drivers.</p>
 
 <p>Although ext2fs, ext3fs, ext4fs, and ReiserFS are all case-sensitive, these drivers treat them in a case-insensitive way. Symbolic links work; however, rEFInd 0.6.11 and later ignore symbolic links, since many distributions use them in a way that creates redundant or non-functional entries in the rEFInd menu. You should be able to use hard links if you want to use a single kernel file in multiple ways (say for two distributions).</p>
 

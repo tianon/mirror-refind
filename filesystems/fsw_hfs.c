@@ -530,10 +530,10 @@ static fsw_status_t fsw_hfs_dnode_stat(struct fsw_hfs_volume *vol,
                                        struct fsw_dnode_stat *sb)
 {
   sb->used_bytes = dno->used_bytes;
-  sb->store_time_posix(sb, FSW_DNODE_STAT_CTIME, mac_to_posix(dno->ctime));
-  sb->store_time_posix(sb, FSW_DNODE_STAT_MTIME, mac_to_posix(dno->mtime));
-  sb->store_time_posix(sb, FSW_DNODE_STAT_ATIME, 0);
-  sb->store_attr_posix(sb, 0700);
+  fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME, mac_to_posix(dno->ctime));
+  fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME, mac_to_posix(dno->mtime));
+  fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME, 0);
+  fsw_store_attr_posix(sb, 0700);
 
   return FSW_SUCCESS;
 }

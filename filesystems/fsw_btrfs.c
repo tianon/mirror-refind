@@ -1165,19 +1165,19 @@ static fsw_status_t fsw_btrfs_dnode_stat(struct fsw_volume *volg, struct fsw_dno
     /* slave device got empty root */
     if(dno->raw == NULL) {
         sb->used_bytes = 0;
-        sb->store_time_posix(sb, FSW_DNODE_STAT_CTIME, 0);
-        sb->store_time_posix(sb, FSW_DNODE_STAT_ATIME, 0);
-        sb->store_time_posix(sb, FSW_DNODE_STAT_MTIME, 0);
+        fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME, 0);
+        fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME, 0);
+        fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME, 0);
         return FSW_SUCCESS;
     }
     sb->used_bytes = fsw_u64_le_swap(dno->raw->nbytes);
-    sb->store_time_posix(sb, FSW_DNODE_STAT_ATIME,
+    fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME,
             fsw_u64_le_swap(dno->raw->atime.sec));
-    sb->store_time_posix(sb, FSW_DNODE_STAT_CTIME,
+    fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME,
             fsw_u64_le_swap(dno->raw->ctime.sec));
-    sb->store_time_posix(sb, FSW_DNODE_STAT_MTIME,
+    fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME,
             fsw_u64_le_swap(dno->raw->mtime.sec));
-    sb->store_attr_posix(sb, fsw_u32_le_swap(dno->raw->mode));
+    fsw_store_attr_posix(sb, fsw_u32_le_swap(dno->raw->mode));
 
     return FSW_SUCCESS;
 }
@@ -1325,7 +1325,7 @@ static fsw_status_t fsw_btrfs_get_extent(struct fsw_volume *volg, struct fsw_dno
 
         vol->extend = vol->extstart + fsw_u64_le_swap (vol->extent->size);
         if (vol->extent->type == GRUB_BTRFS_EXTENT_REGULAR
-                && (char *) &vol->extent + elemsize
+                && (char *) vol->extent + elemsize
                 >= (char *) &vol->extent->filled + sizeof (vol->extent->filled))
             vol->extend =
                 vol->extstart + fsw_u64_le_swap (vol->extent->filled);

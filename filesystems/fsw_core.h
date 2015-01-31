@@ -319,8 +319,6 @@ struct fsw_volume_stat {
 
 struct fsw_dnode_stat {
     fsw_u64     used_bytes;         //!< Bytes actually used by the file on disk
-    void        (*store_time_posix)(struct fsw_dnode_stat *sb, int which, fsw_u32 posix_time);   //!< Callback for storing a Posix-style timestamp
-    void        (*store_attr_posix)(struct fsw_dnode_stat *sb, fsw_u16 posix_mode);   //!< Callback for storing a Posix-style file mode
     void        *host_data;         //!< Hook for a host-specific data structure
 };
 
@@ -422,6 +420,9 @@ fsw_status_t fsw_dnode_dir_read(struct fsw_shandle *shand, struct fsw_dnode **ch
 fsw_status_t fsw_dnode_readlink(struct fsw_dnode *dno, struct fsw_string *link_target);
 fsw_status_t fsw_dnode_readlink_data(struct DNODESTRUCTNAME *dno, struct fsw_string *link_target);
 fsw_status_t fsw_dnode_resolve(struct fsw_dnode *dno, struct fsw_dnode **target_dno_out);
+void fsw_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw_u32 posix_time);
+void fsw_store_attr_posix(struct fsw_dnode_stat *sb, fsw_u16 posix_mode);
+void fsw_store_attr_efi(struct fsw_dnode_stat *sb, fsw_u16 attr);
 
 /*@}*/
 

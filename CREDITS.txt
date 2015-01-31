@@ -43,8 +43,9 @@ Program (C source code) files:
 * Stefan Agner (stefan@agner.ch) turned the original ext2fs/ext3fs driver
   into one that can read ext4fs.
 
-* Samuel Liao ported the GRUB 2 Btrfs code into an EFI driver and
-  contributed it to this project.
+* Samuel Liao ported the GRUB 2 Btrfs and NTFS code into EFI drivers and
+  contributed them to this project, along with several miscellaneous
+  improvements.
 
 * Emerson Barcelos (emerson_freitas@yahoo.com.br) wrote the code for
   enabling Intel VMX support (the enable_and_lock_vmx token in
