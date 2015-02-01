@@ -1,8 +1,22 @@
-0.8.5 (??/??/2015):
--------------------
+0.8.5 (2/1/2015):
+-----------------
+
+- Added NTFS EFI filesystem driver.
+
+- Minor improvements to filesystem driver framework code.
+
+- Changes to 
+
+- Fixed bug in Btrfs driver's address reference.
 
 - Improved install.sh to make it smarter about figuring out where to
-  install on Macs.
+  install on Macs. Specifically, this version now upgrades existing
+  installations, if found (as it always has under Linux), rather than
+  blindly install to EFI/BOOT; it installs to EFI/refind if not existing
+  installation is found; it installs using the --shortform option to bless,
+  which seems to eliminate the 30-second delay problem; and it can handle
+  an HFS+ ESP, which it treats as a separate HFS+ volume (as if the user
+  had used --ownhfs). These changes do not affect behavior under Linux.
 
 - Added missing check of architecture type for several tools.
 

@@ -1339,7 +1339,7 @@ static fsw_status_t fsw_ntfs_dir_lookup(struct fsw_volume *volg, struct fsw_dnod
     buf = dno->idxroot + 16;
     len = dno->rootsz - 16;
     if(len < 0x18)
-	return FSW_NOT_FOUND;
+	goto notfound;
 
     while(depth < 10) {
 	/* real index size */
@@ -1349,7 +1349,7 @@ static fsw_status_t fsw_ntfs_dir_lookup(struct fsw_volume *volg, struct fsw_dnod
 	/* skip index header */
 	off = GETU32(buf, 0);
 	if(off >= len)
-	    return FSW_NOT_FOUND;
+	    goto notfound;
 
 	block = 0;
 	while(off + 0x18 <= len) {
@@ -1369,10 +1369,11 @@ static fsw_status_t fsw_ntfs_dir_lookup(struct fsw_volume *volg, struct fsw_dnod
 	    }
 
 	    if(cmp == 0) {
+		fsw_strfree(&s);
 		return fsw_ntfs_create_subnode(dno, buf+off, child_dno);
 	    } else if(cmp < 0) {
 		if(!(flag & 1) || !dno->has_idxtree)
-		    return FSW_NOT_FOUND;
+		    goto notfound;
 		block = GETU64(buf, next-8) + 1;
 		break;
 	    } else { /* cmp > 0 */
@@ -1389,6 +1390,8 @@ static fsw_status_t fsw_ntfs_dir_lookup(struct fsw_volume *volg, struct fsw_dnod
 	depth++;
     }
 
+notfound:
+    fsw_strfree(&s);
     return FSW_NOT_FOUND;
 }
 

@@ -2,7 +2,7 @@
  * refind/gpt.c
  * Functions related to GPT data structures
  *
- * Copyright (c) 2014 Roderick W. Smith
+ * Copyright (c) 2014-2015 Roderick W. Smith
  * All rights reserved.
  *
  * This program is distributed under the terms of the GNU General Public

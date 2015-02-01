@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-12/8/2014, referencing rEFInd 0.8.4</p>
+2/1/2014, referencing rEFInd 0.8.5</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -269,7 +269,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>All of these drivers rely on filesystem wrapper code written by rEFIt's author, Christoph Phisterer.</p>
 
-<p class="sidebar"><b>Note:</b> rEFInd's <tt>install.sh</tt> script does not install drivers by default on OS X, but on Linux, it installs the driver required to read the <tt>/boot</tt> directory, if one is available. The script installs all the available drivers if you pass it the <tt>--drivers</tt> option. See the <a href="installing.html">Installing rEFInd</a> page for details.</p>
+<p class="sidebar"><b>Note:</b> rEFInd's <tt>install.sh</tt> script, when run from Linux, installs the driver required to read the <tt>/boot</tt> directory. Under OS X, the <tt>install.sh</tt> script installs the ext4fs driver if the script detects a Linux partition&mdash;but you might need to change this driver if you use another filesystem. The script installs all the available drivers if you pass it the <tt>--alldrivers</tt> option. (I do <i>not</i> recommend using this feature except for creating general-purpose USB flash drives with rEFInd, since having too many drivers can cause various problems.) See the <a href="installing.html">Installing rEFInd</a> page for details.</p>
 
 <p>If you want to use one or more of these drivers, you can install them from the rEFInd binary package from the <tt>refind/drivers_<tt class="variable">arch</tt></tt> directory, where <tt class="variable">arch</tt> is a CPU architecture code&mdash;<tt>x64</tt> or <tt>ia32</tt>. The files are named after the filesystems they handle, such as <tt>ext4_x64.efi</tt> for the 64-bit ext4fs driver. You should copy the files for the filesystems you want to use to the <tt>drivers</tt> or <tt>drivers_<tt class="variable">arch</tt></tt> subdirectory of the main rEFInd installation directory. (You may need to create this subdirectory.) Be careful to install drivers only for your own architecture. Attempting to load drivers for the wrong CPU type will cause a small delay at best, or may cause the computer to crash at worst. I've placed rEFInd's drivers in directories that are named to minimize this risk, but you should exercise care when copying driver files.</p>
 

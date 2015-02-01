@@ -29,7 +29,7 @@
 # to the current OS X boot partition. Under Linux, this script
 # installs to the ESP by default.
 #
-# This program is copyright (c) 2012-2014 by Roderick W. Smith
+# This program is copyright (c) 2012-2015 by Roderick W. Smith
 # It is released under the terms of the GNU GPL, version 3,
 # a copy of which should be included in the file COPYING.txt.
 #
@@ -399,6 +399,8 @@ CopyDrivers() {
               ;;
          hfsplus) DriverType="hfs"
               ;;
+         ntfs) DriverType="ntfs"
+              ;;
          *) BootFS=""
       esac
       if [[ -n $BootFS ]] ; then
@@ -639,7 +641,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.7.6</string>
+        <string>0.8.5</string>
 </dict>
 </plist>
 ENDOFHERE
@@ -661,7 +663,7 @@ InstallOnOSX() {
    Platform=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
    CopyRefindFiles
    if [[ $InstallToEspOnMac == "1" ]] ; then
-      bless --mount "$InstallDir" --setBoot --file "$InstallDir/$TargetDir/$Refind"
+      bless --mount "$InstallDir" --setBoot --file "$InstallDir/$TargetDir/$Refind" --shortform
    elif [[ "$TargetDir" != "/EFI/BOOT" ]] ; then
       bless --setBoot --folder "$InstallDir/$TargetDir" --file "$InstallDir/$TargetDir/$Refind"
    fi
@@ -1088,11 +1090,6 @@ if [[ $OSName == 'Darwin' ]] ; then
    if [[ "$LocalKeys" != 0 ]] ; then
       echo "The --localkeys option is not supported on OS X! Exiting!"
       exit 1
-   fi
-   if [[ $InstallToEspOnMac == 1 ]] ; then
-      TargetDir=/EFI/BOOT
-      TargetX64="bootx64.efi"
-      TargetIA32="bootia32.efi"
    fi
    InstallOnOSX $1
 elif [[ $OSName == 'Linux' ]] ; then

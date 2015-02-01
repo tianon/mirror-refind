@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 12/8/2014</p>
+<p>Last Web page update: 2/1/2014</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.8.5 (2/1/2015)</b>&mdash;The biggest single change with this version is a new NTFS driver contributed by Samuel Liao, who also contributed the Btrfs driver. Samuel also contributed some miscellaneous driver fixes and a change to the way the keyboard is handled, which improves responsiveness on some systems. This version also improves the way <tt>install.sh</tt> works under OS X. In particular, it tweaks the <tt>bless</tt> command in a way that may eliminate startup delays and it does a better job of detecting and replacing existing rEFInd installations (on the ESP), rather than blindly writing to <tt>EFI/BOOT</tt>. Finally, this version applies <a href="https://sourceforge.net/p/refit/code/commit_browser">commits from late in rEFIt's history:</a> r467, which improves handling of BIOS/legacy boots from the second and subsequent disks on Macs; and r472, which enables handling BMP images that are not vertically flipped. These commits were not present in rEFInd from the start because the starting point for rEFInd was a Debian source package taken from a slightly earlier version.</li>
 
 <li><b>0.8.4 (12/8/2014)</b>&mdash;OS X 10.10 ("Yosemite") made changes that necessitated alterations to both rEFInd's <tt>install.sh</tt> script and rEFInd defaults. Specifically, Yosemite now uses a form of <a href="http://en.wikipedia.org/wiki/Logical_volume_management">logical volume management (LVM)</a> that makes installing rEFInd to the OS X root directory impossible, so the default location is changed to the ESP. Changes to the default for <tt>dont_scan_volumes</tt> are necessary to make the new location for the OS X boot loader show up. Another big change is in the new (but <i>experimental</i>) support for network booting, with the help of iPXE. See the <tt>BUILDING.txt</tt> file in the source package for details on how to build and install the necessary files. A new option for <tt>refind.conf</tt>, <tt>enable_and_lock_vmx</tt>, sets the VMX bit on Intel CPUs, which is necessary for booting some hypervisors, such as Hyper-V. This feature can be set on many computers' EFIs, but some, such as Macs, lack this ability. (<i>Do not</i> set this option on AMD CPUs or older Intel CPUs that lack this feature, though!) If rEFInd can't find its icons directory, it now drops back to text mode. A bug in <tt>dont_scan_files</tt> has been fixed, enabling you to specify a complete path to certain special-case boot loaders to omit them from scans. Finally, I've updated the icons for Fedora and Ubuntu and added an icon for Xubuntu.</li>
 
