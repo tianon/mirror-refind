@@ -1,6 +1,10 @@
 0.8.6 (?/??/2016):
 ------------------
 
+- Reverted rEFIt commit r472, introduced in rEFInd 0.8.5 to support more
+  BMP images because I've received bug reports that it's causing existing
+  selection images to fail to load.
+
 - Fixed install.sh bug that caused misidentification of installation
   directory under OS X if an already-mounted ESP has spaces in its path.
 
