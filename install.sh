@@ -35,6 +35,9 @@
 #
 # Revision history:
 #
+# 0.8.6   -- Fixed bugs that caused misidentification of ESP on disks with
+#            partition numbers over 10 on OS X and misidentification of mount
+#            point if already-mounted ESP had space in path.
 # 0.8.5   -- Refinement/cleanup of new OS X ESP-as-default policy
 # 0.8.4   -- OS X default changed to install to ESP under /EFI/BOOT
 # 0.7.9   -- Fixed bug that caused errors if dmraid utility not installed
@@ -599,8 +602,8 @@ MountOSXESP() {
    fi
    Esp=/dev/`echo $Temp`
    # If the ESP is mounted, use its current mount point....
-   Temp=`df -P | grep "$Esp"`
-   InstallDir=`echo $Temp | cut -f 6 -d ' '`
+   Temp=`df -P | grep "$Esp "`
+   InstallDir=`echo $Temp | cut -f 6- -d ' '`
    if [[ "$InstallDir" == '' ]] ; then
       mkdir /Volumes/ESP &> /dev/null
       mount -t msdos "$Esp" /Volumes/ESP

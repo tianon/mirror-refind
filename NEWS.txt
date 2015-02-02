@@ -1,3 +1,13 @@
+0.8.6 (?/??/2016):
+------------------
+
+- Fixed install.sh bug that caused misidentification of installation
+  directory under OS X if an already-mounted ESP has spaces in its path.
+
+- Fixed install.sh bug that could cause misidentification of the ESP on
+  disks with partition numbers of 10 or above.
+
+
 0.8.5 (2/1/2015):
 -----------------
 
