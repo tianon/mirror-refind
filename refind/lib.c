@@ -49,6 +49,7 @@
 #include "../include/refit_call_wrapper.h"
 #include "../include/RemovableMedia.h"
 #include "gpt.h"
+#include "config.h"
 
 #ifdef __MAKEWITH_GNUEFI
 #define EfiReallocatePool ReallocatePool
@@ -698,6 +699,9 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
 // Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
 VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume)
 {
+   if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES)
+      return;
+
    if (Volume->VolBadgeImage == NULL) {
       Volume->VolBadgeImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeBadge", GlobalConfig.IconSizes[ICON_SIZE_BADGE]);
    }
@@ -933,32 +937,32 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
         DevicePath = NextDevicePath;
     } // while
 
-    if (!Bootable) {
+   if (!Bootable) {
 #if REFIT_DEBUG > 0
-        if (Volume->HasBootCode)
-            Print(L"  Volume considered non-bootable, but boot code is present\n");
+      if (Volume->HasBootCode)
+         Print(L"  Volume considered non-bootable, but boot code is present\n");
 #endif
-        Volume->HasBootCode = FALSE;
-    }
+      Volume->HasBootCode = FALSE;
+   }
 
-    // open the root directory of the volume
-    Volume->RootDir = LibOpenRoot(Volume->DeviceHandle);
+   // open the root directory of the volume
+   Volume->RootDir = LibOpenRoot(Volume->DeviceHandle);
 
-    // Set volume icon based on .VolumeBadge icon or disk kind
-    SetVolumeBadgeIcon(Volume);
+   // Set volume icon based on .VolumeBadge icon or disk kind
+   SetVolumeBadgeIcon(Volume);
 
-    Volume->VolName = GetVolumeName(Volume);
+   Volume->VolName = GetVolumeName(Volume);
 
-    if (Volume->RootDir == NULL) {
-        Volume->IsReadable = FALSE;
-        return;
-    } else {
-        Volume->IsReadable = TRUE;
-    }
+   if (Volume->RootDir == NULL) {
+      Volume->IsReadable = FALSE;
+      return;
+   } else {
+      Volume->IsReadable = TRUE;
+   }
 
-    // get custom volume icons if present
-    if (!Volume->VolIconImage)
-       Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+   // get custom volume icons if present
+   if (!Volume->VolIconImage)
+     Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
 } // ScanVolume()
 
 static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_INFO *MbrEntry)

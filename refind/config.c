@@ -514,6 +514,8 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.HideUIFlags |= HIDEUI_FLAG_EDITOR;
                 } else if (StriCmp(FlagName, L"safemode") == 0) {
                    GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SAFEMODE;
+                } else if (StriCmp(FlagName, L"badges") == 0) {
+                   GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BADGES;
                 } else if (StriCmp(FlagName, L"all") == 0) {
                    GlobalConfig.HideUIFlags = HIDEUI_FLAG_ALL;
                 } else {

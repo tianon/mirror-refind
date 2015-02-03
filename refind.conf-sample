@@ -221,7 +221,7 @@ timeout 20
 # modification of NVRAM variables on each boot. Adding "0", "off", or
 # "false" resets to the default value. This token has no effect on Macs or
 # when no BIOS-mode options are set via scanfor.
-# Default is unset (or "uefi_deep_legacy_scan true")
+# Default is unset (or "uefi_deep_legacy_scan false")
 #
 #uefi_deep_legacy_scan
 
