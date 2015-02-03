@@ -68,18 +68,6 @@ typedef struct {
     CHAR16  *End16Ptr;
 } REFIT_FILE;
 
-#define HIDEUI_FLAG_NONE       (0x0000)
-#define HIDEUI_FLAG_BANNER     (0x0001)
-#define HIDEUI_FLAG_LABEL      (0x0002)
-#define HIDEUI_FLAG_SINGLEUSER (0x0004)
-#define HIDEUI_FLAG_HWTEST     (0x0008)
-#define HIDEUI_FLAG_ARROWS     (0x0010)
-#define HIDEUI_FLAG_HINTS      (0x0020)
-#define HIDEUI_FLAG_EDITOR     (0x0040)
-#define HIDEUI_FLAG_SAFEMODE   (0x0080)
-#define HIDEUI_FLAG_BADGES     (0x0100)
-#define HIDEUI_FLAG_ALL       ((0xffff))
-
 #define CONFIG_FILE_NAME         L"refind.conf"
 // Note: Below is combined with MOK_NAMES to make default
 #define DONT_SCAN_FILES L"shim.efi,shim-fedora.efi,shimx64.efi,PreLoader.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi,bootmgr.efi"

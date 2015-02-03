@@ -1,6 +1,12 @@
 0.8.6 (?/??/2016):
 ------------------
 
+- Code refactoring to clear out legacy-boot functions from the
+  ever-expanding refind/main.c file.
+
+- Added new "badges" option to the "hideui" token in refind.conf. This
+  option hides the device-type badges associated with the OS boot options.
+
 - Reverted rEFIt commit r472, introduced in rEFInd 0.8.5 to support more
   BMP images because I've received bug reports that it's causing existing
   selection images to fail to load.

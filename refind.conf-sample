@@ -30,6 +30,7 @@ timeout 20
 #  arrows      - scroll arrows on the OS selection tag line
 #  hints       - brief command summary in the menu
 #  editor      - the options editor (+, F2, or Insert on boot options menu)
+#  badges      - device-type badges for boot options
 #  all         - all of the above
 # Default is none of these (all elements active)
 #

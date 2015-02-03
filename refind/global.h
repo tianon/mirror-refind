@@ -88,6 +88,10 @@
 #define GRAPHICS_FOR_GRUB       8
 #define GRAPHICS_FOR_WINDOWS   16
 
+// Load types
+#define TYPE_EFI    1
+#define TYPE_LEGACY 2
+
 // Type of legacy (BIOS) boot support detected
 #define LEGACY_TYPE_NONE 0
 #define LEGACY_TYPE_MAC  1
@@ -148,6 +152,24 @@
 #define MEMTEST_LOCATIONS       L"EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi"
+
+// Definitions for the "hideui" option in refind.conf
+#define HIDEUI_FLAG_NONE       (0x0000)
+#define HIDEUI_FLAG_BANNER     (0x0001)
+#define HIDEUI_FLAG_LABEL      (0x0002)
+#define HIDEUI_FLAG_SINGLEUSER (0x0004)
+#define HIDEUI_FLAG_HWTEST     (0x0008)
+#define HIDEUI_FLAG_ARROWS     (0x0010)
+#define HIDEUI_FLAG_HINTS      (0x0020)
+#define HIDEUI_FLAG_EDITOR     (0x0040)
+#define HIDEUI_FLAG_SAFEMODE   (0x0080)
+#define HIDEUI_FLAG_BADGES     (0x0100)
+#define HIDEUI_FLAG_ALL       ((0xffff))
+
+// Default hint text for program-launch submenus
+#define SUBSCREEN_HINT1            L"Use arrow keys to move cursor; Enter to boot;"
+#define SUBSCREEN_HINT2            L"Insert or F2 to edit options; Esc to return to main menu"
+#define SUBSCREEN_HINT2_NO_EDITOR  L"Esc to return to main menu"
 
 #define NULL_GUID_VALUE { 0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} };
 #define REFIND_GUID_VALUE { 0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40} };
@@ -295,13 +317,21 @@ extern REFIT_CONFIG     GlobalConfig;
 extern EFI_GUID gEfiLegacyBootProtocolGuid;
 extern EFI_GUID gEfiGlobalVariableGuid;
 
+EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
+                             IN CHAR16 *LoadOptions, IN UINTN LoaderType,
+                             IN CHAR16 *ImageTitle, IN CHAR8 OSType,
+                             OUT UINTN *ErrorInStep,
+                             IN BOOLEAN Verbose,
+                             IN BOOLEAN IsDriver);
 LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry);
 REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry);
 VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume);
+EG_IMAGE * GetDiskBadge(IN UINTN DiskType);
 LOADER_ENTRY * MakeGenericLoaderEntry(VOID);
 LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume);
 VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
 LOADER_ENTRY * AddPreparedLoaderEntry(LOADER_ENTRY *Entry);
+VOID StoreLoaderName(IN CHAR16 *Name);
 
 #endif
 

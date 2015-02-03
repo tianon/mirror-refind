@@ -654,7 +654,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
         }
 
         // NOTE: If you add an operating system with a name that starts with 'W' or 'L', you
-        //  need to fix AddLegacyEntry in main.c.
+        //  need to fix AddLegacyEntry in refind/legacy.c.
 
 #if REFIT_DEBUG > 0
         Print(L"  Result of bootcode detection: %s %s (%s)\n",
