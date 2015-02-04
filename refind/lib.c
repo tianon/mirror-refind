@@ -972,7 +972,8 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
    if (Volume->RootDir == NULL) {
       Volume->IsReadable = FALSE;
-      Volume->FSType = FS_TYPE_UNKNOWN;
+      if (Volume->FSType != FS_TYPE_NTFS)
+          Volume->FSType = FS_TYPE_UNKNOWN;
       return;
    } else {
       Volume->IsReadable = TRUE;
