@@ -851,6 +851,20 @@ static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *D
    } // if
 } // VOID SetPartGuid()
 
+// Return TRUE if NTFS boot files are found, FALSE otherwise.
+// Assumes Volume is already mounted.
+static BOOLEAN HasWindowsBiosBootFiles(REFIT_VOLUME *Volume) {
+   BOOLEAN FilesFound = TRUE;
+
+   if (Volume->RootDir != NULL) {
+      FilesFound = (FileExists(Volume->RootDir, L"NTLDR") &&          // Windows XP boot files
+                    FileExists(Volume->RootDir, L"ntdetect.com") &&
+                    FileExists(Volume->RootDir, L"boot.ini")) ||
+                   FileExists(Volume->RootDir, L"Windows");           // Windows 7 ID (imperfect; TODO: Improve)
+   } // if
+   return FilesFound;
+} // static VOID HasWindowsBiosBootFiles()
+
 VOID ScanVolume(REFIT_VOLUME *Volume)
 {
     EFI_STATUS              Status;
@@ -977,7 +991,9 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
       return;
    } else {
       Volume->IsReadable = TRUE;
-   }
+      if ((Volume->FSType == FS_TYPE_NTFS) && Volume->HasBootCode)
+         Volume->HasBootCode = HasWindowsBiosBootFiles(Volume);
+   } // if/else
 
    // get custom volume icons if present
    if (!Volume->VolIconImage)
