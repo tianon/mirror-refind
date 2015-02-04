@@ -261,9 +261,15 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <li><b>NTFS</b>&mdash;Samuel Liao contributed this driver, which uses the
     rEFIt/rEFInd driver framework. My own testing of it is limited, but it
     does work for me. Note that this driver is <i><b>not</b></i> required
-    to boot Windows with rEFInd, since Windows stores its boot loader on
-    the (FAT) ESP. You might use this driver if you want to store large
-    boot files, such as EFI-accessible RAM disk images, from Windows.</li>
+    to boot Windows with rEFInd, since Windows stores its EFI boot loader
+    on the (FAT) ESP, and the BIOS boot process (generally used when
+    dual-booting on a Mac) relies only on the partition's boot sector,
+    which is read without the benefit of this driver. You might use this
+    driver if you want to store large boot files, such as EFI-accessible
+    RAM disk images, from Windows. Also, if you have NTFS data partitions
+    on a Mac, loading this driver should exclude them from the boot menu;
+    and you should see NTFS volume names in the boot menu on a Mac if you
+    load this driver.</li>
 
 </ul>
 

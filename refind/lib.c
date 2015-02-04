@@ -630,14 +630,16 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
             Volume->OSIconName = L"netbsd";
             Volume->OSName = L"NetBSD";
 
+        // Windows NT/200x/XP
         } else if (FindMem(Buffer, SECTOR_SIZE, "NTLDR", 5) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"win";
             Volume->OSName = L"Windows";
 
+        // Windows Vista/7/8
         } else if (FindMem(Buffer, SECTOR_SIZE, "BOOTMGR", 7) >= 0) {
             Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"winvista,win";
+            Volume->OSIconName = L"win8,win";
             Volume->OSName = L"Windows";
 
         } else if (FindMem(Buffer, 512, "CPUBOOT SYS", 11) >= 0 ||
@@ -835,7 +837,7 @@ static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
    return FoundName;
 } // static CHAR16 *GetVolumeName()
 
-// Determine the unique GUID of the volume and store it.
+// Determine the unique GUID and name of the volume and store them.
 static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *DevicePath) {
    HARDDRIVE_DEVICE_PATH    *HdDevicePath;
 
@@ -851,16 +853,17 @@ static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *D
    } // if
 } // VOID SetPartGuid()
 
-// Return TRUE if NTFS boot files are found, FALSE otherwise.
-// Assumes Volume is already mounted.
+// Return TRUE if NTFS boot files are found or if Volume is unreadable,
+// FALSE otherwise. The idea is to weed out non-boot NTFS volumes from
+// BIOS/legacy boot list on Macs. We can't assume NTFS will be readable,
+// so return TRUE if it's unreadable; but if it IS readable, return
+// TRUE only if Windows boot files are found.
 static BOOLEAN HasWindowsBiosBootFiles(REFIT_VOLUME *Volume) {
    BOOLEAN FilesFound = TRUE;
 
    if (Volume->RootDir != NULL) {
-      FilesFound = (FileExists(Volume->RootDir, L"NTLDR") &&          // Windows XP boot files
-                    FileExists(Volume->RootDir, L"ntdetect.com") &&
-                    FileExists(Volume->RootDir, L"boot.ini")) ||
-                   FileExists(Volume->RootDir, L"Windows");           // Windows 7 ID (imperfect; TODO: Improve)
+      FilesFound = FileExists(Volume->RootDir, L"NTLDR") ||  // Windows NT/200x/XP boot file
+                   FileExists(Volume->RootDir, L"bootmgr");  // Windows Vista/7/8 boot file
    } // if
    return FilesFound;
 } // static VOID HasWindowsBiosBootFiles()
@@ -991,7 +994,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
       return;
    } else {
       Volume->IsReadable = TRUE;
-      if ((Volume->FSType == FS_TYPE_NTFS) && Volume->HasBootCode)
+      if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) && (Volume->FSType == FS_TYPE_NTFS) && Volume->HasBootCode)
          Volume->HasBootCode = HasWindowsBiosBootFiles(Volume);
    } // if/else
 

@@ -1,6 +1,16 @@
 0.8.6 (?/??/2016):
 ------------------
 
+- Addition of new Windows 8 OS icon. On Macs and for BIOS/legacy boots, the
+  new icon is now used for Windows Vista, 7, and 8, while the old one is
+  used for earlier versions of Windows. For EFI-mode boots, the new icon is
+  used universally.
+
+- If the NTFS driver is loaded, rEFInd now scans NTFS volumes on Macs for
+  the presence of Windows boot files, and removes any NTFS volume that
+  lacks such files from the BIOS/legacy boot list. This should help
+  unclutter the display on systems that contain NTFS data partitions.
+
 - Fixed bug that caused misidentification of both whole disks and NTFS
   volumes as being FAT. (This bug affected the identification of devices
   and locations in the rEFInd menu, not actual access to devices.)

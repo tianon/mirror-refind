@@ -209,6 +209,14 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	single file, so rEFInd is divorced from its configuration and
 	support files.</li>
 
+    <li>A way to identify specific Windows versions and present unique
+	icons or change the text is desirable. Currently, a crude
+	distinction of XP and earlier vs. Vista and later is possible for
+	BIOS-booting on Macs, but no such distinction is made for EFI-mode
+	booting, and nothing finer-grained is attempted. Improvements will
+	probably require identifying unique features of each version's boot
+	loader files or boot sector code.</li>
+
 </ul></li> <!-- Improvements -->
 
 <li><b>Known bugs that need squashing:</b>
@@ -259,6 +267,14 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	unlikely that I'll be able to fix this problem myself; but if you
 	have the equipment and skill to do so, I'd be interested in
 	receiving a patch.</li>
+
+    <li>If you use a true MBR disk on a Mac to boot Windows or some other
+	BIOS-only OS, and if that disk has an extended partition, that
+	partition may show up in rEFInd as a bootable FAT partition. The
+	reason is twofold: FAT doesn't contain a simple "magic" signature
+	like most filesystems, so it's easy to misidentify something else
+	as FAT; and it's hard to positively identify boot code vs. other
+	random data.</li>
 
     <li>The re-scan feature occasionally produces odd results, such as
 	ignoring new media or keeping old media that have been ejected.

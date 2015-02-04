@@ -115,6 +115,12 @@ Icons and graphics:
   (http://en.wikipedia.org/wiki/File:Google_Chrome_icon_and_wordmark_%282011%29.svg),
   which in turn is Google's original work.
 
+* The Windows 8 icon (icons/os_win8.png) is taken from Martz90's Cicle
+  Icons icon set
+  (http://www.iconarchive.com/show/circle-icons-by-martz90.html), which is
+  licensed under the CC Attribution-Noncommercial-No Derivate 4.0 license
+  (http://creativecommons.org/licenses/by-nc-nd/4.0/).
+
 * The icon used (at different sizes) for both the generic network OS and
   for the network-boot badge is from
   https://www.iconfinder.com/icons/37048/intranet_network_icon.
