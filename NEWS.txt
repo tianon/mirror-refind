@@ -1,6 +1,10 @@
 0.8.6 (?/??/2016):
 ------------------
 
+- Fixed bug that caused misidentification of both whole disks and NTFS
+  volumes as being FAT. (This bug affected the identification of devices
+  and locations in the rEFInd menu, not actual access to devices.)
+
 - Code refactoring to clear out legacy-boot functions from the
   ever-expanding refind/main.c file.
 

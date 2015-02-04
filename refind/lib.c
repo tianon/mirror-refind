@@ -75,6 +75,7 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 #define REISER2FS_SUPER_MAGIC_STRING     "ReIsEr2Fs"
 #define REISER2FS_JR_SUPER_MAGIC_STRING  "ReIsEr3Fs"
 #define BTRFS_SIGNATURE                  "_BHRfS_M"
+#define NTFS_SIGNATURE                   "NTFS    "
 
 // variables
 
@@ -459,6 +460,9 @@ static CHAR16 *FSTypeName(IN UINT32 TypeCode) {
       case FS_TYPE_ISO9660:
          retval = L" ISO-9660";
          break;
+      case FS_TYPE_NTFS:
+         retval = L" NTFS";
+         break;
       default:
          retval = L"";
          break;
@@ -467,15 +471,16 @@ static CHAR16 *FSTypeName(IN UINT32 TypeCode) {
 } // CHAR16 *FSTypeName()
 
 // Identify the filesystem type and record the filesystem's UUID/serial number,
-// if possible. Expects a Buffer containing the first few (normally 4096) bytes
-// of the filesystem. Sets the filesystem type code in Volume->FSType and the
-// UUID/serial number in Volume->VolUuid. Note that the UUID value is recognized
-// differently for each filesystem, and is currently supported only for
-// ext2/3/4fs and ReiserFS. If the UUID can't be determined, it's set to 0. Also, the UUID
-// is just read directly into memory; it is *NOT* valid when displayed by
-// GuidAsString() or used in other GUID/UUID-manipulating functions. (As I
-// write, it's being used merely to detect partitions that are part of a
-// RAID 1 array.)
+// if possible. Expects a Buffer containing the first few (normally at least
+// 4096) bytes of the filesystem. Sets the filesystem type code in Volume->FSType
+// and the UUID/serial number in Volume->VolUuid. Note that the UUID value is
+// recognized differently for each filesystem, and is currently supported only
+// for NTFS, ext2/3/4fs, and ReiserFS (and for NTFS it's really a 64-bit serial
+// number not a UUID or GUID). If the UUID can't be determined, it's set to 0.
+// Also, the UUID is just read directly into memory; it is *NOT* valid when
+// displayed by GuidAsString() or used in other GUID/UUID-manipulating
+// functions. (As I write, it's being used merely to detect partitions that are
+// part of a RAID 1 array.)
 static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFIT_VOLUME *Volume) {
    UINT32       *Ext2Incompat, *Ext2Compat;
    UINT16       *Magic16;
@@ -488,10 +493,21 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
       if (BufferSize >= 512) {
          Magic16 = (UINT16*) (Buffer + 510);
          if (*Magic16 == FAT_MAGIC) {
-            Volume->FSType = FS_TYPE_FAT;
+            MagicString = (char*) (Buffer + 3);
+            if (CompareMem(MagicString, NTFS_SIGNATURE, 8) == 0) {
+               Volume->FSType = FS_TYPE_NTFS;
+               CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
+            } else {
+               // NOTE: This misidentifies a whole disk as a FAT partition
+               // because FAT and MBR share the same 0xaa55 "magic" and
+               // no other distinguishing data. Later code, in ScanVolume(),
+               // resets to FS_TYPE_UNKNOWN if the "filesystem" can't be
+               // read.
+               Volume->FSType = FS_TYPE_FAT;
+            }
             return;
          } // if
-      } // search for FAT magic
+      } // search for FAT and NTFS magic
 
       if (BufferSize >= (1024 + 100)) {
          Magic16 = (UINT16*) (Buffer + 1024 + 56);
@@ -536,6 +552,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
             return;
          }
       } // search for HFS+ magic
+
    } // if (Buffer != NULL)
 
 } // UINT32 SetFilesystemData()
@@ -955,6 +972,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
    if (Volume->RootDir == NULL) {
       Volume->IsReadable = FALSE;
+      Volume->FSType = FS_TYPE_UNKNOWN;
       return;
    } else {
       Volume->IsReadable = TRUE;
