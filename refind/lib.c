@@ -436,6 +436,9 @@ static CHAR16 *FSTypeName(IN UINT32 TypeCode) {
    CHAR16 *retval = NULL;
 
    switch (TypeCode) {
+      case FS_TYPE_WHOLEDISK:
+         retval = L" whole disk";
+         break;
       case FS_TYPE_FAT:
          retval = L" FAT";
          break;
@@ -485,26 +488,35 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
    UINT32       *Ext2Incompat, *Ext2Compat;
    UINT16       *Magic16;
    char         *MagicString;
+   EFI_FILE     *RootDir;
 
    if ((Buffer != NULL) && (Volume != NULL)) {
       SetMem(&(Volume->VolUuid), sizeof(EFI_GUID), 0);
       Volume->FSType = FS_TYPE_UNKNOWN;
 
       if (BufferSize >= 512) {
+
+         // Search for NTFS, FAT, and MBR/EBR.
+         // These all have 0xAA55 at the end of the first sector, but FAT and
+         // MBR/EBR are not easily distinguished. Thus, we first check to see
+         // if the "volume" is in fact a disk device; then look for NTFS
+         // "magic"; and then check to see if the volume can be mounted, thus
+         // relying on the EFI's built-in FAT driver to identify FAT.
          Magic16 = (UINT16*) (Buffer + 510);
          if (*Magic16 == FAT_MAGIC) {
             MagicString = (char*) (Buffer + 3);
-            if (CompareMem(MagicString, NTFS_SIGNATURE, 8) == 0) {
+            // Confusingly, "LogicalPartition" refers to the presence of a
+            // partition table, not an MBR logical partition.
+            if (Volume->BlockIO->Media->LogicalPartition) {
+               Volume->FSType = FS_TYPE_WHOLEDISK;
+            } else if (CompareMem(MagicString, NTFS_SIGNATURE, 8) == 0) {
                Volume->FSType = FS_TYPE_NTFS;
                CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
             } else {
-               // NOTE: This misidentifies a whole disk as a FAT partition
-               // because FAT and MBR share the same 0xaa55 "magic" and
-               // no other distinguishing data. Later code, in ScanVolume(),
-               // resets to FS_TYPE_UNKNOWN if the "filesystem" can't be
-               // read.
-               Volume->FSType = FS_TYPE_FAT;
-            }
+               RootDir = LibOpenRoot(Volume->DeviceHandle);
+               if (RootDir != NULL)
+                  Volume->FSType = FS_TYPE_FAT;
+            } // if/elseif/else
             return;
          } // if
       } // search for FAT and NTFS magic
@@ -581,7 +593,11 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
                                  Volume->BlockIOOffset, SAMPLE_SIZE, Buffer);
     if (!EFI_ERROR(Status)) {
 
-        SetFilesystemData(Buffer, SAMPLE_SIZE, Volume);
+//         if (Volume->BlockIO->Media->LogicalPartition)
+//            Print(L"Skipping; whole disk!\n");
+//         else
+           SetFilesystemData(Buffer, SAMPLE_SIZE, Volume);
+//        PauseForKey();
         if ((*((UINT16 *)(Buffer + 510)) == 0xaa55 && Buffer[0] != 0) && (FindMem(Buffer, 512, "EXFAT", 5) == -1)) {
             *Bootable = TRUE;
             Volume->HasBootCode = TRUE;
@@ -771,7 +787,7 @@ static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
 } // CHAR16 *SizeInIEEEUnits()
 
 // Return a name for the volume. Ideally this should be the label for the
-// filesystem it contains, but this function falls back to describing the
+// filesystem or volume, but this function falls back to describing the
 // filesystem by size (200 MiB, etc.) and/or type (ext2, HFS+, etc.), if
 // this information can be extracted.
 // The calling function is responsible for freeing the memory allocated
@@ -789,13 +805,6 @@ static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
        (StrLen(FileSystemInfoPtr->VolumeLabel) > 0)) {
       FoundName = StrDuplicate(FileSystemInfoPtr->VolumeLabel);
    }
-
-   // Special case: Old versions of the rEFInd HFS+ driver always returns label of "HFS+ volume", so wipe
-   // this so that we can build a new name that includes the size....
-   if ((FoundName != NULL) && (StrCmp(FoundName, L"HFS+ volume") == 0) && (Volume->FSType == FS_TYPE_HFSPLUS)) {
-      MyFreePool(FoundName);
-      FoundName = NULL;
-   } // if rEFInd HFS+ driver suspected
 
    // If no filesystem name, try to use the partition name....
    if ((FoundName == NULL) && (Volume->PartName != NULL) && (StrLen(Volume->PartName) > 0) &&
@@ -989,18 +998,20 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
    if (Volume->RootDir == NULL) {
       Volume->IsReadable = FALSE;
-      if (Volume->FSType != FS_TYPE_NTFS)
-          Volume->FSType = FS_TYPE_UNKNOWN;
       return;
    } else {
       Volume->IsReadable = TRUE;
-      if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) && (Volume->FSType == FS_TYPE_NTFS) && Volume->HasBootCode)
+      if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) && (Volume->FSType == FS_TYPE_NTFS) && Volume->HasBootCode) {
+         // VBR boot code found on NTFS, but volume is not actually bootable
+         // unless there are actual boot file, so check for them....
          Volume->HasBootCode = HasWindowsBiosBootFiles(Volume);
+      }
    } // if/else
 
    // get custom volume icons if present
-   if (!Volume->VolIconImage)
-     Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+   if (!Volume->VolIconImage) {
+      Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+   }
 } // ScanVolume()
 
 static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_INFO *MbrEntry)

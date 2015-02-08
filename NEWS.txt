@@ -1,5 +1,9 @@
-0.8.6 (?/??/2016):
-------------------
+0.8.6 (2/8/2016):
+-----------------
+
+- Removed special case of ignoring an HFS+ name of "HFS+ volume", since the
+  old rEFInd HFS+ driver that produced this name for all HFS+ volumes has
+  long since been updated to deliver a real name.
 
 - Addition of new Windows 8 OS icon. On Macs and for BIOS/legacy boots, the
   new icon is now used for Windows Vista, 7, and 8, while the old one is
@@ -9,7 +13,7 @@
 - If the NTFS driver is loaded, rEFInd now scans NTFS volumes on Macs for
   the presence of Windows boot files, and removes any NTFS volume that
   lacks such files from the BIOS/legacy boot list. This should help
-  unclutter the display on systems that contain NTFS data partitions.
+  unclutter the display on Macs that contain NTFS data partitions.
 
 - Fixed bug that caused misidentification of both whole disks and NTFS
   volumes as being FAT. (This bug affected the identification of devices
@@ -28,8 +32,8 @@
 - Fixed install.sh bug that caused misidentification of installation
   directory under OS X if an already-mounted ESP has spaces in its path.
 
-- Fixed install.sh bug that could cause misidentification of the ESP on
-  disks with partition numbers of 10 or above.
+- Fixed Mac-specific install.sh bug that could cause misidentification of
+  the ESP on disks with partition numbers of 10 or above.
 
 
 0.8.5 (2/1/2015):

@@ -121,16 +121,17 @@
 
 // Filesystem type identifiers. Not all are yet used....
 #define FS_TYPE_UNKNOWN        0
-#define FS_TYPE_FAT            1
-#define FS_TYPE_EXFAT          2
-#define FS_TYPE_NTFS           3
-#define FS_TYPE_EXT2           4
-#define FS_TYPE_EXT3           5
-#define FS_TYPE_EXT4           6
-#define FS_TYPE_HFSPLUS        7
-#define FS_TYPE_REISERFS       8
-#define FS_TYPE_BTRFS          9
-#define FS_TYPE_ISO9660        10
+#define FS_TYPE_WHOLEDISK      1
+#define FS_TYPE_FAT            2
+#define FS_TYPE_EXFAT          3
+#define FS_TYPE_NTFS           4
+#define FS_TYPE_EXT2           5
+#define FS_TYPE_EXT3           6
+#define FS_TYPE_EXT4           7
+#define FS_TYPE_HFSPLUS        8
+#define FS_TYPE_REISERFS       9
+#define FS_TYPE_BTRFS          10
+#define FS_TYPE_ISO9660        11
 
 // How to scale banner images
 #define BANNER_NOSCALE         0

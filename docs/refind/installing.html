@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-2/1/2014, referencing rEFInd 0.8.5</p>
+2/8/2015, referencing rEFInd 0.8.6</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -474,7 +474,7 @@ Filesystem     1K-blocks  Used Available Use% Mounted on
 /dev/sda1         191284 16604    174681   9% /boot/efi
 </pre>
 
-<p class="sidebar"><b>Warning:</b> If you're running Linux on a Mac, I recommend you install rEFInd under OS X. The Mac's boot process deviates a bit from EFI standards, so you'll probably have to use a tool called <tt>bless</tt> under Mac OS to do the job. Alternatively, there's a new Linux program, <tt>hfs-bless</tt>, part of the <a href="http://www.codon.org.uk/~mjg59/mactel-boot/"><tt>mactel-boot</tt></a> package, that's supposed to work with <tt>efibootmgr</tt> to make a Mac HFS partition bootable. I've not yet tried it, though. There are also reports that the <tt>efibootmgr</tt> tool used under Linux can corrupt some Macs' firmware. Although I've seen some vague suggestions that this problem has been fixed under 3.<i>x</i> kernels, I haven't tested this claim.</p>
+<p class="sidebar"><b>Warning:</b> If you're running Linux on a Mac, I recommend you install rEFInd under OS X. The Mac's boot process deviates a bit from EFI standards, so you'll probably have to use a tool called <tt>bless</tt> under Mac OS to do the job. Alternatively, there's a new Linux program, <tt>hfs-bless</tt>, part of the <a href="http://www.codon.org.uk/~mjg59/mactel-boot/"><tt>mactel-boot</tt></a> RPM package or as part of the <a href="https://launchpad.net/~detly/+archive/ubuntu/mactel-utils">mactel-utils PPA for Ubuntu</a>, that's supposed to work with <tt>efibootmgr</tt> to make a Mac HFS partition bootable. I've not yet tried it, though. There are also reports that the <tt>efibootmgr</tt> tool used under Linux can corrupt some Macs' firmware. Although I've seen some vague suggestions that this problem has been fixed under 3.<i>x</i> kernels, I haven't tested this claim.</p>
 
 <p>This example shows that <tt>/dev/sda1</tt> is mounted at <tt>/boot/efi</tt>, which is a typical configuration. (The ESP can be on another disk or partition, but <tt>/dev/sda1</tt> is the most common place for an ESP.) If your output shows <tt>/boot</tt> or <tt>/</tt> under the <tt>Mounted on</tt> column, then your ESP isn't mounted. (An exception is if you're mounting the ESP at <tt>/boot</tt>. This is an unusual configuration. If you're using it, you can proceed, making suitable adjustments to subsequent commands.) If you get a <tt>df: `/boot/efi': No such file or directory</tt> error message, then the <tt>/boot/efi</tt> directory doesn't even exist. In such cases, you may need to jump through some extra hoops, as described on my <a href="http://www.rodsbooks.com/efi-bootloaders/installation.html">EFI Boot Loader Installation</a> page.</p>
 
@@ -1010,7 +1010,7 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <p>Prior to version 0.8.5, these instructions and the <tt>install.sh</tt> script omitted the <tt>--shortform</tt> option from the <tt>bless</tt> command when installing rEFInd to the ESP. An rEFInd user, however, discovered that using the option eliminated the 30-second delay, so it is now the default with 0.8.5's <tt>install.sh</tt>, and is specified in the instructions. If you installed rEFInd 0.8.4 or earlier, you may want to re-install or re-<tt>bless</tt> rEFInd using this option.</p>
 
-<p>There is one caveat, though: The <tt>man</tt> page for <tt>bless</tt> notes that <tt>--shortform</tt> notes that its use can come "at the expense of boot time performance." Thus, it's not clear to me that this option might not actually <i>create</i> problems on some computers. (It's eliminated the boot delay on my 2014 MacBook Air and has no detrimental effect on an old 32-bit Mac Mini that's never had a boot delay problem, though.) Thus, if you have problems with rEFInd 0.8.5, you might try running <tt>bless</tt>, as described in <a href="#osx">Installing rEFInd Manually Using OS X's</a> step 8, but <i>omit</i> the <tt>--shortform</tt> option.</p>
+<p>There is one caveat, though: The <tt>man</tt> page for <tt>bless</tt> notes that <tt>--shortform</tt> notes that its use can come "at the expense of boot time performance." Thus, it's not clear to me that this option might not actually <i>create</i> problems on some computers. (It's eliminated the boot delay on my 2014 MacBook Air and has no detrimental effect on an old 32-bit Mac Mini that's never had a boot delay problem, though.) Thus, if you have problems with rEFInd 0.8.5 or later, you might try running <tt>bless</tt>, as described in <a href="#osx">Installing rEFInd Manually Using OS X's</a> step 8, but <i>omit</i> the <tt>--shortform</tt> option.</p>
 
 <a name="fallback">
 <h3>Using the Fallback Filename</h3>
