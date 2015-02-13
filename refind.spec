@@ -1,6 +1,6 @@
 Summary: EFI boot manager software
 Name: refind
-Version: 0.8.6
+Version: 0.8.6.1
 Release: 1%{?dist}
 Summary: EFI boot manager software
 License: GPLv3
@@ -125,7 +125,11 @@ fi
 
 cd /usr/share/refind-%{version}
 
-declare VarFile=`ls -d /sys/firmware/efi/vars/SecureBoot* 2> /dev/null`
+if [[ -f /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data ]] ; then
+   IsSecureBoot=`od -An -t u1 /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data | tr -d '[[:space:]]'`
+else
+   IsSecureBoot="0"
+fi
 # Note: Two find operations for ShimFile favors shim over PreLoader -- if both are
 # present, the script uses shim rather than PreLoader.
 declare ShimFile=`find /boot -name shim\.efi -o -name shimx64\.efi -o -name PreLoader\.efi 2> /dev/null | head -n 1`
@@ -144,7 +148,7 @@ declare OpenSSL=`which openssl 2> /dev/null`
 # enroll an extra MOK. I'm including it here because I'm NOT a
 # distribution maintainer, and I want to encourage users to use
 # their own local keys.
-if [[ -n $VarFile && -n $ShimFile ]] ; then
+if [[ $IsSecureBoot == "1" && -n $ShimFile ]] ; then
    if [[ -n $SBSign && -n $OpenSSL ]] ; then
       ./install.sh --shim $ShimFile --localkeys --yes
    else

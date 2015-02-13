@@ -35,6 +35,8 @@
 #
 # Revision history:
 #
+# 0.8.7   -- Better detection of Secure Boot mode & fixed errors when copying
+#            Shim & MokManager files over themselves.
 # 0.8.6   -- Fixed bugs that caused misidentification of ESP on disks with
 #            partition numbers over 10 on OS X and misidentification of mount
 #            point if already-mounted ESP had space in path.
@@ -223,15 +225,24 @@ CheckForFiles() {
 # Helper for CopyRefindFiles; copies shim files (including MokManager, if it's
 # available) to target.
 CopyShimFiles() {
-   cp -fb "$ShimSource" "$InstallDir/$TargetDir/$TargetShim"
-   if [[ $? != 0 ]] ; then
-      Problems=1
+   local inode1=`ls -i "$ShimSource" | cut -f 1 -d " "`
+   local inode2=`ls -i "$InstallDir/$TargetDir/$TargetShim" | cut -f 1 -d " "`
+   if [[ $inode1 != $inode2 ]] ; then
+      cp -fb "$ShimSource" "$InstallDir/$TargetDir/$TargetShim"
+      if [[ $? != 0 ]] ; then
+         Problems=1
+      fi
    fi
-   if [[ -f "$MokManagerSource" ]] ; then
-      cp -fb "$MokManagerSource" "$InstallDir/$TargetDir/"
-   fi
-   if [[ $? != 0 ]] ; then
-      Problems=1
+   inode1 = `ls -i "$MokManagerSource" | cut -f 1 -d " "`
+   local TargetMMName=`basename $MokManagerSource`
+   inode2 = `ls -i "$InstallDir/$TargetDir/$TargetShim/$TargetMMName" | cut -f 1 -d " "`
+   if [[ $inode1 != $inode2 ]] ; then
+      if [[ -f "$MokManagerSource" ]] ; then
+         cp -fb "$MokManagerSource" "$InstallDir/$TargetDir/"
+      fi
+      if [[ $? != 0 ]] ; then
+         Problems=1
+      fi
    fi
 } # CopyShimFiles()
 
@@ -702,20 +713,18 @@ InstallOnOSX() {
 # appropriate options haven't been set, warn the user and offer to abort.
 # If we're NOT in Secure Boot mode but the user HAS specified the --shim
 # or --localkeys option, warn the user and offer to abort.
-#
-# FIXME: Although I checked the presence (and lack thereof) of the
-# /sys/firmware/efi/vars/SecureBoot* files on my Secure Boot test system
-# before releasing this script, I've since found that they are at least
-# sometimes present when Secure Boot is absent. This means that the first
-# test can produce false alarms. A better test is highly desirable.
 CheckSecureBoot() {
-   VarFile=`ls -d /sys/firmware/efi/vars/SecureBoot* 2> /dev/null`
-   if [[ -n "$VarFile" && "$TargetDir" != '/EFI/BOOT' && "$ShimSource" == "none" ]] ; then
+   local IsSecureBoot
+   if [[ -f /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data ]] ; then
+      IsSecureBoot=`od -An -t u1 /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data | tr -d '[[:space:]]'`
+   else
+      IsSecureBoot="0"
+   fi
+   if [[ $IsSecureBoot == "1" && "$TargetDir" != '/EFI/BOOT' && "$ShimSource" == "none" ]] ; then
       echo ""
-      echo "CAUTION: Your computer appears to support Secure Boot, but you haven't"
-      echo "specified a valid shim.efi file source. If you've disabled Secure Boot and"
-      echo "intend to leave it disabled, this is fine; but if Secure Boot is active, the"
-      echo "resulting installation won't boot. You can read more about this topic at"
+      echo "CAUTION: Your computer appears to be booted with Secure Boot, but you haven't"
+      echo "specified a valid shim.efi file source. Chances are you should re-run with"
+      echo "the --shim option. You can read more about this topic at"
       echo "http://www.rodsbooks.com/refind/secureboot.html."
       echo ""
       echo -n "Do you want to proceed with installation (Y/N)? "
@@ -727,7 +736,7 @@ CheckSecureBoot() {
       fi
    fi
 
-   if [[ "$ShimSource" != "none" && ! -n "$VarFile" ]] ; then
+   if [[ "$ShimSource" != "none" && ! $IsSecureBoot == "1" ]] ; then
       echo ""
       echo "You've specified installing using a shim.efi file, but your computer does not"
       echo "appear to be running in Secure Boot mode. Although installing in this way"
@@ -745,7 +754,7 @@ CheckSecureBoot() {
       fi
    fi
 
-   if [[ $LocalKeys != 0 && ! -n "$VarFile" ]] ; then
+   if [[ $LocalKeys != 0 && ! $IsSecureBoot == "1" ]] ; then
       echo ""
       echo "You've specified re-signing your rEFInd binaries with locally-generated keys,"
       echo "but your computer does not appear to be running in Secure Boot mode. The"
