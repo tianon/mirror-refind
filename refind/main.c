@@ -166,7 +166,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.6.1");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.6.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -1472,7 +1472,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             ScanFallbackLoader = FALSE;
       } // while()
       Status = DirIterClose(&EfiDirIter);
-      if (Status != EFI_NOT_FOUND)
+      if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER))
          CheckError(Status, L"while scanning the EFI directory");
 
       // Scan user-specified (or additional default) directories....
@@ -1613,7 +1613,7 @@ static UINTN ScanDriverDir(IN CHAR16 *Path)
                                L"", TYPE_EFI, DirEntry->FileName, 0, NULL, FALSE, TRUE);
     }
     Status = DirIterClose(&DirIter);
-    if (Status != EFI_NOT_FOUND) {
+    if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
         SPrint(FileName, 255, L"while scanning the %s directory", Path);
         CheckError(Status, FileName);
     }

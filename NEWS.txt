@@ -1,4 +1,14 @@
-0.8.6 (2/8/2016):
+0.8.7 (?/??/2015):
+------------------
+
+- Fixed more instances of "invalid parameter" errors on some EFIs.
+
+- Improved Secure Boot detection in install.sh.
+
+- install.sh should no longer complain when copying Shim or MokManager over
+  itself.
+
+0.8.6 (2/8/2015):
 -----------------
 
 - Removed special case of ignoring an HFS+ name of "HFS+ volume", since the
