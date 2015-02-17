@@ -166,7 +166,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.6.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.6.4");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -176,7 +176,8 @@ static VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, L"Running on:");
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" EFI Revision %d.%02d", ST->Hdr.Revision >> 16, ST->Hdr.Revision & ((1 << 16) - 1)));
 #if defined(EFI32)
-        AddMenuInfoLine(&AboutMenu, L" Platform: x86 (32 bit)");
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86 (32 bit); Secure Boot %s",
+                                              secure_mode() ? L"active" : L"inactive"));
 #elif defined(EFIX64)
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86_64 (64 bit); Secure Boot %s",
                                               secure_mode() ? L"active" : L"inactive"));

@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 11/13/2012; last Web page update:
-2/8/2015, referencing rEFInd 0.8.6</p>
+2/16/2015, referencing rEFInd 0.8.6</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -152,7 +152,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </div>
 
-<p>If you're using a computer that supports Secure Boot, you may run into extra complications. This feature is intended to make it difficult for malware to insert itself early into the computer's boot process. Unfortunately, it also complicates multi-boot configurations such as those that rEFInd is intended to manage. This page describes some <a href="#basic">secure boot basics</a> and two specific ways of using rEFInd with Secure Boot: <a href="#shim">Using the shim program</a> and <a href="#preloader">using the PreLoader program.</a> It concludes with a look at <a href="#caveats">known bugs and limitations</a> in rEFInd's Secure Boot features.</p>
+<p>If you're using a computer that supports Secure Boot, you may run into extra complications. This feature is intended to make it difficult for malware to insert itself early into the computer's boot process. Unfortunately, it also complicates multi-boot configurations such as those that rEFInd is intended to manage. This page describes some <a href="#basic">Secure Boot basics</a> and two specific ways of using rEFInd with Secure Boot: <a href="#shim">Using the Shim program</a> and <a href="#preloader">using the PreLoader program.</a> (My separate <a href="http://www.rodsbooks.com/efi-bootloaders/secureboot.html">EFI Boot Loaders for Linux page on Secure Boot</a> covers the additional topics of disabling Secure Boot and adding keys to the firmware's own set of keys.) This page concludes with a look at <a href="#caveats">known bugs and limitations</a> in rEFInd's Secure Boot features.</p>
 
 <a name="basic">
 <h2>Basic Issues</h2>
@@ -162,13 +162,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 If you don't want it, you can <a
 href="http://www.rodsbooks.com/efi-bootloaders/secureboot.html#disable">disable
 it,</a> at least on <i>x</i>86-64 PCs. If an ARM-based computer ships with
-Windows 8, this isn't an option for it. Unfortunately, the shim and PreLoader programs described on this page currently support only <i>x</i>86-64, not <i>x</i>86 or ARM.</p>
+Windows 8, this isn't an option for it. Unfortunately, the Shim and PreLoader programs described on this page currently support only <i>x</i>86-64, not <i>x</i>86 or ARM.</p>
 
 <p>Through 2012, it became obvious that Secure Boot would be a feature that was controlled, to a large extent, by Microsoft. This is because Microsoft requires that non-server computers that display Windows 8 logos ship with Secure Boot enabled. As a practical matter, this also means that such computers ship with Microsoft's keys in their firmware. In the absence of an industry-standard body to manage the signing of Secure Boot keys, this means that Microsoft's key is the only one that's more-or-less guaranteed to be installed on the computer, thus blocking the ability to boot any OS that lacks a boot path through Microsoft's signing key.</p>
 
-<p>Fortunately, Microsoft will sign third-party binaries with their key&mdash;or more precisely, with a key that Microsoft uses to sign third-party binaries. (Microsoft uses another key to sign its own binaries, and some devices, such as the Microsoft Surface tablet, lack the third-party Microsoft key.) A payment of $99 to Verisign enables a software distributor to sign as many binaries as desired. Red Hat (Fedora), Novell (SUSE), and Canonical (Ubuntu) are all using this system to enable their boot loaders to run. Unfortunately, using a third-party signing service is an awkward solution for open source software. In fact, for this very reason two separate programs exist that shift the Secure Boot "train" from Microsoft's proprietary "track" to one that's more friendly to open source authors. Both of these programs (shim and PreLoader) are available in binary form signed by Microsoft's key. Shim enables the computer to launch binaries that are signed by a key that's built into it or that the user adds to a list known as the Machine Owner Key (MOK) list. PreLoader enables the computer to launch binaries that the user has explicitly identified as being OK. Distributions beginning with Ubuntu 12.10 (and 12.04.2), Fedora 18, and OpenSUSE 12.3 use shim, although Ubuntu ships with an early version of shim that's useless for launching rEFInd, at least through Ubuntu 13.04. To the best of my knowledge, no major distribution uses PreLoader, but it may see use on live CDs and is easier to set up if you're not using a distribution that supports shim.</p>
+<p>Fortunately, Microsoft will sign third-party binaries with their key&mdash;or more precisely, with a key that Microsoft uses to sign third-party binaries. (Microsoft uses another key to sign its own binaries, and some devices, such as the Microsoft Surface tablet, lack the third-party Microsoft key.) A payment of $99 to Verisign enables a software distributor to sign as many binaries as desired. Red Hat (Fedora), Novell (SUSE), and Canonical (Ubuntu) are all using this system to enable their boot loaders to run. Unfortunately, using a third-party signing service is an awkward solution for open source software. In fact, for this very reason two separate programs exist that shift the Secure Boot "train" from Microsoft's proprietary "track" to one that's more friendly to open source authors. Both of these programs (Shim and PreLoader) are available in binary form signed by Microsoft's key. Shim enables the computer to launch binaries that are signed by a key that's built into it or that the user adds to a list known as the Machine Owner Key (MOK) list. PreLoader enables the computer to launch binaries that the user has explicitly identified as being OK. Distributions beginning with Ubuntu 12.10 (and 12.04.2), Fedora 18, and OpenSUSE 12.3 use Shim, although the Ubuntu initially shipped with an early version of Shim that's useless for launching rEFInd. (Current versions of Ubuntu ship with more flexible versions of Shim.) PreLoader is used by some smaller and more specialized distributions, such as Arch Linux. You can switch from one to the other if you like, no matter what your distribution uses by default.</p>
 
-<p>There are three ways to sign a binary that will get it launched on a computer that uses shim:</p>
+<p>There are three ways to sign a binary that will get it launched on a computer that uses Shim:</p>
 
 <ul>
 
@@ -179,20 +179,25 @@ Windows 8, this isn't an option for it. Unfortunately, the shim and PreLoader pr
     href="http://www.rodsbooks.com/efi-bootloaders/secureboot.html#add_keys">replace
     Microsoft's keys with your own,</a> in order to take full control of
     Secure Boot on your computer. The trouble is that this process is
-    tedious and varies in details from one computer to another.</li>
+    tedious and varies in details from one computer to another. It's worth
+    noting that many, but not all, computers ship with Canonical's key,
+    which can help slightly when booting Ubuntu; if your computer is so
+    equipped, you can use any Shim you like and not worry about adding
+    Canonical's key to your MOK list, although you must still add a MOK key
+    for rEFInd itself.</li>
 
 <li><b>Shim's built-in keys</b>&mdash;It's possible, but not necessary, to
-    compile shim with a built-in public key. Its private counterpart can
+    compile Shim with a built-in public key. Its private counterpart can
     then be used to sign binaries. In practice, this key type is limited in
     utility; it's likely to be used by distribution maintainers to sign
     their own version of GRUB and the Linux kernels that it launches,
-    nothing more. On the plus side, shim's keys require little or no
+    nothing more. On the plus side, Shim's keys require little or no
     maintenance by users. One potential complication is that if you swap
-    out one shim binary for another, its built-in key may change, which
-    means that the replacement shim might no longer launch its follow-on
-    boot loader.</li>
+    out one Shim binary for another, its built-in key may change, which
+    means that the replacement Shim might no longer launch its follow-on
+    boot loader or kernels linked to the first Shim.</li>
 
-<li><b>MOKs</b>&mdash;Versions 0.2 and later of shim support MOKs, which
+<li><b>MOKs</b>&mdash;Versions 0.2 and later of Shim support MOKs, which
     give you the ability to add your own keys to the computer. If you want
     to install multiple Linux distributions in Secure Boot mode, MOKs are
     likely to be helpful. They're vital if you want to launch kernels you
@@ -201,41 +206,43 @@ Windows 8, this isn't an option for it. Unfortunately, the shim and PreLoader pr
 
 </ul>
 
-<p>All three key types are the same in form&mdash;shim's built-in keys and MOKs are both generated using the same tools used to generate Secure Boot keys. The keys can be generated with the common <tt>openssl</tt> program, but signing EFI binaries requires a rarer program called <tt>sbsign</tt> or <tt>pesign</tt>. If you use shim with a distribution that doesn't support this tool, you'll need to either sign the kernels yourself, which can be a hassle, or launch the kernels by way of a boot loader that doesn't check for signatures, such as ELILO.</p>
+<p>All three key types are the same in form&mdash;Shim's built-in keys and MOKs are both generated using the same tools used to generate Secure Boot keys. The keys can be generated with the common <tt>openssl</tt> program, but signing EFI binaries requires either of two rarer programs: <tt>sbsign</tt> or <tt>pesign</tt>. If you use Shim with a distribution that doesn't support Secure Boot, you'll need to either sign the kernels yourself, which can be a hassle, or launch the kernels by way of a boot loader that doesn't check for signatures, such as ELILO.</p>
 
-<p class="sidebar">Shim's author is working on merging it and PreLoader. Thus, future versions of shim may provide the advantages of both programs.</p>
+<p class="sidebar">Shim's author is working on merging it and PreLoader. Thus, future versions of Shim may provide the advantages of both programs.</p>
 
-<p>PreLoader is easier to set up on a distribution that doesn't support shim because PreLoader doesn't rely on keys; instead, you tell it which binaries you trust and it will let you launch them. This works well on a system with boot managers, boot loaders, and kernels that seldom change. It's not a good solution for distribution maintainers, though, because it requires that users manually add binaries to PreLoader's list of approved binaries when the OS is installed and every time those binaries change. Also, PreLoader relies on a helper program, HashTool, to enroll hashes. (This is Geek for "tell the computer that a binary is OK.") Unfortunately, HashTool can enroll hashes only from the partition from which it was launched, so if you want to use rEFInd to launch Linux kernels directly, it's easiest if you mount your EFI System Partition (ESP) at <tt>/boot</tt> in Linux or copy your kernels to the ESP. Another approach is to copy <tt>HashTool.efi</tt> to the partition that holds your kernel and rename it to almost anything else. rEFInd will then treat it like an OS boot loader and create a menu entry for it, enabling you to launch it as needed.</p>
+<p>PreLoader is easier to set up on a distribution that doesn't support Shim because PreLoader doesn't rely on keys; instead, you tell it which binaries you trust and it will let you launch them. This works well on a system with boot managers, boot loaders, and kernels that seldom change. It's not a good solution for distribution maintainers, though, because it requires that users manually add binaries to PreLoader's list of approved binaries when the OS is installed and every time those binaries change. Also, PreLoader relies on a helper program, HashTool, to enroll hashes. (This is Geek for "tell the computer that a binary is OK.") Unfortunately, the initial (and, as far as I know, only signed) HashTool can enroll hashes only from the partition from which it was launched, so if you want to use rEFInd to launch Linux kernels directly, it's easiest if you mount your EFI System Partition (ESP) at <tt>/boot</tt> in Linux or copy your kernels to the ESP. Another approach is to copy <tt>HashTool.efi</tt> to the partition that holds your kernel and rename it to almost anything else. rEFInd will then treat it like an OS boot loader and create a menu entry for it, enabling you to launch it as needed.</p>
 
-<p>Beginning with version 0.5.0, rEFInd can communicate with the shim system to authenticate boot loaders. If a boot loader has been signed by a valid UEFI Secure Boot key, a valid shim key, or a valid MOK key, rEFInd will launch it. rEFInd will also launch unsigned boot loaders or those with invalid signatures <i>if</i> Secure Boot is disabled in or unsupported by the firmware. (If that's your situation, you needn't bother reading this page.) PreLoader is designed in such a way that it requires no explicit support in rEFInd to work.</p>
+<p>Beginning with version 0.5.0, rEFInd can communicate with the Shim system to authenticate boot loaders. If a boot loader has been signed by a valid UEFI Secure Boot key, a valid Shim key, or a valid MOK, rEFInd will launch it. rEFInd will also launch unsigned boot loaders or those with invalid signatures <i>if</i> Secure Boot is disabled in or unsupported by the firmware. (If that's your situation, you needn't bother reading this page.) PreLoader is designed in such a way that it requires no explicit support in rEFInd to work.</p>
 
-<p>Version 0.5.0 ships signed with my own keys, and I provide the public version of this key with the rEFInd package. This can help simplify setup, since you needn't generate your own keys to get rEFInd working; however, if you lack public keys for the boot loaders that rEFInd launches, you'll need to generate your own keys and sign your boot loaders, as described in the <a href="#mok">Managing Your MOKs</a> section.</p>
+<p>My binary builds of rEFInd version 0.5.0 and later ship signed with my own keys, and I provide the public version of this key with the rEFInd package. This can help simplify setup, since you needn't generate your own keys to get rEFInd working. The rEFInd PPA for Ubuntu ships unsigned binaries, but the installation script that runs automatically when the package is installed signs the binaries with a local key as it installs them. In either case, if you lack public keys for the boot loaders that rEFInd launches, you'll need to sign your boot loaders, as described in the <a href="#mok">Managing Your MOKs</a> section.</p>
 
 <a name="shim">
 <h2>Using rEFInd with Shim</h2>
 </a>
 
-<p>Because several major distributions support shim, I describe it first. You may need to adjust the rEFInd installation process to get it working with shim, especially if you're not using a distribution that uses this software. In addition to installing shim, you should know how to manage your MOKs, so I describe this topic, too. If you don't want to use shim, you can skip ahead to <a href="#preloader">the section on PreLoader.</a></p>
+<p>Because several major distributions support Shim, I describe it first. You may need to adjust the rEFInd installation process to get it working with Shim, especially if you're not using a distribution that uses this software. In addition to installing Shim, you should know how to manage your MOKs, so I describe this topic, too. If you don't want to use Shim, you can skip ahead to <a href="#preloader">the section on PreLoader.</a></p>
 
 <a name="installation">
 <h3>Installing Shim and rEFInd</h3>
 </a>
 
+<p class="sidebar"><b>Note:</b> rEFInd's <tt>install.sh</tt> script attempts to identify whether your computer was booted with Secure Boot active and, if it was, to locate existing Shim binaries and make use of whatever it finds. Thus, you may not need to explicitly set up Shim after you install rEFInd, although you will probably have to enroll rEFInd's key in your MOK list, as described shortly.</p>
+
 <p>A working Secure Boot installation of rEFInd involves at least three programs, and probably four or more, each of which must be installed in a specific way:</p>
 
 <ul>
 
-<li><b>shim</b>&mdash;You can download a version of shim signed with Microsoft's Secure Boot key <a href="http://www.codon.org.uk/~mjg59/shim-signed/">here.</a> This version (created by shim's developer, former Red Hat employee Matthew J. Garrett) includes a shim key that's used by nothing but the <tt>MokManager.efi</tt> program that also ships with the program. Thus, to use this version of shim, you must use MOKs. Fedora 18's and OpenSUSE 12.3's versions of shim include their own keys and can also use MOKs; but to use these packages with rEFInd, you must still enroll rEFInd's MOK. Ubuntu 12.10 and 13.04 ship with an earlier version of shim that version doesn't support MOKs. Ubuntu's shim is useless for launching rEFInd. Future distributions will probably come with their own variants of shim, most of which will no doubt support their own shim keys as well as MOKs. You should install shim just as you would install other EFI boot loaders, as described <a href="http://www.rodsbooks.com/efi-bootloaders/installation.html">here.</a> For use in launching rEFInd, it makes sense to install <tt>shim.efi</tt> in <tt>EFI/refind</tt> on your ESP, although of course this detail is up to you.</li>
+<li><b>Shim</b>&mdash;You can use any version of Shim you like. In many cases, one will already be installed on your computer from your distribution, called <tt>shim.efi</tt> or <tt>shimx64.efi</tt> in the distribution's directory on the ESP. If so, it's probably best to use that version, since its built-in key will handle your distribution's kernels. If you don't currently have a Shim installed, you can copy one from another computer, copy the file from a distribution installation disc, or download a version of Shim 0.2 (old, but still usable) signed with Microsoft's Secure Boot key <a href="http://www.codon.org.uk/~mjg59/shim-signed/">here.</a> This version (created by Shim's developer, former Red Hat employee Matthew J. Garrett) includes a Shim key that's used by nothing but the <tt>MokManager.efi</tt> program that also ships with the program. No matter what version of Shim you use, you must enroll rEFInd's MOK. Ubuntu 12.10 and 13.04 ship with an earlier version of Shim (0.1) that doesn't support MOKs; avoid Shim 0.1 for use with rEFInd. You should install Shim just as you would install other EFI boot loaders, as described <a href="http://www.rodsbooks.com/efi-bootloaders/installation.html">here.</a> For use in launching rEFInd, it makes sense to install <tt>shim.efi</tt> in <tt>EFI/refind</tt> on your ESP, although of course this detail is up to you.</li>
 
-<li><b>MokManager</b>&mdash;This program is included with shim 0.2 and later (including the versions of shim that ship with Fedora 18 and OpenSUSE 12.3). It presents a crude user interface for managing MOKs, and it's launched by shim if shim can't find its default boot loader (generally <tt>grubx64.efi</tt>) or if that program isn't properly signed. In principle, this program could be signed with a Secure Boot key or a MOK, but the binary in Garrett's shim 0.2 is signed with a shim key, and I expect that versions distributed with most Linux distributions will also be signed by their respective shim keys. This program should reside in the same directory as <tt>shim.efi</tt>, under the name <tt>MokManager.efi</tt>. Although you could theoretically do without MokManager, in practice you'll need it at least temporarily to install the MOK with which rEFInd is signed.</li>
+<li><b>MokManager</b>&mdash;This program is included with Shim 0.2 and later. It presents a user interface for managing MOKs, and it's launched by Shim if Shim can't find its default boot loader (generally <tt>grubx64.efi</tt>) or if that program isn't properly signed. In principle, this program could be signed with a Secure Boot key or a MOK, but such binaries are usually signed by Shim keys. This program should reside in the same directory as <tt>shim.efi</tt>, under the name <tt>MokManager.efi</tt>. Although you could theoretically do without MokManager, in practice you'll need it at least temporarily to install the MOK with which rEFInd is signed.</li>
 
-<li><b>rEFInd</b>&mdash;Naturally, you need rEFInd. Because shim is hard-coded to launch a program called <tt>grubx64.efi</tt>, you must install rEFInd using that name and to the same directory in which <tt>shim.efi</tt> resides. In theory, rEFInd could be signed with a Secure Boot key, a shim key, or a MOK; however, because Microsoft won't sign binaries distributed under the GPLv3, I can't distribute a version of rEFInd signed with Microsoft's Secure Boot key; and as I don't have access to the private shim keys used by any distribution, I can't distribute a rEFInd binary signed by them. (If distributions begin including rEFInd in their package sets, though, such distribution-provided binaries could be signed with the distributions' shim keys.) Thus, rEFInd will normally be signed by a MOK. Beginning with version 0.5.0, rEFInd binaries that I provide are signed by me. Beginning with version 0.5.1, the installation script provides an option to sign the rEFInd binary with your own key, provided the necessary support software is installed.</li>
+<li><b>rEFInd</b>&mdash;Naturally, you need rEFInd. Because Shim is hard-coded to launch a program called <tt>grubx64.efi</tt>, you must install rEFInd using that name and to the same directory in which <tt>shim.efi</tt> resides. In theory, rEFInd could be signed with a Secure Boot key, a Shim key, or a MOK; however, because Microsoft won't sign binaries distributed under the GPLv3, I can't distribute a version of rEFInd signed with Microsoft's Secure Boot key; and as I don't have access to the private Shim keys used by any distribution, I can't distribute a rEFInd binary signed by them. (If distributions begin including rEFInd in their package sets, though, such distribution-provided binaries could be signed with the distributions' Shim keys.) Thus, rEFInd will normally be signed by a MOK. Beginning with version 0.5.0, rEFInd binaries that I provide are signed by me. Beginning with version 0.5.1, the installation script provides an option to sign the rEFInd binary with your own key, provided the necessary support software is installed.</li>
 
-<li><b>Your boot loaders and kernels</b>&mdash;Your OS boot loaders, and perhaps your Linux kernels, must be signed. They can be signed with any of the three key types. Indeed, your system may have a mix of all three types&mdash;a Windows 8 boot loader will most likely be signed with Microsoft's Secure Boot key, GRUB and kernels provided by most distributions will be signed with their own shim keys, and if you use your own locally-compiled kernel or a boot loader from an unusual source you may need to sign it with a MOK. Aside from signing, these files can be installed in exactly the same way as if your computer were not using Secure Boot.</li>
+<li><b>Your boot loaders and kernels</b>&mdash;Your OS boot loaders, and perhaps your Linux kernels, must be signed. They can be signed with any of the three key types. Indeed, your system may have a mix of all three types&mdash;a Windows 8 boot loader will most likely be signed with Microsoft's Secure Boot key, GRUB and kernels provided by most distributions will be signed with their own Shim keys, and if you use your own locally-compiled kernel or a boot loader from an unusual source you may need to sign it with a MOK. Aside from signing, these files can be installed in exactly the same way as if your computer were not using Secure Boot.</li>
 
 </ul>
 
-<p>If you've installed Fedora 18 or OpenSUSE 12.3 and can boot it with Secure Boot active, and if you then install rEFInd using the RPM file that I provide or by running <tt>install.sh</tt>, chances are you'll end up with a working rEFInd that will start up the first time, with one caveat: You'll have to use MokManager to add rEFInd's MOK to your MOK list, as described shortly. If you don't already have a working copy of shim on your ESP, your task is more complex. Broadly speaking, the procedure should be something like this:</p>
+<p>If you've installed a distribution that provides Shim and can boot it with Secure Boot active, and if you then install rEFInd using the RPM file that I provide or by running <tt>install.sh</tt>, chances are you'll end up with a working rEFInd that will start up the first time, with one caveat: You'll have to use MokManager to add rEFInd's MOK to your MOK list, as described shortly. If you don't already have a working copy of Shim on your ESP, your task is more complex. Broadly speaking, the procedure should be something like this:</p>
 
 <ol>
 
@@ -247,9 +254,9 @@ Windows 8, this isn't an option for it. Unfortunately, the shim and PreLoader pr
     zip or CD-R image file). If you download the binary zip file, unzip it;
     if you get the CD-R image file, burn it to a CD-R and mount it.</li>
 
-<li>Download shim from <a
+<li>Download Shim from <a
     href="http://www.codon.org.uk/~mjg59/shim-signed/">Matthew J. Garrett's
-    download site</a> or from your distribution. (Don't use Ubuntu's
+    download site</a> or from your distribution. (Don't use an early 0.1
     version, though; as noted earlier, it's inadequate for use with
     rEFInd.)</li>
 
@@ -273,23 +280,32 @@ Windows 8, this isn't an option for it. Unfortunately, the shim and PreLoader pr
 
 <li>Reboot. With any luck, you'll see a simple text-mode user interface
     with a label of <tt>Shim UEFI key management</tt>. This is the
-    MokManager program, which shim launched when rEFInd failed verification
+    MokManager program, which Shim launched when rEFInd failed verification
     because its key is not yet enrolled.</li>
 
 <li>Press your down arrow key and press Enter to select <tt>Enroll key from
     disk</tt>. The screen will clear and prompt you to select a key, as
-    shown here:</li>
+    shown here:
 
     <br /><img src="MokManager1.png" align="CENTER" width="676"
     height="186" alt="MokManager's user interface is crude but effective."
     border=2> <br />
 
+    This user interface was used in early versions of MokManager, but
+    somewhere between versions 0.4 and 0.7, the user interface received an
+    upgrade. If you've got a more recent version, it will look more like
+    this:
+
+    <br /><img src="MokManager2.png" align="CENTER" width="800"
+    height="345" alt="Recent versions of MokManager provide a somewhat more
+    user-friendly user interface." border=2> <br /> </li>
+
 <li>Each of the lines with a long awkward string represents a disk
     partition. Select one and you'll see a list of files. Continue
     selecting subdirectories until you find the <tt>refind.cer</tt> file
-    you copied to the ESP earlier. (Note that the long lines can wrap
-    and hide valid entries on the next line, so you may need to select
-    a disk whose entry is masked by another one!)</li>
+    you copied to the ESP earlier. (Note that in the early user interface
+    the long lines can wrap and hide valid entries on the next line, so you
+    may need to select a disk whose entry is masked by another one!)</li>
 
 <li>Select <tt>refind.cer</tt>. You can type <tt class="userinput">1</tt>
     to view the certificate's details if you like, or skip that and type
@@ -302,15 +318,15 @@ Windows 8, this isn't an option for it. Unfortunately, the shim and PreLoader pr
 
 </ol>
 
-<p>At this point the computer may boot into its default OS, reboot, or perhaps even hang. When you reboot it, though, rEFInd should start up in Secure Boot mode. (You can verify this by selecting the <i>About rEFInd</i> tool in the main menu. Check the <i>Platform</i> item in the resulting screen; it should verify that Secure Boot is active.) You should now be able to launch any boot loader signed with a key recognized by the firmware or by shim (including any MOKs you've enrolled). If you want to manage keys in the future, rEFInd displays a new icon in the second (tools) row you can use to launch MokManager. (This icon appears by default if MokManager is installed, but if you edit <tt>showtools</tt> in <tt>refind.conf</tt>, you must be sure to include <tt>mok_tool</tt> as an option in order to gain access to it.)</p>
+<p>At this point the computer may boot into its default OS, reboot, or perhaps even hang. When you reboot it, though, rEFInd should start up in Secure Boot mode. (You can verify this by selecting the <i>About rEFInd</i> tool in the main menu. Check the <i>Platform</i> item in the resulting screen; it should verify that Secure Boot is active.) You should now be able to launch any boot loader signed with a key recognized by the firmware or by Shim (including any MOKs you've enrolled). If you want to manage keys in the future, rEFInd displays a new icon in the second (tools) row you can use to launch MokManager. (This icon appears by default if MokManager is installed, but if you edit <tt>showtools</tt> in <tt>refind.conf</tt>, you must be sure to include <tt>mok_tool</tt> as an option in order to gain access to it.)</p>
 
-<p>If you're using Ubuntu, you can't use its version of shim, but you can replace it with Garrett's shim. If you do so, though, you'll have to add Ubuntu's public key as a MOK, at least if you intend to launch Ubuntu's version of GRUB or launch Ubuntu-provided signed kernels. Ubuntu's public key is available in the <a href="http://archive.ubuntu.com/ubuntu/pool/main/s/shim/shim_0~20120906.bcd0a4e8-0ubuntu4.debian.tar.gz">shim_0~20120906.bcd0a4e8-0ubuntu4.debian.tar.gz</a> tarball, as <tt>canonical-uefi-ca.der</tt>. (The filename extensions <tt>.cer</tt> and <tt>.der</tt> are interchangeable for most purposes.) I've also included this key with rEFInd, in the <tt>refind/keys</tt> subdirectory of its package file. To use this key, copy it to your ESP and enroll it with MokManager. See <a href="http://falstaff.agner.ch/2012/12/12/secure-boot-implementation-of-ubuntu-12-10-quantal-quetzal/">this blog post</a> for further details on Ubuntu 12.10's handling of Secure Boot. In principle, you should be able to use shim 0.2 or later from future distributions that include it; but you must be sure that whatever you use supports MokManager.</p>
+<p>If you're using rEFInd to boot multiple Linux versions, chances are you'll need to add the keys for the distributions whose Shim you're not using as MOKs. rEFInd ships with a selection of such keys and copies them to the <tt>keys</tt> subdirectory of the rEFInd installation directory on the ESP as a convenience. Note that you must enroll keys with <tt>.cer</tt> or <tt>.der</tt> filename extensions. Although <tt>.crt</tt> files contain the same information, their format is different and they cannot be used by MokManager.</p>
 
 <a name="mok">
 <h3>Managing Your MOKs</h3>
 </a>
 
-<p>The preceding instructions provided the basics of getting rEFInd up and running, including using MokManager to enroll a MOK on your computer. If you need to sign binaries, though, you'll have to use additional tools. The OpenSSL package provides the cryptographic tools necessary, but actually signing EFI binaries requires additional software. Two packages for this are available: <tt>sbsigntool</tt> and <tt>pesign</tt>. Both are available in binary form from <a href="https://build.opensuse.org/project/show?project=home%3Ajejb1%3AUEFI">this OpenSUSE Build Service (OBS)</a> repository. The following procedure uses <tt>sbsigntool</tt>. To sign your own binaries, follow these steps (you can skip the first five steps if you've used <tt>install.sh</tt>'s <tt>--localkeys</tt> option):</p>
+<p>The preceding instructions provided the basics of getting rEFInd up and running, including using MokManager to enroll a MOK on your computer. If you need to sign binaries, though, you'll have to use additional tools. The OpenSSL package provides the cryptographic tools necessary, but actually signing EFI binaries requires additional software. Two packages for this are available: <tt>sbsigntool</tt> and <tt>pesign</tt>. Both are available in binary form from <a href="https://build.opensuse.org/project/show?project=home%3Ajejb1%3AUEFI">this OpenSUSE Build Service (OBS)</a> repository, and many distributions ship with at least one of them. The following procedure uses <tt>sbsigntool</tt>. To sign your own binaries, follow these steps (you can skip the first five steps if you've successfully used <tt>install.sh</tt>'s <tt>--localkeys</tt> option):</p>
 
 <ol>
 
@@ -341,7 +357,7 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     binaries, but MokManager uses <tt>refind_local.cer</tt> to enroll the
     key. If you used <tt>install.sh</tt>'s <tt>--localkeys</tt> option,
     this step is unnecessary, since these keys have already been created
-    and are stored in <tt>/etc/refind.d/keys</tt>.</li>
+    and are stored in <tt>/etc/refind.d/keys/</tt>.</li>
 
 <li>Copy the three key files to a secure location and adjust permissions
     such that only you can read <tt>refind_local.key</tt>. You'll need
@@ -379,17 +395,17 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
 
 </ol>
 
-<p>At this point you should be able to launch the binaries you've signed. Unfortunately, there can still be problems at this point....</p>
+<p>At this point you should be able to launch the binaries you've signed. Unfortunately, there can still be problems; see the upcoming section, <a href="#caveats">Secure Boot Caveats,</a> for information on them. Alternatively, you can try using PreLoader rather than Shim.</p>
 
 <a name="preloader">
 <h2>Using rEFInd with PreLoader</h2>
 </a>
 
-<p>If you want to use Secure Boot with a distribution that doesn't come with shim but the preceding description exhausts you, take heart: PreLoader is easier to set up and use for your situation! Unfortunately, it's still not as easy to use as not using Secure Boot at all, and it's got some drawbacks, but it may represent an acceptable middle ground. To get started, proceed as follows:</p>
+<p>If you want to use Secure Boot with a distribution that doesn't come with Shim but the preceding description exhausts you, take heart: PreLoader is easier to set up and use for your situation! Unfortunately, it's still not as easy to use as not using Secure Boot at all, and it's got some drawbacks, but it may represent an acceptable middle ground. To get started, proceed as follows:</p>
 
 <ol>
 
-<li>Boot the computer. As with shim, this can be a challenge; you may need
+<li>Boot the computer. As with Shim, this can be a challenge; you may need
     to boot with Secure Boot disabled, use a Secure Boot&ndash;enabled live
     CD, or do the installation from Windows.</li>
 
@@ -439,7 +455,7 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     alt="Be sure to select the right binary when you enroll its hash."
     border=2> <br />
 
-<p class="sidebar"><b>Note:</b> Unfortunately, HashTool's file selector can't change filesystems. Thus, if you want to boot a Linux kernel using rEFInd and PreLoader, you'll need to copy the kernel to the ESP, at least temporarily. Alternatively, as noted earlier, you can copy <tt>HashTool.efi</tt> to the directory that holds the kernels or to another directory on that partition that rEFInd scans&mdash;but be sure to rename <tt>HashTool.efi</tt> or rEFInd will ignore it. You'll then see a boot loader entry for HashTool.</p>
+<p class="sidebar"><b>Note:</b> Unfortunately, the initial version of HashTool's file selector can't change filesystems. Thus, if you want to boot a Linux kernel using rEFInd and PreLoader, you'll need to copy the kernel to the ESP, at least temporarily. Alternatively, as noted earlier, you can copy <tt>HashTool.efi</tt> to the directory that holds the kernels or to another directory on that partition that rEFInd scans&mdash;but be sure to rename <tt>HashTool.efi</tt> or rEFInd will ignore it. You'll then see a boot loader entry for HashTool. More recent versions of HashTool can access multiple partitions, but I have yet to find a pre-signed version, so if you want to use it, you'll need to compile it yourself and then register its hash with an earlier version (or with Secure Boot temporarily disabled).</p>
 
 <li>Repeat the preceding two steps for any additional binaries you might
     want to enroll. These include any EFI filesystem drivers you're using,
@@ -454,11 +470,13 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
 
 <p>If you did everything right, rEFInd should now launch follow-on boot loaders and kernels, including both programs signed with the platform's Secure Boot keys and binaries that you've authorized with HashTool. If you need to authorize additional programs, you can do so from rEFInd by using the MOK utility tool icon that launches <tt>HashTool.efi</tt> from the second row of icons. (This icon should appear by default, but if you uncomment the <tt>showtools</tt> token in <tt>refind.conf</tt>, be sure that <tt>mok_tool</tt> is present among the options.)</p>
 
+<p>Although PreLoader is easier to set up than Shim, particularly if you need to launch programs or kernels that aren't already signed, it suffers from the problem that you must register every new program you install, including Linux kernels if you launch them directly from rEFInd. This need can be a hassle if you update your kernels frequently, and every new registration chews up a little space in your NVRAM. Nonetheless, PreLoader can be a good Secure Boot solution for many users or if you want to build a portable Linux installation that you can use on any computer with minimal fuss.</p>
+
 <a name="caveats">
 <h2>Secure Boot Caveats</h2>
 </a>
 
-<p>rEFInd's Secure Boot support is brand-new with version 0.5.0 of the program, and was revamped for version 0.6.2. I believe rEFInd 0.6.2's Secure Boot support to be significantly superior to that of previous versions, but you might still run into problems. Some issues you might encounter include the following:</p>
+<p>rEFInd's Secure Boot originated with version 0.5.0 of the program, and was revamped for version 0.6.2, both released in late 2012. It's worked well for myself and several others with whom I've corresponded; but you might still run into problems. Some issues you might encounter include the following:</p>
 
 <ul>
 
@@ -467,10 +485,10 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     support it. For months, I knew of no such implementation, but <a
     href="http://superuser.com/questions/615142/uefi-failed-to-install-override-security-policy">this
     SuperUser question</a> indicates that at least one such implementation
-    exists. The board in question is old enough that it might not support
-    Secure Boot at all, though, so I'm not sure if this report indicates a
-    serious limitation or just a stray error message on a computer that
-    doesn't need this feature at all.</li>
+    exists. Subsequent discussions on the site imply that the computer
+    doesn't support Secure Boot at all. The bottom line: If you encounter
+    the error message <tt>Failed to install override security policy,</tt>
+    try removing PreLoader from your boot path.</li>
 
 <li>Under certain circumstances, the time required to launch a boot loader
     can increase. This is unlikely to be noticeable for the average small
@@ -478,11 +496,17 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     filesystems, such as Linux kernels on ext2fs, ext3fs, or ReiserFS
     partitions.</li>
 
-<li>As of version 0.6.2, rEFInd's own Secure Boot support is theoretically
-    able to work on non-<i>x</i>86-64 platforms; however, shim 0.2 and
-    PreLoader both work only on <i>x</i>86-64, and rEFInd is dependent
-    upon these tools. Thus, you'll have to wait for future developments if
-    you want to use Secure Boot on <i>x</i>86 or ARM computers.</li>
+<li>rEFInd's own Secure Boot support is theoretically able to work on
+    non-<i>x</i>86-64 platforms; however, to the best of my knowledge, Shim
+    and PreLoader both work only on <i>x</i>86-64, and rEFInd is dependent
+    upon these tools. In principle, you should be able to <a
+    href="http://www.rodsbooks.com/efi-bootloaders/secureboot.html#add_keys">replace
+    your computer's standard Secure Boot keys</a> to use Secure Boot on
+    these platforms with rEFInd, but this approach will require either
+    built-in key-modification tools in the computer's setup utility or a
+    build of <tt>LockDown.efi</tt> for your platform. I've not tested this
+    approach on <i>x</i>86 or ARM, so I can't say whether it would actually
+    work.</li>
 
 <li>In theory, signing Microsoft's boot loader with a MOK should work. This
     might be handy if you want to replace your computer's built-in keys
@@ -491,11 +515,11 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
 
 </ul>
 
-<p>If you launch a boot loader or other program from rEFInd that relies on the EFI's standard program-launching code, that program should take advantage of shim and its MOKs. For instance, if you launch <a href="http://freedesktop.org/wiki/Software/gummiboot">gummiboot</a> from rEFInd (and rEFInd from shim), gummiboot should be able to launch shim/MOK-signed Linux kernels. This is not currently true if you launch gummiboot directly from shim. (You can launch gummiboot from PreLoader and it should work, though, because of technical differences between how shim and PreLoader work.)</p>
+<p>If you launch a boot loader or other program from rEFInd that relies on the EFI's standard program-launching code, that program should take advantage of Shim and its MOKs. For instance, if you launch <a href="http://freedesktop.org/wiki/Software/gummiboot">gummiboot</a> from rEFInd (and rEFInd from Shim), gummiboot should be able to launch Shim/MOK-signed Linux kernels. This is not currently true if you launch gummiboot directly from Shim. (You can launch gummiboot from PreLoader and it should work, though, because of technical differences between how Shim and PreLoader work.)</p>
 
-<p>My focus in testing rEFInd's Secure Boot capabilities has been on getting Linux kernels with EFI stub loaders to launch correctly. I've done some minimal testing with GRUB 2, though. I've also tested some self-signed binaries, such as an EFI shell and MokManager. (The EFI shell launches, but will not itself launch anything that's not been signed with a UEFI Secure Boot key, even with rEFInd 0.6.2. This of course limits its utility.)</p>
+<p>My focus in testing rEFInd's Secure Boot capabilities has been on getting Linux kernels with EFI stub loaders to launch correctly. I've done some minimal testing with GRUB 2, though. I've also tested some self-signed binaries, such as an EFI shell and MokManager. (The EFI shell launches, but will not itself launch anything that's not been signed with a UEFI Secure Boot key. This of course limits its utility.)</p>
 
-<p>At the moment, I consider rEFInd's shim/MOK support to be of late alpha quality. I'm releasing it in this state in the hope of getting feedback from adventurous early adopters. Some of the usability improvements are dependent upon MOK-capable versions of shim being released with major distributions; such versions of shim, with kernels signed with the key that matches the one built into shim, will greatly reduce the need for users to sign boot loaders.</p>
+<p>Some of the awkwardness of using rEFInd with Secure Boot is due to the need to manage MOKs (either keys with Shim or hashes with PreLoader). Such problems would evaporate if you could get a copy of rEFInd signed with your distribution's Secure Boot key. Thus, if you're annoyed by such problems, try filing a feature request with your distribution maintainer to have them include rEFInd (and sign it!) with their official package set.</p>
 
 <hr />
 

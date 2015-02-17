@@ -634,6 +634,15 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
             Volume->OSIconName = L"freebsd";
             Volume->OSName = L"FreeBSD";
 
+        // If more differentiation needed, also search for
+        // "Invalid partition table" &/or "Missing boot loader".
+        } else if ((*((UINT16 *)(Buffer + 510)) == 0xaa55) &&
+                   (FindMem(Buffer, SECTOR_SIZE, "Boot loader too large", 21) >= 0) &&
+                   (FindMem(Buffer, SECTOR_SIZE, "I/O error loading boot loader", 29) >= 0))  {
+            Volume->HasBootCode = TRUE;
+            Volume->OSIconName = L"freebsd";
+            Volume->OSName = L"FreeBSD";
+
         } else if (FindMem(Buffer, 512, "!Loading", 8) >= 0 ||
                    FindMem(Buffer, SECTOR_SIZE, "/cdboot\0/CDBOOT\0", 16) >= 0) {
             Volume->HasBootCode = TRUE;

@@ -1,6 +1,21 @@
 0.8.7 (?/??/2015):
 ------------------
 
+- Added detection of FreeBSD's BIOS-mode GPT boot loader. Previously,
+  rEFInd could detect FreeBSD's BIOS-mode MBR boot loader, which gave
+  FreeBSD an appropriate icon on Macs; but the GPT boot loader code is
+  different, so some recent FreeBSD installations showed up with generic
+  grey diamond icons. This change creates FreeBSD icons instead.
+
+- Added "Secure Boot [active|inactive]" notice to "about" menu for x86
+  (32-bit) systems, since there are now a few 32-bit UEFI systems that
+  support Secure Boot. (AFAIK, these are mostly tablets and convertibles
+  such as the ASUS T100.)
+
+- Added KeyTool.efi and KeyTool-signed.efi to list of MOK managers. KeyTool
+  is the "super-deluxe" Secure Boot key and hash manager provided as part
+  of the efitools package.
+
 - Fixed more instances of "invalid parameter" errors on some EFIs.
 
 - Improved Secure Boot detection in install.sh.
