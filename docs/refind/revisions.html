@@ -14,7 +14,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 2/8/2015</p>
+<p>Last Web page update: 3/1/2015</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -129,6 +129,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.8.7 (3/1/2015)</b>&mdash;This release provides bug fixes and refinements to existing features. Several changes should reduce the odds of rEFInd crashing because of assorted problems. Other changes improve Secure Boot handling, including improved Secure Boot detection in <tt>install.sh</tt>, recognition of <tt>KeyTool.efi</tt> and <tt>KeyTool-signed.efi</tt> as MOK manager utilities, and reporting of Secure Boot status for <i>x</i>86 (IA-32) systems in the rEFInd information screen. Filesystem detection is improved (again), and XFS has been added as a known filesystem. Detection of FreeBSD's BIOS-mode boot loader is improved, which should give more Mac users the right OS icon when booting FreeBSD in BIOS mode. Finally, I'm <i><b>deprecating</b></i> the use of <tt>fs<tt class="variable">x</tt>:</tt> notation for referring to filesystems. The numbering of filesystems is simply unreliable, and better alternatives (the use of partition GUIDs, partition names, and filesystem names) have been added in previous releases. The <tt>fs<tt class="variable">x</tt>:</tt> code remains in rEFInd, and if it's working for you, you can continue to use it; but sooner or later I'll remove that code, so you're advised to change your manual boot stanzas and other options that use it before that happens.</li>
 
 <li><b>0.8.6 (2/8/2015)</b>&mdash;Most (but not all) of this release's changes focus on Windows dual-booting and Mac-specific issues. There's a new Windows 8 icon, which is now used by default as the Windows icon, although the old icon remains available and is used for Windows XP and earlier boots on Macs. If the NTFS driver is loaded, rEFInd will now exclude non-bootable NTFS volumes from the Mac boot list (this change does not affect UEFI-based PCs). A bug that caused misidentification of whole disks and NTFS volumes as being FAT has been fixed (again, this problem affected Macs, not PCs). A couple of Mac-specific <tt>install.sh</tt> bugs have been fixed, resulting in more reliable identification of the ESP and of the installation directory. Previous versions ignored a volume name of "HFS+ volume" because that name was produced by earlier versions of the rEFInd HFS+ driver for all HFS+ volumes; but the current HFS+ driver produces a real volume name, so I've removed that special case from the code. I've removed the r472 rEFIt commit, introduced in 0.8.5, because it was causing some BMP files to fail to load. Finally, the <tt>hideui</tt> token in <tt>refind.conf</tt> now accepts a value of <tt>badges</tt>, which has the effect of hiding the disk-type badges associated with OS launch icons.</li>
 

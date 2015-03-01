@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-2/8/2015, referencing rEFInd 0.8.6</p>
+3/1/2015, referencing rEFInd 0.8.7</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -166,17 +166,21 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     height="552" alt="rEFInd presents a GUI menu for selecting your boot
     OS." border=2 /></center> <br />
 
-<p>If you don't press any key before the timeout (shown below the icons and description line) expires, the default boot loader will launch. This is normally the item that you launched the last time rEFInd ran, but you can adjust the default by editing the configuration file. (In this example, it's the Ubuntu Linux loader, which is further identified by text above the timeout as <i>vmlinuz-3.5.0-27-generic from UBUNTU BOOT</i>.)</p>
+<p>If you don't press a key before the timeout expires, the default boot loader will launch. (The timeout is shown beneath the description line until you press a key&mdash;note that it's absent from the preceding screen shot.) This is normally the item that you launched the last time rEFInd ran, but you can adjust the default by editing the configuration file. (In this example, it's the Ubuntu Linux loader, which is further identified by text as <i>boot\vmlinuz-3.16.0-31-generic.efi.signed from 49 GiB ext4 volume</i>.)</p>
 
-<p>This display is dominated by the central set of OS <i>tags</i> (icons), which in this example includes tags for an unknown boot loader, OS X, Windows, and Ubuntu. All but the first of these are on hard disks, but the unknown boot loader is on an optical disc, as revealed by the small icons (known as <i>badges</i>) in the lower-right corner of the OS icons.</p>
+<p>This display is dominated by the central set of OS <i>tags</i> (icons), which in this example includes tags for Windows, OS X, Ubuntu, and an unknown Linux distribution. All but the last of these are on hard disks, but the unknown Linux boot loader is on an optical disc, as revealed by the small icons (known as <i>badges</i>) in the lower-right corner of the OS icons.</p>
 
-<p>In this example, the Ubuntu tag is selected. You can move the selection left by pressing the left arrow key and right by pressing the right arrow key. If your system has many boot loaders, an arrow icon will appear to the right and/or left of the boot loader list, indicating that the boot loader list will scroll when you move off the edge. (Such arrows are visible to the right and left in the sample screen.) You can scroll the list by one line full of icons by using the Page Up or Page Down keys to move left and right, respectively. Moving past the final selection or using the down arrow key moves the selection to the second row of small tags, which launch ancillary programs or perform special actions. If you've moved the selection cursor to the second row, pressing the up arrow key or scrolling past the left edge of the second row moves the cursor to the top row. In this figure, these five tags are present:</p>
+<p>In this example, the Ubuntu tag is selected. You can move the selection left by pressing the left arrow key and right by pressing the right arrow key. If your system has many boot loaders, an arrow icon will appear to the right and/or left of the boot loader list, indicating that the boot loader list will scroll when you move off the edge. (Such an arrow is visible to the right in the sample screen.) You can scroll the list by one line full of icons by using the Page Up or Page Down keys to move left and right, respectively. Moving past the final selection or using the down arrow key moves the selection to the second row of small tags, which launch ancillary programs or perform special actions. If you've moved the selection cursor to the second row, pressing the up arrow key or scrolling past the left edge of the second row moves the cursor to the top row. In this figure, these six tags are present:</p>
 
 <ul>
 
 <li>Launch the EFI shell</li>
 
-<li>Launch the tool to create a hybrid MBR (<tt>gptsync</tt>)
+<li>Launch the tool to partition a disk (<tt>gptsync</tt> or
+    <tt>gdisk</tt>)</li>
+
+<li>Launch a tool to edit Secure Boot keys (<tt>MokManager</tt>,
+    <tt>HashTool</tt>, or <tt>KeyTool</tt>)
 
 <li>Produce an information page</li>
 
@@ -186,7 +190,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </ul>
 
-<p>By default, the options to display an information page, shutdown the computer, and reboot the computer are present. Options to launch a shell, launch the Apple recovery utility, and launch the Machine Owner Key (MOK) utility will also appear automatically if these utilities are installed. Options to launch the hybrid MBR tool and to exit from rEFInd are not displayed by default; you must edit the configuration file to enable these features, or to disable those that are displayed by default.</p>
+<p>By default, the options to display an information page, shutdown the computer, and reboot the computer are present. Options to launch a shell, launch <tt>gdisk</tt>, launch a memory test utility, launch the Apple recovery utility, launch the Windows recovery utility, and launch a Secure Boot key management utility will also appear automatically if these utilities are installed. The tag to reboot into the firmware appears if your firmware supports this feature. Options to launch the hybrid MBR tool (<tt>gptsync</tt>) and to exit from rEFInd are not displayed by default; you must edit the configuration file to enable these features, or to disable those that are displayed by default if you don't want them.</p>
 
 <p>To launch an OS or utility, you should select its tag and then press the Enter key or the space bar.</p>
 
@@ -194,7 +198,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Ordinarily, rEFInd displays tags for OSes it finds on internal hard disks, external hard disks (including USB flash drives, CF disks, and so on), and optical discs. Sometimes, though, the firmware hasn't had time to fully examine these devices by the time rEFInd starts; or you might only insert or plug in the media after rEFInd appears. In these cases, you can press the Esc key to have rEFInd re-read its configuration file and re-scan your media for boot loaders. This action can take a few seconds to complete, so be patient. You can also use this feature to detect OSes if you launch a shell and use it to load a driver or edit the <tt>refind.conf</tt> file. If you regularly need to press Esc, you might look into the <tt>scan_delay</tt> configuration file option, described on the <a href="configfile.html">Configuring the Boot Manager</a> page.</p>
 
-<p>On some computers, the firmware doesn't mount external USB media unless you adjust a firmware option or use the EFI's own boot manager prior to launching rEFInd. If you don't see external media appear in rEFInd's list, consult your computer's manual or examine its firmware to locate a relevant option.</p>
+<p>On some computers, the firmware doesn't mount external USB media unless you adjust a firmware option or use the EFI's own boot manager prior to launching rEFInd. If you don't see external media appear in rEFInd's list, consult your computer's manual or examine its firmware to locate a relevant option. This option is often called <i>fast boot</i> or something similar; when enabled, the computer doesn't activate most USB devices because doing so takes a second or two.</p>
 
 <a name="boot_options">
 <h2>Adjusting Boot Options</h2>

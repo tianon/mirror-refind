@@ -106,7 +106,6 @@ void Print(wchar_t *format, ...);
 // FUTURE: use STR(),  #define Print printf
 
 #define CopyMem     memcpy
-#define SetMem      memset
 #define CompareMem  memcmp
 
 #define copy_guid(destguid, srcguid) (memcpy(destguid, srcguid, 16))

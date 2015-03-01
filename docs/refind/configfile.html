@@ -15,7 +15,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-2/8/2015, referencing rEFInd 0.8.6</p>
+3/1/2015, referencing rEFInd 0.8.7</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -146,7 +146,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="#adjusting">Adjusting the Global Configuration</a></li>
 
-<li class="tight"><a href="#stanzas">Creating OS Stanzas</a></li>
+<li class="tight"><a href="#stanzas">Creating Manual Boot Stanzas</a></li>
 
 <li class="tight"><a href="#submenu">Creating Submenu Entries</a></li>
 
@@ -385,12 +385,16 @@ default_selection elilo
 <p>This example sets a timeout of 5 seconds; loads a custom graphic file called <tt>custom.bmp</tt> from the directory in which the rEFInd binary resides; scans the <tt>drivers</tt> and <tt>EFI/tools/drivers</tt> directories for EFI drivers; uses manual boot loader configuration but also scans for external EFI boot loaders and EFI boot loaders on optical discs; and sets the default boot loader to the first loader found that includes the string <tt>elilo</tt>. Of course, since this file specifies use of manual boot loader configuration, it's not complete; you'll need to add at least one OS stanza to be able to boot from anything but an external disk or optical drive, as described shortly.</p>
 
 <a name="stanzas">
-<h2>Creating OS Stanzas</h2>
+<h2>Creating Manual Boot Stanzas</h2>
 </a>
 
-<p>OS stanzas in rEFInd are similar to those in GRUB Legacy, GRUB 2, or ELILO. You can use them to add EFI boot loaders to those that are auto-detected. rEFInd does not yet support manual boot stanzas for BIOS-mode boot loaders. You also cannot modify the auto-detected options; if you just want to tweak one OS's configuration, you have several options, none of which is ideal:</p>
+<p class="sidebar"><b>Note:</b> Don't create manual boot stanzas unless you need to do so! Many people try to create them when rEFInd's auto-detection mechanisms will do the job just as well and with less hassle and chance of error. (Note that you can pass kernel options to a Linux kernel in the <tt>/boot/refind_linux.conf</tt> file; see the <a href="linux.html">Methods of Booting Linux</a> page for details.) Efforts to create manual boot stanzas when auto-detection can do the job just create pointless work for yourself!</p>
+
+<p>Manual boot stanzas in rEFInd are similar to those in GRUB Legacy, GRUB 2, or ELILO. You can use them to add EFI boot loaders to those that are auto-detected. rEFInd does not yet support manual boot stanzas for BIOS-mode boot loaders. You also cannot modify the auto-detected options; if you just want to tweak one OS's configuration, you have several options:</p>
 
 <ul>
+
+<li>You can use the <tt>dont_scan_volumes</tt>, <tt>dont_scan_dirs</tt>, or <tt>dont_scan_files</tt> options in <tt>refind.conf</tt> to hide the tag you want to modify, then create a manual boot stanza to replace it.</li>
 
 <li>You can move or rename the boot loader file for the boot loader you want to tweak.</li>
 
@@ -572,10 +576,10 @@ menuentry Gentoo {
 }
 </pre>
 
-<p>The main menu item for this entry won't look different with the submenus defined than without them; but if you press the Insert key, you'll see the submenu items:</p>
+<p>The main menu item for this entry won't look different with the submenus defined than without them; but if you press the F2 or Insert key, you'll see the submenu items:</p>
 
-    <br /><center><img src="manual-submenu.png" align="center" width="372"
-    height="272" alt="Manually defining submenus enables you to customize
+    <br /><center><img src="manual-submenu.png" align="center" width="403"
+    height="411" alt="Manually defining submenus enables you to customize
     your boot options." border=2></center><br />
 
 <p>The main menu item appears at the top of the list&mdash;<tt>Run bzImage-3.3.0-rc7</tt> in this example. The three submenus defined in this example's configuration file appear next, enabling you to launch in single-user mode, run the 3.3.0 release kernel, or boot via ELILO, respectively. Submenus also include an item called <tt>Return to Main Menu</tt> that does just as it says. (Alternatively, you can return to the main menu by pressing the Esc key.)</p>
