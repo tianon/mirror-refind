@@ -400,7 +400,7 @@ static BOOLEAN HandleBoolean(IN CHAR16 **TokenList, IN UINTN TokenCount) {
 static VOID SetDefaultByTime(IN CHAR16 **TokenList, OUT CHAR16 **Default) {
    EFI_STATUS            Status;
    EFI_TIME              CurrentTime;
-   UINTN                 StartTime = LAST_MINUTE + 1, EndTime = LAST_MINUTE + 1, Now;
+   UINTN                 StartTime, EndTime, Now;
    BOOLEAN               SetIt = FALSE;
 
    StartTime = HandleTime(TokenList[2]);
@@ -770,11 +770,13 @@ static VOID AddSubmenu(LOADER_ENTRY *Entry, REFIT_FILE *File, REFIT_VOLUME *Volu
 
       } else if ((StriCmp(TokenList[0], L"volume") == 0) && (TokenCount > 1)) {
          if (FindVolume(&Volume, TokenList[1])) {
-            MyFreePool(SubEntry->me.Title);
-            SubEntry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
-            SPrint(SubEntry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", Volume->VolName);
-            SubEntry->me.BadgeImage   = Volume->VolBadgeImage;
-            SubEntry->VolName         = Volume->VolName;
+            if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
+               MyFreePool(SubEntry->me.Title);
+               SubEntry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
+               SPrint(SubEntry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", Volume->VolName);
+               SubEntry->me.BadgeImage   = Volume->VolBadgeImage;
+               SubEntry->VolName         = Volume->VolName;
+            } // if volume is readable
          } // if match found
 
       } else if (StriCmp(TokenList[0], L"initrd") == 0) {
@@ -851,11 +853,13 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
 
       } else if ((StriCmp(TokenList[0], L"volume") == 0) && (TokenCount > 1)) {
          if (FindVolume(&CurrentVolume, TokenList[1])) {
-            MyFreePool(Entry->me.Title);
-            Entry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
-            SPrint(Entry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", CurrentVolume->VolName);
-            Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
-            Entry->VolName         = CurrentVolume->VolName;
+            if ((CurrentVolume != NULL) && (CurrentVolume->IsReadable) && (CurrentVolume->RootDir)) {
+               MyFreePool(Entry->me.Title);
+               Entry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
+               SPrint(Entry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", CurrentVolume->VolName);
+               Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
+               Entry->VolName         = CurrentVolume->VolName;
+            } // if volume is readable
          } // if match found
 
       } else if ((StriCmp(TokenList[0], L"icon") == 0) && (TokenCount > 1)) {

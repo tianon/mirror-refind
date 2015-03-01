@@ -131,7 +131,8 @@
 #define FS_TYPE_HFSPLUS        8
 #define FS_TYPE_REISERFS       9
 #define FS_TYPE_BTRFS          10
-#define FS_TYPE_ISO9660        11
+#define FS_TYPE_XFS            11
+#define FS_TYPE_ISO9660        12
 
 // How to scale banner images
 #define BANNER_NOSCALE         0

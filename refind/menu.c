@@ -761,12 +761,13 @@ static UINT8 AverageBrightness(EG_IMAGE *Image) {
    UINTN i;
    UINTN Sum = 0;
 
-   if (Image != NULL) {
+   if ((Image != NULL) && ((Image->Width * Image->Height) != 0)) {
       for (i = 0; i < (Image->Width * Image->Height); i++) {
          Sum += (Image->PixelData[i].r + Image->PixelData[i].g + Image->PixelData[i].b);
       }
+      Sum /= (Image->Width * Image->Height * 3);
    } // if
-   return (UINT8) (Sum / (Image->Width * Image->Height * 3));
+   return (UINT8) Sum;
 } // UINT8 AverageBrightness()
 
 // Display text against the screen's background image. Special case: If Text is NULL

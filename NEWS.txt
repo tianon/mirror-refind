@@ -1,11 +1,27 @@
 0.8.7 (?/??/2015):
 ------------------
 
+- Added identification of XFS as filesystem type in volume descriptions.
+
+- More fixes to filesystem type detection code. Previous version sometimes
+  identified FAT or NTFS (or anything with a boot loader) as a whole-disk
+  device rather than the correct filesystem type.
+
+- Added protections to the code to reduce the risk of crashes that might
+  occur when dereferencing NULL pointers in various situations.
+
+- I'm deprecating the use of filesystem numbers (as in "fs0:") because
+  they're unreliable -- filesystem numbers can change between boots and
+  might not be the same as those used in an EFI shell or other program.
+  Sooner or later I'll remove code supporting this feature. In the
+  meantime, if it doesn't work for you, please switch to using filesystem
+  labels, partition labels, or partition GUIDs.
+
 - Added detection of FreeBSD's BIOS-mode GPT boot loader. Previously,
   rEFInd could detect FreeBSD's BIOS-mode MBR boot loader, which gave
-  FreeBSD an appropriate icon on Macs; but the GPT boot loader code is
-  different, so some recent FreeBSD installations showed up with generic
-  grey diamond icons. This change creates FreeBSD icons instead.
+  FreeBSD an appropriate icon on Macs; but the BIOS-mode GPT boot loader
+  code is different, so some recent FreeBSD installations showed up with
+  generic grey diamond icons. This change creates FreeBSD icons instead.
 
 - Added "Secure Boot [active|inactive]" notice to "about" menu for x86
   (32-bit) systems, since there are now a few 32-bit UEFI systems that

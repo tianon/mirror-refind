@@ -166,7 +166,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.6.4");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.6.6");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -803,7 +803,6 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume) {
       SubEntry = InitializeLoaderEntry(Entry);
       if (SubEntry != NULL) {
          SubEntry->me.Title        = L"Boot Linux for a 17\" iMac or a 15\" MacBook Pro (*)";
-         SubEntry->UseGraphicsMode = TRUE;
          SubEntry->LoadOptions     = L"-d 0 i17";
          SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
          AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -812,7 +811,6 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume) {
       SubEntry = InitializeLoaderEntry(Entry);
       if (SubEntry != NULL) {
          SubEntry->me.Title        = L"Boot Linux for a 20\" iMac (*)";
-         SubEntry->UseGraphicsMode = TRUE;
          SubEntry->LoadOptions     = L"-d 0 i20";
          SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
          AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -821,7 +819,6 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume) {
       SubEntry = InitializeLoaderEntry(Entry);
       if (SubEntry != NULL) {
          SubEntry->me.Title        = L"Boot Linux for a Mac Mini (*)";
-         SubEntry->UseGraphicsMode = TRUE;
          SubEntry->LoadOptions     = L"-d 0 mini";
          SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
          AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -853,7 +850,6 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume) {
         SubEntry = InitializeLoaderEntry(Entry);
         if (SubEntry != NULL) {
            SubEntry->me.Title        = L"Run XOM in text mode";
-           SubEntry->UseGraphicsMode = FALSE;
            SubEntry->LoadOptions     = L"-v";
            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
            AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -1008,7 +1004,6 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
       Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
    } else if (StriCmp(NameClues, L"xom.efi") == 0) {
       MergeStrings(&OSIconName, L"xom,win,win8", L',');
-      Entry->UseGraphicsMode = TRUE;
       Entry->OSType = 'X';
       ShortcutLetter = 'W';
       Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;

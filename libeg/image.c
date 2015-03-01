@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2014 Roderick W. Smith
+ * Modifications copyright (c) 2012-2015 Roderick W. Smith
  * 
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
@@ -199,7 +199,7 @@ VOID egFreeImage(IN EG_IMAGE *Image)
 // Basic file operations
 //
 
-EFI_STATUS egLoadFile(IN EFI_FILE* BaseDir, IN CHAR16 *FileName, OUT UINT8 **FileData, OUT UINTN *FileDataLength)
+EFI_STATUS egLoadFile(IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **FileData, OUT UINTN *FileDataLength)
 {
     EFI_STATUS          Status;
     EFI_FILE_HANDLE     FileHandle;
@@ -207,6 +207,9 @@ EFI_STATUS egLoadFile(IN EFI_FILE* BaseDir, IN CHAR16 *FileName, OUT UINT8 **Fil
     UINT64              ReadSize;
     UINTN               BufferSize;
     UINT8               *Buffer;
+
+    if ((BaseDir == NULL) || (FileName == NULL))
+       return EFI_NOT_FOUND;
 
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR(Status)) {
@@ -616,27 +619,6 @@ VOID egComposeImage(IN OUT EG_IMAGE *CompImage, IN EG_IMAGE *TopImage, IN UINTN 
         }
     }
 } /* VOID egComposeImage() */
-
-// EG_IMAGE * egEnsureImageSize(IN EG_IMAGE *Image, IN UINTN Width, IN UINTN Height, IN EG_PIXEL *Color)
-// {
-//     EG_IMAGE *NewImage;
-// 
-//     if (Image == NULL)
-//         return NULL;
-//     if (Image->Width == Width && Image->Height == Height)
-//         return Image;
-// 
-//     NewImage = egCreateFilledImage(Width, Height, Image->HasAlpha, Color);
-//     if (NewImage == NULL) {
-//         egFreeImage(Image);
-//         return NULL;
-//     }
-//     Image->HasAlpha = FALSE;
-//     egComposeImage(NewImage, Image, 0, 0);
-//     egFreeImage(Image);
-// 
-//     return NewImage;
-// }
 
 //
 // misc internal functions

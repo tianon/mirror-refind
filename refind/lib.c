@@ -50,6 +50,7 @@
 #include "../include/RemovableMedia.h"
 #include "gpt.h"
 #include "config.h"
+#include "../EfiLib/LegacyBios.h"
 
 #ifdef __MAKEWITH_GNUEFI
 #define EfiReallocatePool ReallocatePool
@@ -75,6 +76,7 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 #define REISER2FS_SUPER_MAGIC_STRING     "ReIsEr2Fs"
 #define REISER2FS_JR_SUPER_MAGIC_STRING  "ReIsEr3Fs"
 #define BTRFS_SIGNATURE                  "_BHRfS_M"
+#define XFS_SIGNATURE                    "XFSB"
 #define NTFS_SIGNATURE                   "NTFS    "
 
 // variables
@@ -460,6 +462,9 @@ static CHAR16 *FSTypeName(IN UINT32 TypeCode) {
       case FS_TYPE_BTRFS:
          retval = L" Btrfs";
          break;
+      case FS_TYPE_XFS:
+         retval = L" XFS";
+         break;
       case FS_TYPE_ISO9660:
          retval = L" ISO-9660";
          break;
@@ -493,33 +498,6 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
    if ((Buffer != NULL) && (Volume != NULL)) {
       SetMem(&(Volume->VolUuid), sizeof(EFI_GUID), 0);
       Volume->FSType = FS_TYPE_UNKNOWN;
-
-      if (BufferSize >= 512) {
-
-         // Search for NTFS, FAT, and MBR/EBR.
-         // These all have 0xAA55 at the end of the first sector, but FAT and
-         // MBR/EBR are not easily distinguished. Thus, we first check to see
-         // if the "volume" is in fact a disk device; then look for NTFS
-         // "magic"; and then check to see if the volume can be mounted, thus
-         // relying on the EFI's built-in FAT driver to identify FAT.
-         Magic16 = (UINT16*) (Buffer + 510);
-         if (*Magic16 == FAT_MAGIC) {
-            MagicString = (char*) (Buffer + 3);
-            // Confusingly, "LogicalPartition" refers to the presence of a
-            // partition table, not an MBR logical partition.
-            if (Volume->BlockIO->Media->LogicalPartition) {
-               Volume->FSType = FS_TYPE_WHOLEDISK;
-            } else if (CompareMem(MagicString, NTFS_SIGNATURE, 8) == 0) {
-               Volume->FSType = FS_TYPE_NTFS;
-               CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
-            } else {
-               RootDir = LibOpenRoot(Volume->DeviceHandle);
-               if (RootDir != NULL)
-                  Volume->FSType = FS_TYPE_FAT;
-            } // if/elseif/else
-            return;
-         } // if
-      } // search for FAT and NTFS magic
 
       if (BufferSize >= (1024 + 100)) {
          Magic16 = (UINT16*) (Buffer + 1024 + 56);
@@ -557,6 +535,14 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
          } // if
       } // search for Btrfs magic
 
+      if (BufferSize >= 512) {
+         MagicString = (char*) Buffer;
+         if (CompareMem(MagicString, XFS_SIGNATURE, 4) == 0) {
+            Volume->FSType = FS_TYPE_XFS;
+            return;
+         }
+      } // search for XFS magic
+
       if (BufferSize >= (1024 + 2)) {
          Magic16 = (UINT16*) (Buffer + 1024);
          if ((*Magic16 == HFSPLUS_MAGIC1) || (*Magic16 == HFSPLUS_MAGIC2)) {
@@ -565,7 +551,32 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
          }
       } // search for HFS+ magic
 
-   } // if (Buffer != NULL)
+      if (BufferSize >= 512) {
+         // Search for NTFS, FAT, and MBR/EBR.
+         // These all have 0xAA55 at the end of the first sector, but FAT and
+         // MBR/EBR are not easily distinguished. Thus, we first look for NTFS
+         // "magic"; then check to see if the volume can be mounted, thus
+         // relying on the EFI's built-in FAT driver to identify FAT; and then
+         // check to see if the "volume" is in fact a whole-disk device.
+         Magic16 = (UINT16*) (Buffer + 510);
+         if (*Magic16 == FAT_MAGIC) {
+            MagicString = (char*) (Buffer + 3);
+            if (CompareMem(MagicString, NTFS_SIGNATURE, 8) == 0) {
+               Volume->FSType = FS_TYPE_NTFS;
+               CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
+            } else {
+               RootDir = LibOpenRoot(Volume->DeviceHandle);
+               if (RootDir != NULL) {
+                  Volume->FSType = FS_TYPE_FAT;
+               } else if (!Volume->BlockIO->Media->LogicalPartition) {
+                  Volume->FSType = FS_TYPE_WHOLEDISK;
+               } // if/elseif/else
+            } // if/else
+            return;
+         } // if
+      } // search for FAT and NTFS magic
+
+   } // if ((Buffer != NULL) && (Volume != NULL))
 
 } // UINT32 SetFilesystemData()
 
@@ -593,11 +604,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
                                  Volume->BlockIOOffset, SAMPLE_SIZE, Buffer);
     if (!EFI_ERROR(Status)) {
 
-//         if (Volume->BlockIO->Media->LogicalPartition)
-//            Print(L"Skipping; whole disk!\n");
-//         else
-           SetFilesystemData(Buffer, SAMPLE_SIZE, Volume);
-//        PauseForKey();
+        SetFilesystemData(Buffer, SAMPLE_SIZE, Volume);
         if ((*((UINT16 *)(Buffer + 510)) == 0xaa55 && Buffer[0] != 0) && (FindMem(Buffer, 512, "EXFAT", 5) == -1)) {
             *Bootable = TRUE;
             Volume->HasBootCode = TRUE;
@@ -1288,15 +1295,17 @@ VOID ReinitVolumes(VOID)
 
 BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath)
 {
-    EFI_STATUS         Status;
-    EFI_FILE_HANDLE    TestFile;
+   EFI_STATUS         Status;
+   EFI_FILE_HANDLE    TestFile;
 
-    Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &TestFile, RelativePath, EFI_FILE_MODE_READ, 0);
-    if (Status == EFI_SUCCESS) {
-        refit_call1_wrapper(TestFile->Close, TestFile);
-        return TRUE;
-    }
-    return FALSE;
+   if (BaseDir != NULL) {
+      Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &TestFile, RelativePath, EFI_FILE_MODE_READ, 0);
+      if (Status == EFI_SUCCESS) {
+         refit_call1_wrapper(TestFile->Close, TestFile);
+         return TRUE;
+      }
+   }
+   return FALSE;
 }
 
 EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry, IN UINTN FilterMode)
