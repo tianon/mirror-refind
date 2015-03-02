@@ -1,6 +1,10 @@
 0.8.7 (3/1/2015):
 -----------------
 
+- Fixed install.sh bug that caused inappropriate installation under the
+  name bootx64.efi (or bootia32.efi) under Linux, with a failure to update
+  the boot entries in NVRAM, has been fixed.
+
 - Added identification of XFS as filesystem type in volume descriptions.
 
 - More fixes to filesystem type detection code. Previous version sometimes

@@ -36,7 +36,8 @@
 # Revision history:
 #
 # 0.8.7   -- Better detection of Secure Boot mode & fixed errors when copying
-#            Shim & MokManager files over themselves.
+#            Shim & MokManager files over themselves; fixed bug that caused
+#            inappropriate installation to EFI/BOOT/bootx64.efi
 # 0.8.6   -- Fixed bugs that caused misidentification of ESP on disks with
 #            partition numbers over 10 on OS X and misidentification of mount
 #            point if already-mounted ESP had space in path.
@@ -201,6 +202,7 @@ CheckForFiles() {
       exit 1
    fi
 
+   echo "ShimSource is $ShimSource"
    if [[ "$ShimSource" != "none" ]] ; then
       if [[ -f "$ShimSource" ]] ; then
          if [[ $ShimType == "shimx64.efi" || $ShimType == "shim.efi" ]] ; then
@@ -225,17 +227,17 @@ CheckForFiles() {
 # Helper for CopyRefindFiles; copies shim files (including MokManager, if it's
 # available) to target.
 CopyShimFiles() {
-   local inode1=`ls -i "$ShimSource" | cut -f 1 -d " "`
-   local inode2=`ls -i "$InstallDir/$TargetDir/$TargetShim" | cut -f 1 -d " "`
+   local inode1=`ls -i "$ShimSource" 2> /dev/null | cut -f 1 -d " "`
+   local inode2=`ls -i "$InstallDir/$TargetDir/$TargetShim" 2> /dev/null | cut -f 1 -d " "`
    if [[ $inode1 != $inode2 ]] ; then
       cp -fb "$ShimSource" "$InstallDir/$TargetDir/$TargetShim"
       if [[ $? != 0 ]] ; then
          Problems=1
       fi
    fi
-   inode1 = `ls -i "$MokManagerSource" | cut -f 1 -d " "`
+   inode1=`ls -i "$MokManagerSource" 2> /dev/null | cut -f 1 -d " "`
    local TargetMMName=`basename $MokManagerSource`
-   inode2 = `ls -i "$InstallDir/$TargetDir/$TargetShim/$TargetMMName" | cut -f 1 -d " "`
+   inode2=`ls -i "$InstallDir/$TargetDir/$TargetMMName" 2> /dev/null | cut -f 1 -d " "`
    if [[ $inode1 != $inode2 ]] ; then
       if [[ -f "$MokManagerSource" ]] ; then
          cp -fb "$MokManagerSource" "$InstallDir/$TargetDir/"
@@ -307,17 +309,17 @@ SetVarsForMsBoot() {
 DetermineTargetDir() {
    Upgrade=0
 
-   if [[ -f $InstallDir/EFI/BOOT/refind.conf ]] ; then
+   if [[ -f $InstallDir/EFI/BOOT/refind.conf && ! -f $InstallDir/EFI/refind/refind.conf ]] ; then
       SetVarsForBoot
       Upgrade=1
    fi
-   if [[ -f $InstallDir/EFI/Microsoft/Boot/refind.conf ]] ; then
+   if [[ -f $InstallDir/EFI/Microsoft/Boot/refind.conf && ! -f $InstallDir/EFI/refind/refind.conf ]] ; then
       SetVarsForMsBoot
       Upgrade=1
    fi
-   if [[ -f $InstallDir/EFI/refind/refind.conf ]] ; then
+   if [[ -f $InstallDir/EFI/refind/refind.conf && foofoo ]] ; then
       TargetDir="/EFI/refind"
-      if [[ "$OSName" == 'Darwin' ]] ; then
+      if [[ $ShimSource == "none" ]] ; then
          TargetX64="refind_x64.efi"
          TargetIA32="refind_ia32.efi"
       fi
@@ -655,7 +657,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.8.6</string>
+        <string>0.8.7</string>
 </dict>
 </plist>
 ENDOFHERE
