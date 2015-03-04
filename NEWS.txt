@@ -1,3 +1,13 @@
+0.8.8 (3/??/2015):
+------------------
+
+- Modified Debian postinst file to call install.sh with --localkeys option
+  if sbsign and openssl are available, even when NOT in Secure Boot mode or
+  if shim is not detected. This helps with my Ubuntu PPA when using custom
+  Secure Boot keys, since the PPA is delivered unsigned. (Users will have
+  to have added their own local keys to their firmware's db.) For
+  consistency, I've made the same change to the RPM .spec file.
+
 0.8.7 (3/1/2015):
 -----------------
 

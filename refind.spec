@@ -36,14 +36,15 @@ BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 A graphical boot manager for EFI- and UEFI-based computers, such as all
 Intel-based Macs and recent (most 2011 and later) PCs. rEFInd presents a
 boot menu showing all the EFI boot loaders on the EFI-accessible
-partitions, and optionally BIOS-bootable partitions on Macs. EFI-compatbile
-OSes, including Linux, provide boot loaders that rEFInd can detect and
-launch. rEFInd can launch Linux EFI boot loaders such as ELILO, GRUB
-Legacy, GRUB 2, and 3.3.0 and later kernels with EFI stub support. EFI
-filesystem drivers for ext2/3/4fs, ReiserFS, HFS+, and ISO-9660 enable
-rEFInd to read boot loaders from these filesystems, too. rEFInd's ability
-to detect boot loaders at runtime makes it very easy to use, particularly
-when paired with Linux kernels that provide EFI stub support.
+partitions, and optionally BIOS-bootable partitions on Macs and BIOS boot
+entries on UEFI PCs with CSMs. EFI-compatbile OSes, including Linux,
+provide boot loaders that rEFInd can detect and launch. rEFInd can launch
+Linux EFI boot loaders such as ELILO, GRUB Legacy, GRUB 2, and 3.3.0 and
+later kernels with EFI stub support. EFI filesystem drivers for ext2/3/4fs,
+ReiserFS, Btrfs, NTFS, HFS+, and ISO-9660 enable rEFInd to read boot
+loaders from these filesystems, too. rEFInd's ability to detect boot
+loaders at runtime makes it very easy to use, particularly when paired with
+Linux kernels that provide EFI stub support.
 
 %prep
 %setup -q
@@ -120,7 +121,7 @@ PATH=$PATH:/usr/local/bin
 # Remove any existing NVRAM entry for rEFInd, to avoid creating a duplicate.
 ExistingEntry=`efibootmgr | grep "rEFInd Boot Manager" | cut -c 5-8`
 if [[ -n $ExistingEntry ]] ; then
-   efibootmgr --bootnum $ExistingEntry --delete-bootnum
+   efibootmgr --bootnum $ExistingEntry --delete-bootnum &> /dev/null
 fi
 
 cd /usr/share/refind-%{version}
@@ -141,13 +142,12 @@ declare OpenSSL=`which openssl 2> /dev/null`
 
 # Run the rEFInd installation script. Do so with the --shim option
 # if Secure Boot mode is suspected and if a shim program can be
-# found, or without it if not. If a shim installation is attempted
-# and the sbsign and openssl programs can be found, do the install
-# using a local signing key. Note that this option is undesirable
-# for a distribution, since it would then require the user to
-# enroll an extra MOK. I'm including it here because I'm NOT a
-# distribution maintainer, and I want to encourage users to use
-# their own local keys.
+# found, or without it if not. If the sbsign and openssl programs
+# can be found, do the install using a local signing key. Note that
+# this option is undesirable for a distribution, since it would
+# then require the user to enroll an extra MOK. I'm including it
+# here because I'm NOT a distribution maintainer, and I want to
+# encourage users to use their own local keys.
 if [[ $IsSecureBoot == "1" && -n $ShimFile ]] ; then
    if [[ -n $SBSign && -n $OpenSSL ]] ; then
       ./install.sh --shim $ShimFile --localkeys --yes
@@ -155,7 +155,11 @@ if [[ $IsSecureBoot == "1" && -n $ShimFile ]] ; then
       ./install.sh --shim $ShimFile --yes
    fi
 else
-   ./install.sh --yes
+   if [[ -n $SBSign && -n $OpenSSL ]] ; then
+      ./install.sh --localkeys --yes
+   else
+      ./install.sh --yes
+   fi
 fi
 
 # CAUTION: Don't create a %preun or a %postun script that deletes the files

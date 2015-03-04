@@ -7,7 +7,7 @@ set -e
 # Remove any existing NVRAM entry for rEFInd, to avoid creating a duplicate.
 ExistingEntry=`efibootmgr | grep "rEFInd Boot Manager" | cut -c 5-8`
 if [[ -n $ExistingEntry ]] ; then
-   efibootmgr --bootnum $ExistingEntry --delete-bootnum
+   efibootmgr --bootnum $ExistingEntry --delete-bootnum &> /dev/null
 fi
 
 cd /usr/share/refind
@@ -42,5 +42,9 @@ if [[ $IsSecureBoot == "1" && -n $ShimFile ]] ; then
       ./install.sh --shim $ShimFile --yes
    fi
 else
-   ./install.sh --yes
+   if [[ -n $SBSign && -n $OpenSSL ]] ; then
+      ./install.sh --localkeys --yes
+   else
+      ./install.sh --yes
+   fi
 fi
