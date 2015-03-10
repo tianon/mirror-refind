@@ -373,9 +373,9 @@ timeout 20
 # keywords within each stanza include:
 #
 #  volume    - identifies the filesystem from which subsequent files
-#              are loaded. You can specify the volume by label or by
-#              a number followed by a colon (as in "0:" for the first
-#              filesystem or "1:" for the second).
+#              are loaded. You can specify the volume by filesystem
+#              label, by partition label, or by partition GUID number
+#              (but NOT yet by filesystem UUID number).
 #  loader    - identifies the boot loader file
 #  initrd    - Specifies an initial RAM disk file
 #  icon      - specifies a custom boot loader icon
@@ -407,15 +407,14 @@ timeout 20
 # Find one similar to what you need, copy it, remove the "disabled" line,
 # and adjust the entries to suit your needs.
 
-# A sample entry for a Linux 3.3 kernel with its new EFI boot stub
-# support on a filesystem called "KERNELS". This entry includes
-# Linux-specific boot options and specification of an initial RAM disk.
-# Note uses of Linux-style forward slashes, even in the initrd
-# specification. Also note that a leading slash is optional in file
-# specifications.
+# A sample entry for a Linux 3.13 kernel with EFI boot stub support
+# on a partition with a GUID of 904404F8-B481-440C-A1E3-11A5A954E601.
+# This entry includes Linux-specific boot options and specification
+# of an initial RAM disk. Note uses of Linux-style forward slashes.
+# Also note that a leading slash is optional in file specifications.
 menuentry Linux {
 	icon EFI/refind/icons/os_linux.png
-	volume KERNELS
+	volume 904404F8-B481-440C-A1E3-11A5A954E601
 	loader bzImage-3.3.0-rc7
 	initrd initrd-3.3.0.img
 	options "ro root=UUID=5f96cafa-e0a7-4057-b18f-fa709db5b837"
