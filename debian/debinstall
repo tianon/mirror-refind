@@ -4,9 +4,9 @@ BUILD_ROOT=$1
 KEYDIR=/mnt/refind
 
 UNAMEARCH=`uname -m`
-if [[ $UNAMEARCH -eq "x86_64" ]] ; then
+if [[ $UNAMEARCH == "x86_64" ]] ; then
    EFIARCH=x64
-elif [[ $UNAMEARCH -eq "i686" || $UNAMEARCH -eq "i586" || $UNAMEARCH -eq "i486" || $UNAMEARCH -eq "i386" ]] ; then
+elif [[ $UNAMEARCH == "i686" || $UNAMEARCH == "i586" || $UNAMEARCH == "i486" || $UNAMEARCH == "i386" ]] ; then
    EFIARCH=ia32
 else
    EFIARCH=$UNAMEARCH
@@ -22,7 +22,7 @@ declare SBSign=`which sbsign 2> /dev/null`
 if [[ -f $KEYDIR/refind.key && -x $SBSign ]] ; then
    $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind/refind/refind_$EFIARCH.efi refind/refind_$EFIARCH.efi
    mkdir -p $BUILD_ROOT/usr/share/refind/refind/drivers_$EFIARCH
-   for File in `ls drivers_$EFIARCH/*_x64.efi` ; do
+   for File in `ls drivers_$EFIARCH/*_$EFIARCH.efi` ; do
       $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind/refind/$File $File
    done
    mkdir -p $BUILD_ROOT/usr/share/refind/refind/tools_$EFIARCH
@@ -58,3 +58,4 @@ install -Dp -m0755 mvrefind.sh $BUILD_ROOT/usr/sbin/
 cp -a banners $BUILD_ROOT/usr/share/refind/
 cp -a fonts $BUILD_ROOT/usr/share/refind/
 
+echo "*** Exiting debinstall! ***"

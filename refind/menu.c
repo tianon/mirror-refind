@@ -445,38 +445,38 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                 MenuExit = MENU_EXIT_TIMEOUT;
                 break;
             } else if (HaveTimeout || GlobalConfig.ScreensaverTime > 0) {
-		EFI_EVENT           TimerEvent;
-		UINTN		    ElapsCount = 1;
+                EFI_EVENT           TimerEvent;
+                UINTN               ElapsCount = 1;
 
-		Status = refit_call5_wrapper(BS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
-		if (EFI_ERROR(Status)) {
-		    refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
-		} else {
-		    EFI_EVENT           WaitList[2];
-		    UINTN               Index;
+                Status = refit_call5_wrapper(BS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
+                if (EFI_ERROR(Status)) {
+                    refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
+                } else {
+                    EFI_EVENT           WaitList[2];
+                    UINTN               Index;
 
-		    refit_call3_wrapper(BS->SetTimer, TimerEvent, TimerRelative, 10000000); // 1s Timeout
-		    WaitList[0] = ST->ConIn->WaitForKey;
-		    WaitList[1] = TimerEvent;
-		    Status = refit_call3_wrapper(BS->WaitForEvent, 2, WaitList, &Index);
-		    refit_call1_wrapper(BS->CloseEvent, TimerEvent);
-		    if (EFI_ERROR(Status))
-			refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
-		    else if(Index == 0)
-			continue;
-		    else
-			ElapsCount = 10; // always counted as 1s to end of the timeout
-		}
-		TimeSinceKeystroke += ElapsCount;
-		if(HaveTimeout) {
-		    TimeoutCountdown = TimeoutCountdown <= ElapsCount ? 0 : TimeoutCountdown - ElapsCount;
-		} else if (GlobalConfig.ScreensaverTime > 0 &&
-			TimeSinceKeystroke > (GlobalConfig.ScreensaverTime * 10))
-		{
-			SaveScreen();
-			State.PaintAll = TRUE;
-			TimeSinceKeystroke = 0;
-		} // if
+                    refit_call3_wrapper(BS->SetTimer, TimerEvent, TimerRelative, 10000000); // 1s Timeout
+                    WaitList[0] = ST->ConIn->WaitForKey;
+                    WaitList[1] = TimerEvent;
+                    Status = refit_call3_wrapper(BS->WaitForEvent, 2, WaitList, &Index);
+                    refit_call1_wrapper(BS->CloseEvent, TimerEvent);
+                    if (EFI_ERROR(Status))
+                        refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
+                    else if(Index == 0)
+                        continue;
+                    else
+                        ElapsCount = 10; // always counted as 1s to end of the timeout
+                }
+                TimeSinceKeystroke += ElapsCount;
+                if(HaveTimeout) {
+                    TimeoutCountdown = TimeoutCountdown <= ElapsCount ? 0 : TimeoutCountdown - ElapsCount;
+                } else if (GlobalConfig.ScreensaverTime > 0 &&
+                        TimeSinceKeystroke > (GlobalConfig.ScreensaverTime * 10))
+                {
+                        SaveScreen();
+                        State.PaintAll = TRUE;
+                        TimeSinceKeystroke = 0;
+                } // if
             } else {
                 refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &index);
             }

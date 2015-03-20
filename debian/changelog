@@ -1,3 +1,9 @@
+refind (0.8.7-0ppa2) trusty; urgency=medium
+
+  * Fix Debian packaging error affecting IA32 platforms
+
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Thu, 19 Mar 2015 20:25:03 -0400
+
 refind (0.8.7-0ppa1) trusty; urgency=medium
 
   * Version bump

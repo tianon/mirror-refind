@@ -1,6 +1,10 @@
 0.8.8 (3/??/2015):
 ------------------
 
+- Fixed Debian debinstall script to work correctly on IA32 systems. It had
+  a bug that caused filesystem drivers and gptsync to not be packaged for
+  IA32.
+
 - Modified Debian postinst file to call install.sh with --localkeys option
   if sbsign and openssl are available, even when NOT in Secure Boot mode or
   if shim is not detected. This helps with my Ubuntu PPA when using custom
