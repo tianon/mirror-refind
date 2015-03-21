@@ -18,6 +18,7 @@
 
 # Revision history:
 #
+#  0.8.8 -- Added check for OS type, to keep from running pointlessly on OS X
 #  0.7.7 -- Fixed bug that caused stray PARTUUID= and line breaks in generated file
 #  0.5.1 -- Initial release
 #
@@ -25,6 +26,12 @@
 # with which they first appeared.
 
 RLConfFile="/boot/refind_linux.conf"
+
+if [[ `uname -s` != "Linux" ]] ; then
+   echo "This script is intended to be run from Linux. Aborting!"
+   echo ""
+   exit 1
+fi
 
 if [[ ! -f $RLConfFile || $1 == "--force" ]] ; then
    if [[ -f /etc/default/grub ]] ; then

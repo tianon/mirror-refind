@@ -576,6 +576,13 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
          } // if
       } // search for FAT and NTFS magic
 
+      // If no other filesystem is identified and block size is right, assume
+      // it's ISO-9660....
+      if (Volume->BlockIO->Media->BlockSize == 2048) {
+          Volume->FSType = FS_TYPE_ISO9660;
+          return;
+      }
+
    } // if ((Buffer != NULL) && (Volume != NULL))
 
 } // UINT32 SetFilesystemData()
@@ -603,8 +610,9 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
                                  Volume->BlockIO, Volume->BlockIO->Media->MediaId,
                                  Volume->BlockIOOffset, SAMPLE_SIZE, Buffer);
     if (!EFI_ERROR(Status)) {
-
         SetFilesystemData(Buffer, SAMPLE_SIZE, Volume);
+    }
+    if ((Status == EFI_SUCCESS) && (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)) {
         if ((*((UINT16 *)(Buffer + 510)) == 0xaa55 && Buffer[0] != 0) && (FindMem(Buffer, 512, "EXFAT", 5) == -1)) {
             *Bootable = TRUE;
             Volume->HasBootCode = TRUE;
@@ -623,15 +631,6 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"grub,linux";
             Volume->OSName = L"Linux";
-
-//         // Below doesn't produce a bootable entry, so commented out for the moment....
-//         // GRUB in BIOS boot partition:
-//         } else if (FindMem(Buffer, 512, "Geom\0Read\0 Error", 16) >= 0) {
-//             Volume->HasBootCode = TRUE;
-//             Volume->OSIconName = L"grub,linux";
-//             Volume->OSName = L"Linux";
-//             Volume->VolName = L"BIOS Boot Partition";
-//             *Bootable = TRUE;
 
         } else if ((*((UINT32 *)(Buffer + 502)) == 0 &&
                     *((UINT32 *)(Buffer + 506)) == 50000 &&
