@@ -1,6 +1,9 @@
 0.8.8 (3/??/2015):
 ------------------
 
+- Fixed bug that caused a rEFInd crash if an empty refind_linux.conf
+  file was encountered.
+
 - The mkrlconf.sh script now checks the OS on which it's running, which
   should help avoid confusion or problems by users who mistakenly run it
   under OS X.

@@ -166,7 +166,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.7.3");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.7.4");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -773,7 +773,7 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume) {
          // first entry requires special processing, since it was initially set
          // up with a default title but correct options by InitializeSubScreen(),
          // earlier....
-         if ((SubScreen->Entries != NULL) && (SubScreen->Entries[0] != NULL)) {
+         if ((TokenCount > 1) && (SubScreen->Entries != NULL) && (SubScreen->Entries[0] != NULL)) {
             MyFreePool(SubScreen->Entries[0]->Title);
             SubScreen->Entries[0]->Title = TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux");
          } // if

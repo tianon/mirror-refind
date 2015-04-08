@@ -267,6 +267,10 @@ UINTN ReadTokenLine(IN REFIT_FILE *File, OUT CHAR16 ***TokenList)
         Line = ReadLine(File);
         if (Line == NULL)
             return(0);
+        if (Line[0] == L'\0') {
+            MyFreePool(Line);
+            return(0);
+        } // if
 
         p = Line;
         LineFinished = FALSE;
