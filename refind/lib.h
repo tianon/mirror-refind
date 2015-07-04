@@ -82,6 +82,8 @@ typedef struct {
 // Partition names to be ignored when setting volume name
 #define IGNORE_PARTITION_NAMES L"Microsoft basic data,Linux filesystem,Apple HFS/HFS+"
 
+extern EFI_GUID gFreedesktopRootGuid;
+
 EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle);
 VOID UninitRefitLib(VOID);
 EFI_STATUS ReinitRefitLib(VOID);
@@ -114,6 +116,7 @@ INTN FindMem(IN VOID *Buffer, IN UINTN BufferLength, IN VOID *SearchString, IN U
 VOID ReinitVolumes(VOID);
 
 BOOLEAN StriSubCmp(IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
+VOID ToLower(CHAR16 * MyString);
 VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
 CHAR16 *FindExtension(IN CHAR16 *Path);
 CHAR16 *FindLastDirName(IN CHAR16 *Path);

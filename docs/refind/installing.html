@@ -8,6 +8,8 @@
   <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
 </head>
 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <body>
   <h1>The rEFInd Boot Manager:<br />Installing rEFInd</h1>
 
@@ -610,6 +612,10 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <p class="sidebar"><b>Warning:</b> Windows 8 implements a fast shutdown feature that helps speed up shutdown and startup operations on a single-boot computer. Unfortunately, this feature can cause filesystem corruption if it's used on a multi-boot computer. You can disable the feature by launching an Administrator Command Prompt window and typing <tt class="userinput">powercfg /h off</tt> in it.</p>
 
+<p>I know relatively little about Windows EFI management tools; however, I do know that at least two relevant tools exist: the standard <tt>bcdedit</tt> and the third-party <i>EasyUEFI.</i></p>
+
+<p>The <a href="http://www.easyuefi.com/index-us.html">EasyUEFI tool</a> is a free (as in beer) GUI tool for managing EFI boot programs. I've only tried it once, and it seemed fairly intuitive and easy to use, but I don't have detailed instructions on how to use it. If you want to use EasyUEFI, you'll have to use it in place of <tt>bcdedit</tt> at the end of the following procedure.</p>
+
 <p>Attempt this method of installation only on a UEFI-based PC; this method will not work on Windows that's installed on a Mac in BIOS/CSM/legacy mode. To install rEFInd under Windows, you must first find a way to access the ESP, which Windows normally hides from view. One way to accomplish this goal, and to proceed forward once the ESP is accessible, is as follows:</p>
 
 <ol>
@@ -629,6 +635,8 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 <li>You may want to selectively delete some of the drivers in the <tt>drivers_x64</tt> or <tt>drivers_ia32</tt> directory, depending on your architecture and needs. Unnecessary drivers will slow the rEFInd start process, and can even cause the drivers you need to not work or cause a system crash. See the <a href="drivers.html">page on drivers</a> for more on this topic.</li>
 
 <li>Type <b><tt>rename refind.conf-sample refind.conf</tt></b> to rename rEFInd's configuration file.</li>
+
+<p class="sidebar"><b>Note:</b> I've heard from a couple of Windows 10 users that the <tt>bcdedit</tt> commands described here don't work. I don't yet know if this is a coincidence or if Microsoft has changed <tt>bcdedit</tt> in such a way that these instructions no longer apply. If you run into this problem, either try using EasyUEFI or use another installation method, such as the <a href="#linux">Linux method</a> from a Linux emergency boot disc.</p>
 
 <li>Type <b><tt>bcdedit /set {bootmgr} path \EFI\refind\refind_x64.efi</tt></b> to set rEFInd as the default EFI boot program. Note that <tt>{bootmgr}</tt> is entered as such; that's not a notation for a variable. Also, change <tt>refind_x64.efi</tt> to <tt>refind_ia32.efi</tt> on systems with 32-bit EFIs. Such computers are rare, and most of them are tablets. Check your Windows bit depth to determine which binary you should use.</li>
 

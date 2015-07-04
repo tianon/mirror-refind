@@ -87,6 +87,7 @@
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
 #define EFI_STUB_ARCH           0x8664
+EFI_GUID gFreedesktopRootGuid = { 0x4f68bce3, 0xe8cd, 0x4db1, { 0x96, 0xe7, 0xfb, 0xca, 0xf9, 0x84, 0xb7, 0x09 }};
 #elif defined (EFI32)
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellia32.efi,\\shell.efi,\\shellia32.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi"
@@ -97,6 +98,7 @@
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #define FALLBACK_BASENAME       L"bootia32.efi"
 #define EFI_STUB_ARCH           0x014c
+EFI_GUID gFreedesktopRootGuid = { 0x44479540, 0xf297, 0x41b2, { 0x9a, 0xf7, 0xd1, 0x31, 0xd5, 0xf0, 0x45, 0x8a }};
 #else
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\shell.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi"
@@ -106,6 +108,8 @@
 #define DRIVER_DIRS             L"drivers"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" /* Not really correct */
 #define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
+// Below is GUID for ARM64
+EFI_GUID gFreedesktopRootGuid = { 0xb921b045, 0x1df0, 0x41c3, { 0xaf, 0x44, 0x4c, 0x6f, 0x28, 0x0d, 0x3f, 0xae }};
 #endif
 #define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
 
@@ -138,7 +142,7 @@ static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0,
 
 REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC,
                               0, 0, { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE }, BANNER_NOSCALE,
-                              NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                              NULL, NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY, TAG_MOK_TOOL,
                                 TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0, 0, 0 }
                             };
@@ -166,7 +170,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.7.4");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.7.12");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -1410,7 +1414,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
    BOOLEAN                 ScanFallbackLoader = TRUE;
    BOOLEAN                 FoundBRBackup = FALSE;
 
-   if ((Volume->RootDir != NULL) && (Volume->VolName != NULL) && (Volume->IsReadable)) {
+   if (Volume && (Volume->RootDir != NULL) && (Volume->VolName != NULL) && (Volume->IsReadable)) {
       MatchPatterns = StrDuplicate(LOADER_MATCH_PATTERNS);
       if (GlobalConfig.ScanAllLinux)
          MergeStrings(&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
@@ -1444,7 +1448,8 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
                ScanFallbackLoader = FALSE;
          }
          StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bootmgfw.efi");
-         if (FileExists(Volume->RootDir, FileName) &&  !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
+         if (FileExists(Volume->RootDir, FileName) &&
+             !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
             if (FoundBRBackup)
                AddLoaderEntry(FileName, L"Supposed Microsoft EFI boot (probably GRUB)", Volume);
             else

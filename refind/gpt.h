@@ -82,7 +82,8 @@ typedef struct _gpt_data {
 
 VOID ClearGptData(GPT_DATA *Data);
 EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data);
-CHAR16 * PartNameFromGuid(EFI_GUID *Guid);
+// CHAR16 * PartNameFromGuid(EFI_GUID *Guid);
+GPT_ENTRY * FindPartWithGuid(EFI_GUID *Guid);
 VOID ForgetPartitionTables(VOID);
 VOID AddPartitionTable(REFIT_VOLUME *Volume);
 

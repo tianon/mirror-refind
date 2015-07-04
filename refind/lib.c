@@ -861,20 +861,30 @@ static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
    return FoundName;
 } // static CHAR16 *GetVolumeName()
 
-// Determine the unique GUID and name of the volume and store them.
+// Determine the unique GUID, type code GUID, and name of the volume and store them.
 static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *DevicePath) {
    HARDDRIVE_DEVICE_PATH    *HdDevicePath;
+   GPT_ENTRY                *PartInfo;
 
-   if (Volume == NULL)
+   if ((Volume == NULL) || (DevicePath == NULL))
       return;
 
    if ((DevicePath->Type == MEDIA_DEVICE_PATH) && (DevicePath->SubType == MEDIA_HARDDRIVE_DP)) {
       HdDevicePath = (HARDDRIVE_DEVICE_PATH*) DevicePath;
       if (HdDevicePath->SignatureType == SIGNATURE_TYPE_GUID) {
          Volume->PartGuid = *((EFI_GUID*) HdDevicePath->Signature);
-         Volume->PartName = PartNameFromGuid(&(Volume->PartGuid));
-      } // if
-   } // if
+         PartInfo = FindPartWithGuid(&(Volume->PartGuid));
+         if (PartInfo) {
+             Volume->PartName = StrDuplicate(PartInfo->name);
+             CopyMem(&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof(EFI_GUID));
+             if (GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid)) {
+                GlobalConfig.DiscoveredRoot = Volume;
+                Print(L"Found match!\n");
+                PauseForKey();
+             } // if (GUIDs match)
+         } // if (PartInfo exists)
+      } // if (GPT disk)
+   } // if (disk device)
 } // VOID SetPartGuid()
 
 // Return TRUE if NTFS boot files are found or if Volume is unreadable,
@@ -1326,6 +1336,7 @@ EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry,
         LastBufferSize = BufferSize = 256;
         Buffer = AllocatePool(BufferSize);
         for (IterCount = 0; ; IterCount++) {
+            Print(L"In DirNextEntry(), about to call Directory->Read()\n");
             Status = refit_call3_wrapper(Directory->Read, Directory, &BufferSize, Buffer);
             if (Status != EFI_BUFFER_TOO_SMALL || IterCount >= 4)
                 break;
@@ -1570,6 +1581,19 @@ BOOLEAN StriSubCmp(IN CHAR16 *SmallStr, IN CHAR16 *BigStr) {
 
    return (Found);
 } // BOOLEAN StriSubCmp()
+
+// Convert input string to all-lowercase.
+VOID ToLower(CHAR16 * MyString) {
+    UINTN i = 0;
+
+    if (MyString) {
+        while (MyString[i] != L'\0') {
+            if ((MyString[i] >= L'A') && (MyString[i] <= L'Z'))
+                MyString[i] = MyString[i] - L'A' + L'a';
+            i++;
+        } // while
+    } // if
+} // VOID ToLower()
 
 // Merges two strings, creating a new one and returning a pointer to it.
 // If AddChar != 0, the specified character is placed between the two original
@@ -2188,5 +2212,5 @@ EFI_GUID StringAsGuid(CHAR16 * InString) {
 // Returns TRUE if the two GUIDs are equal, FALSE otherwise
 BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2) {
    return (CompareMem(Guid1, Guid2, 16) == 0);
-} // BOOLEAN CompareGuids()
+} // BOOLEAN GuidsAreEqual()
 

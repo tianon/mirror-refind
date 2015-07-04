@@ -1018,6 +1018,44 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
    return Options;
 } // GenerateOptionsFromEtcFstab()
 
+// Create options from partition type codes. Specifically, if the earlier
+// partition scan found a partition with a type code corresponding to a root
+// filesystem according to the Freedesktop.org Discoverable Partitions Spec
+// (http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/),
+// this function returns an appropriate file with two lines, one with
+// "ro root=PARTUUID={GUID}" and the other with that plus "single".
+// Note that this function returns the LAST partition found with the
+// appropriate type code, so this will work poorly on dual-boot systems or
+// if the type code is set incorrectly.
+static REFIT_FILE * GenerateOptionsFromPartTypes(VOID) {
+    REFIT_FILE   *Options = NULL;
+    CHAR16       *Line, *GuidString;
+
+    if (GlobalConfig.DiscoveredRoot) {
+        Options = AllocateZeroPool(sizeof(REFIT_FILE));
+        if (Options) {
+            Options->Encoding = ENCODING_UTF16_LE;
+            GuidString = GuidAsString(&(GlobalConfig.DiscoveredRoot->PartGuid));
+            ToLower(GuidString);
+            if (GuidString) {
+                Line = PoolPrint(L"\"Boot with normal options\"    \"ro root=/dev/disk/by-partuuid/%s\"\n", GuidString);
+                MergeStrings((CHAR16 **) &(Options->Buffer), Line, 0);
+                MyFreePool(Line);
+                Line = PoolPrint(L"\"Boot into single-user mode\"  \"ro root=/dev/disk/by-partuuid/%s single\"\n", GuidString);
+                MergeStrings((CHAR16**) &(Options->Buffer), Line, 0);
+                MyFreePool(Line);
+                MyFreePool(GuidString);
+            } // if (GuidString)
+            Options->BufferSize = StrLen((CHAR16*) Options->Buffer) * sizeof(CHAR16);
+
+            Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
+            Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
+            Options->Current16Ptr = (CHAR16 *)Options->Buffer;
+            Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
+        } // if (Options allocated OK)
+    } // if (partition has root GUID)
+    return Options;
+} // REFIT_FILE * GenerateOptionsFromPartTypes()
 
 // Read a Linux kernel options file for a Linux boot loader into memory. The LoaderPath
 // and Volume variables identify the location of the options file, but not its name --
@@ -1062,12 +1100,17 @@ REFIT_FILE * ReadLinuxOptionsFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume
       } else { // a filename string is NULL
          GoOn = FALSE;
       } // if/else
-      if (!FileFound)
-         File = GenerateOptionsFromEtcFstab(Volume);
       MyFreePool(OptionsFilename);
       MyFreePool(FullFilename);
       OptionsFilename = FullFilename = NULL;
    } while (GoOn);
+   if (!FileFound) {
+      // No refind_linux.conf file; look for /etc/fstab and try to pull values from there....
+      File = GenerateOptionsFromEtcFstab(Volume);
+      // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec....
+      if (!File)
+         File = GenerateOptionsFromPartTypes();
+   } // if
    return (File);
 } // static REFIT_FILE * ReadLinuxOptionsFile()
 

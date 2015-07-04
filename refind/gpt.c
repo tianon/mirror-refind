@@ -185,12 +185,37 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
    return Status;
 } // EFI_STATUS ReadGptData()
 
+// // Look in gPartitions for a partition with the specified Guid. If found, return
+// // a pointer to that partition's name string. If not found, return a NULL pointer.
+// // The calling function is responsible for freeing the returned memory.
+// CHAR16 * PartNameFromGuid(EFI_GUID *Guid) {
+//    UINTN     i;
+//    CHAR16    *Found = NULL;
+//    GPT_DATA  *GptData;
+// 
+//    if ((Guid == NULL) || (gPartitions == NULL))
+//       return NULL;
+// 
+//    GptData = gPartitions;
+//    while ((GptData != NULL) && (!Found)) {
+//       i = 0;
+//       while ((i < GptData->Header->entry_count) && (!Found)) {
+//          if (GuidsAreEqual((EFI_GUID*) &(GptData->Entries[i].partition_guid), Guid))
+//             Found = StrDuplicate(GptData->Entries[i].name);
+//          else
+//             i++;
+//       } // while(scanning entries)
+//       GptData = GptData->NextEntry;
+//    } // while(scanning GPTs)
+//    return Found;
+// } // CHAR16 * PartNameFromGuid()
+
 // Look in gPartitions for a partition with the specified Guid. If found, return
-// a pointer to that partition's name string. If not found, return a NULL pointer.
+// a pointer to that partition's data. If not found, return a NULL pointer.
 // The calling function is responsible for freeing the returned memory.
-CHAR16 * PartNameFromGuid(EFI_GUID *Guid) {
+GPT_ENTRY * FindPartWithGuid(EFI_GUID *Guid) {
    UINTN     i;
-   CHAR16    *Found = NULL;
+   GPT_ENTRY *Found = NULL;
    GPT_DATA  *GptData;
 
    if ((Guid == NULL) || (gPartitions == NULL))
@@ -200,15 +225,17 @@ CHAR16 * PartNameFromGuid(EFI_GUID *Guid) {
    while ((GptData != NULL) && (!Found)) {
       i = 0;
       while ((i < GptData->Header->entry_count) && (!Found)) {
-         if (GuidsAreEqual((EFI_GUID*) &(GptData->Entries[i].partition_guid), Guid))
-            Found = StrDuplicate(GptData->Entries[i].name);
-         else
+         if (GuidsAreEqual((EFI_GUID*) &(GptData->Entries[i].partition_guid), Guid)) {
+            Found = AllocateZeroPool(sizeof(GPT_ENTRY));
+            CopyMem(Found, &GptData->Entries[i], sizeof(GPT_ENTRY));
+         } else {
             i++;
+         } // if/else
       } // while(scanning entries)
       GptData = GptData->NextEntry;
    } // while(scanning GPTs)
    return Found;
-} // CHAR16 * PartNameFromGuid()
+} // GPT_ENTRY * FindPartWithGuid()
 
 // Erase the gPartitions linked-list data structure
 VOID ForgetPartitionTables(VOID) {
