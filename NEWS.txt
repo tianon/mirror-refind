@@ -1,5 +1,14 @@
-0.8.8 (6/??/2015):
+0.9.0 (6/??/2015):
 ------------------
+
+- Added new "fold_linux_kernels" token to refind.conf. This option, when
+  active (the default) "folds" all Linux kernels in a directory into a
+  single entry on the rEFInd menu. The kernel with the most recent time
+  stamp is launched by default. To launch another kernel, you must press F2
+  or Insert; additional kernels appear as options on the first kernel's
+  submenu. To see the pre-0.9.0 behavior, you must set "fold_linux_kernels
+  false" (or one of its synonyms, "off" or "0"). The point of this option
+  is to help de-clutter the rEFInd main menu.
 
 - Added new Linux root (/) partition auto-discovery feature, based on
   Freedesktop.org's Discoverable Partitions Spec (DPS)

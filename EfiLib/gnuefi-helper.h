@@ -23,7 +23,9 @@
 #define UnicodeSPrint SPrint
 #define gRT RT
 #define gBS BS
+#ifndef CONST
 #define CONST
+#endif
 #define ASSERT_EFI_ERROR(status)  ASSERT(!EFI_ERROR(status))
 
 CHAR8 *

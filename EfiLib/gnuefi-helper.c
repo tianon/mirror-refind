@@ -1,6 +1,6 @@
 /*
- * EfiLib/gnuefi.h
- * GNU-EFI support in legacy boot code
+ * EfiLib/gnuefi-helper.c
+ * GNU-EFI support functions
  *
  * Copyright (c) 2014 Roderick W. Smith
  * With extensive borrowing from other sources (mostly Tianocore)
