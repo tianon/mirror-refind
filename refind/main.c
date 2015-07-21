@@ -170,7 +170,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.7.14");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.7.15");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -1077,8 +1077,6 @@ static VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, RE
         while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
             SubEntry = InitializeLoaderEntry(TargetLoader);
             SplitPathName(FileName, &VolName, &Path, &SubmenuName);
-            MyFreePool(VolName);
-            MyFreePool(Path);
             MergeStrings(&SubmenuName, L": ", '\0');
             MergeStrings(&SubmenuName, TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux"), '\0');
             Title = StrDuplicate(SubmenuName);
@@ -1093,6 +1091,8 @@ static VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, RE
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
             AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         } // while
+        MyFreePool(VolName);
+        MyFreePool(Path);
         MyFreePool(SubmenuName);
         MyFreePool(InitrdName);
         MyFreePool(File);
