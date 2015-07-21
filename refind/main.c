@@ -140,7 +140,7 @@ REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL, 0, L"
                                      L"Insert or F2 for more options; Esc to refresh" };
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
-REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC,
+REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, TRUE,  0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC,
                               0, 0, { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE }, BANNER_NOSCALE,
                               NULL, NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY, TAG_MOK_TOOL,
@@ -170,7 +170,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.7.12");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.8.7.14");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -673,7 +673,7 @@ REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry) {
    return SubScreen;
 } // REFIT_MENU_SCREEN *InitializeSubScreen()
 
-VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume) {
+VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN GenerateReturn) {
    REFIT_MENU_SCREEN  *SubScreen;
    LOADER_ENTRY       *SubEntry;
    CHAR16             *InitrdName;
@@ -859,7 +859,8 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume) {
            AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         }
    } // entries for xom.efi
-   AddMenuEntry(SubScreen, &MenuEntryReturn);
+   if (GenerateReturn)
+       AddMenuEntry(SubScreen, &MenuEntryReturn);
    Entry->me.SubScreen = SubScreen;
 } // VOID GenerateSubScreen()
 
@@ -1028,7 +1029,7 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
 
 // Add a specified EFI boot loader to the list, using automatic settings
 // for icons, options, etc.
-LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume) {
+static LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume, IN BOOLEAN SubScreenReturn) {
    LOADER_ENTRY  *Entry;
 
    CleanUpPathNameSlashes(LoaderPath);
@@ -1054,12 +1055,49 @@ LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN 
       Entry->VolName = Volume->VolName;
       Entry->DevicePath = FileDevicePath(Volume->DeviceHandle, Entry->LoaderPath);
       SetLoaderDefaults(Entry, LoaderPath, Volume);
-      GenerateSubScreen(Entry, Volume);
+      GenerateSubScreen(Entry, Volume, SubScreenReturn);
       AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
    }
 
    return(Entry);
 } // LOADER_ENTRY * AddLoaderEntry()
+
+// Add a Linux kernel as a submenu entry for another (pre-existing) Linux kernel entry.
+static VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOLUME *Volume) {
+    REFIT_FILE          *File;
+    CHAR16              **TokenList = NULL, *InitrdName, *SubmenuName = NULL, *VolName = NULL, *Path = NULL, *Title;
+    REFIT_MENU_SCREEN   *SubScreen;
+    LOADER_ENTRY        *SubEntry;
+    UINTN               TokenCount;
+
+    File = ReadLinuxOptionsFile(TargetLoader->LoaderPath, Volume);
+    if (File != NULL) {
+        SubScreen = TargetLoader->me.SubScreen;
+        InitrdName = FindInitrd(FileName, Volume);
+        while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
+            SubEntry = InitializeLoaderEntry(TargetLoader);
+            SplitPathName(FileName, &VolName, &Path, &SubmenuName);
+            MyFreePool(VolName);
+            MyFreePool(Path);
+            MergeStrings(&SubmenuName, L": ", '\0');
+            MergeStrings(&SubmenuName, TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux"), '\0');
+            Title = StrDuplicate(SubmenuName);
+            SubEntry->me.Title = Title;
+            MyFreePool(SubEntry->LoadOptions);
+            SubEntry->LoadOptions = AddInitrdToOptions(TokenList[1], InitrdName);
+            MyFreePool(SubEntry->LoaderPath);
+            SubEntry->LoaderPath = StrDuplicate(FileName);
+            CleanUpPathNameSlashes(SubEntry->LoaderPath);
+            SubEntry->DevicePath = FileDevicePath(Volume->DeviceHandle, SubEntry->LoaderPath);
+            FreeTokenLine(&TokenList, &TokenCount);
+            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
+            AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+        } // while
+        MyFreePool(SubmenuName);
+        MyFreePool(InitrdName);
+        MyFreePool(File);
+    } // if
+} // static VOID AddKernelToSubmenu()
 
 // Returns -1 if (Time1 < Time2), +1 if (Time1 > Time2), or 0 if
 // (Time1 == Time2). Precision is only to the nearest second; since
@@ -1296,7 +1334,8 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
     EFI_FILE_INFO           *DirEntry;
     CHAR16                  FileName[256], *Extension;
     struct LOADER_LIST      *LoaderList = NULL, *NewLoader;
-    BOOLEAN                 FoundFallbackDuplicate = FALSE;
+    LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
+    BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE;
 
     if ((!SelfDirPath || !Path || ((StriCmp(Path, SelfDirPath) == 0) && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
            (StriCmp(Path, SelfDirPath) != 0)) && (ShouldScan(Volume, Path))) {
@@ -1336,9 +1375,18 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
 
        NewLoader = LoaderList;
        while (NewLoader != NULL) {
-          AddLoaderEntry(NewLoader->FileName, NULL, Volume);
-          NewLoader = NewLoader->NextEntry;
+           IsLinux = (StriSubCmp(L"bzImage", NewLoader->FileName) || StriSubCmp(L"vmlinuz", NewLoader->FileName));
+           if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
+               AddKernelToSubmenu(FirstKernel, NewLoader->FileName, Volume);
+           } else {
+               LatestEntry = AddLoaderEntry(NewLoader->FileName, NULL, Volume, !(IsLinux && GlobalConfig.FoldLinuxKernels));
+               if (IsLinux && (FirstKernel == NULL))
+                   FirstKernel = LatestEntry;
+           }
+           NewLoader = NewLoader->NextEntry;
        } // while
+       if ((NewLoader != NULL) && (FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels)
+           AddMenuEntry(FirstKernel->me.SubScreen, &MenuEntryReturn);
 
        CleanUpLoaderList(LoaderList);
        Status = DirIterClose(&DirIter);
@@ -1399,7 +1447,7 @@ static VOID ScanNetboot() {
          NetVolume->DiskKind = DISK_KIND_NET;
          NetVolume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_NET);
          NetVolume->PartName = NetVolume->VolName = NULL;
-         AddLoaderEntry(iPXEFileName, Location, NetVolume);
+         AddLoaderEntry(iPXEFileName, Location, NetVolume, TRUE);
          MyFreePool(NetVolume);
       } // if support files exist and are valid
    } 
@@ -1423,7 +1471,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
       if (ShouldScan(Volume, MACOSX_LOADER_DIR)) {
          StrCpy(FileName, MACOSX_LOADER_PATH);
          if (FileExists(Volume->RootDir, FileName) && !FilenameIn(Volume, MACOSX_LOADER_DIR, L"boot.efi", GlobalConfig.DontScanFiles)) {
-            AddLoaderEntry(FileName, L"Mac OS X", Volume);
+            AddLoaderEntry(FileName, L"Mac OS X", Volume, TRUE);
             if (DuplicatesFallback(Volume, FileName))
                ScanFallbackLoader = FALSE;
          }
@@ -1431,7 +1479,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
          // check for XOM
          StrCpy(FileName, L"System\\Library\\CoreServices\\xom.efi");
          if (FileExists(Volume->RootDir, FileName) && !FilenameIn(Volume, MACOSX_LOADER_DIR, L"xom.efi", GlobalConfig.DontScanFiles)) {
-            AddLoaderEntry(FileName, L"Windows XP (XoM)", Volume);
+            AddLoaderEntry(FileName, L"Windows XP (XoM)", Volume, TRUE);
             if (DuplicatesFallback(Volume, FileName))
                ScanFallbackLoader = FALSE;
          }
@@ -1442,7 +1490,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
          StrCpy(FileName, L"EFI\\Microsoft\\Boot\\bkpbootmgfw.efi");
          if (FileExists(Volume->RootDir, FileName) &&  !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bkpbootmgfw.efi",
              GlobalConfig.DontScanFiles)) {
-            AddLoaderEntry(FileName, L"Microsoft EFI boot (Boot Repair backup)", Volume);
+            AddLoaderEntry(FileName, L"Microsoft EFI boot (Boot Repair backup)", Volume, TRUE);
             FoundBRBackup = TRUE;
             if (DuplicatesFallback(Volume, FileName))
                ScanFallbackLoader = FALSE;
@@ -1451,9 +1499,9 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
          if (FileExists(Volume->RootDir, FileName) &&
              !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
             if (FoundBRBackup)
-               AddLoaderEntry(FileName, L"Supposed Microsoft EFI boot (probably GRUB)", Volume);
+               AddLoaderEntry(FileName, L"Supposed Microsoft EFI boot (probably GRUB)", Volume, TRUE);
             else
-               AddLoaderEntry(FileName, L"Microsoft EFI boot", Volume);
+               AddLoaderEntry(FileName, L"Microsoft EFI boot", Volume, TRUE);
             if (DuplicatesFallback(Volume, FileName))
                ScanFallbackLoader = FALSE;
          }
@@ -1498,8 +1546,9 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
 
       // If not a duplicate & if it exists & if it's not us, create an entry
       // for the fallback boot loader
-      if (ScanFallbackLoader && FileExists(Volume->RootDir, FALLBACK_FULLNAME) && ShouldScan(Volume, L"EFI\\BOOT"))
-         AddLoaderEntry(FALLBACK_FULLNAME, L"Fallback boot loader", Volume);
+      if (ScanFallbackLoader && FileExists(Volume->RootDir, FALLBACK_FULLNAME) && ShouldScan(Volume, L"EFI\\BOOT")) {
+         AddLoaderEntry(FALLBACK_FULLNAME, L"Fallback boot loader", Volume, TRUE);
+      }
    } // if
 } // static VOID ScanEfiFiles()
 

@@ -679,6 +679,9 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (StriCmp(TokenList[0], L"scan_all_linux_kernels") == 0) {
            GlobalConfig.ScanAllLinux = HandleBoolean(TokenList, TokenCount);
 
+        } else if (StriCmp(TokenList[0], L"fold_linux_kernels") == 0) {
+            GlobalConfig.FoldLinuxKernels = HandleBoolean(TokenList, TokenCount);
+
         } else if (StriCmp(TokenList[0], L"max_tags") == 0) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.MaxTags));
 
@@ -941,7 +944,7 @@ VOID ScanUserConfigured(CHAR16 *FileName)
             Entry = AddStanzaEntries(&File, Volume, TokenList[1]);
             if (Entry->Enabled) {
                if (Entry->me.SubScreen == NULL)
-                  GenerateSubScreen(Entry, Volume);
+                  GenerateSubScreen(Entry, Volume, TRUE);
                AddPreparedLoaderEntry(Entry);
             } else {
                MyFreePool(Entry);

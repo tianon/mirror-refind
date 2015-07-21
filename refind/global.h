@@ -275,6 +275,7 @@ typedef struct {
    BOOLEAN       ScanAllLinux;
    BOOLEAN       DeepLegacyScan;
    BOOLEAN       EnableAndLockVMX;
+   BOOLEAN       FoldLinuxKernels;
    UINTN         RequestedScreenWidth;
    UINTN         RequestedScreenHeight;
    UINTN         BannerBottomEdge;
@@ -331,10 +332,9 @@ EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
                              IN BOOLEAN IsDriver);
 LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry);
 REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry);
-VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume);
+VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN GenerateReturn);
 EG_IMAGE * GetDiskBadge(IN UINTN DiskType);
 LOADER_ENTRY * MakeGenericLoaderEntry(VOID);
-LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume);
 VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
 LOADER_ENTRY * AddPreparedLoaderEntry(LOADER_ENTRY *Entry);
 VOID StoreLoaderName(IN CHAR16 *Name);

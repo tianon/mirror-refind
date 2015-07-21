@@ -310,25 +310,12 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
 // list functions
 //
 
-VOID CreateList(OUT VOID ***ListPtr, OUT UINTN *ElementCount, IN UINTN InitialElementCount)
-{
-    UINTN AllocateCount;
-
-    *ElementCount = InitialElementCount;
-    if (*ElementCount > 0) {
-        AllocateCount = (*ElementCount + 7) & ~7;   // next multiple of 8
-        *ListPtr = AllocatePool(sizeof(VOID *) * AllocateCount);
-    } else {
-        *ListPtr = NULL;
-    }
-}
-
 VOID AddListElement(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID *NewElement)
 {
     UINTN AllocateCount;
 
-    if ((*ElementCount & 7) == 0) {
-        AllocateCount = *ElementCount + 8;
+    if ((*ElementCount & 15) == 0) {
+        AllocateCount = *ElementCount + 16;
         if (*ElementCount == 0)
             *ListPtr = AllocatePool(sizeof(VOID *) * AllocateCount);
         else
@@ -1336,7 +1323,6 @@ EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry,
         LastBufferSize = BufferSize = 256;
         Buffer = AllocatePool(BufferSize);
         for (IterCount = 0; ; IterCount++) {
-            Print(L"In DirNextEntry(), about to call Directory->Read()\n");
             Status = refit_call3_wrapper(Directory->Read, Directory, &BufferSize, Buffer);
             if (Status != EFI_BUFFER_TOO_SMALL || IterCount >= 4)
                 break;
