@@ -1,6 +1,10 @@
 0.9.0 (6/??/2015):
 ------------------
 
+- Minor code changes to ensure that rEFInd compiles with GCC 5.1. (Tested
+  with GNU-EFI on a Fedora 22 system; not yet tested with the TianoCore
+  EDK2.)
+
 - Added new "fold_linux_kernels" token to refind.conf. This option, when
   active (the default) "folds" all Linux kernels in a directory into a
   single entry on the rEFInd menu. The kernel with the most recent time

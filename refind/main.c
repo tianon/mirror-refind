@@ -128,6 +128,9 @@ EFI_GUID gFreedesktopRootGuid = { 0xb921b045, 0x1df0, 0x41c3, { 0xaf, 0x44, 0x4c
 // a ".efi" extension to be found when scanning for boot loaders.
 #define LINUX_MATCH_PATTERNS    L"vmlinuz*,bzImage*"
 
+// Maximum length of a text string in certain menus
+#define MAX_LINE_LENGTH 65
+
 static REFIT_MENU_ENTRY MenuEntryAbout    = { L"About rEFInd", TAG_ABOUT, 1, 0, 'A', NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryReset    = { L"Reboot Computer", TAG_REBOOT, 1, 0, 'R', NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryShutdown = { L"Shut Down Computer", TAG_SHUTDOWN, 1, 0, 'U', NULL, NULL, NULL };
@@ -189,7 +192,7 @@ static VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, L" Platform: unknown");
 #endif
         FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
-        LimitStringLength(FirmwareVendor, 65); // More than ~65 causes empty info page on 800x600 display
+        LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor, ST->FirmwareRevision >> 16,
                                               ST->FirmwareRevision & ((1 << 16) - 1)));
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", egScreenDescription()));
@@ -1080,6 +1083,7 @@ static VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, RE
             MergeStrings(&SubmenuName, L": ", '\0');
             MergeStrings(&SubmenuName, TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux"), '\0');
             Title = StrDuplicate(SubmenuName);
+            LimitStringLength(Title, MAX_LINE_LENGTH);
             SubEntry->me.Title = Title;
             MyFreePool(SubEntry->LoadOptions);
             SubEntry->LoadOptions = AddInitrdToOptions(TokenList[1], InitrdName);

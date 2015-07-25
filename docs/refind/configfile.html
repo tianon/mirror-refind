@@ -152,6 +152,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="#submenu">Creating Submenu Entries</a></li>
 
+<li class="tight"><a href="#default">Adjusting the Default Boot Option</a></li>
+
 </ul>
 
 </div>
@@ -357,7 +359,7 @@ timeout 20
 <tr>
    <td><tt>fold_linux_kernels</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
-   <td>When uncommented or set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, causes rEFInd to "fold" all Linux kernels in a given directory into a single main-menu icon. Selecting that icon launches the most recent kernel. To launch an older kernel, you must press F2 or Insert; older kernels appear on the resulting submenu display. If you prefer to see all your kernels in the main menu, set this option to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>. Note that this option is new with version 0.9.0, which changes the default behavior; earlier versions of rEFInd behaved as if <tt>fold_linux_kernels false</tt> was set.</td>
+   <td>When uncommented or set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, causes rEFInd to "fold" all Linux kernels in a given directory into a single main-menu icon. Selecting that icon launches the most recent kernel. To launch an older kernel, you must press F2 or Insert; older kernels appear on the resulting submenu display. (You can type, as <tt>root</tt>, <tt class="userinput">touch /boot/vmlinuz-{whatever}</tt>, to make <tt>/boot/vmlinuz-{whatever}</tt> your default kernel in a directory.) If you prefer to see all your kernels in the main menu, set this option to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>. Note that this option is new with version 0.9.0, which changes the default behavior; earlier versions of rEFInd behaved as if <tt>fold_linux_kernels false</tt> was set.</td>
 </tr>
 <tr>
    <td><tt>max_tags</tt></td>
@@ -604,6 +606,24 @@ menuentry Gentoo {
 <li>You can give users a choice of boot loaders. In this example, the main option boots via the kernel stub loader, but the submenu gives users the chance to boot via ELILO instead. In fact, you could even boot two entirely different OSes from manually-defined submenu entries, although that could be confusing.</li>
 
 </ul>
+
+<a name="default">
+<h2>Adjusting the Default Boot Option</h2>
+</a>
+
+<p>Just before launching an OS, rEFInd stores the description in the EFI variable <tt>PreviousBoot</tt> with a GUID of 36d08fa7-cf0b-42f5-8f14-68df73ed3740. The next time it launches, it reads that same variable and sets the default boot loader to that value, if it's still available and if the first item in <tt>default_selection</tt> in the <tt>refind.conf</tt> file is a plus sign (<tt>+</tt>).</p>
+
+<p>Under Linux, the variable that rEFInd uses to store this information is accessible as <tt>/sys/firmware/efi/efivars/PreviousBoot-36d08fa7-cf0b-42f5-8f14-68df73ed3740</tt>. Thus, you can back up this value, modify it, and write it back out to adjust your next-booted OS. Getting this string just right can be a bit tricky, though, and if the kernel doesn't like its format, it will not let you modify the variable. If you try to modify the variable, be aware that it's stored in UTF-16 format. As with the <tt>default_selection</tt> token in <tt>refind.conf</tt>, you can enter any substring that uniquely identifies the entry you want to boot.</p>
+
+<p>In principle, you should be able to use a similar procedure to force rEFInd to boot another OS by default in any other OS that supports writing EFI runtime variables. Unfortunately, I don't know the mechanisms used for this task in Windows, OS X, FreeBSD, or any other OS.</p>
+
+<p>If you want to consistently boot a particular OS by default and ignore the previous boot, you can use <tt>default_selection</tt>, but <i>omit</i> the <tt>+</tt> at the start of the line.</p>
+
+<p></p>
+
+<p></p>
+
+<p></p>
 
 <hr />
 
