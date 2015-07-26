@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-3/1/2015, referencing rEFInd 0.8.7</p>
+7/26/2015, referencing rEFInd 0.9.0</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -217,6 +217,8 @@ such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
 <li>Beginning with version 0.6.6, support for loading user-defined fonts, in the form of PNG files containing ASCII characters 32 through 126 plus a glyph to be used for values outside that range.</li>
 
 <li>The ability to auto-detect Linux initial RAM disk files and to read Linux kernel options from a <tt>refind_linux.conf</tt> file. These features support (nearly) automatic handling of Linux kernels with embedded EFI stub loader support (a new feature with Linux 3.3.0).</li>
+
+<li>The ability to "fold" multiple Linux kernels into a single entry in the main menu. Additional kernels appear as options in the submenu. This feature is enabled by default, but can be disabled by setting <tt>fold_linux_kernels false</tt> in <tt>refind.conf</tt>.</li>
 
 <li>In the absence of a <tt>refind_linux.conf</tt> file, the ability to pass minimal Linux boot options to a kernel based on the contents of <tt>/etc/fstab</tt>. This is limited to cases in which the kernel resides on the Linux root (<tt>/</tt>) filesystem, though, and it won't work if the installation requires any unusual options.</li>
 

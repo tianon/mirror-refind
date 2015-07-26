@@ -3,7 +3,7 @@
 # Script to create a refind_linux.conf file for the current Linux
 # installation.
 
-# copyright (c) 2012 by Roderick W. Smith
+# copyright (c) 2012-2015 by Roderick W. Smith
 #
 # This program is licensed under the terms of the GNU GPL, version 3,
 # a copy of which should be distributed with this program.
@@ -18,7 +18,7 @@
 
 # Revision history:
 #
-#  0.8.8 -- Added check for OS type, to keep from running pointlessly on OS X
+#  0.9.0 -- Added check for OS type, to keep from running pointlessly on OS X
 #  0.7.7 -- Fixed bug that caused stray PARTUUID= and line breaks in generated file
 #  0.5.1 -- Initial release
 #
