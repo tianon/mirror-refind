@@ -8,6 +8,7 @@
 #include "BdsHelper.h"
 #include "legacy.h"
 #include "../refind/screen.h"
+#include "../refind/lib.h"
 #include "../include/refit_call_wrapper.h"
 
 EFI_GUID gEfiLegacyBootProtocolGuid     = { 0xdb9a1e3d, 0x45cb, 0x4abb, { 0x85, 0x3b, 0xe5, 0x38, 0x7f, 0xdb, 0x2e, 0x2d }};
@@ -60,7 +61,7 @@ VOID UpdateBbsTable (BDS_COMMON_OPTION *Option) {
 
       // Set devices of a particular type to BootPriority of 0 or 1. 0 is the highest priority.
       if (LocalBbsTable[Idx].DeviceType == OptionBBS->DeviceType) {
-         if (StriCmp(Desc, Option->Description) == 0) {
+         if (MyStriCmp(Desc, Option->Description)) {
             // This entry exactly matches what we're looking for; make it highest priority
             LocalBbsTable[Idx].BootPriority = 0;
          } else {

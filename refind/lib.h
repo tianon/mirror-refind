@@ -116,8 +116,10 @@ INTN FindMem(IN VOID *Buffer, IN UINTN BufferLength, IN VOID *SearchString, IN U
 VOID ReinitVolumes(VOID);
 
 BOOLEAN StriSubCmp(IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
+BOOLEAN MyStriCmp(IN CONST CHAR16 *String1, IN CONST CHAR16 *String2);
 VOID ToLower(CHAR16 * MyString);
 VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
+VOID MergeWords(CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 CHAR16 *FindExtension(IN CHAR16 *Path);
 CHAR16 *FindLastDirName(IN CHAR16 *Path);
 CHAR16 *FindPath(IN CHAR16* FullPath);

@@ -334,15 +334,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	BIOS-booted OS. This isn't a big priority for me personally, but I
 	can see how it could be for some people.</li>
 
-    <li>I've received queries about rEFInd's ability to work with Apple's
-	whole-disk encryption scheme that's new with OS X 10.7.
-	Unfortunately, I lack the hardware to test this, but my
-	understanding is that it will work correctly <i>if</i> rEFInd is
-	installed in the ESP rather than on the Mac OS X root partition.
-	See <a
-	href="https://sourceforge.net/p/refind/discussion/general/thread/5c7d0195/">this
-	forum thread</a> for more information.</li>
-
     <li>I'd like to find a way to enable users to enter customizations for
 	boot options and then save them to the <tt>refind.conf</tt> file.
 	One possible way to implement this would be to have manual boot
@@ -356,6 +347,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     <li>Support for touchscreens and/or configurable buttons for rEFInd's
 	actions would enable use of rEFInd on tablet computers that lack
 	complete keyboards.</li>
+
+    <li>The ability to rotate the display for users who rotate their
+	monitors or who use tablets would be helpful.</li>
 
     <li>GRUB provides a configuration-file command called <tt>outb</tt>
 	that enables manipulating hardware registers. Something similar,
@@ -381,13 +375,11 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	loader settings&mdash;say, to disable one specific boot loader or
 	change its icon.</li>
 
-    <li>The ability to rotate the display for users who rotate their
-	monitors would be helpful.</li>
-
-    <li>A GUI configuration tool would be nice, but it's low on my personal
-	priority list. If you'd like to contribute, I prefer something
-	written in a cross-platform GUI toolkit, so that a single code base
-	can be used on any of the major OSes.</li>
+    <li>A GUI configuration tool for host OSes (Linux, OS X, Windows, etc.)
+	would be nice, but it's low on my personal priority list. If you'd
+	like to contribute, I prefer something written in a cross-platform
+	GUI toolkit, so that a single code base can be used on any of the
+	major OSes.</li>
 
     </ul></li> <!-- New features -->
 
@@ -424,14 +416,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     <li>The <tt>gptsync</tt> program can return misleading error codes
 	under some circumstances, such as when it makes no changes to the
 	partition table. Fix this.</li>
-
-    <li>When updating a system with Secure Boot via an RPM or Debian
-	package, the RPM installation script can detect rEFInd's existing
-	shim or PreLoader program and pass options to <tt>install.sh</tt>
-	to try to copy these programs over themselves. This results in a
-	message that the copy was over the same file and an error message
-	that there were problems with the installation, although this isn't
-	really the case.</li>
 
     <li>rEFInd's support for network booting is primitive and relies on the
 	external iPXE package. In my own testing, iPXE retrieves the

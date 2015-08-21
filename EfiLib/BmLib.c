@@ -119,22 +119,6 @@ EfiStrDuplicate (
   return Dest;
 }
 
-//Compare strings case insensitive
-INTN
-EFIAPI
-StriCmp (
-		IN      CONST CHAR16              *FirstString,
-		IN      CONST CHAR16              *SecondString
-		)
-{
-	
-	while ((*FirstString != L'\0') && ((*FirstString & ~0x20) == (*SecondString & ~0x20))) {
-		FirstString++;
-		SecondString++;
-	}
-	return *FirstString - *SecondString;
-}
-
 /**
 
   Function gets the file information from an open file descriptor, and stores it

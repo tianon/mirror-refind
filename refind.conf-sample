@@ -336,7 +336,8 @@ timeout 20
 #  - A "+" symbol at the start of the string, which refers to the most
 #    recently booted loader.
 #  - Any substring that corresponds to a portion of the loader's title
-#    (usually the OS's name or boot loader's path).
+#    (usually the OS's name, boot loader's path, or a volume or
+#    filesystem title).
 # You may also specify multiple selectors by separating them with commas
 # and enclosing the list in quotes. (The "+" option is only meaningful in
 # this context.)

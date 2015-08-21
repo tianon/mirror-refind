@@ -169,13 +169,29 @@ static VOID InitializeLib(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *System
 
 #endif
 
+// Performs a case-insensitive string comparison. This function is necesary
+// because some EFIs have buggy StriCmp() functions that actually perform
+// case-sensitive comparisons.
+// Returns TRUE if strings are identical, FALSE otherwise.
+static BOOLEAN MyStriCmp(IN CHAR16 *FirstString, IN CHAR16 *SecondString) {
+    if (FirstString && SecondString) {
+        while ((*FirstString != L'\0') && ((*FirstString & ~0x20) == (*SecondString & ~0x20))) {
+                FirstString++;
+                SecondString++;
+        }
+        return (*FirstString == *SecondString);
+    } else {
+        return FALSE;
+    }
+} // BOOLEAN MyStriCmp()
+
 // Check firmware vendor; get verification to continue if it's not Apple.
 // Returns TRUE if Apple firmware or if user assents to use, FALSE otherwise.
 static BOOLEAN VerifyGoOn(VOID) {
    BOOLEAN GoOn = TRUE;
    UINTN invalid;
 
-   if (StriCmp(L"Apple", ST->FirmwareVendor) != 0) {
+   if (MyStriCmp(L"Apple", ST->FirmwareVendor)) {
       Print(L"Your firmware is made by %s.\n", ST->FirmwareVendor);
       Print(L"Ordinarily, a hybrid MBR (which this program creates) should be used ONLY on\n");
       Print(L"Apple Macs that dual-boot with Windows or some other BIOS-mode OS. Are you\n");

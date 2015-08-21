@@ -1,3 +1,23 @@
+0.9.1 (?/??/2015):
+------------------
+
+- Added icon for Elementary OS.
+
+- Added /etc/lsb-release to files scanned for clues about the Linux
+  distribution. This file differentiates Mint and Elementary OS from Ubuntu
+  better than does /etc/os-release, and may also help with other
+  closely-related distributions.
+
+- Improvements to handling of case-insensitive string comparisons. These
+  are buggy on some EFIs, and such bugs affect things like dont_scan_*
+  blacklists, removal of rEFInd's own directory from scanning, matching of
+  keyword names in refind.conf, and even loading of icons. I've replaced
+  many calls to problematic functions with safer calls, which should help a
+  lot. There may still be problems on some systems with some computers,
+  though; as far as I can tell, the bugs are buried deep in some EFI
+  firmware, so I can only replace some of the most direct calls to
+  potentially buggy system calls.
+
 0.9.0 (7/26/2015):
 ------------------
 

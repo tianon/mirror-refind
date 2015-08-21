@@ -866,8 +866,6 @@ static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *D
              CopyMem(&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof(EFI_GUID));
              if (GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid)) {
                 GlobalConfig.DiscoveredRoot = Volume;
-                Print(L"Found match!\n");
-                PauseForKey();
              } // if (GUIDs match)
          } // if (PartInfo exists)
       } // if (GPT disk)
@@ -1424,14 +1422,6 @@ MetaiMatch (IN CHAR16 *String, IN CHAR16 *Pattern)
    return FALSE; // Shouldn't happen
 }
 
-static VOID StrLwr (IN OUT CHAR16 *Str) {
-   if (!mUnicodeCollation) {
-      InitializeUnicodeCollationProtocol();
-   }
-   if (mUnicodeCollation)
-      mUnicodeCollation->StrLwr (mUnicodeCollation, Str);
-}
-
 #endif
 
 BOOLEAN DirIterNext(IN OUT REFIT_DIR_ITER *DirIter, IN UINTN FilterMode, IN CHAR16 *FilePattern OPTIONAL,
@@ -1517,8 +1507,7 @@ CHAR16 * StripEfiExtension(CHAR16 *FileName) {
 
    if ((FileName != NULL) && ((Copy = StrDuplicate(FileName)) != NULL)) {
       Length = StrLen(Copy);
-      // Note: Do StriCmp() twice to work around Gigabyte Hybrid EFI case-sensitivity bug....
-      if ((Length >= 4) && ((StriCmp(&Copy[Length - 4], L".efi") == 0) || (StriCmp(&Copy[Length - 4], L".EFI") == 0))) {
+      if ((Length >= 4) && MyStriCmp(&Copy[Length - 4], L".efi")) {
          Copy[Length - 4] = 0;
       } // if
    } // if
@@ -1544,31 +1533,50 @@ INTN FindMem(IN VOID *Buffer, IN UINTN BufferLength, IN VOID *SearchString, IN U
     return -1;
 }
 
-// Performs a case-insensitive search of BigStr for SmallStr.
-// Returns TRUE if found, FALSE if not.
 BOOLEAN StriSubCmp(IN CHAR16 *SmallStr, IN CHAR16 *BigStr) {
-   CHAR16 *SmallCopy, *BigCopy;
-   BOOLEAN Found = FALSE;
-   UINTN StartPoint = 0, NumCompares = 0, SmallLen = 0;
+    BOOLEAN Found = 0, Terminate = 0;
+    UINTN BigIndex = 0, SmallIndex = 0, BigStart = 0;
 
-   if ((SmallStr != NULL) && (BigStr != NULL) && (StrLen(BigStr) >= StrLen(SmallStr))) {
-      SmallCopy = StrDuplicate(SmallStr);
-      BigCopy = StrDuplicate(BigStr);
-      StrLwr(SmallCopy);
-      StrLwr(BigCopy);
-      SmallLen = StrLen(SmallCopy);
-      NumCompares = StrLen(BigCopy) - SmallLen + 1;
-      while ((!Found) && (StartPoint < NumCompares)) {
-         Found = (StrnCmp(SmallCopy, &BigCopy[StartPoint++], SmallLen) == 0);
-      } // while
-      MyFreePool(SmallCopy);
-      MyFreePool(BigCopy);
-   } // if
-
-   return (Found);
+    if (SmallStr && BigStr) {
+        while (!Terminate) {
+            if (BigStr[BigIndex] == '\0') {
+                Terminate = 1;
+            }
+            if (SmallStr[SmallIndex] == '\0') {
+                Found = 1;
+                Terminate = 1;
+            }
+            if ((SmallStr[SmallIndex] & ~0x20) == (BigStr[BigIndex] & ~0x20)) {
+                SmallIndex++;
+                BigIndex++;
+            } else {
+                SmallIndex = 0;
+                BigStart++;
+                BigIndex = BigStart;
+            }
+        } // while
+    } // if
+    return Found;
 } // BOOLEAN StriSubCmp()
 
+// Performs a case-insensitive string comparison. This function is necesary
+// because some EFIs have buggy StriCmp() functions that actually perform
+// case-sensitive comparisons.
+// Returns TRUE if strings are identical, FALSE otherwise.
+BOOLEAN MyStriCmp(IN CONST CHAR16 *FirstString, IN CONST CHAR16 *SecondString) {
+    if (FirstString && SecondString) {
+        while ((*FirstString != L'\0') && ((*FirstString & ~0x20) == (*SecondString & ~0x20))) {
+                FirstString++;
+                SecondString++;
+        }
+        return (*FirstString == *SecondString);
+    } else {
+        return FALSE;
+    }
+} // BOOLEAN MyStriCmp()
+
 // Convert input string to all-lowercase.
+// DO NOT USE the standard StrLwr() function, since it's broken on some EFIs!
 VOID ToLower(CHAR16 * MyString) {
     UINTN i = 0;
 
@@ -1600,7 +1608,7 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
       Length2 = StrLen(Second);
    NewString = AllocatePool(sizeof(CHAR16) * (Length1 + Length2 + 2));
    if (NewString != NULL) {
-      if ((*First != NULL) && (StrLen(*First) == 0)) {
+      if ((*First != NULL) && (Length1 == 0)) {
          MyFreePool(*First);
          *First = NULL;
       }
@@ -1619,7 +1627,35 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
    } else {
       Print(L"Error! Unable to allocate memory in MergeStrings()!\n");
    } // if/else
-} // static CHAR16* MergeStrings()
+} // VOID MergeStrings()
+
+// Similar to MergeStrings, but breaks the input string into word chunks and
+// merges each word separately. Words are defined as string fragments separated
+// by ' ', '_', or '-'.
+VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
+    CHAR16 *Temp, *Word, *p;
+    BOOLEAN LineFinished = FALSE;
+
+    if (SourceString) {
+        Temp = Word = p = StrDuplicate(SourceString);
+        if (Temp) {
+            while (!LineFinished) {
+                if ((*p == L' ') || (*p == L'_') || (*p == L'-') || (*p == L'\0')) {
+                    if (*p == L'\0')
+                        LineFinished = TRUE;
+                    *p = L'\0';
+                    if (*Word != L'\0')
+                        MergeStrings(MergeTo, Word, AddChar);
+                    Word = p + 1;
+                } // if
+                p++;
+            } // while
+            MyFreePool(Temp);
+        } else {
+            Print(L"Error! Unable to allocate memory in MergeWords()!\n");
+        } // if/else
+    } // if
+} // VOID MergeWords()
 
 // Takes an input pathname (*Path) and returns the part of the filename from
 // the final dot onwards, converted to lowercase. If the filename includes
@@ -1644,7 +1680,7 @@ CHAR16 *FindExtension(IN CHAR16 *Path) {
       } // while
       if (Found) {
          MergeStrings(&Extension, &Path[i], 0);
-         StrLwr(Extension);
+         ToLower(Extension);
       } // if (Found)
    } // if
    return (Extension);
@@ -1804,7 +1840,7 @@ VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **Devi
    while ((i < VolumesCount) && (!Found)) {
       VolumeDeviceString = DevicePathToStr(Volumes[i]->DevicePath);
       Temp = SplitDeviceString(VolumeDeviceString);
-      if (StriCmp(DeviceString, VolumeDeviceString) == 0) {
+      if (MyStriCmp(DeviceString, VolumeDeviceString)) {
          Found = TRUE;
          *DeviceVolume = Volumes[i];
       }
@@ -1972,8 +2008,7 @@ VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Fil
 } // VOID SplitPathName
 
 // Returns TRUE if SmallString is an element in the comma-delimited List,
-// FALSE otherwise. Performs comparison case-insensitively (except on
-// buggy EFIs with case-sensitive StriCmp() functions).
+// FALSE otherwise. Performs comparison case-insensitively.
 BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
    UINTN     i = 0;
    BOOLEAN   Found = FALSE;
@@ -1981,7 +2016,7 @@ BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
 
    if (SmallString && List) {
       while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
-         if (StriCmp(OneElement, SmallString) == 0)
+         if (MyStriCmp(OneElement, SmallString))
             Found = TRUE;
       } // while
    } // if
@@ -2009,8 +2044,7 @@ BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
 // element in the comma-delimited List, FALSE otherwise. Note that Directory and
 // Filename must *NOT* include a volume or path specification (that's part of
 // the Volume variable), but the List elements may. Performs comparison
-// case-insensitively (except on buggy EFIs with case-sensitive StriCmp()
-// functions).
+// case-insensitively.
 BOOLEAN FilenameIn(REFIT_VOLUME *Volume, CHAR16 *Directory, CHAR16 *Filename, CHAR16 *List) {
    UINTN     i = 0;
    BOOLEAN   Found = FALSE;
@@ -2022,9 +2056,9 @@ BOOLEAN FilenameIn(REFIT_VOLUME *Volume, CHAR16 *Directory, CHAR16 *Filename, CH
          Found = TRUE;
          SplitPathName(OneElement, &TargetVolName, &TargetPath, &TargetFilename);
          VolumeNumberToName(Volume, &TargetVolName);
-         if (((TargetVolName != NULL) && ((Volume == NULL) || (StriCmp(TargetVolName, Volume->VolName) != 0))) ||
-             ((TargetPath != NULL) && (StriCmp(TargetPath, Directory) != 0)) ||
-             ((TargetFilename != NULL) && (StriCmp(TargetFilename, Filename) != 0))) {
+         if (((TargetVolName != NULL) && ((Volume == NULL) || (!MyStriCmp(TargetVolName, Volume->VolName)))) ||
+             ((TargetPath != NULL) && (!MyStriCmp(TargetPath, Directory))) ||
+             ((TargetFilename != NULL) && (!MyStriCmp(TargetFilename, Filename)))) {
             Found = FALSE;
          } // if
          MyFreePool(OneElement);
