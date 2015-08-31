@@ -1,6 +1,11 @@
 0.9.1 (?/??/2015):
 ------------------
 
+- Fixed bug that caused "Found match!" and a prompt to press a key to
+  continue to be printed if any partition used the Freedesktop.org
+  Discoverable Partitions Specification root-partition GUID. (This
+  was leftover debugging/testing code that I somehow missed deleting.)
+
 - Added icon for Elementary OS.
 
 - Added /etc/lsb-release to files scanned for clues about the Linux
