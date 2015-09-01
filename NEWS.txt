@@ -1,6 +1,16 @@
 0.9.1 (?/??/2015):
 ------------------
 
+- Improved Freedesktop.org Discoverable Partitions Specification support:
+  Previously, if no refind_linux.conf file was present but an /etc/fstab
+  file was found, rEFInd ignored the Discoverable Partitions Specification
+  filesystem-type codes. This was fine if /etc/fstab contained a valid "/"
+  filesystem specification, but if that was absent, the result was no
+  "root=" specification being present. Under these circumstances
+  (refind_linux.conf absent, /etc/fstab present but lacking a "/" entry),
+  rEFInd now tries to identify a device to specify as "root=" via the
+  Discoverable Partitions Specification.
+
 - Fixed bug that caused "Found match!" and a prompt to press a key to
   continue to be printed if any partition used the Freedesktop.org
   Discoverable Partitions Specification root-partition GUID. (This

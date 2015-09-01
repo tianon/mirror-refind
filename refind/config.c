@@ -1007,10 +1007,15 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
             FreeTokenLine(&TokenList, &TokenCount);
          } // while
 
-         Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
-         Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
-         Options->Current16Ptr = (CHAR16 *)Options->Buffer;
-         Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
+         if (Options->Buffer) {
+            Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
+            Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
+            Options->Current16Ptr = (CHAR16 *)Options->Buffer;
+            Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
+         } else {
+             MyFreePool(Options);
+             Options = NULL;
+         }
 
          MyFreePool(Fstab->Buffer);
          MyFreePool(Fstab);
