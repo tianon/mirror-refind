@@ -79,6 +79,11 @@ typedef struct {
 
 #define IS_EXTENDED_PART_TYPE(type) ((type) == 0x05 || (type) == 0x0f || (type) == 0x85)
 
+// GPT attributes of interest to us for Freedesktop.org Discoverable
+// Partitions Specification....
+#define GPT_READ_ONLY     0x1000000000000000
+#define GPT_NO_AUTOMOUNT  0x8000000000000000
+
 // Partition names to be ignored when setting volume name
 #define IGNORE_PARTITION_NAMES L"Microsoft basic data,Linux filesystem,Apple HFS/HFS+"
 

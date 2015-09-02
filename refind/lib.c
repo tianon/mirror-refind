@@ -853,23 +853,25 @@ static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *D
    HARDDRIVE_DEVICE_PATH    *HdDevicePath;
    GPT_ENTRY                *PartInfo;
 
-   if ((Volume == NULL) || (DevicePath == NULL))
-      return;
+    if ((Volume == NULL) || (DevicePath == NULL))
+        return;
 
-   if ((DevicePath->Type == MEDIA_DEVICE_PATH) && (DevicePath->SubType == MEDIA_HARDDRIVE_DP)) {
-      HdDevicePath = (HARDDRIVE_DEVICE_PATH*) DevicePath;
-      if (HdDevicePath->SignatureType == SIGNATURE_TYPE_GUID) {
-         Volume->PartGuid = *((EFI_GUID*) HdDevicePath->Signature);
-         PartInfo = FindPartWithGuid(&(Volume->PartGuid));
-         if (PartInfo) {
-             Volume->PartName = StrDuplicate(PartInfo->name);
-             CopyMem(&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof(EFI_GUID));
-             if (GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid)) {
-                GlobalConfig.DiscoveredRoot = Volume;
-             } // if (GUIDs match)
-         } // if (PartInfo exists)
-      } // if (GPT disk)
-   } // if (disk device)
+    if ((DevicePath->Type == MEDIA_DEVICE_PATH) && (DevicePath->SubType == MEDIA_HARDDRIVE_DP)) {
+        HdDevicePath = (HARDDRIVE_DEVICE_PATH*) DevicePath;
+        if (HdDevicePath->SignatureType == SIGNATURE_TYPE_GUID) {
+            Volume->PartGuid = *((EFI_GUID*) HdDevicePath->Signature);
+            PartInfo = FindPartWithGuid(&(Volume->PartGuid));
+            if (PartInfo) {
+                Volume->PartName = StrDuplicate(PartInfo->name);
+                CopyMem(&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof(EFI_GUID));
+                if (GuidsAreEqual(&(Volume->PartTypeGuid), &gFreedesktopRootGuid) &&
+                        ((PartInfo->attributes & GPT_NO_AUTOMOUNT) == 0)) {
+                    GlobalConfig.DiscoveredRoot = Volume;
+                } // if (GUIDs match && automounting OK)
+                Volume->IsMarkedReadOnly = ((PartInfo->attributes & GPT_READ_ONLY) > 0);
+            } // if (PartInfo exists)
+        } // if (GPT disk)
+    } // if (disk device)
 } // VOID SetPartGuid()
 
 // Return TRUE if NTFS boot files are found or if Volume is unreadable,

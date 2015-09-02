@@ -1029,25 +1029,26 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
 // filesystem according to the Freedesktop.org Discoverable Partitions Spec
 // (http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/),
 // this function returns an appropriate file with two lines, one with
-// "ro root=PARTUUID={GUID}" and the other with that plus "single".
+// "ro root=/dev/disk/by-partuuid/{GUID}" and the other with that plus "single".
 // Note that this function returns the LAST partition found with the
 // appropriate type code, so this will work poorly on dual-boot systems or
 // if the type code is set incorrectly.
 static REFIT_FILE * GenerateOptionsFromPartTypes(VOID) {
     REFIT_FILE   *Options = NULL;
-    CHAR16       *Line, *GuidString;
+    CHAR16       *Line, *GuidString, *WriteStatus;
 
     if (GlobalConfig.DiscoveredRoot) {
         Options = AllocateZeroPool(sizeof(REFIT_FILE));
         if (Options) {
             Options->Encoding = ENCODING_UTF16_LE;
             GuidString = GuidAsString(&(GlobalConfig.DiscoveredRoot->PartGuid));
+            WriteStatus = GlobalConfig.DiscoveredRoot->IsMarkedReadOnly ? L"ro" : L"rw";
             ToLower(GuidString);
             if (GuidString) {
-                Line = PoolPrint(L"\"Boot with normal options\"    \"ro root=/dev/disk/by-partuuid/%s\"\n", GuidString);
+                Line = PoolPrint(L"\"Boot with normal options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n", WriteStatus, GuidString);
                 MergeStrings((CHAR16 **) &(Options->Buffer), Line, 0);
                 MyFreePool(Line);
-                Line = PoolPrint(L"\"Boot into single-user mode\"  \"ro root=/dev/disk/by-partuuid/%s single\"\n", GuidString);
+                Line = PoolPrint(L"\"Boot into single-user mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n", WriteStatus, GuidString);
                 MergeStrings((CHAR16**) &(Options->Buffer), Line, 0);
                 MyFreePool(Line);
                 MyFreePool(GuidString);

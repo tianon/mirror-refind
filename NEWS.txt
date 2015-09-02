@@ -1,6 +1,17 @@
 0.9.1 (?/??/2015):
 ------------------
 
+- When rEFInd identifies the root (/) partition via the Freedesktop.org
+  Discoverable Partitions Specification, it now checks two of the
+  partition's attributes, as per the DPS (see
+  http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/):
+  - The partition's read-only attribute determines whether to pass a "rw"
+    or "ro" option to the kernel.
+  - If the partition's do-not-automount flag is set, rEFInd will not pass
+    it as a "root=" option to the kernel. This flag can be used to remove
+    all but one partition from consideration as a root (/) partition if a
+    system has more than one with the correct type code.
+
 - Improved Freedesktop.org Discoverable Partitions Specification support:
   Previously, if no refind_linux.conf file was present but an /etc/fstab
   file was found, rEFInd ignored the Discoverable Partitions Specification
