@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-7/26/2015, referencing rEFInd 0.9.0</p>
+9/13/2015, referencing rEFInd 0.9.1</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -233,8 +233,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	removing rEFInd's drivers has caused the problem to go into
 	remission.</li>
 
-    <li>The <a href="http://www.rodsbooks.com/gb-hybrid-efi/">Gigabyte
-	Hybrid EFI</a> has a bug that causes the allegedly case-insensitive
+    <li>Some EFIs have bugs that cause the allegedly case-insensitive
 	<tt>StriCmp()</tt> function to perform a case-sensitive comparison.
 	This causes any number of bugs in file matching. For instance:
 	Changing the case of icon filename extensions (or various other
@@ -242,14 +241,10 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	"generic" ones; and rEFInd sometimes appears in its own menu (the
 	firmware sometimes returns an all-caps version of the filename, but
 	other times returns the filename with the correct case, causing a
-	mismatch if the path includes lowercase elements). Some of these
-	problems can be overcome by converting both strings to be compared
-	to one case before doing the comparison, but others aren't so easy,
-	since I think <tt>StriCmp()</tt> is being called internally to the
-	EFI. In any event, it'd be nice to fix some of these problems.
-	OTOH, this is a workaround for a bug on just one EFI
-	implementation, and a dismal one at that, so I'm inclined to just
-	let it go.</li>
+	mismatch if the path includes lowercase elements). This problem is
+	worse when compiling rEFInd with GNU-EFI than with Tianocore.
+	Version 0.9.1 has made improvements on this score, but some issues
+	may continue to lurk.</li>
 
     <li>The Shutdown option works correctly on Macs, but not on many UEFI-based
 	PCs. On such systems, Shutdown reboots the computer. This should be

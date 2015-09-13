@@ -173,7 +173,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.0.5");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.1");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -2058,6 +2058,7 @@ static BOOLEAN SecureBootSetup(VOID) {
             Success = TRUE;
         } else {
             Print(L"Failed to install MOK Secure Boot extensions");
+            PauseForKey();
         }
     }
     return Success;

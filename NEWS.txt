@@ -1,4 +1,4 @@
-0.9.1 (?/??/2015):
+0.9.1 (9/13/2015):
 ------------------
 
 - When rEFInd identifies the root (/) partition via the Freedesktop.org

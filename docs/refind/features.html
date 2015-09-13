@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-7/26/2015, referencing rEFInd 0.9.0</p>
+9/13/2015, referencing rEFInd 0.9.1</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -221,6 +221,8 @@ such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
 <li>The ability to "fold" multiple Linux kernels into a single entry in the main menu. Additional kernels appear as options in the submenu. This feature is enabled by default, but can be disabled by setting <tt>fold_linux_kernels false</tt> in <tt>refind.conf</tt>.</li>
 
 <li>In the absence of a <tt>refind_linux.conf</tt> file, the ability to pass minimal Linux boot options to a kernel based on the contents of <tt>/etc/fstab</tt>. This is limited to cases in which the kernel resides on the Linux root (<tt>/</tt>) filesystem, though, and it won't work if the installation requires any unusual options.</li>
+
+<li>As of rEFInd 0.9.0, if a Linux root (<tt>/</tt>) filesystem is identified by the type code specified by the <a href="http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/">Discoverable Partitions Specification (DPS)</a> and the root filesystem cannot be identified via <tt>refind_linux.conf</tt> or <tt>/etc/fstab</tt>, rEFInd passes a kernel <tt>root=</tt> identifier based on the identified DPS root (<tt>/</tt>) type code.</li>
 
 <li>Fixes to display problems on many UEFI-based PCs.</li>
 

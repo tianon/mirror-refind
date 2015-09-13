@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-7/26/2015, referencing rEFInd 0.9.0</p>
+9/13/2015, referencing rEFInd 0.9.1</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -226,11 +226,11 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>I provide RPM and Debian package files for rEFInd; and starting with version 0.8.1, I'm maintaining an Ubuntu PPA for rEFInd. If you have a working RPM-based or Debian-based Linux installation that boots in EFI mode, using one of these files is likely to be the easiest way to install rEFInd: You need only download the file and issue an appropriate installation command. In some cases, double-clicking the package in your file manager will install it. If that doesn't work, a command like the following will install the RPM on an RPM-based system:</p>
 
-<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.9.0-1.x86_64.rpm</tt></pre>
+<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.9.1-1.x86_64.rpm</tt></pre>
 
 <p>On a Debian-based system, the equivalent command is:</p>
 
-<pre class="listing"># <tt class="userinput">dpkg -i refind_0.9.0-1_amd64.deb</tt></pre>
+<pre class="listing"># <tt class="userinput">dpkg -i refind_0.9.1-1_amd64.deb</tt></pre>
 
 <p>Either command produces output similar to that described for <a href="#installsh">using the <tt>install.sh</tt> script,</a> so you can check it for error messages and other signs of trouble. The package file installs rEFInd and registers it with the EFI to be the default boot loader. The script that runs as part of the installation process tries to determine if you're using Secure Boot, and if so it will try to configure rEFInd to launch using shim; however, this won't work correctly on all systems. Ubuntu 12.10 users who are booting with Secure Boot active should be wary, since the resulting installation will probably try to use Ubuntu's version of shim, which won't work correctly with rEFInd. The shim program provided with more recent versions of Ubuntu should work correctly.</p>
 
@@ -257,6 +257,8 @@ $ <tt class="userinput">sudo apt-get install refind</tt></pre></pre>
 <a name="quickstart">
 <h3>Quick <tt>install.sh</tt> Instructions</h3>
 </quickstart>
+
+<p class="sidebar"><b>Warning:</b> I've received reports that the OS X 10.11 ("El Capitan") beta has made changes to its <tt>bless</tt> utility that break the rEFInd installation procedure. I have not yet had a chance to investigate this matter. If possible, I recommend using OS X 10.10 ("Yosemite") or earlier to install rEFInd until this issue is resolved. If this is not possible, you might want to use the <a href="#osx">manual OS X installation instructions,</a> but be aware that you'll have to experiment with the <tt>bless</tt> command yourself to figure out what works.</p>
 
 <p>By default, the <tt>install.sh</tt> script installs rEFInd to your disk's ESP. Under Mac OS X, you can instead install rEFInd to your current OS X boot partition by passing the script the <tt>--notesp</tt> option, or to a non-boot HFS+ partition by using the <tt>--ownhfs <tt class="variable">devicefile</tt></tt> option. Under either OS, you can install to something other than the currently-running OS by using the <tt>--root <tt class="variable">/mountpoint</tt></tt> option. (See <a href="#table1">Table 1</a> for details.)</p>
 
@@ -512,6 +514,8 @@ Filesystem     1K-blocks  Used Available Use% Mounted on
 <h3>Installing rEFInd Manually Using Mac OS X</h3>
 </a>
 
+<p class="sidebar"><b>Warning:</b> I've received reports that the OS X 10.11 ("El Capitan") beta has made changes to its <tt>bless</tt> utility that break the rEFInd installation procedure. I have not yet had a chance to investigate this matter. If possible, I recommend using OS X 10.10 ("Yosemite") or earlier to install rEFInd until this issue is resolved. If you experiment with the <tt>bless</tt> command and figure out what's changed, please <a href="mailto:rodsmith@rodsbooks.com">contact me</a> so that I can pass on this information.</p>
+
 <p>Before installing rEFInd on a Mac, you must determine whether it uses a 32-bit or 64-bit EFI implementation. Most Intel-based Macs have 64-bit EFIs, so you should use the <tt>refind_x64.efi</tt> file with them; but very early Intel-based Macs have 32-bit EFIs (and sometimes 32-bit CPUs), which require the <tt>refind_ia32.efi</tt> file. You can determine whether your Mac needs the <i>x</i>86-64 or IA32 build by typing the following command in a Mac Terminal window:</p>
 
 <pre class="listing">
@@ -615,6 +619,8 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 <p>I know relatively little about Windows EFI management tools; however, I do know that at least two relevant tools exist: the standard <tt>bcdedit</tt> and the third-party <i>EasyUEFI.</i></p>
 
 <p>The <a href="http://www.easyuefi.com/index-us.html">EasyUEFI tool</a> is a free (as in beer) GUI tool for managing EFI boot programs. I've only tried it once, and it seemed fairly intuitive and easy to use, but I don't have detailed instructions on how to use it. If you want to use EasyUEFI, you'll have to use it in place of <tt>bcdedit</tt> at the end of the following procedure.</p>
+
+<p class="sidebar"><b>Caution:</b> I've received reports that Windows 10 has made changes that make the following instructions not work. If you're using this OS, until I have a chance to investigate and update these instructions, your best bet may be to install rEFInd using a Linux live disk, such as an Ubuntu installation disk in its "try before installing" mode.</p>
 
 <p>Attempt this method of installation only on a UEFI-based PC; this method will not work on Windows that's installed on a Mac in BIOS/CSM/legacy mode. To install rEFInd under Windows, you must first find a way to access the ESP, which Windows normally hides from view. One way to accomplish this goal, and to proceed forward once the ESP is accessible, is as follows:</p>
 

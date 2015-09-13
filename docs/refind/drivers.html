@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-7/26/2015, referencing rEFInd 0.9.0</p>
+9/13/2015, referencing rEFInd 0.9.1</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -260,14 +260,15 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     mainly because it compiled cleanly with no extra work, aside from
     providing a Makefile entry for it.</li>
 
+<p class="sidebar"><b>Warning:</b> I've received multiple reports of system hangs when using the NTFS driver; however, I've been unable to replicate the problem. (The problem is probably triggered either by interactions with specific EFIs or by unique features of the "problem" NTFS volumes.) I therefore recommend avoiding it unless it's absolutely necessary. I've added a couple of checks to the driver code in rEFInd 0.9.1 that <i>may</i> fix this problem, but these checks may also have no effect.</p>
+
 <li><b>NTFS</b>&mdash;Samuel Liao contributed this driver, which uses the
-    rEFIt/rEFInd driver framework. My own testing of it is limited, but it
-    does work for me. Note that this driver is <i><b>not</b></i> required
-    to boot Windows with rEFInd, since Windows stores its EFI boot loader
-    on the (FAT) ESP, and the BIOS boot process (generally used when
-    dual-booting on a Mac) relies only on the partition's boot sector,
-    which is read without the benefit of this driver. Reasons to use this
-    driver include:
+    rEFIt/rEFInd driver framework. Note that this driver is
+    <i><b>not</b></i> required to boot Windows with rEFInd, since Windows
+    stores its EFI boot loader on the (FAT) ESP, and the BIOS boot process
+    (generally used when dual-booting on a Mac) relies only on the
+    partition's boot sector, which is read without the benefit of this
+    driver. Reasons to use this driver include:
     <ul>
     <li>If you want to store large boot files to be read from EFI, such as
         RAM disk images, from Windows.</li>

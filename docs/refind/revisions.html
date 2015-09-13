@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 7/26/2015</p>
+<p>Last Web page update: 9/13/2015</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -131,6 +131,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.9.1 (9/13/2015)</b>&mdash;This version has improved the Discoverable Partitions Specification (DPS) support in a number of ways that should make it more reliable when <tt>/etc/fstab</tt> omits references to the root (<tt>/</tt>) partition or when the GPT read-only or do-not-automount options are used to control these features. A stray DPS-related debugging print command has also been removed. I've improved rEFInd's ability to guess the Linux distribution by having it examine <tt>/etc/lsb-release</tt> as well as <tt>/etc/os_release</tt>, and I've added an icon for Elementary OS. Finally, I've made improvements to rEFInd's handling of case-insensitive string comparisons, which were buggy on some EFIs, particularly when rEFInd was compiled with GNU-EFI. rEFInd is still at the mercy of the EFI and support libraries, but many problem cases should now be resolved.</li>
 
 <li><b>0.9.0 (7/26/2015</b>&mdash;This version gets a bump up to 0.9.0 mainly because of a highly user-visible new feature: <i>kernel folding.</i> With kernel folding active, multiple Linux kernels in a single directory appear as just one main-menu entry, which launches the most recent kernel (by file timestamp) by default. Older kernels appear on the first one's submenu (accessed by hitting F2 or Insert). You can disable this new feature by setting <tt>fold_linux_kernels false</tt> in <tt>refind.conf</tt>. Another new feature is support for the <a href="http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/">Discoverable Partitions Spec,</a> which enables rEFInd to locate the Linux root (<tt>/</tt>) partition without a <tt>refind_linux.conf</tt> or <tt>/etc/fstab</tt> entry. I know of no distribution that automatically sets up its partitions in this way, but if and when this starts to happen, rEFInd will be ready. Other changes are relatively minor: The Debian <tt>postinst</tt> script now calls <tt>install.sh</tt> with <tt>--localkeys</tt> if <tt>sbsign</tt> and <tt>openssl</tt> are available, which helps if using the Ubuntu PPA on a system with custom Secure Boot keys; I've fixed a packaging bug that prevented IA32 versions of filesystem drivers and <tt>gptsync</tt> to not be built in the PPA; <tt>mkrlconf.sh</tt> now refuses to run under OS X; rEFInd now skips checking for BIOS-mode boot code on UEFI-based PCs, which should speed it up a little; I've fixed a bug that caused rEFInd to crash if it found an existing but empty <tt>refind_linux.conf</tt> file; I've made minor code changes to enable rEFInd to build under GCC 5.1; and I've added a new icon for Kali Linux (provided by Francesco D'Eugenio).</li>
 
