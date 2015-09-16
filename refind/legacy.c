@@ -52,9 +52,15 @@
 #include "syslinux_mbr.h"
 #include "../EfiLib/BdsHelper.h"
 #include "../EfiLib/legacy.h"
+#include "Handle.h"
 
 extern REFIT_MENU_ENTRY MenuEntryReturn;
 extern REFIT_MENU_SCREEN MainMenu;
+
+#ifndef __MAKEWITH_GNUEFI
+#define LibLocateHandle gBS->LocateHandleBuffer
+#define DevicePathProtocol gEfiDevicePathProtocolGuid
+#endif
 
 static EFI_STATUS ActivateMbrPartition(IN EFI_BLOCK_IO *BlockIO, IN UINTN PartitionIndex)
 {
@@ -167,6 +173,82 @@ static EFI_STATUS WriteBootDiskHint(IN EFI_DEVICE_PATH *WholeDiskDevicePath)
 
    return EFI_SUCCESS;
 }
+
+//
+// firmware device path discovery
+//
+
+static UINT8 LegacyLoaderMediaPathData[] = {
+    0x04, 0x06, 0x14, 0x00, 0xEB, 0x85, 0x05, 0x2B,
+    0xB8, 0xD8, 0xA9, 0x49, 0x8B, 0x8C, 0xE2, 0x1B,
+    0x01, 0xAE, 0xF2, 0xB7, 0x7F, 0xFF, 0x04, 0x00,
+};
+static EFI_DEVICE_PATH *LegacyLoaderMediaPath = (EFI_DEVICE_PATH *)LegacyLoaderMediaPathData;
+
+static VOID ExtractLegacyLoaderPaths(EFI_DEVICE_PATH **PathList, UINTN MaxPaths, EFI_DEVICE_PATH **HardcodedPathList)
+{
+    EFI_STATUS          Status;
+    UINTN               HandleCount = 0;
+    UINTN               HandleIndex, HardcodedIndex;
+    EFI_HANDLE          *Handles;
+    EFI_HANDLE          Handle;
+    UINTN               PathCount = 0;
+    UINTN               PathIndex;
+    EFI_LOADED_IMAGE    *LoadedImage;
+    EFI_DEVICE_PATH     *DevicePath;
+    BOOLEAN             Seen;
+
+    MaxPaths--;  // leave space for the terminating NULL pointer
+
+    // get all LoadedImage handles
+    Status = LibLocateHandle(ByProtocol, &LoadedImageProtocol, NULL, &HandleCount, &Handles);
+    if (CheckError(Status, L"while listing LoadedImage handles")) {
+        if (HardcodedPathList) {
+            for (HardcodedIndex = 0; HardcodedPathList[HardcodedIndex] && PathCount < MaxPaths; HardcodedIndex++)
+                PathList[PathCount++] = HardcodedPathList[HardcodedIndex];
+        }
+        PathList[PathCount] = NULL;
+        return;
+    }
+    for (HandleIndex = 0; HandleIndex < HandleCount && PathCount < MaxPaths; HandleIndex++) {
+        Handle = Handles[HandleIndex];
+
+        Status = refit_call3_wrapper(BS->HandleProtocol, Handle, &LoadedImageProtocol, (VOID **) &LoadedImage);
+        if (EFI_ERROR(Status))
+            continue;  // This can only happen if the firmware scewed up, ignore it.
+
+        Status = refit_call3_wrapper(BS->HandleProtocol, LoadedImage->DeviceHandle, &DevicePathProtocol, (VOID **) &DevicePath);
+        if (EFI_ERROR(Status))
+            continue;  // This happens, ignore it.
+
+        // Only grab memory range nodes
+        if (DevicePathType(DevicePath) != HARDWARE_DEVICE_PATH || DevicePathSubType(DevicePath) != HW_MEMMAP_DP)
+            continue;
+
+        // Check if we have this device path in the list already
+        // WARNING: This assumes the first node in the device path is unique!
+        Seen = FALSE;
+        for (PathIndex = 0; PathIndex < PathCount; PathIndex++) {
+            if (DevicePathNodeLength(DevicePath) != DevicePathNodeLength(PathList[PathIndex]))
+                continue;
+            if (CompareMem(DevicePath, PathList[PathIndex], DevicePathNodeLength(DevicePath)) == 0) {
+                Seen = TRUE;
+                break;
+            }
+        }
+        if (Seen)
+            continue;
+
+        PathList[PathCount++] = AppendDevicePath(DevicePath, LegacyLoaderMediaPath);
+    }
+    MyFreePool(Handles);
+
+    if (HardcodedPathList) {
+        for (HardcodedIndex = 0; HardcodedPathList[HardcodedIndex] && PathCount < MaxPaths; HardcodedIndex++)
+            PathList[PathCount++] = HardcodedPathList[HardcodedIndex];
+    }
+    PathList[PathCount] = NULL;
+} /* VOID ExtractLegacyLoaderPaths() */
 
 // early 2006 Core Duo / Core Solo models
 static UINT8 LegacyLoaderDevicePath1Data[] = {
