@@ -145,7 +145,7 @@ static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0,
 
 REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, TRUE,  0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC,
                               0, 0, { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE }, BANNER_NOSCALE,
-                              NULL, NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                              NULL, NULL, NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY, TAG_MOK_TOOL,
                                 TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0, 0, 0 }
                             };
@@ -173,7 +173,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.1");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.1.1");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -276,7 +276,7 @@ EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
                              IN BOOLEAN IsDriver)
 {
     EFI_STATUS              Status, ReturnStatus;
-    EFI_HANDLE              ChildImageHandle;
+    EFI_HANDLE              ChildImageHandle, ChildImageHandle2;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
     REFIT_VOLUME            *Volume = NULL;
     UINTN                   DevicePathIndex;
@@ -300,7 +300,7 @@ EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
     if (Verbose)
     Print(L"Starting %s\nUsing load options '%s'\n", ImageTitle, FullLoadOptions ? FullLoadOptions : L"");
 
-    // load the image into memory (and execute it, in the case of a shim/MOK image).
+    // load the image into memory
     ReturnStatus = Status = EFI_NOT_FOUND;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
         FindVolumeAndFilename(DevicePaths[DevicePathIndex], &Volume, &Filename);
@@ -325,6 +325,22 @@ EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
             //                                            ImageData, ImageSize, &ChildImageHandle);
             ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePaths[DevicePathIndex],
                                                         NULL, 0, &ChildImageHandle);
+            if (secure_mode() && ShimLoaded()) {
+                // Load ourself into memory. This is a trick to work around a bug in Shim 0.8,
+                // which ties itself into the BS->LoadImage() and BS->StartImage() functions and
+                // then unregisters itself from the EFI system table when its replacement
+                // StartImage() function is called *IF* the previous LoadImage() was for the same
+                // program. The result is that rEFInd can validate only the first program it
+                // launches (often a filesystem driver). Loading a second program (rEFInd itself,
+                // here, to keep it smaller than a kernel) works around this problem. See the
+                // replacements.c file in Shim, and especially its start_image() function, for
+                // the source of the problem.
+                // NOTE: This doesn't check the return status or handle errors. It could
+                // conceivably do weird things if, say, rEFInd were on a USB drive that the
+                // user pulls before launching a program.
+                refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, GlobalConfig.SelfDevicePath,
+                                    NULL, 0, &ChildImageHandle2);
+            }
         } else {
             Print(L"Invalid loader file!\n");
             ReturnStatus = EFI_LOAD_ERROR;

@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-9/13/2015, referencing rEFInd 0.9.1</p>
+9/14/2015, referencing rEFInd 0.9.1</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -258,7 +258,7 @@ $ <tt class="userinput">sudo apt-get install refind</tt></pre></pre>
 <h3>Quick <tt>install.sh</tt> Instructions</h3>
 </quickstart>
 
-<p class="sidebar"><b>Warning:</b> I've received reports that the OS X 10.11 ("El Capitan") beta has made changes to its <tt>bless</tt> utility that break the rEFInd installation procedure. I have not yet had a chance to investigate this matter. If possible, I recommend using OS X 10.10 ("Yosemite") or earlier to install rEFInd until this issue is resolved. If this is not possible, you might want to use the <a href="#osx">manual OS X installation instructions,</a> but be aware that you'll have to experiment with the <tt>bless</tt> command yourself to figure out what works.</p>
+<p class="sidebar"><b>Warning:</b> I've received reports that the OS X 10.11 ("El Capitan") beta has made changes to the OS that break the rEFInd installation procedure. This problem has been publicly reported as a bug in <tt>bless</tt>&mdash;see, for instance, <a href="http://www.openradar.me/22397509">here</a> and <a href="http://www.openradar.me/22170141">here.</a> It seems to be related to a new feature called System Integrity Protection. If possible, I recommend using OS X 10.10 ("Yosemite") or earlier to install rEFInd until this issue is resolved. It's reportedly possible to disable this feature by booting to recovery mode (by holding down Alt while booting) and typing <tt class="userinput">csrutil disable</tt> in a Terminal. After installing rEFInd, you can re-enable this feature by repeating the process, but typing <tt class="userinput">csrutil enable</tt>.</p>
 
 <p>By default, the <tt>install.sh</tt> script installs rEFInd to your disk's ESP. Under Mac OS X, you can instead install rEFInd to your current OS X boot partition by passing the script the <tt>--notesp</tt> option, or to a non-boot HFS+ partition by using the <tt>--ownhfs <tt class="variable">devicefile</tt></tt> option. Under either OS, you can install to something other than the currently-running OS by using the <tt>--root <tt class="variable">/mountpoint</tt></tt> option. (See <a href="#table1">Table 1</a> for details.)</p>
 
@@ -514,7 +514,7 @@ Filesystem     1K-blocks  Used Available Use% Mounted on
 <h3>Installing rEFInd Manually Using Mac OS X</h3>
 </a>
 
-<p class="sidebar"><b>Warning:</b> I've received reports that the OS X 10.11 ("El Capitan") beta has made changes to its <tt>bless</tt> utility that break the rEFInd installation procedure. I have not yet had a chance to investigate this matter. If possible, I recommend using OS X 10.10 ("Yosemite") or earlier to install rEFInd until this issue is resolved. If you experiment with the <tt>bless</tt> command and figure out what's changed, please <a href="mailto:rodsmith@rodsbooks.com">contact me</a> so that I can pass on this information.</p>
+<p class="sidebar"><b>Warning:</b> I've received reports that the OS X 10.11 ("El Capitan") beta has made changes to the OS that break the rEFInd installation procedure. This problem has been publicly reported as a bug in <tt>bless</tt>&mdash;see, for instance, <a href="http://www.openradar.me/22397509">here</a> and <a href="http://www.openradar.me/22170141">here.</a> It seems to be related to a new feature called System Integrity Protection. If possible, I recommend using OS X 10.10 ("Yosemite") or earlier to install rEFInd until this issue is resolved. It's reportedly possible to disable this feature by booting to recovery mode (by holding down Alt while booting) and typing <tt class="userinput">csrutil disable</tt> in a Terminal. After installing rEFInd, you can re-enable this feature by repeating the process, but typing <tt class="userinput">csrutil enable</tt>.</p>
 
 <p>Before installing rEFInd on a Mac, you must determine whether it uses a 32-bit or 64-bit EFI implementation. Most Intel-based Macs have 64-bit EFIs, so you should use the <tt>refind_x64.efi</tt> file with them; but very early Intel-based Macs have 32-bit EFIs (and sometimes 32-bit CPUs), which require the <tt>refind_ia32.efi</tt> file. You can determine whether your Mac needs the <i>x</i>86-64 or IA32 build by typing the following command in a Mac Terminal window:</p>
 

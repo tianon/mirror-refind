@@ -272,40 +272,41 @@ typedef struct {
 } LEGACY_ENTRY;
 
 typedef struct {
-   BOOLEAN       TextOnly;
-   BOOLEAN       ScanAllLinux;
-   BOOLEAN       DeepLegacyScan;
-   BOOLEAN       EnableAndLockVMX;
-   BOOLEAN       FoldLinuxKernels;
-   UINTN         RequestedScreenWidth;
-   UINTN         RequestedScreenHeight;
-   UINTN         BannerBottomEdge;
-   UINTN         RequestedTextMode;
-   UINTN         Timeout;
-   UINTN         HideUIFlags;
-   UINTN         MaxTags;     // max. number of OS entries to show simultaneously in graphics mode
-   UINTN         GraphicsFor;
-   UINTN         LegacyType;
-   UINTN         ScanDelay;
-   UINTN         ScreensaverTime;
-   UINTN         IconSizes[3];
-   UINTN         BannerScale;
-   REFIT_VOLUME  *DiscoveredRoot;
-   CHAR16        *BannerFileName;
-   EG_IMAGE      *ScreenBackground;
-   CHAR16        *ConfigFilename;
-   CHAR16        *SelectionSmallFileName;
-   CHAR16        *SelectionBigFileName;
-   CHAR16        *DefaultSelection;
-   CHAR16        *AlsoScan;
-   CHAR16        *DontScanVolumes;
-   CHAR16        *DontScanDirs;
-   CHAR16        *DontScanFiles;
-   CHAR16        *WindowsRecoveryFiles;
-   CHAR16        *DriverDirs;
-   CHAR16        *IconsDir;
-   UINTN         ShowTools[NUM_TOOLS];
-   CHAR8         ScanFor[NUM_SCAN_OPTIONS]; // codes of types of loaders for which to scan
+   BOOLEAN          TextOnly;
+   BOOLEAN          ScanAllLinux;
+   BOOLEAN          DeepLegacyScan;
+   BOOLEAN          EnableAndLockVMX;
+   BOOLEAN          FoldLinuxKernels;
+   UINTN            RequestedScreenWidth;
+   UINTN            RequestedScreenHeight;
+   UINTN            BannerBottomEdge;
+   UINTN            RequestedTextMode;
+   UINTN            Timeout;
+   UINTN            HideUIFlags;
+   UINTN            MaxTags;     // max. number of OS entries to show simultaneously in graphics mode
+   UINTN            GraphicsFor;
+   UINTN            LegacyType;
+   UINTN            ScanDelay;
+   UINTN            ScreensaverTime;
+   UINTN            IconSizes[3];
+   UINTN            BannerScale;
+   REFIT_VOLUME     *DiscoveredRoot;
+   EFI_DEVICE_PATH  *SelfDevicePath;
+   CHAR16           *BannerFileName;
+   EG_IMAGE         *ScreenBackground;
+   CHAR16           *ConfigFilename;
+   CHAR16           *SelectionSmallFileName;
+   CHAR16           *SelectionBigFileName;
+   CHAR16           *DefaultSelection;
+   CHAR16           *AlsoScan;
+   CHAR16           *DontScanVolumes;
+   CHAR16           *DontScanDirs;
+   CHAR16           *DontScanFiles;
+   CHAR16           *WindowsRecoveryFiles;
+   CHAR16           *DriverDirs;
+   CHAR16           *IconsDir;
+   UINTN            ShowTools[NUM_TOOLS];
+   CHAR8            ScanFor[NUM_SCAN_OPTIONS]; // codes of types of loaders for which to scan
 } REFIT_CONFIG;
 
 // Global variables

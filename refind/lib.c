@@ -193,6 +193,7 @@ EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
 
     // find the current directory
     DevicePathAsString = DevicePathToStr(SelfLoadedImage->FilePath);
+    GlobalConfig.SelfDevicePath = FileDevicePath(SelfLoadedImage->DeviceHandle, DevicePathAsString);
     CleanUpPathNameSlashes(DevicePathAsString);
     MyFreePool(SelfDirPath);
     Temp = FindPath(DevicePathAsString);
