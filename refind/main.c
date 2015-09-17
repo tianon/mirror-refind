@@ -2104,20 +2104,19 @@ static BOOLEAN SecureBootUninstall(VOID) {
 // If an error is encountered, leaves the value alone (it should be set to
 // CONFIG_FILE_NAME when GlobalConfig is initialized).
 static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
-EFI_LOADED_IMAGE *Info;
-CHAR16 *Options, *FileName;
-EFI_STATUS Status;
-INTN Where;
+    EFI_LOADED_IMAGE *Info;
+    CHAR16 *Options, *FileName, *SubString;
+    EFI_STATUS Status;
 
-Status = refit_call3_wrapper(BS->HandleProtocol, ImageHandle, &LoadedImageProtocol, (VOID **) &Info);
+    Status = refit_call3_wrapper(BS->HandleProtocol, ImageHandle, &LoadedImageProtocol, (VOID **) &Info);
     if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
         Options = (CHAR16 *) Info->LoadOptions;
-        Where = FindSubString(L" -c ", Options);
-        if (Where >= 0) {
-            FileName = StrDuplicate(&Options[Where + 4]);
-            Where = FindSubString(L" ", FileName);
-            if (Where > 0)
-                FileName[Where] = L'\0';
+        SubString = MyStrStr(Options, L" -c ");
+        if (SubString) {
+            FileName = StrDuplicate(&SubString[4]);
+            if (FileName) {
+                LimitStringLength(FileName, 256);
+            }
 
             if (FileExists(SelfDir, FileName)) {
                 GlobalConfig.ConfigFilename = FileName;

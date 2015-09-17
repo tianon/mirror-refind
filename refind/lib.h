@@ -120,6 +120,7 @@ VOID ReinitVolumes(VOID);
 
 BOOLEAN StriSubCmp(IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
 BOOLEAN MyStriCmp(IN CONST CHAR16 *String1, IN CONST CHAR16 *String2);
+CHAR16* MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet);
 VOID ToLower(CHAR16 * MyString);
 VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
 VOID MergeWords(CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
@@ -131,7 +132,6 @@ VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **Devi
 BOOLEAN SplitVolumeAndFilename(IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
 CHAR16 *FindNumbers(IN CHAR16 *InString);
 CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index);
-INTN FindSubString(IN CHAR16 *SmallString, IN CHAR16 *BigString);
 VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename);
 BOOLEAN IsIn(IN CHAR16 *Filename, IN CHAR16 *List);
 BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List);

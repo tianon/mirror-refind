@@ -50,7 +50,6 @@
 #include "../include/RemovableMedia.h"
 #include "gpt.h"
 #include "config.h"
-#include "../EfiLib/LegacyBios.h"
 
 #ifdef __MAKEWITH_GNUEFI
 #define EfiReallocatePool ReallocatePool
@@ -63,8 +62,6 @@
 EFI_DEVICE_PATH EndDevicePath[] = {
    {END_DEVICE_PATH_TYPE, END_ENTIRE_DEVICE_PATH_SUBTYPE, {END_DEVICE_PATH_LENGTH, 0}}
 };
-
-//#define EndDevicePath DevicePath
 #endif
 
 // "Magic" signatures for various filesystems
@@ -99,15 +96,8 @@ extern GPT_DATA *gPartitions;
 // and identify its boot loader, and hence probable BIOS-mode OS installation
 #define SAMPLE_SIZE 69632 /* 68 KiB -- ReiserFS superblock begins at 64 KiB */
 
-
-// functions
-
-static EFI_STATUS FinishInitRefitLib(VOID);
-
-static VOID UninitVolumes(VOID);
-
 //
-// self recognition stuff
+// Pathname manipulations
 //
 
 // Converts forward slashes to backslashes, removes duplicate slashes, and
@@ -119,34 +109,34 @@ static VOID UninitVolumes(VOID);
 // return "/", since some firmware implementations flake out if this
 // isn't present.
 VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName) {
-   CHAR16   *NewName;
-   UINTN    i, Length, FinalChar = 0;
-   BOOLEAN  LastWasSlash = FALSE;
+    CHAR16   *NewName;
+    UINTN    i, Length, FinalChar = 0;
+    BOOLEAN  LastWasSlash = FALSE;
 
-   Length = StrLen(PathName);
-   NewName = AllocateZeroPool(sizeof(CHAR16) * (Length + 2));
-   if (NewName != NULL) {
-      for (i = 0; i < StrLen(PathName); i++) {
-         if ((PathName[i] == L'/') || (PathName[i] == L'\\')) {
-            if ((!LastWasSlash) && (FinalChar != 0))
-               NewName[FinalChar++] = L'\\';
-            LastWasSlash = TRUE;
-         } else {
-            NewName[FinalChar++] = PathName[i];
-            LastWasSlash = FALSE;
-         } // if/else
-      } // for
-      NewName[FinalChar] = 0;
-      if ((FinalChar > 0) && (NewName[FinalChar - 1] == L'\\'))
-         NewName[--FinalChar] = 0;
-      if (FinalChar == 0) {
-         NewName[0] = L'\\';
-         NewName[1] = 0;
-      }
-      // Copy the transformed name back....
-      StrCpy(PathName, NewName);
-      FreePool(NewName);
-   } // if allocation OK
+    Length = StrLen(PathName);
+    NewName = AllocateZeroPool(sizeof(CHAR16) * (Length + 2));
+    if (NewName != NULL) {
+        for (i = 0; i < Length; i++) {
+            if ((PathName[i] == L'/') || (PathName[i] == L'\\')) {
+                if ((!LastWasSlash) && (FinalChar != 0))
+                    NewName[FinalChar++] = L'\\';
+                LastWasSlash = TRUE;
+            } else {
+                NewName[FinalChar++] = PathName[i];
+                LastWasSlash = FALSE;
+            } // if/else
+        } // for
+        NewName[FinalChar] = 0;
+        if ((FinalChar > 0) && (NewName[FinalChar - 1] == L'\\'))
+            NewName[--FinalChar] = 0;
+        if (FinalChar == 0) {
+            NewName[0] = L'\\';
+            NewName[1] = 0;
+        }
+        // Copy the transformed name back....
+        StrCpy(PathName, NewName);
+        FreePool(NewName);
+    } // if allocation OK
 } // CleanUpPathNameSlashes()
 
 // Splits an EFI device path into device and filename components. For instance, if InString is
@@ -160,26 +150,49 @@ VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName) {
 // If InString contains no ")" character, this function leaves the original input string
 // unmodified and also returns that string. If InString is NULL, this function returns NULL.
 static CHAR16* SplitDeviceString(IN OUT CHAR16 *InString) {
-   INTN i;
-   CHAR16 *FileName = NULL;
-   BOOLEAN Found = FALSE;
+    INTN i;
+    CHAR16 *FileName = NULL;
+    BOOLEAN Found = FALSE;
 
-   if (InString != NULL) {
-      i = StrLen(InString) - 1;
-      while ((i >= 0) && (!Found)) {
-         if (InString[i] == L')') {
-            Found = TRUE;
-            FileName = StrDuplicate(&InString[i + 1]);
-            CleanUpPathNameSlashes(FileName);
-            InString[i + 1] = '\0';
-         } // if
-         i--;
-      } // while
-      if (FileName == NULL)
-         FileName = StrDuplicate(InString);
-   } // if
-   return FileName;
+    if (InString != NULL) {
+        i = StrLen(InString) - 1;
+        while ((i >= 0) && (!Found)) {
+            if (InString[i] == L')') {
+                Found = TRUE;
+                FileName = StrDuplicate(&InString[i + 1]);
+                CleanUpPathNameSlashes(FileName);
+                InString[i + 1] = '\0';
+            } // if
+            i--;
+        } // while
+        if (FileName == NULL)
+            FileName = StrDuplicate(InString);
+    } // if
+    return FileName;
 } // static CHAR16* SplitDeviceString()
+
+//
+// Library initialization and de-initialization
+//
+
+static EFI_STATUS FinishInitRefitLib(VOID)
+{
+    EFI_STATUS  Status;
+
+    if (SelfRootDir == NULL) {
+        SelfRootDir = LibOpenRoot(SelfLoadedImage->DeviceHandle);
+        if (SelfRootDir == NULL) {
+            CheckError(EFI_LOAD_ERROR, L"while (re)opening our installation volume");
+            return EFI_LOAD_ERROR;
+        }
+    }
+
+    Status = refit_call5_wrapper(SelfRootDir->Open, SelfRootDir, &SelfDir, SelfDirPath, EFI_FILE_MODE_READ, 0);
+    if (CheckFatalError(Status, L"while opening our installation directory"))
+        return EFI_LOAD_ERROR;
+
+    return EFI_SUCCESS;
+}
 
 EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
 {
@@ -204,6 +217,70 @@ EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
     return FinishInitRefitLib();
 }
 
+static VOID UninitVolumes(VOID)
+{
+    REFIT_VOLUME            *Volume;
+    UINTN                   VolumeIndex;
+
+    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+        Volume = Volumes[VolumeIndex];
+
+        if (Volume->RootDir != NULL) {
+            refit_call1_wrapper(Volume->RootDir->Close, Volume->RootDir);
+            Volume->RootDir = NULL;
+        }
+
+        Volume->DeviceHandle = NULL;
+        Volume->BlockIO = NULL;
+        Volume->WholeDiskBlockIO = NULL;
+    }
+} /* VOID UninitVolumes() */
+
+VOID ReinitVolumes(VOID)
+{
+    EFI_STATUS              Status;
+    REFIT_VOLUME            *Volume;
+    UINTN                   VolumeIndex;
+    EFI_DEVICE_PATH         *RemainingDevicePath;
+    EFI_HANDLE              DeviceHandle, WholeDiskHandle;
+
+    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+        Volume = Volumes[VolumeIndex];
+
+        if (Volume->DevicePath != NULL) {
+            // get the handle for that path
+            RemainingDevicePath = Volume->DevicePath;
+            Status = refit_call3_wrapper(BS->LocateDevicePath, &BlockIoProtocol, &RemainingDevicePath, &DeviceHandle);
+
+            if (!EFI_ERROR(Status)) {
+                Volume->DeviceHandle = DeviceHandle;
+
+                // get the root directory
+                Volume->RootDir = LibOpenRoot(Volume->DeviceHandle);
+
+            } else
+                CheckError(Status, L"from LocateDevicePath");
+        }
+
+        if (Volume->WholeDiskDevicePath != NULL) {
+            // get the handle for that path
+            RemainingDevicePath = Volume->WholeDiskDevicePath;
+            Status = refit_call3_wrapper(BS->LocateDevicePath, &BlockIoProtocol, &RemainingDevicePath, &WholeDiskHandle);
+
+            if (!EFI_ERROR(Status)) {
+                // get the BlockIO protocol
+                Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle, &BlockIoProtocol,
+                                             (VOID **) &Volume->WholeDiskBlockIO);
+                if (EFI_ERROR(Status)) {
+                    Volume->WholeDiskBlockIO = NULL;
+                    CheckError(Status, L"from HandleProtocol");
+                }
+            } else
+                CheckError(Status, L"from LocateDevicePath");
+        }
+    }
+} /* VOID ReinitVolumes(VOID) */
+
 // called before running external programs to close open file handles
 VOID UninitRefitLib(VOID)
 {
@@ -223,7 +300,7 @@ VOID UninitRefitLib(VOID)
        refit_call1_wrapper(SelfRootDir->Close, SelfRootDir);
        SelfRootDir = NULL;
     }
-}
+} /* VOID UninitRefitLib() */
 
 // called after running external programs to re-open file handles
 EFI_STATUS ReinitRefitLib(VOID)
@@ -249,25 +326,6 @@ EFI_STATUS ReinitRefitLib(VOID)
     } // if
 
     return FinishInitRefitLib();
-}
-
-static EFI_STATUS FinishInitRefitLib(VOID)
-{
-    EFI_STATUS  Status;
-
-    if (SelfRootDir == NULL) {
-        SelfRootDir = LibOpenRoot(SelfLoadedImage->DeviceHandle);
-        if (SelfRootDir == NULL) {
-            CheckError(EFI_LOAD_ERROR, L"while (re)opening our installation volume");
-            return EFI_LOAD_ERROR;
-        }
-    }
-
-    Status = refit_call5_wrapper(SelfRootDir->Open, SelfRootDir, &SelfDir, SelfDirPath, EFI_FILE_MODE_READ, 0);
-    if (CheckFatalError(Status, L"while opening our installation directory"))
-        return EFI_LOAD_ERROR;
-
-    return EFI_SUCCESS;
 }
 
 //
@@ -494,9 +552,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
           Volume->FSType = FS_TYPE_ISO9660;
           return;
       }
-
    } // if ((Buffer != NULL) && (Volume != NULL))
-
 } // UINT32 SetFilesystemData()
 
 static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
@@ -689,28 +745,28 @@ VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume)
 // Return a string representing the input size in IEEE-1541 units.
 // The calling function is responsible for freeing the allocated memory.
 static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
-   UINT64 SizeInIeee;
-   UINTN Index = 0, NumPrefixes;
-   CHAR16 *Units, *Prefixes = L" KMGTPEZ";
-   CHAR16 *TheValue;
+    UINT64 SizeInIeee;
+    UINTN Index = 0, NumPrefixes;
+    CHAR16 *Units, *Prefixes = L" KMGTPEZ";
+    CHAR16 *TheValue;
 
-   TheValue = AllocateZeroPool(sizeof(CHAR16) * 256);
-   if (TheValue != NULL) {
-      NumPrefixes = StrLen(Prefixes);
-      SizeInIeee = SizeInBytes;
-      while ((SizeInIeee > 1024) && (Index < (NumPrefixes - 1))) {
-         Index++;
-         SizeInIeee /= 1024;
-      } // while
-      if (Prefixes[Index] == ' ') {
-         Units = StrDuplicate(L"-byte");
-      } else {
-         Units = StrDuplicate(L"  iB");
-         Units[1] = Prefixes[Index];
-      } // if/else
-      SPrint(TheValue, 255, L"%ld%s", SizeInIeee, Units);
-   } // if
-   return TheValue;
+    TheValue = AllocateZeroPool(sizeof(CHAR16) * 256);
+    if (TheValue != NULL) {
+        NumPrefixes = StrLen(Prefixes);
+        SizeInIeee = SizeInBytes;
+        while ((SizeInIeee > 1024) && (Index < (NumPrefixes - 1))) {
+            Index++;
+            SizeInIeee /= 1024;
+        } // while
+        if (Prefixes[Index] == ' ') {
+            Units = StrDuplicate(L"-byte");
+        } else {
+            Units = StrDuplicate(L"  iB");
+            Units[1] = Prefixes[Index];
+        } // if/else
+        SPrint(TheValue, 255, L"%ld%s", SizeInIeee, Units);
+    } // if
+    return TheValue;
 } // CHAR16 *SizeInIEEEUnits()
 
 // Return a name for the volume. Ideally this should be the label for the
@@ -720,63 +776,63 @@ static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
 // The calling function is responsible for freeing the memory allocated
 // for the name string.
 static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
-   EFI_FILE_SYSTEM_INFO    *FileSystemInfoPtr = NULL;
-   CHAR16                  *FoundName = NULL;
-   CHAR16                  *SISize, *TypeName;
+    EFI_FILE_SYSTEM_INFO    *FileSystemInfoPtr = NULL;
+    CHAR16                  *FoundName = NULL;
+    CHAR16                  *SISize, *TypeName;
 
-   if (Volume->RootDir != NULL) {
-      FileSystemInfoPtr = LibFileSystemInfo(Volume->RootDir);
-   }
+    if (Volume->RootDir != NULL) {
+        FileSystemInfoPtr = LibFileSystemInfo(Volume->RootDir);
+     }
 
-   if ((FileSystemInfoPtr != NULL) && (FileSystemInfoPtr->VolumeLabel != NULL) &&
-       (StrLen(FileSystemInfoPtr->VolumeLabel) > 0)) {
-      FoundName = StrDuplicate(FileSystemInfoPtr->VolumeLabel);
-   }
+    if ((FileSystemInfoPtr != NULL) && (FileSystemInfoPtr->VolumeLabel != NULL) &&
+        (StrLen(FileSystemInfoPtr->VolumeLabel) > 0)) {
+        FoundName = StrDuplicate(FileSystemInfoPtr->VolumeLabel);
+    }
 
-   // If no filesystem name, try to use the partition name....
-   if ((FoundName == NULL) && (Volume->PartName != NULL) && (StrLen(Volume->PartName) > 0) &&
-       !IsIn(Volume->PartName, IGNORE_PARTITION_NAMES)) {
-      FoundName = StrDuplicate(Volume->PartName);
-   } // if use partition name
+    // If no filesystem name, try to use the partition name....
+    if ((FoundName == NULL) && (Volume->PartName != NULL) && (StrLen(Volume->PartName) > 0) &&
+        !IsIn(Volume->PartName, IGNORE_PARTITION_NAMES)) {
+        FoundName = StrDuplicate(Volume->PartName);
+    } // if use partition name
 
-   // No filesystem or acceptable partition name, so use fs type and size
-   if ((FoundName == NULL) && (FileSystemInfoPtr != NULL)) {
-      FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
-      if (FoundName != NULL) {
-         SISize = SizeInIEEEUnits(FileSystemInfoPtr->VolumeSize);
-         SPrint(FoundName, 255, L"%s%s volume", SISize, FSTypeName(Volume->FSType));
-         MyFreePool(SISize);
-      } // if allocated memory OK
-   } // if (FoundName == NULL)
+    // No filesystem or acceptable partition name, so use fs type and size
+    if ((FoundName == NULL) && (FileSystemInfoPtr != NULL)) {
+        FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
+        if (FoundName != NULL) {
+            SISize = SizeInIEEEUnits(FileSystemInfoPtr->VolumeSize);
+            SPrint(FoundName, 255, L"%s%s volume", SISize, FSTypeName(Volume->FSType));
+            MyFreePool(SISize);
+        } // if allocated memory OK
+    } // if (FoundName == NULL)
 
-   MyFreePool(FileSystemInfoPtr);
+    MyFreePool(FileSystemInfoPtr);
 
-   if (FoundName == NULL) {
-      FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
-      if (FoundName != NULL) {
-         TypeName = FSTypeName(Volume->FSType); // NOTE: Don't free TypeName; function returns constant
-         if (StrLen(TypeName) > 0)
-            SPrint(FoundName, 255, L"%s volume", TypeName);
-         else
-            SPrint(FoundName, 255, L"unknown volume");
-      } // if allocated memory OK
-   } // if
+    if (FoundName == NULL) {
+        FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
+        if (FoundName != NULL) {
+            TypeName = FSTypeName(Volume->FSType); // NOTE: Don't free TypeName; function returns constant
+            if (StrLen(TypeName) > 0)
+                SPrint(FoundName, 255, L"%s volume", TypeName);
+            else
+                SPrint(FoundName, 255, L"unknown volume");
+        } // if allocated memory OK
+    } // if
 
-   // TODO: Above could be improved/extended, in case filesystem name is not found,
-   // such as:
-   //  - use or add disk/partition number (e.g., "(hd0,2)")
+    // TODO: Above could be improved/extended, in case filesystem name is not found,
+    // such as:
+    //  - use or add disk/partition number (e.g., "(hd0,2)")
 
-   // Desperate fallback name....
-   if (FoundName == NULL) {
-      FoundName = StrDuplicate(L"unknown volume");
-   }
-   return FoundName;
+    // Desperate fallback name....
+    if (FoundName == NULL) {
+        FoundName = StrDuplicate(L"unknown volume");
+    }
+    return FoundName;
 } // static CHAR16 *GetVolumeName()
 
 // Determine the unique GUID, type code GUID, and name of the volume and store them.
 static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *DevicePath) {
-   HARDDRIVE_DEVICE_PATH    *HdDevicePath;
-   GPT_ENTRY                *PartInfo;
+    HARDDRIVE_DEVICE_PATH    *HdDevicePath;
+    GPT_ENTRY                *PartInfo;
 
     if ((Volume == NULL) || (DevicePath == NULL))
         return;
@@ -805,13 +861,13 @@ static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *D
 // so return TRUE if it's unreadable; but if it IS readable, return
 // TRUE only if Windows boot files are found.
 static BOOLEAN HasWindowsBiosBootFiles(REFIT_VOLUME *Volume) {
-   BOOLEAN FilesFound = TRUE;
+    BOOLEAN FilesFound = TRUE;
 
-   if (Volume->RootDir != NULL) {
-      FilesFound = FileExists(Volume->RootDir, L"NTLDR") ||  // Windows NT/200x/XP boot file
-                   FileExists(Volume->RootDir, L"bootmgr");  // Windows Vista/7/8 boot file
-   } // if
-   return FilesFound;
+    if (Volume->RootDir != NULL) {
+        FilesFound = FileExists(Volume->RootDir, L"NTLDR") ||  // Windows NT/200x/XP boot file
+                     FileExists(Volume->RootDir, L"bootmgr");  // Windows Vista/7/8 boot file
+    } // if
+    return FilesFound;
 } // static VOID HasWindowsBiosBootFiles()
 
 VOID ScanVolume(REFIT_VOLUME *Volume)
@@ -987,7 +1043,6 @@ static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_I
                 NextExtCurrent = ExtBase + EMbrTable[i].StartLBA;
                 break;
             } else {
-
                 // found a logical partition
                 Volume = AllocateZeroPool(sizeof(REFIT_VOLUME));
                 Volume->DiskKind = WholeDiskVolume->DiskKind;
@@ -1003,14 +1058,11 @@ static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_I
                 ScanVolumeBootcode(Volume, &Bootable);
                 if (!Bootable)
                     Volume->HasBootCode = FALSE;
-
                 SetVolumeBadgeIcon(Volume);
-
                 AddListElement((VOID ***) &Volumes, &VolumesCount, Volume);
-
-            }
-        }
-    }
+            } // if/else
+        } // for
+    } // for
 } /* VOID ScanExtendedPartition() */
 
 VOID ScanVolumes(VOID)
@@ -1146,87 +1198,23 @@ VOID ScanVolumes(VOID)
     } // for
 } /* VOID ScanVolumes() */
 
-static VOID UninitVolumes(VOID)
-{
-    REFIT_VOLUME            *Volume;
-    UINTN                   VolumeIndex;
-
-    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        Volume = Volumes[VolumeIndex];
-
-        if (Volume->RootDir != NULL) {
-            refit_call1_wrapper(Volume->RootDir->Close, Volume->RootDir);
-            Volume->RootDir = NULL;
-        }
-
-        Volume->DeviceHandle = NULL;
-        Volume->BlockIO = NULL;
-        Volume->WholeDiskBlockIO = NULL;
-    }
-}
-
-VOID ReinitVolumes(VOID)
-{
-    EFI_STATUS              Status;
-    REFIT_VOLUME            *Volume;
-    UINTN                   VolumeIndex;
-    EFI_DEVICE_PATH         *RemainingDevicePath;
-    EFI_HANDLE              DeviceHandle, WholeDiskHandle;
-
-    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        Volume = Volumes[VolumeIndex];
-
-        if (Volume->DevicePath != NULL) {
-            // get the handle for that path
-            RemainingDevicePath = Volume->DevicePath;
-            Status = refit_call3_wrapper(BS->LocateDevicePath, &BlockIoProtocol, &RemainingDevicePath, &DeviceHandle);
-
-            if (!EFI_ERROR(Status)) {
-                Volume->DeviceHandle = DeviceHandle;
-
-                // get the root directory
-                Volume->RootDir = LibOpenRoot(Volume->DeviceHandle);
-
-            } else
-                CheckError(Status, L"from LocateDevicePath");
-        }
-
-        if (Volume->WholeDiskDevicePath != NULL) {
-            // get the handle for that path
-            RemainingDevicePath = Volume->WholeDiskDevicePath;
-            Status = refit_call3_wrapper(BS->LocateDevicePath, &BlockIoProtocol, &RemainingDevicePath, &WholeDiskHandle);
-
-            if (!EFI_ERROR(Status)) {
-                // get the BlockIO protocol
-                Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle, &BlockIoProtocol,
-                                             (VOID **) &Volume->WholeDiskBlockIO);
-                if (EFI_ERROR(Status)) {
-                    Volume->WholeDiskBlockIO = NULL;
-                    CheckError(Status, L"from HandleProtocol");
-                }
-            } else
-                CheckError(Status, L"from LocateDevicePath");
-        }
-    }
-}
-
 //
 // file and dir functions
 //
 
 BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath)
 {
-   EFI_STATUS         Status;
-   EFI_FILE_HANDLE    TestFile;
+    EFI_STATUS         Status;
+    EFI_FILE_HANDLE    TestFile;
 
-   if (BaseDir != NULL) {
-      Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &TestFile, RelativePath, EFI_FILE_MODE_READ, 0);
-      if (Status == EFI_SUCCESS) {
-         refit_call1_wrapper(TestFile->Close, TestFile);
-         return TRUE;
-      }
-   }
-   return FALSE;
+    if (BaseDir != NULL) {
+        Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &TestFile, RelativePath, EFI_FILE_MODE_READ, 0);
+        if (Status == EFI_SUCCESS) {
+            refit_call1_wrapper(TestFile->Close, TestFile);
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry, IN UINTN FilterMode)
@@ -1428,17 +1416,17 @@ CHAR16 * Basename(IN CHAR16 *Path)
 // Remove the .efi extension from FileName -- for instance, if FileName is
 // "fred.efi", returns "fred". If the filename contains no .efi extension,
 // returns a copy of the original input.
-CHAR16 * StripEfiExtension(CHAR16 *FileName) {
-   UINTN  Length;
-   CHAR16 *Copy = NULL;
+CHAR16 * StripEfiExtension(IN CHAR16 *FileName) {
+    UINTN  Length;
+    CHAR16 *Copy = NULL;
 
-   if ((FileName != NULL) && ((Copy = StrDuplicate(FileName)) != NULL)) {
-      Length = StrLen(Copy);
-      if ((Length >= 4) && MyStriCmp(&Copy[Length - 4], L".efi")) {
-         Copy[Length - 4] = 0;
-      } // if
-   } // if
-   return Copy;
+    if ((FileName != NULL) && ((Copy = StrDuplicate(FileName)) != NULL)) {
+        Length = StrLen(Copy);
+        if ((Length >= 4) && MyStriCmp(&Copy[Length - 4], L".efi")) {
+            Copy[Length - 4] = 0;
+        } // if
+    } // if
+    return Copy;
 } // CHAR16 * StripExtension()
 
 //
@@ -1526,34 +1514,34 @@ VOID ToLower(CHAR16 * MyString) {
 // up the old memory. It should *NOT* be used with a constant
 // *First, though....
 VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
-   UINTN Length1 = 0, Length2 = 0;
-   CHAR16* NewString;
+    UINTN Length1 = 0, Length2 = 0;
+    CHAR16* NewString;
 
-   if (*First != NULL)
-      Length1 = StrLen(*First);
-   if (Second != NULL)
-      Length2 = StrLen(Second);
-   NewString = AllocatePool(sizeof(CHAR16) * (Length1 + Length2 + 2));
-   if (NewString != NULL) {
-      if ((*First != NULL) && (Length1 == 0)) {
-         MyFreePool(*First);
-         *First = NULL;
-      }
-      NewString[0] = L'\0';
-      if (*First != NULL) {
-         StrCat(NewString, *First);
-         if (AddChar) {
-            NewString[Length1] = AddChar;
-            NewString[Length1 + 1] = '\0';
-         } // if (AddChar)
-      } // if (*First != NULL)
-      if (Second != NULL)
-         StrCat(NewString, Second);
-      MyFreePool(*First);
-      *First = NewString;
-   } else {
-      Print(L"Error! Unable to allocate memory in MergeStrings()!\n");
-   } // if/else
+    if (*First != NULL)
+        Length1 = StrLen(*First);
+    if (Second != NULL)
+        Length2 = StrLen(Second);
+    NewString = AllocatePool(sizeof(CHAR16) * (Length1 + Length2 + 2));
+    if (NewString != NULL) {
+        if ((*First != NULL) && (Length1 == 0)) {
+            MyFreePool(*First);
+            *First = NULL;
+        }
+        NewString[0] = L'\0';
+        if (*First != NULL) {
+            StrCat(NewString, *First);
+            if (AddChar) {
+                NewString[Length1] = AddChar;
+                NewString[Length1 + 1] = '\0';
+            } // if (AddChar)
+        } // if (*First != NULL)
+        if (Second != NULL)
+            StrCat(NewString, Second);
+        MyFreePool(*First);
+        *First = NewString;
+    } else {
+        Print(L"Error! Unable to allocate memory in MergeStrings()!\n");
+    } // if/else
 } // VOID MergeStrings()
 
 // Similar to MergeStrings, but breaks the input string into word chunks and
@@ -1590,63 +1578,63 @@ VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
 // The calling function is responsible for freeing the memory associated with
 // the return value.
 CHAR16 *FindExtension(IN CHAR16 *Path) {
-   CHAR16     *Extension;
-   BOOLEAN    Found = FALSE, FoundSlash = FALSE;
-   INTN       i;
+    CHAR16     *Extension;
+    BOOLEAN    Found = FALSE, FoundSlash = FALSE;
+    INTN       i;
 
-   Extension = AllocateZeroPool(sizeof(CHAR16));
-   if (Path) {
-      i = StrLen(Path);
-      while ((!Found) && (!FoundSlash) && (i >= 0)) {
-         if (Path[i] == L'.')
-            Found = TRUE;
-         else if ((Path[i] == L'/') || (Path[i] == L'\\'))
-            FoundSlash = TRUE;
-         if (!Found)
-            i--;
-      } // while
-      if (Found) {
-         MergeStrings(&Extension, &Path[i], 0);
-         ToLower(Extension);
-      } // if (Found)
-   } // if
-   return (Extension);
-} // CHAR16 *FindExtension
+    Extension = AllocateZeroPool(sizeof(CHAR16));
+    if (Path) {
+        i = StrLen(Path);
+        while ((!Found) && (!FoundSlash) && (i >= 0)) {
+            if (Path[i] == L'.')
+                Found = TRUE;
+            else if ((Path[i] == L'/') || (Path[i] == L'\\'))
+                FoundSlash = TRUE;
+            if (!Found)
+                i--;
+        } // while
+        if (Found) {
+            MergeStrings(&Extension, &Path[i], 0);
+            ToLower(Extension);
+        } // if (Found)
+    } // if
+    return (Extension);
+} // CHAR16 *FindExtension()
 
 // Takes an input pathname (*Path) and locates the final directory component
 // of that name. For instance, if the input path is 'EFI\foo\bar.efi', this
 // function returns the string 'foo'.
 // Assumes the pathname is separated with backslashes.
 CHAR16 *FindLastDirName(IN CHAR16 *Path) {
-   UINTN i, StartOfElement = 0, EndOfElement = 0, PathLength, CopyLength;
-   CHAR16 *Found = NULL;
+    UINTN i, StartOfElement = 0, EndOfElement = 0, PathLength, CopyLength;
+    CHAR16 *Found = NULL;
 
-   if (Path == NULL)
-      return NULL;
+    if (Path == NULL)
+        return NULL;
 
-   PathLength = StrLen(Path);
-   // Find start & end of target element
-   for (i = 0; i < PathLength; i++) {
-      if (Path[i] == '\\') {
-         StartOfElement = EndOfElement;
-         EndOfElement = i;
-      } // if
-   } // for
-   // Extract the target element
-   if (EndOfElement > 0) {
-      while ((StartOfElement < PathLength) && (Path[StartOfElement] == '\\')) {
-         StartOfElement++;
-      } // while
-      EndOfElement--;
-      if (EndOfElement >= StartOfElement) {
-         CopyLength = EndOfElement - StartOfElement + 1;
-         Found = StrDuplicate(&Path[StartOfElement]);
-         if (Found != NULL)
-            Found[CopyLength] = 0;
-      } // if (EndOfElement >= StartOfElement)
-   } // if (EndOfElement > 0)
-   return (Found);
-} // CHAR16 *FindLastDirName
+    PathLength = StrLen(Path);
+    // Find start & end of target element
+    for (i = 0; i < PathLength; i++) {
+        if (Path[i] == '\\') {
+            StartOfElement = EndOfElement;
+            EndOfElement = i;
+        } // if
+    } // for
+    // Extract the target element
+    if (EndOfElement > 0) {
+        while ((StartOfElement < PathLength) && (Path[StartOfElement] == '\\')) {
+            StartOfElement++;
+        } // while
+        EndOfElement--;
+        if (EndOfElement >= StartOfElement) {
+            CopyLength = EndOfElement - StartOfElement + 1;
+            Found = StrDuplicate(&Path[StartOfElement]);
+            if (Found != NULL)
+                Found[CopyLength] = 0;
+        } // if (EndOfElement >= StartOfElement)
+    } // if (EndOfElement > 0)
+    return (Found);
+} // CHAR16 *FindLastDirName()
 
 // Returns the directory portion of a pathname. For instance,
 // if FullPath is 'EFI\foo\bar.efi', this function returns the
@@ -1682,30 +1670,30 @@ CHAR16 *FindPath(IN CHAR16* FullPath) {
  * Returns:
  *  The address of the first occurrence of the matching substring if successful, or NULL otherwise.
  * --*/
-CHAR16* MyStrStr (CHAR16  *String, CHAR16  *StrCharSet)
+CHAR16* MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet)
 {
-   CHAR16 *Src;
-   CHAR16 *Sub;
+    CHAR16 *Src;
+    CHAR16 *Sub;
 
-   if ((String == NULL) || (StrCharSet == NULL))
-      return NULL;
+    if ((String == NULL) || (StrCharSet == NULL))
+        return NULL;
 
-   Src = String;
-   Sub = StrCharSet;
+    Src = String;
+    Sub = StrCharSet;
 
-   while ((*String != L'\0') && (*StrCharSet != L'\0')) {
-      if (*String++ != *StrCharSet) {
-         String = ++Src;
-         StrCharSet = Sub;
-      } else {
-         StrCharSet++;
-      }
-   }
-   if (*StrCharSet == L'\0') {
-      return Src;
-   } else {
-      return NULL;
-   }
+    while ((*String != L'\0') && (*StrCharSet != L'\0')) {
+        if (*String++ != *StrCharSet) {
+            String = ++Src;
+            StrCharSet = Sub;
+        } else {
+            StrCharSet++;
+        }
+    }
+    if (*StrCharSet == L'\0') {
+        return Src;
+    } else {
+        return NULL;
+    }
 } // CHAR16 *MyStrStr()
 
 // Restrict TheString to at most Limit characters.
@@ -1715,68 +1703,68 @@ CHAR16* MyStrStr (CHAR16  *String, CHAR16  *StrCharSet)
 // - Truncates TheString
 // Returns TRUE if changes were made, FALSE otherwise
 BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
-   CHAR16    *SubString, *TempString;
-   UINTN     i;
-   BOOLEAN   HasChanged = FALSE;
+    CHAR16    *SubString, *TempString;
+    UINTN     i;
+    BOOLEAN   HasChanged = FALSE;
 
-   // SubString will be NULL or point WITHIN TheString
-   SubString = MyStrStr(TheString, L"  ");
-   while (SubString != NULL) {
-      i = 0;
-      while (SubString[i] == L' ')
-         i++;
-      if (i >= StrLen(SubString)) {
-         SubString[0] = '\0';
-         HasChanged = TRUE;
-      } else {
-         TempString = StrDuplicate(&SubString[i]);
-         if (TempString != NULL) {
-            StrCpy(&SubString[1], TempString);
-            MyFreePool(TempString);
+    // SubString will be NULL or point WITHIN TheString
+    SubString = MyStrStr(TheString, L"  ");
+    while (SubString != NULL) {
+        i = 0;
+        while (SubString[i] == L' ')
+            i++;
+        if (i >= StrLen(SubString)) {
+            SubString[0] = '\0';
             HasChanged = TRUE;
-         } else {
-            // memory allocation problem; abort to avoid potentially infinite loop!
-            break;
-         } // if/else
-      } // if/else
-      SubString = MyStrStr(TheString, L"  ");
-   } // while
+        } else {
+            TempString = StrDuplicate(&SubString[i]);
+            if (TempString != NULL) {
+                StrCpy(&SubString[1], TempString);
+                MyFreePool(TempString);
+                HasChanged = TRUE;
+            } else {
+                // memory allocation problem; abort to avoid potentially infinite loop!
+                break;
+            } // if/else
+        } // if/else
+        SubString = MyStrStr(TheString, L"  ");
+    } // while
 
-   // If the string is still too long, truncate it....
-   if (StrLen(TheString) > Limit) {
-      TheString[Limit] = '\0';
-      HasChanged = TRUE;
-   } // if
+    // If the string is still too long, truncate it....
+    if (StrLen(TheString) > Limit) {
+        TheString[Limit] = '\0';
+        HasChanged = TRUE;
+    } // if
 
-   return HasChanged;
+    return HasChanged;
 } // BOOLEAN LimitStringLength()
 
 // Takes an input loadpath, splits it into disk and filename components, finds a matching
 // DeviceVolume, and returns that and the filename (*loader).
 VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **DeviceVolume, OUT CHAR16 **loader) {
-   CHAR16 *DeviceString, *VolumeDeviceString, *Temp;
-   UINTN i = 0;
-   BOOLEAN Found = FALSE;
+    CHAR16 *DeviceString, *VolumeDeviceString, *Temp;
+    UINTN i = 0;
+    BOOLEAN Found = FALSE;
 
-   MyFreePool(*loader);
-   MyFreePool(*DeviceVolume);
-   *DeviceVolume = NULL;
-   DeviceString = DevicePathToStr(loadpath);
-   *loader = SplitDeviceString(DeviceString);
+    MyFreePool(*loader);
+    MyFreePool(*DeviceVolume);
+    *DeviceVolume = NULL;
+    DeviceString = DevicePathToStr(loadpath);
+    *loader = SplitDeviceString(DeviceString);
 
-   while ((i < VolumesCount) && (!Found)) {
-      VolumeDeviceString = DevicePathToStr(Volumes[i]->DevicePath);
-      Temp = SplitDeviceString(VolumeDeviceString);
-      if (MyStriCmp(DeviceString, VolumeDeviceString)) {
-         Found = TRUE;
-         *DeviceVolume = Volumes[i];
-      }
-      MyFreePool(Temp);
-      MyFreePool(VolumeDeviceString);
-      i++;
-   } // while
+    while ((i < VolumesCount) && (!Found)) {
+        VolumeDeviceString = DevicePathToStr(Volumes[i]->DevicePath);
+        Temp = SplitDeviceString(VolumeDeviceString);
+        if (MyStriCmp(DeviceString, VolumeDeviceString)) {
+            Found = TRUE;
+            *DeviceVolume = Volumes[i];
+        }
+        MyFreePool(Temp);
+        MyFreePool(VolumeDeviceString);
+        i++;
+    } // while
 
-   MyFreePool(DeviceString);
+    MyFreePool(DeviceString);
 } // VOID FindVolumeAndFilename()
 
 // Splits a volume/filename string (e.g., "fs0:\EFI\BOOT") into separate
@@ -1785,31 +1773,31 @@ VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **Devi
 // volume component in the *VolName variable.
 // Returns TRUE if both components are found, FALSE otherwise.
 BOOLEAN SplitVolumeAndFilename(IN OUT CHAR16 **Path, OUT CHAR16 **VolName) {
-   UINTN i = 0, Length;
-   CHAR16 *Filename;
+    UINTN i = 0, Length;
+    CHAR16 *Filename;
 
-   if (*Path == NULL)
-      return FALSE;
+    if (*Path == NULL)
+        return FALSE;
 
-   if (*VolName != NULL) {
-      MyFreePool(*VolName);
-      *VolName = NULL;
-   }
+    if (*VolName != NULL) {
+        MyFreePool(*VolName);
+        *VolName = NULL;
+    }
 
-   Length = StrLen(*Path);
-   while ((i < Length) && ((*Path)[i] != L':')) {
-      i++;
-   } // while
+    Length = StrLen(*Path);
+    while ((i < Length) && ((*Path)[i] != L':')) {
+        i++;
+    } // while
 
-   if (i < Length) {
-      Filename = StrDuplicate((*Path) + i + 1);
-      (*Path)[i] = 0;
-      *VolName = *Path;
-      *Path = Filename;
-      return TRUE;
-   } else {
-      return FALSE;
-   }
+    if (i < Length) {
+        Filename = StrDuplicate((*Path) + i + 1);
+        (*Path)[i] = 0;
+        *VolName = *Path;
+        *Path = Filename;
+        return TRUE;
+    } else {
+        return FALSE;
+    }
 } // BOOLEAN SplitVolumeAndFilename()
 
 // Returns all the digits in the input string, including intervening
@@ -1817,32 +1805,32 @@ BOOLEAN SplitVolumeAndFilename(IN OUT CHAR16 **Path, OUT CHAR16 **VolName) {
 // this function returns "3.3.4-7". If InString contains no digits,
 // the return value is NULL.
 CHAR16 *FindNumbers(IN CHAR16 *InString) {
-   UINTN i, StartOfElement, EndOfElement = 0, InLength, CopyLength;
-   CHAR16 *Found = NULL;
+    UINTN i, StartOfElement, EndOfElement = 0, CopyLength;
+    CHAR16 *Found = NULL;
 
-   if (InString == NULL)
-      return NULL;
+    if (InString == NULL)
+        return NULL;
 
-   InLength = StartOfElement = StrLen(InString);
-   // Find start & end of target element
-   for (i = 0; i < InLength; i++) {
-      if ((InString[i] >= '0') && (InString[i] <= '9')) {
-         if (StartOfElement > i)
-            StartOfElement = i;
-         if (EndOfElement < i)
-            EndOfElement = i;
-      } // if
-   } // for
-   // Extract the target element
-   if (EndOfElement > 0) {
-      if (EndOfElement >= StartOfElement) {
-         CopyLength = EndOfElement - StartOfElement + 1;
-         Found = StrDuplicate(&InString[StartOfElement]);
-         if (Found != NULL)
-            Found[CopyLength] = 0;
-      } // if (EndOfElement >= StartOfElement)
-   } // if (EndOfElement > 0)
-   return (Found);
+    StartOfElement = StrLen(InString);
+    // Find start & end of target element
+    for (i = 0; InString[i] != L'\0'; i++) {
+        if ((InString[i] >= L'0') && (InString[i] <= L'9')) {
+            if (StartOfElement > i)
+                StartOfElement = i;
+            if (EndOfElement < i)
+                EndOfElement = i;
+        } // if
+    } // for
+    // Extract the target element
+    if (EndOfElement > 0) {
+        if (EndOfElement >= StartOfElement) {
+            CopyLength = EndOfElement - StartOfElement + 1;
+            Found = StrDuplicate(&InString[StartOfElement]);
+            if (Found != NULL)
+                Found[CopyLength] = 0;
+        } // if (EndOfElement >= StartOfElement)
+    } // if (EndOfElement > 0)
+    return (Found);
 } // CHAR16 *FindNumbers()
 
 // Find the #Index element (numbered from 0) in a comma-delimited string
@@ -1851,58 +1839,34 @@ CHAR16 *FindNumbers(IN CHAR16 *InString) {
 // is NULL. Note that the calling function is responsible for freeing the
 // memory associated with the returned string pointer.
 CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index) {
-   UINTN    StartPos = 0, CurPos = 0;
-   BOOLEAN  Found = FALSE;
-   CHAR16   *FoundString = NULL;
+    UINTN    StartPos = 0, CurPos = 0, InLength;
+    BOOLEAN  Found = FALSE;
+    CHAR16   *FoundString = NULL;
 
-   if (InString != NULL) {
-      // After while() loop, StartPos marks start of item #Index
-      while ((Index > 0) && (CurPos < StrLen(InString))) {
-         if (InString[CurPos] == L',') {
-            Index--;
-            StartPos = CurPos + 1;
-         } // if
-         CurPos++;
-      } // while
-      // After while() loop, CurPos is one past the end of the element
-      while ((CurPos < StrLen(InString)) && (!Found)) {
-         if (InString[CurPos] == L',')
-            Found = TRUE;
-         else
+    if (InString != NULL) {
+        InLength = StrLen(InString);
+        // After while() loop, StartPos marks start of item #Index
+        while ((Index > 0) && (CurPos < InLength)) {
+            if (InString[CurPos] == L',') {
+                Index--;
+                StartPos = CurPos + 1;
+            } // if
             CurPos++;
-      } // while
-      if (Index == 0)
-         FoundString = StrDuplicate(&InString[StartPos]);
-      if (FoundString != NULL)
-         FoundString[CurPos - StartPos] = 0;
-   } // if
-   return (FoundString);
+        } // while
+        // After while() loop, CurPos is one past the end of the element
+        while ((CurPos < InLength) && (!Found)) {
+            if (InString[CurPos] == L',')
+                Found = TRUE;
+            else
+                CurPos++;
+        } // while
+        if (Index == 0)
+            FoundString = StrDuplicate(&InString[StartPos]);
+        if (FoundString != NULL)
+            FoundString[CurPos - StartPos] = 0;
+    } // if
+    return (FoundString);
 } // CHAR16 *FindCommaDelimited()
-
-// Return the position of SmallString within BigString, or -1 if
-// not found.
-INTN FindSubString(IN CHAR16 *SmallString, IN CHAR16 *BigString) {
-   INTN Position = -1;
-   UINTN i = 0, SmallSize, BigSize;
-   BOOLEAN Found = FALSE;
-
-   if ((SmallString == NULL) || (BigString == NULL))
-      return -1;
-
-   SmallSize = StrLen(SmallString);
-   BigSize = StrLen(BigString);
-   if ((SmallSize > BigSize) || (SmallSize == 0) || (BigSize == 0))
-      return -1;
-
-   while ((i <= (BigSize - SmallSize) && !Found)) {
-      if (CompareMem(BigString + i, SmallString, SmallSize) == 0) {
-         Found = TRUE;
-         Position = i;
-      } // if
-      i++;
-   } // while()
-   return Position;
-} // INTN FindSubString()
 
 // Take an input path name, which may include a volume specification and/or
 // a path, and return separate volume, path, and file names. For instance,
@@ -1911,27 +1875,27 @@ INTN FindSubString(IN CHAR16 *SmallString, IN CHAR16 *BigString) {
 // the returned pointer is NULL. The calling function is responsible for
 // freeing the allocated memory.
 VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename) {
-   CHAR16 *Temp = NULL;
+    CHAR16 *Temp = NULL;
 
-   MyFreePool(*VolName);
-   MyFreePool(*Path);
-   MyFreePool(*Filename);
-   *VolName = *Path = *Filename = NULL;
-   Temp = StrDuplicate(InPath);
-   SplitVolumeAndFilename(&Temp, VolName); // VolName is NULL or has volume; Temp has rest of path
-   CleanUpPathNameSlashes(Temp);
-   *Path = FindPath(Temp); // *Path has path (may be 0-length); Temp unchanged.
-   *Filename = StrDuplicate(Temp + StrLen(*Path));
-   CleanUpPathNameSlashes(*Filename);
-   if (StrLen(*Path) == 0) {
-      MyFreePool(*Path);
-      *Path = NULL;
-   }
-   if (StrLen(*Filename) == 0) {
-      MyFreePool(*Filename);
-      *Filename = NULL;
-   }
-   MyFreePool(Temp);
+    MyFreePool(*VolName);
+    MyFreePool(*Path);
+    MyFreePool(*Filename);
+    *VolName = *Path = *Filename = NULL;
+    Temp = StrDuplicate(InPath);
+    SplitVolumeAndFilename(&Temp, VolName); // VolName is NULL or has volume; Temp has rest of path
+    CleanUpPathNameSlashes(Temp);
+    *Path = FindPath(Temp); // *Path has path (may be 0-length); Temp unchanged.
+    *Filename = StrDuplicate(Temp + StrLen(*Path));
+    CleanUpPathNameSlashes(*Filename);
+    if (StrLen(*Path) == 0) {
+        MyFreePool(*Path);
+        *Path = NULL;
+    }
+    if (StrLen(*Filename) == 0) {
+        MyFreePool(*Filename);
+        *Filename = NULL;
+    }
+    MyFreePool(Temp);
 } // VOID SplitPathName
 
 // Returns TRUE if SmallString is an element in the comma-delimited List,
@@ -1973,29 +1937,29 @@ BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
 // the Volume variable), but the List elements may. Performs comparison
 // case-insensitively.
 BOOLEAN FilenameIn(REFIT_VOLUME *Volume, CHAR16 *Directory, CHAR16 *Filename, CHAR16 *List) {
-   UINTN     i = 0;
-   BOOLEAN   Found = FALSE;
-   CHAR16    *OneElement;
-   CHAR16    *TargetVolName = NULL, *TargetPath = NULL, *TargetFilename = NULL;
+    UINTN     i = 0;
+    BOOLEAN   Found = FALSE;
+    CHAR16    *OneElement;
+    CHAR16    *TargetVolName = NULL, *TargetPath = NULL, *TargetFilename = NULL;
 
-   if (Filename && List) {
-      while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
-         Found = TRUE;
-         SplitPathName(OneElement, &TargetVolName, &TargetPath, &TargetFilename);
-         VolumeNumberToName(Volume, &TargetVolName);
-         if (((TargetVolName != NULL) && ((Volume == NULL) || (!MyStriCmp(TargetVolName, Volume->VolName)))) ||
-             ((TargetPath != NULL) && (!MyStriCmp(TargetPath, Directory))) ||
-             ((TargetFilename != NULL) && (!MyStriCmp(TargetFilename, Filename)))) {
-            Found = FALSE;
-         } // if
-         MyFreePool(OneElement);
-      } // while
-   } // if
+    if (Filename && List) {
+        while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
+            Found = TRUE;
+            SplitPathName(OneElement, &TargetVolName, &TargetPath, &TargetFilename);
+            VolumeNumberToName(Volume, &TargetVolName);
+            if (((TargetVolName != NULL) && ((Volume == NULL) || (!MyStriCmp(TargetVolName, Volume->VolName)))) ||
+                 ((TargetPath != NULL) && (!MyStriCmp(TargetPath, Directory))) ||
+                 ((TargetFilename != NULL) && (!MyStriCmp(TargetFilename, Filename)))) {
+                Found = FALSE;
+            } // if
+            MyFreePool(OneElement);
+        } // while
+    } // if
 
-   MyFreePool(TargetVolName);
-   MyFreePool(TargetPath);
-   MyFreePool(TargetFilename);
-   return Found;
+    MyFreePool(TargetVolName);
+    MyFreePool(TargetPath);
+    MyFreePool(TargetFilename);
+    return Found;
 } // BOOLEAN FilenameIn()
 
 // If *VolName is of the form "fs#", where "#" is a number, and if Volume points
@@ -2023,8 +1987,8 @@ BOOLEAN VolumeNumberToName(REFIT_VOLUME *Volume, CHAR16 **VolName) {
 // Implement FreePool the way it should have been done to begin with, so that
 // it doesn't throw an ASSERT message if fed a NULL pointer....
 VOID MyFreePool(IN VOID *Pointer) {
-   if (Pointer != NULL)
-      FreePool(Pointer);
+    if (Pointer != NULL)
+        FreePool(Pointer);
 }
 
 static EFI_GUID AppleRemovableMediaGuid = APPLE_REMOVABLE_MEDIA_PROTOCOL_GUID;
@@ -2032,26 +1996,26 @@ static EFI_GUID AppleRemovableMediaGuid = APPLE_REMOVABLE_MEDIA_PROTOCOL_GUID;
 // Eject all removable media.
 // Returns TRUE if any media were ejected, FALSE otherwise.
 BOOLEAN EjectMedia(VOID) {
-   EFI_STATUS                      Status;
-   UINTN                           HandleIndex, HandleCount = 0, Ejected = 0;
-   EFI_HANDLE                      *Handles, Handle;
-   APPLE_REMOVABLE_MEDIA_PROTOCOL  *Ejectable;
+    EFI_STATUS                      Status;
+    UINTN                           HandleIndex, HandleCount = 0, Ejected = 0;
+    EFI_HANDLE                      *Handles, Handle;
+    APPLE_REMOVABLE_MEDIA_PROTOCOL  *Ejectable;
 
-   Status = LibLocateHandle(ByProtocol, &AppleRemovableMediaGuid, NULL, &HandleCount, &Handles);
-   if (EFI_ERROR(Status) || HandleCount == 0)
-      return (FALSE); // probably not an Apple system
+    Status = LibLocateHandle(ByProtocol, &AppleRemovableMediaGuid, NULL, &HandleCount, &Handles);
+    if (EFI_ERROR(Status) || HandleCount == 0)
+        return (FALSE); // probably not an Apple system
 
-   for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
-      Handle = Handles[HandleIndex];
-      Status = refit_call3_wrapper(BS->HandleProtocol, Handle, &AppleRemovableMediaGuid, (VOID **) &Ejectable);
-      if (EFI_ERROR(Status))
-         continue;
-      Status = refit_call1_wrapper(Ejectable->Eject, Ejectable);
-      if (!EFI_ERROR(Status))
-         Ejected++;
-   }
-   MyFreePool(Handles);
-   return (Ejected > 0);
+    for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
+        Handle = Handles[HandleIndex];
+        Status = refit_call3_wrapper(BS->HandleProtocol, Handle, &AppleRemovableMediaGuid, (VOID **) &Ejectable);
+        if (EFI_ERROR(Status))
+            continue;
+        Status = refit_call1_wrapper(Ejectable->Eject, Ejectable);
+        if (!EFI_ERROR(Status))
+            Ejected++;
+    }
+    MyFreePool(Handles);
+    return (Ejected > 0);
 } // VOID EjectMedia()
 
 // Converts consecutive characters in the input string into a
@@ -2060,34 +2024,35 @@ BOOLEAN EjectMedia(VOID) {
 // of characters or until the end of the string, whichever is first.
 // NumChars must be between 1 and 16. Ignores invalid characters.
 UINT64 StrToHex(CHAR16 *Input, UINTN Pos, UINTN NumChars) {
-   UINT64 retval = 0x00;
-   UINTN  NumDone = 0;
-   CHAR16 a;
+    UINT64 retval = 0x00;
+    UINTN  NumDone = 0, InputLength;
+    CHAR16 a;
 
-   if ((Input == NULL) || (StrLen(Input) < Pos) || (NumChars == 0) || (NumChars > 16)) {
-      return 0;
-   }
+    if ((Input == NULL) || (NumChars == 0) || (NumChars > 16)) {
+        return 0;
+    }
 
-   while ((StrLen(Input) >= Pos) && (NumDone < NumChars)) {
-      a = Input[Pos];
-      if ((a >= '0') && (a <= '9')) {
-         retval *= 0x10;
-         retval += (a - '0');
-         NumDone++;
-      }
-      if ((a >= 'a') && (a <= 'f')) {
-         retval *= 0x10;
-         retval += (a - 'a' + 0x0a);
-         NumDone++;
-      }
-      if ((a >= 'A') && (a <= 'F')) {
-         retval *= 0x10;
-         retval += (a - 'A' + 0x0a);
-         NumDone++;
-      }
-      Pos++;
-   } // while()
-   return retval;
+    InputLength = StrLen(Input);
+    while ((Pos <= InputLength) && (NumDone < NumChars)) {
+        a = Input[Pos];
+        if ((a >= '0') && (a <= '9')) {
+            retval *= 0x10;
+            retval += (a - '0');
+            NumDone++;
+        }
+        if ((a >= 'a') && (a <= 'f')) {
+            retval *= 0x10;
+            retval += (a - 'a' + 0x0a);
+            NumDone++;
+        }
+        if ((a >= 'A') && (a <= 'F')) {
+            retval *= 0x10;
+            retval += (a - 'A' + 0x0a);
+            NumDone++;
+        }
+        Pos++;
+    } // while()
+    return retval;
 } // StrToHex()
 
 // Returns TRUE if UnknownString can be interpreted as a GUID, FALSE otherwise.
@@ -2095,27 +2060,29 @@ UINT64 StrToHex(CHAR16 *Input, UINTN Pos, UINTN NumChars) {
 // conventionally formatted as a 36-character GUID, complete with dashes in
 // appropriate places.
 BOOLEAN IsGuid(CHAR16 *UnknownString) {
-   UINTN   Length, i;
-   BOOLEAN retval = TRUE;
-   CHAR16  a;
+    UINTN   Length, i;
+    BOOLEAN retval = TRUE;
+    CHAR16  a;
 
-   if (UnknownString == NULL)
-      return FALSE;
+    if (UnknownString == NULL)
+        return FALSE;
 
-   Length = StrLen(UnknownString);
-   if (Length != 36)
-      return FALSE;
+    Length = StrLen(UnknownString);
+    if (Length != 36)
+        return FALSE;
 
-   for (i = 0; i < Length; i++) {
-      a = UnknownString[i];
-      if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
-         if (a != '-')
+    for (i = 0; i < Length; i++) {
+        a = UnknownString[i];
+        if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
+            if (a != L'-')
+                retval = FALSE;
+        } else if (((a < L'a') || (a > L'f')) &&
+                   ((a < L'A') || (a > L'F')) &&
+                   ((a < L'0') && (a > L'9'))) {
             retval = FALSE;
-      } else if (((a < 'a') || (a > 'f')) && ((a < 'A') || (a > 'F')) && ((a < '0') && (a > '9'))) {
-         retval = FALSE;
-      } // if/else if
-   } // for
-   return retval;
+        } // if/else if
+    } // for
+    return retval;
 } // BOOLEAN IsGuid()
 
 // Return the GUID as a string, suitable for display to the user. Note that the calling
@@ -2135,29 +2102,29 @@ CHAR16 * GuidAsString(EFI_GUID *GuidData) {
 } // GuidAsString(EFI_GUID *GuidData)
 
 EFI_GUID StringAsGuid(CHAR16 * InString) {
-   EFI_GUID  Guid = NULL_GUID_VALUE;
+    EFI_GUID  Guid = NULL_GUID_VALUE;
 
-   if (!IsGuid(InString)) {
-      return Guid;
-   }
+    if (!IsGuid(InString)) {
+        return Guid;
+    }
 
-   Guid.Data1 = (UINT32) StrToHex(InString, 0, 8);
-   Guid.Data2 = (UINT16) StrToHex(InString, 9, 4);
-   Guid.Data3 = (UINT16) StrToHex(InString, 14, 4);
-   Guid.Data4[0] = (UINT8) StrToHex(InString, 19, 2);
-   Guid.Data4[1] = (UINT8) StrToHex(InString, 21, 2);
-   Guid.Data4[2] = (UINT8) StrToHex(InString, 23, 2);
-   Guid.Data4[3] = (UINT8) StrToHex(InString, 26, 2);
-   Guid.Data4[4] = (UINT8) StrToHex(InString, 28, 2);
-   Guid.Data4[5] = (UINT8) StrToHex(InString, 30, 2);
-   Guid.Data4[6] = (UINT8) StrToHex(InString, 32, 2);
-   Guid.Data4[7] = (UINT8) StrToHex(InString, 34, 2);
+    Guid.Data1 = (UINT32) StrToHex(InString, 0, 8);
+    Guid.Data2 = (UINT16) StrToHex(InString, 9, 4);
+    Guid.Data3 = (UINT16) StrToHex(InString, 14, 4);
+    Guid.Data4[0] = (UINT8) StrToHex(InString, 19, 2);
+    Guid.Data4[1] = (UINT8) StrToHex(InString, 21, 2);
+    Guid.Data4[2] = (UINT8) StrToHex(InString, 23, 2);
+    Guid.Data4[3] = (UINT8) StrToHex(InString, 26, 2);
+    Guid.Data4[4] = (UINT8) StrToHex(InString, 28, 2);
+    Guid.Data4[5] = (UINT8) StrToHex(InString, 30, 2);
+    Guid.Data4[6] = (UINT8) StrToHex(InString, 32, 2);
+    Guid.Data4[7] = (UINT8) StrToHex(InString, 34, 2);
 
-   return Guid;
+    return Guid;
 } // EFI_GUID StringAsGuid()
 
 // Returns TRUE if the two GUIDs are equal, FALSE otherwise
 BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2) {
-   return (CompareMem(Guid1, Guid2, 16) == 0);
+    return (CompareMem(Guid1, Guid2, 16) == 0);
 } // BOOLEAN GuidsAreEqual()
 
