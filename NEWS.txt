@@ -1,11 +1,23 @@
-0.9.2 (9/??/2015):
+0.9.2 (9/19/2015):
 ------------------
+
+- Added "--keepname" option to install.sh. This option causes install.sh
+  to keep refind_x64.efi named as such rather than rename it as grubx64.efi
+  when using Shim. This option is meaningful only if the --shim option is
+  also used. This option passes the refind_x64.efi filename as an option to
+  Shim, which overrides the default filename of grubx64.efi. A big caveat:
+  Only Shim 0.7 and later supports this feature. (Shim 0.4 also works if a
+  refind_x64.efi is referred to as "\refind_x64.efi" on the command line,
+  but the need for a leading backslash to refer to a file in the same
+  directory as Shim is so confusing and wrong that I cannot in good
+  conscience support it.) I've not seen signed Shim binaries between 0.4
+  and 0.7, so I don't know if any of them might work.
 
 - Implemented a workaround for a bug in Shim 0.8 that prevented
   authentication of more than one binary. If any filesystem drivers were
-  installed, the first one would be verified, leaving rEFInd to be unable
-  to launch anything else unless it was signed by a key in the computer's
-  main Secure Boot db list.
+  installed, the first one would be verified, leaving rEFInd unable to
+  launch anything else unless it was signed by a key in the computer's main
+  Secure Boot db list.
 
 0.9.1 (9/13/2015):
 ------------------

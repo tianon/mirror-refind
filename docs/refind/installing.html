@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-9/14/2015, referencing rEFInd 0.9.1</p>
+9/19/2015, referencing rEFInd 0.9.2</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -226,11 +226,11 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>I provide RPM and Debian package files for rEFInd; and starting with version 0.8.1, I'm maintaining an Ubuntu PPA for rEFInd. If you have a working RPM-based or Debian-based Linux installation that boots in EFI mode, using one of these files is likely to be the easiest way to install rEFInd: You need only download the file and issue an appropriate installation command. In some cases, double-clicking the package in your file manager will install it. If that doesn't work, a command like the following will install the RPM on an RPM-based system:</p>
 
-<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.9.1-1.x86_64.rpm</tt></pre>
+<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.9.2-1.x86_64.rpm</tt></pre>
 
 <p>On a Debian-based system, the equivalent command is:</p>
 
-<pre class="listing"># <tt class="userinput">dpkg -i refind_0.9.1-1_amd64.deb</tt></pre>
+<pre class="listing"># <tt class="userinput">dpkg -i refind_0.9.2-1_amd64.deb</tt></pre>
 
 <p>Either command produces output similar to that described for <a href="#installsh">using the <tt>install.sh</tt> script,</a> so you can check it for error messages and other signs of trouble. The package file installs rEFInd and registers it with the EFI to be the default boot loader. The script that runs as part of the installation process tries to determine if you're using Secure Boot, and if so it will try to configure rEFInd to launch using shim; however, this won't work correctly on all systems. Ubuntu 12.10 users who are booting with Secure Boot active should be wary, since the resulting installation will probably try to use Ubuntu's version of shim, which won't work correctly with rEFInd. The shim program provided with more recent versions of Ubuntu should work correctly.</p>
 
@@ -403,13 +403,21 @@ Unmounting install dir</pre>
     <tt>refind_linux.conf</tt>, though&mdash;for instance, to add
     <tt>dolvm</tt> to the boot options on Gentoo systems that use LVM.</li>
 
+<li>If you pass the <tt>--shim</tt> option to the script (along with a
+    filename for a shim binary), the script sets up for a Secure Boot
+    configuration via shim. By default, this causes the rEFInd binary to be
+    renamed as <tt>grubx64.efi</tt>. Recent versions of shim support
+    passing the name of the follow-on program to shim via a parameter,
+    though. If you want to use this feature, you can pass the
+    <tt>--keepname</tt> option to <tt>install.sh</tt>.</li>
+
 </ul>
 
 <p>In addition to these quirks, you should be aware of some options that <tt>install.sh</tt> supports to enable you to customize your installation in various ways. The syntax for <tt>install.sh</tt> is as follows:</p>
 
 <pre class="listing">
 install.sh [--notesp | --usedefault <tt class="variable">device-file</tt> | --root <tt class="variable">mount-point</tt> | \
-            --ownhfs <tt class="variable">device-file</tt> ] \
+            --ownhfs <tt class="variable">device-file</tt> ] [--keepname ] \
            [--nodrivers | --alldrivers] [--shim <tt class="variable">shim-filename</tt>] [--localkeys] [--yes]
 </pre>
 
@@ -446,11 +454,15 @@ install.sh [--notesp | --usedefault <tt class="variable">device-file</tt> | --ro
 </tr>
 <tr>
    <td><tt>--shim <tt class="variable">shim-filename</tt></tt> or <tt>--preloader <tt class="variable">preloader-filename</tt></tt></td>
-   <td>If you pass this option to <tt>install.sh</tt>, the script will copy the specified shim program file to the target directory, copy the <tt>MokManager.efi</tt> file from the shim program file's directory to the target directory, copy the 64-bit version of rEFInd as <tt>grubx64.efi</tt>, and register shim with the firmware. (If you also specify <tt>--usedefault</tt>, the NVRAM registration is skipped.) When the target file is identified as PreLoader, much the same thing happens, but <tt>install.sh</tt> copies <tt>HashTool.efi</tt> instead of <tt>MokManager.efi</tt> and copies rEFInd as <tt>loader.efi</tt> rather than as <tt>grubx64.efi</tt>. The intent is to simplify rEFInd installation on a computer that uses Secure Boot; when so set up, rEFInd will boot in Secure Boot mode, with one caveat: The first time you boot, MokManager/HashTool will launch, and you must use it to locate and install a public key or register rEFInd as a trusted application. The rEFInd public key file will be located in the rEFInd directory's <tt>keys</tt> subdirectory under the name <tt>refind.cer</tt>. Note that I'm not providing a shim binary myself, but you can download one from <a href="http://www.codon.org.uk/~mjg59/shim-signed/">here.</a> Some distributions also provide their own shim programs, so can point to them&mdash;for instance, in <tt>/boot/efi/EFI/fedora/shim.efi</tt>.</td>
+   <td>If you pass this option to <tt>install.sh</tt>, the script will copy the specified shim program file to the target directory, copy the <tt>MokManager.efi</tt> file from the shim program file's directory to the target directory, copy the 64-bit version of rEFInd as <tt>grubx64.efi</tt>, and register shim with the firmware. (If you also specify <tt>--usedefault</tt>, the NVRAM registration is skipped. If you also use <tt>--keepname</tt>, the renaming to <tt>grubx64.efi</tt> is skipped.) When the target file is identified as PreLoader, much the same thing happens, but <tt>install.sh</tt> copies <tt>HashTool.efi</tt> instead of <tt>MokManager.efi</tt> and copies rEFInd as <tt>loader.efi</tt> rather than as <tt>grubx64.efi</tt>. The intent is to simplify rEFInd installation on a computer that uses Secure Boot; when so set up, rEFInd will boot in Secure Boot mode, with one caveat: The first time you boot, MokManager/HashTool will launch, and you must use it to locate and install a public key or register rEFInd as a trusted application. The rEFInd public key file will be located in the rEFInd directory's <tt>keys</tt> subdirectory under the name <tt>refind.cer</tt>. Note that I'm not providing a shim binary myself, but you can download one from <a href="http://www.codon.org.uk/~mjg59/shim-signed/">here.</a> Some distributions also provide their own shim programs, so can point to them&mdash;for instance, in <tt>/boot/efi/EFI/fedora/shim.efi</tt>.</td>
 </tr>
 <tr>
    <td><tt>--localkeys</tt></td>
    <td>This option tells <tt>install.sh</tt> to generate a new Machine Owner Key (MOK), store it in <tt>/etc/refind.d/keys</tt> as <tt>refind_local.*</tt>, and re-sign all the 64-bit rEFInd binaries with this key before installing them. This is the preferable way to install rEFInd in Secure Boot mode, since it means your binaries will be signed locally rather than with my own key, which is used to sign many other users' binaries; however, this method requires that both the <tt>openssl</tt> and <tt>sbsign</tt> binaries be installed. The former is readily available in most distributions' repositories, but the latter is not, so this option is not the default.</td>
+</tr>
+<tr>
+   <td><tt>--keepname</tt></td>
+   <td>This option is useful only in conjunction with <tt>--shim</tt>. It tells <tt>install.sh</tt> to keep rEFInd's regular filename (typically <tt>refind_x64.efi</tt>) when used with shim, rather than rename the binary to <tt>grubx64.efi</tt>. This change cuts down on the chance of confusion because of filename issues; however, this feature requires that shim be launched with a command-line parameter that points to the rEFInd binary under its real name. versions of shim prior to 0.7 do not properly support this feature. (Version 0.4 supports it but with a buggy interpretation of the follow-on loader specification.) If your NVRAM variables become corrupted or are forgotten, this feature may make rEFInd harder to launch. This option is incompatible with <tt>--usedefault</tt> and is unavailable when run under OS X or without the <tt>--shim</tt> option. If the script discovers an existing rEFInd installation under <tt>EFI/BOOT</tt> or <tt>EFI/Microsoft/Boot</tt> and no other rEFInd installation when this option is used, it will abort.</td>
 </tr>
 <tr>
    <td><tt>--yes</tt></td>
@@ -499,7 +511,7 @@ Filesystem     1K-blocks  Used Available Use% Mounted on
 <p class="sidebar"><b>Weird:</b> A <a href="http://mjg59.dreamwidth.org/20187.html">bug exists</a> in some Lenovo computers (and perhaps in some others, too) that causes the firmware's boot manager to refuse to boot any boot loader that doesn't have the name <tt>Windows Boot Manager</tt> or <tt>Red Hat Enterprise Linux</tt>. If you have such a system, you must pass one of those names (in quotes) rather than <tt>rEFInd</tt> to <tt>efibootmgr</tt> via its <tt>-L</tt> option. This bug was reported to Lenovo in mid-November 2012, and by late 2013, at least some Lenovos were mercifully free of this bug.</p>
 
 <a name="efibootmgr">
-<li>On a UEFI-based system, type <tt><b>efibootmgr -c -l \\EFI\\refind\\refind_x64.efi -L rEFInd</b></tt> to add rEFInd to your EFI's list of available boot loaders, which it stores in NVRAM. Adjust the path to the binary as required if you install somewhere else. You may also need to include additional options if your ESP isn't on <tt>/dev/sda1</tt> or if your configuration is otherwise unusual; consult the <tt>efibootmgr</tt> man page for details. You may need to install this program on some systems; it's a standard part of most distributions' repositories. Also, if you're installing in Secure Boot mode, you must normally register <tt>shim.efi</tt> rather than the rEFInd binary, and rename <tt>refind_x64.efi</tt> to <tt>grubx64.efi</tt>.</li>
+<li>On a UEFI-based system, type <tt><b>efibootmgr -c -l \\EFI\\refind\\refind_x64.efi -L rEFInd</b></tt> to add rEFInd to your EFI's list of available boot loaders, which it stores in NVRAM. Adjust the path to the binary as required if you install somewhere else. You may also need to include additional options if your ESP isn't on <tt>/dev/sda1</tt> or if your configuration is otherwise unusual; consult the <tt>efibootmgr</tt> man page for details. You may need to install this program on some systems; it's a standard part of most distributions' repositories. Also, if you're installing in Secure Boot mode, you must normally register <tt>shim.efi</tt> rather than the rEFInd binary, and rename <tt>refind_x64.efi</tt> to <tt>grubx64.efi</tt>. Shim 0.7 and later enables you to keep rEFInd's usual name by adding a <tt>-u "shim.efi refind_x64.efi"</tt> option to your <tt>efibootmgr</tt> command line, though. Change the filenames to the ones used by your actual Shim and rEFInd binaries, respectively.</li>
 </a>
 
 <li>If other boot loaders are already installed, you can use <tt>efibootmgr</tt> to adjust their boot order. For instance, <b><tt>efibootmgr -o 3,7,2</tt></b> sets the firmware to try boot loader #3 first, followed by #7, followed by #2. (The program should have displayed a list of boot loaders when you added yours in the preceding step.) Place rEFInd's number first to set it as the default boot program.</li>

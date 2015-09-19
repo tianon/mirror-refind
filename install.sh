@@ -22,6 +22,7 @@
 #    "--shim {shimfile}" to install a shim.efi file for Secure Boot
 #    "--preloader" is synonymous with "--shim"
 #    "--localkeys" to re-sign x86-64 binaries with a locally-generated key
+#    "--keepname" to keep refind_x64.efi name as such even when using shim
 #    "--yes" to assume a "yes" response to all prompts
 #
 # The "esp" option is valid only on Mac OS X; it causes
@@ -35,6 +36,7 @@
 #
 # Revision history:
 #
+# 0.9.2   -- Added --keepname option.
 # 0.8.7   -- Better detection of Secure Boot mode & fixed errors when copying
 #            Shim & MokManager files over themselves; fixed bug that caused
 #            inappropriate installation to EFI/BOOT/bootx64.efi
@@ -85,6 +87,7 @@ TargetDir=/EFI/refind
 LocalKeysBase="refind_local"
 ShimSource="none"
 ShimType="none"
+KeepName=0
 TargetShim="default"
 TargetX64="refind_x64.efi"
 TargetIA32="refind_ia32.efi"
@@ -128,6 +131,8 @@ GetParams() {
               ShimType=`basename $ShimSource`
               shift
               ;;
+         --keepname) KeepName=1
+              ;;
          --drivers | --alldrivers) InstallDrivers="all"
               ;;
          --nodrivers) InstallDrivers="none"
@@ -135,9 +140,9 @@ GetParams() {
          --yes) AlwaysYes=1
               ;;
          * ) echo "Usage: $0 [--notesp | --usedefault {device-file} | --root {dir} |"
-             echo "                     --ownhfs {device-file} ]"
-             echo "                  [--nodrivers | --alldrivers] [--shim {shim-filename}]"
-             echo "                  [--localkeys] [--yes]"
+             echo "                     --ownhfs {device-file} ] [--keepname]"
+             echo "                  [--nodrivers | --alldrivers]"
+             echo "                  [--localkeys] [--keepname] [--yes]"
              exit 1
       esac
       shift
@@ -152,6 +157,19 @@ GetParams() {
    fi
    if [[ "$TargetDir" != '/System/Library/CoreServices' && "$OwnHfs" == '1' ]] ; then
       echo "If you use --ownhfs, you may NOT use --usedefault! Aborting!"
+      exit 1
+   fi
+   if [[ "$KeepName" == 1 && "$ShimSource" == "none" ]] ; then
+      echo "The --keepname option is meaningful only in conjunction with --shim"
+      echo "or --preloader! Aborting!"
+      exit 1
+   fi
+   if [[ "$KeepName" == 1 && "$OSName" != "Linux" ]] ; then
+      echo "The --keepname option is valid only under Linux! Aborting!"
+      exit 1
+   fi
+   if [[ "$KeepName" == 1 && "$TargetDir" != "/EFI/BOOT" ]] ; then
+      echo "The --keepname option is incompatible with --usedefault! Aborting!"
       exit 1
    fi
    RLConfFile="$RootDir/boot/refind_linux.conf"
@@ -276,6 +294,10 @@ SetVarsForBoot() {
       TargetIA32="bootia32.efi"
       TargetShim="bootx64.efi"
    fi
+   if [[ $KeepName == 1 ]] ; then
+      echo "Installation is to /EFI/BOOT, which is incompatible with --keepname! Aborting!"
+      exit 1
+   fi
 } # SetVarsForBoot()
 
 # Set variables for installation in EFI/Microsoft/Boot directory
@@ -283,6 +305,7 @@ SetVarsForMsBoot() {
    TargetDir="/EFI/Microsoft/Boot"
    if [[ $ShimSource == "none" ]] ; then
       TargetX64="bootmgfw.efi"
+      TargetIA32="bootmgfw.efi"
    else
       if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" ]] ; then
          TargetX64="grubx64.efi"
@@ -294,6 +317,11 @@ SetVarsForMsBoot() {
          exit 1
       fi
       TargetShim="bootmgfw.efi"
+   fi
+   if [[ $KeepName == 1 ]] ; then
+      echo "Installation is to /EFI/Microsoft/Boot, which is incompatible with --keepname!"
+      echo "Aborting!"
+      exit 1
    fi
 } # SetVarsForMsBoot()
 
@@ -317,9 +345,9 @@ DetermineTargetDir() {
       SetVarsForMsBoot
       Upgrade=1
    fi
-   if [[ -f $InstallDir/EFI/refind/refind.conf && foofoo ]] ; then
+   if [[ -f $InstallDir/EFI/refind/refind.conf ]] ; then
       TargetDir="/EFI/refind"
-      if [[ $ShimSource == "none" ]] ; then
+      if [[ $ShimSource == "none" || $KeepName == 1 ]] ; then
          TargetX64="refind_x64.efi"
          TargetIA32="refind_ia32.efi"
       fi
@@ -657,7 +685,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.9.1</string>
+        <string>0.9.2</string>
 </dict>
 </plist>
 ENDOFHERE
@@ -934,7 +962,6 @@ FindMountedESP() {
 # If this fails, sets Problems=1
 AddBootEntry() {
    local PartNum
-   InstallIt="0"
    Efibootmgr=`which efibootmgr 2> /dev/null`
    if [[ "$Efibootmgr" ]] ; then
       InstallDisk=`grep "$InstallDir" /etc/mtab | cut -d " " -f 1 | cut -c 1-8`
@@ -952,20 +979,20 @@ AddBootEntry() {
             echo "manager. The boot order is being adjusted to make rEFInd the default boot"
             echo "manager. If this is NOT what you want, you should use efibootmgr to"
             echo "manually adjust your EFI's boot order."
-            "$Efibootmgr" -b $ExistingEntryBootNum -B &> /dev/null
-            InstallIt="1"
          fi
-      else
-         InstallIt="1"
+         "$Efibootmgr" -b $ExistingEntryBootNum -B &> /dev/null
       fi
 
-      if [[ $InstallIt == "1" ]] ; then
-         echo "Installing it!"
+      echo "Installing it!"
+      if [[ "$KeepName" == 0 ]] ; then
          "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
-         if [[ $? != 0 ]] ; then
-            EfibootmgrProblems=1
-            Problems=1
-         fi
+      else
+         "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum \
+                       -u "$TargetShim $TargetX64" &> /dev/null
+      fi
+      if [[ $? != 0 ]] ; then
+         EfibootmgrProblems=1
+         Problems=1
       fi
 
    else # efibootmgr not found
