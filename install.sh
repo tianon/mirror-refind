@@ -164,7 +164,7 @@ GetParams() {
       echo "or --preloader! Aborting!"
       exit 1
    fi
-   if [[ "$KeepName" == 1 && "$OSName" != "Linux" ]] ; then
+   if [[ "$KeepName" == 1 && "$OSTYPE" != "linux-gnu" ]] ; then
       echo "The --keepname option is valid only under Linux! Aborting!"
       exit 1
    fi
@@ -357,7 +357,7 @@ DetermineTargetDir() {
       echo "Found rEFInd installation in $InstallDir$TargetDir; upgrading it."
    fi
 
-   if [[ ! -d /sys/firmware/efi && ! $OSName == 'Darwin' && $Upgrade == 0 ]] ; then     # BIOS-mode
+   if [[ ! -d /sys/firmware/efi && ! $OSTYPE == darwin* && $Upgrade == 0 ]] ; then     # BIOS-mode
       FoundEfiFiles=`find "$InstallDir/EFI/BOOT" -name "*.efi" 2> /dev/null`
       FoundConfFiles=`find "$InstallDir" -name "refind\.conf" 2> /dev/null`
       if [[ ! -n "$FoundConfFiles" && -f "$InstallDir/EFI/Microsoft/Boot/bootmgfw.efi" ]] ; then
@@ -397,26 +397,29 @@ DetermineTargetDir() {
 SetBootFS() {
    local Blkid
 
-   Blkid=`which blkid 2> /dev/null`
    BootFS=""
-   if [[ $OSName == 'Linux' && -x "$Blkid" ]] ; then
-      BootPart=`df /boot | grep dev | cut -f 1 -d " "`
-      BootFS=`$Blkid -o export $BootPart 2> /dev/null | grep TYPE= | cut -f 2 -d =`
-   fi
-   if [[ $OSName == 'Darwin' ]] ; then
-      # 0FC63DAF-8483-4772-8E79-3D69D8477DE4 = Linux filesystem
-      # BC13C2FF-59E6-4262-A352-B275FD6F7172 = Freedesktop $boot partition
-      # 933AC7E1-2EB4-4F13-B844-0E14E2AEF915 = Freedesktop Linux /home
-      # E6D6D379-F507-44C2-A23C-238F2A3DF928 = Linux LVM
-      # A19D880F-05FC-4D3B-A006-743F0F84911E = Linux RAID
-      # 0657FD6D-A4AB-43C4-84E5-0933C84B4F4F = Linux swap
-      Temp=$(diskutil list | grep -i '0FC63DAF-8483-4772-8E79-3D69D8477DE4\|BC13C2FF-59E6-4262-A352-B275FD6F7172\|933AC7E1-2EB4-4F13-B844-0E14E2AEF915\|E6D6D379-F507-44C2-A23C-238F2A3DF928\|A19D880F-05FC-4D3B-A006-743F0F84911E\|0657FD6D-A4AB-43C4-84E5-0933C84B4F4F\|Linux')
-      BootFS=""
-      if [[ -n $Temp ]] ; then
-         echo "Found suspected Linux partition(s); installing ext4fs driver."
-         BootFS="ext4"
-      fi
-   fi
+   case "$OSTYPE" in
+      linux-gnu)
+           if command -v blkid 2>/dev/null; then
+              BootPart=`df /boot | grep dev | cut -f 1 -d " "`
+              BootFS=`blkid -o export $BootPart 2> /dev/null | grep TYPE= | cut -f 2 -d =`
+           fi
+           ;;
+      darwin*)
+           # 0FC63DAF-8483-4772-8E79-3D69D8477DE4 = Linux filesystem
+           # BC13C2FF-59E6-4262-A352-B275FD6F7172 = Freedesktop $boot partition
+           # 933AC7E1-2EB4-4F13-B844-0E14E2AEF915 = Freedesktop Linux /home
+           # E6D6D379-F507-44C2-A23C-238F2A3DF928 = Linux LVM
+           # A19D880F-05FC-4D3B-A006-743F0F84911E = Linux RAID
+           # 0657FD6D-A4AB-43C4-84E5-0933C84B4F4F = Linux swap
+           Temp=$(diskutil list | grep -i '0FC63DAF-8483-4772-8E79-3D69D8477DE4\|BC13C2FF-59E6-4262-A352-B275FD6F7172\|933AC7E1-2EB4-4F13-B844-0E14E2AEF915\|E6D6D379-F507-44C2-A23C-238F2A3DF928\|A19D880F-05FC-4D3B-A006-743F0F84911E\|0657FD6D-A4AB-43C4-84E5-0933C84B4F4F\|Linux')
+           BootFS=""
+           if [[ -n $Temp ]] ; then
+              echo "Found suspected Linux partition(s); installing ext4fs driver."
+              BootFS="ext4"
+           fi
+           ;;
+   esac
 } # SetBootFS()
 
 # Copy drivers from $RefindDir/drivers_$1 to $InstallDir/$TargetDir/drivers_$1,
@@ -461,7 +464,7 @@ CopyDrivers() {
 # or x64).
 CopyTools() {
    mkdir -p "$InstallDir/EFI/tools"
-   if [[ $OSName == 'Darwin' ]] ; then
+   if [[ $OSTYPE == darwin* ]] ; then
       cp -f "$RefindDir/tools_$1/gptsync_$1.efi" "$InstallDir/EFI/tools/"
       if [[ -f "$InstallDir/EFI/tools/gptsync.efi" ]] ; then
          mv "$InstallDir/EFI/tools/gptsync.efi" "$InstallDir/EFI/tools/gptsync.efi-disabled"
@@ -588,7 +591,7 @@ MountDefaultTarget() {
    InstallDir=/tmp/refind_install
    mkdir -p "$InstallDir"
    UnmountEsp=1
-   if [[ $OSName == 'Darwin' ]] ; then
+   if [[ $OSTYPE == darwin* ]] ; then
       if [[ $OwnHfs == '1' ]] ; then
          Temp=`diskutil info "$TargetPart" | grep "Mount Point"`
          InstallDir=`echo $Temp | cut -f 3-30 -d ' '`
@@ -601,7 +604,7 @@ MountDefaultTarget() {
       else
          mount -t msdos "$TargetPart" "$InstallDir"
       fi
-   elif [[ $OSName == 'Linux' ]] ; then
+   elif [[ $OSTYPE == linux-gnu ]] ; then
       mount -t vfat "$TargetPart" "$InstallDir"
    fi
    if [[ $? != 0 ]] ; then
@@ -1107,14 +1110,12 @@ InstallOnLinux() {
 # performs a few startup checks, and then calls functions to
 # install under OS X or Linux, depending on the detected platform.
 #
-OSName=`uname -s`
 GetParams "$@"
-ThisDir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ThisDir="$( cd -P "${BASH_SOURCE%/*}" && pwd )"
 RefindDir="$ThisDir/refind"
-ThisScript="$ThisDir/`basename $0`"
-if [[ `whoami` != "root" ]] ; then
+if [[ $UID != 0 ]] ; then
    echo "Not running as root; attempting to elevate privileges via sudo...."
-   sudo "$ThisScript" "$@"
+   sudo "$BASH_SOURCE" "$@"
    if [[ $? != 0 ]] ; then
       echo "This script must be run as root (or using sudo). Exiting!"
       exit 1
@@ -1123,25 +1124,28 @@ if [[ `whoami` != "root" ]] ; then
    fi
 fi
 CheckForFiles
-if [[ $OSName == 'Darwin' ]] ; then
-   if [[ "$ShimSource" != "none" ]] ; then
-      echo "The --shim option is not supported on OS X! Exiting!"
-      exit 1
-   fi
-   if [[ "$LocalKeys" != 0 ]] ; then
-      echo "The --localkeys option is not supported on OS X! Exiting!"
-      exit 1
-   fi
-   InstallOnOSX $1
-elif [[ $OSName == 'Linux' ]] ; then
-   InstallOnLinux
-else
-   echo "Running on unknown OS; aborting!"
-   if [[ "$InstallToEspOnMac" == 0 ]] ; then
-      echo "The --notesp option is not supported on Linux! Exiting!"
-      exit 1
-   fi
-fi
+case "$OSTYPE" in
+   darwin*)
+        if [[ "$ShimSource" != "none" ]] ; then
+           echo "The --shim option is not supported on OS X! Exiting!"
+           exit 1
+        fi
+        if [[ "$LocalKeys" != 0 ]] ; then
+           echo "The --localkeys option is not supported on OS X! Exiting!"
+           exit 1
+        fi
+        InstallOnOSX $1
+        ;;
+   linux-gnu)
+        InstallOnLinux
+        ;;
+   *)
+        echo "Running on unknown OS; aborting!"
+        if [[ "$InstallToEspOnMac" == 0 ]] ; then
+           echo "The --notesp option is not supported on Linux! Exiting!"
+           exit 1
+        fi
+esac
 
 if [[ $Problems ]] ; then
    echo
