@@ -6,7 +6,7 @@ Standards-Version: 3.9.5
 Build-Depends: debhelper (>= 9), gnu-efi
 
 Package: refind
-Architecture: any
+Architecture: i386, amd64
 Depends: ${misc:Depends}, efibootmgr, openssl, sbsigntool, util-linux, parted
 Description: boot manager for EFI-based computers
  A graphical boot manager for EFI- and UEFI-based computers, such as all

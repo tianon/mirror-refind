@@ -1,7 +1,9 @@
 Below file was part of the efitools package by James Bottomley, from which
-most of the source files in this directory were taken. The mok.c and mok.h
-files, however, are based on Matthew J. Garrett's shim program; see the
-copyright notices in those files for details....
+most of the source files in this directory were taken. The files in this
+directory originated in the "lib" directory of the efitools package, and so
+fall under the LGPLv2.1. The mok.c and mok.h files, however, are based on
+Matthew J. Garrett's shim program; see the copyright notices in those files
+for details....
 
 ------------------------------------------------------------------------
 

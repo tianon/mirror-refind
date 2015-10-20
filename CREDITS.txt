@@ -75,21 +75,21 @@ Icons and graphics:
 -------------------
 
 * I replaced many of the original rEFIt icons with icons taken from the
-  Oxygen Icons project, either from the Oxygen Refit package on its page
-  (http://deviantdark.deviantart.com/art/Oxygen-Refit-70199755) or from the
-  oxygen-icons version 4.7.4 package on my Gentoo Linux development system.
-  These icons are released under the LGPLv3 or GPLv3. If I'm reading the
-  pages correctly, the original creator was David Vignoni (aka
-  "deviantdark" on the deviantart site).
+  Oxygen Icons project, originally from the Oxygen Refit package on its
+  page (http://deviantdark.deviantart.com/art/Oxygen-Refit-70199755) or
+  from the oxygen-icons version 4.7.4 package on my Gentoo Linux
+  development system. As of version 0.9.3, I refreshed these icons with
+  versions from Ubuntu's oxygen-icon-theme 4.13.0-0ubuntu1 package. These
+  icons are released under the GPLv3. If I'm reading the pages correctly,
+  the original creator was David Vignoni (aka "deviantdark" on the
+  deviantart site).
 
 * Erik Kemperman provided the rEFInd icon, which is a combination of
   the common refresh/reload icon and the search/find icon.
 
-* The keys icon for MOK keys management comes from the
-  kdeartwork-iconthemes-4.8.5 package on Gentoo.
-
-* The memtest icon (tool_memtest.icns) was originally memory.png from
-  the Gentoo kdeartwork-iconthemes-4.10.5 icons package.
+* The memtest icon (tool_memtest.icns) was originally memory.png from the
+  Gentoo kdeartwork-iconthemes-4.10.5 icons package, and was subsequently
+  updated from the Ubuntu kdeartwork 4:15.08.1-0ubuntu1 package.
 
 * The gummiboot icon is taken from the gummiboot Web page
   (http://freedesktop.org/wiki/Software/gummiboot) and scaled down

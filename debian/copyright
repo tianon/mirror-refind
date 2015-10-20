@@ -25,10 +25,195 @@ Upstream Authors:
     Apple, Inc.
 
 Copyright:
-    Copyright 2012 Roderick W. Smith
-    Copyright 2006 Christoph Pfisterer
 
-License:
+This package builds two EFI application programs and several drivers.
+Documentation and icons are also included.
+
+* The main rEFInd binary (refind_x64.efi or refind_ia32.efi) uses source
+  code with various licenses, all of which are compatible with the GPL-3,
+  which is the overarching license.
+* The gptsync binary uses source files that all use the BSD 2-clause
+  license.
+* Drivers all rely on a BSD 2-clause base. Beyond that, things diverge:
+  * The HFS+ and ISO-9660 drivers use GPL-2 source files
+  * The Btrfs driver uses GPL-2+ and GPL-3+ source files
+  * The ext2fs, ext4fs, ReiserFS, and NTFS drivers all use GPL-2+
+    source files.
+* The documentation is licensed under the FDL 1.3
+
+File-by-file details are described below.
+
+Files Used to Create Main rEFInd Binary
+---------------------------------------
+
+Files: refind/*
+       libeg/image.c
+       libeg/screen.c
+Copyright: 2006-2010 Christoph Pfisterer
+           2012-2015 Roderick W. Smith
+License: BSD 3-clause & GPL-3+
+
+Files: refind/icns.c
+       libeg/*
+Copyright: 2006-2007 Christoph Pfisterer
+License BSD 3-clause
+
+Files: refind/gpt.[ch]
+       libeg/lodepng_xtra.c
+Copyright: 2014-2015 Roderick W. Smith
+License: GPL-3+
+
+Files: refind/crc32.[ch]
+Copyright: 1986 Gary S. Brown
+License: "You may use this program, or code or tables extracted from it, as
+          desired without restriction."
+
+Files: refind/driver_support.[ch]
+Copyright: 2006-2011 Intel Corporation
+License: BSD 2-clause
+
+Files: refind/line_edit.[ch]
+Copyright: 2012 Harald Hoyer <harald@redhat.com>
+           2012-2013 Kay Sievers <kay@vrfy.org>
+License: LGPL-2.1+
+
+Files: EfiLib/*
+Copyright: 2004-2011 Intel Corp.
+License: BSD 2-clause
+
+Files: libeg/lodepng.c
+Copyright: 2005-2013 Lode Vandevenne
+License: zlib
+
+Files: mok/*
+Copyright: 2012 James Bottomley
+License: LGPL-2.1
+
+Files: mok/mok.[ch]
+Copyright: 2012 Red Hat, Inc. <mjg@redhat.com>
+           2009-2012 Intel Corporation
+License: BSD 2-clause
+
+Files: include/*
+Copyright: 2006-2010 Intel Corporation
+License: BSD 2-clause
+
+Files: include/syslinux_mbr.h
+Copyright: 2003-2004 H. Peter Anvin
+License: Expat
+
+Files: include/RemovableMedia.h
+Copyright: 2005 Apple Computer, Inc.
+License: See comments in file
+
+Files Used to Create gptsync Binary
+-----------------------------------
+
+Files: gptsync/*
+Copyright: 2006 Christoph Pfisterer
+License: BSD 2-clause
+
+Files: gptsync/gptsync.c
+Copyright: 2006 Christoph Pfisterer
+           2013 Roderick W. Smith
+License: BSD 2-clause
+
+Base Filesystem Driver Files
+----------------------------
+
+Files: filesystems/fsw_core.[ch]
+       filesystems/fsw_efi.[ch]
+       filesystems/fsw_efi_lib.c
+       filesystems/fsw_efi_base.h
+       filesystems/fsw_lib.c
+Copyright: 2006 Christoph Pfisterer
+License: BSD 3-clause
+
+Files: filesystems/fsw_efi_edk2_base.h
+Copyright: 2012 Stefan Agner
+License BSD 3-clause
+
+Files Used by ext2fs, ext4fs, ReiserFS, NTFS Filesystem Drivers
+(Used in addition to Base Filesystem Driver Files)
+---------------------------------------------------------------
+
+Files: filesystems/fsw_ext2.[ch]
+       filesystems/fsw_ext2_disk.h
+       filesystems/fsw_reiserfs.[ch]
+       filesystems/fsw_reiserfs_disk.h
+Copyright: 2006 Christoph Pfisterer
+License: GPL-2+
+
+Files: filesystems/fsw_ext4.c
+Copyright: 2012 Stefan Agner
+License: GPL-2+
+
+Files: filesystems/fsw_ext4.h
+Copyright: 2006 Christoph Pfisterer
+           2012 Stefan Agner
+License: GPL-2+
+
+Files: filesystems/fsw_ext4_disk.h
+Copyright: 2006 Christoph Pfisterer
+           2012 Stefan Agner
+           1991-2012 by various Linux kernel contributors
+License: GPL-2+
+
+Files: filesystems/fsw_ntfs.c
+Copyright: Samuel Liao
+License: GPL-2+
+
+Files Used by Btrfs Filesystem Driver
+(Used in addition to Base Filesystem Driver Files)
+--------------------------------------------------
+
+Files: filesystems/crc32c.c
+       filesystems/gzio.c
+Copyright: 2008 Free Software Foundation, Inc.
+License: GPL-3+
+
+Files: filesystems/fsw_btrfs.c
+Copyright: 2010 Free Software Foundation, Inc.
+           2013 Tencent, Inc. (Samuel Liao)
+License: GPL-3+
+
+Files: filesystems/minilzo.[ch]
+Copyright: 1996-2011 Markus Franz Xaver Johannes Oberhumer
+License: GPL-2+
+
+Files: filesystems/scandisk.c
+Copyright: 2013 Tencent, Inc. (Samuel Liao)
+License: GPL-3+
+
+Files Used by HFS+ & ISO-9660 Filesystem Drivers
+(Used in addition to Base Filesystem Driver Files)
+--------------------------------------------------
+
+Files: filesystems/fsw_hfs.[ch]
+Copyright: 2010 Oracle Corporation
+License: GPL-2
+
+Files: filesystems/fsw_iso9660.[ch]
+Copyright: 2006 Christoph Pfisterer
+           2010 Oracle Corporation
+License: BSD 3-clause & GPL-2
+
+Files Used to Build iPXE (not built by default)
+-----------------------------------------------
+
+Files: net/*
+Copyright: 2009 Michael Brown
+License: GPL-2+
+
+Documentation
+-------------
+
+Files: docs/*
+Copyright: 2012-2015 Roderick W. Smith
+License: FDL 1.3
+
+
+License: GPL-3
 
     This package is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

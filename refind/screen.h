@@ -84,6 +84,8 @@ VOID FinishTextScreen(IN BOOLEAN WaitAlways);
 VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title);
 VOID FinishExternalScreen(VOID);
 VOID TerminateScreen(VOID);
+VOID DrawScreenHeader(IN CHAR16 *Title);
+
 #if REFIT_DEBUG > 0
 VOID DebugPause(VOID);
 #else
@@ -105,7 +107,5 @@ VOID BltImage(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos);
 VOID BltImageAlpha(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos, IN EG_PIXEL *BackgroundPixel);
 //VOID BltImageComposite(IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN UINTN XPos, IN UINTN YPos);
 VOID BltImageCompositeBadge(IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN EG_IMAGE *BadgeImage, IN UINTN XPos, IN UINTN YPos);
-
-BOOLEAN line_edit(CHAR16 *line_in, CHAR16 **line_out, UINTN x_max);
 
 #endif

@@ -1,7 +1,7 @@
 /**
  * \file fsw_ntfs.c
  * ntfs file system driver code.
- * by Samuel Liao
+ * Copyright (C) 2015 by Samuel Liao
  */
 
 /*-
