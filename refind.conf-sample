@@ -424,35 +424,35 @@ timeout 20
 # of an initial RAM disk. Note uses of Linux-style forward slashes.
 # Also note that a leading slash is optional in file specifications.
 menuentry Linux {
-	icon EFI/refind/icons/os_linux.png
-	volume 904404F8-B481-440C-A1E3-11A5A954E601
-	loader bzImage-3.3.0-rc7
-	initrd initrd-3.3.0.img
-	options "ro root=UUID=5f96cafa-e0a7-4057-b18f-fa709db5b837"
-	disabled
+    icon EFI/refind/icons/os_linux.png
+    volume 904404F8-B481-440C-A1E3-11A5A954E601
+    loader bzImage-3.3.0-rc7
+    initrd initrd-3.3.0.img
+    options "ro root=UUID=5f96cafa-e0a7-4057-b18f-fa709db5b837"
+    disabled
 }
 
 # A sample entry for loading Ubuntu using its standard name for
 # its GRUB 2 boot loader. Note uses of Linux-style forward slashes
 menuentry Ubuntu {
-	loader /EFI/ubuntu/grubx64.efi
-	icon /EFI/refind/icons/os_linux.png
-	disabled
+    loader /EFI/ubuntu/grubx64.efi
+    icon /EFI/refind/icons/os_linux.png
+    disabled
 }
 
 # A minimal ELILO entry, which probably offers nothing that
 # auto-detection can't accomplish.
 menuentry "ELILO" {
-	loader \EFI\elilo\elilo.efi
-	disabled
+    loader \EFI\elilo\elilo.efi
+    disabled
 }
 
 # Like the ELILO entry, this one offers nothing that auto-detection
 # can't do; but you might use it if you want to disable auto-detection
 # but still boot Windows....
 menuentry "Windows 7" {
-	loader \EFI\Microsoft\Boot\bootmgfw.efi
-	disabled
+    loader \EFI\Microsoft\Boot\bootmgfw.efi
+    disabled
 }
 
 # EFI shells are programs just like boot loaders, and can be
@@ -461,10 +461,10 @@ menuentry "Windows 7" {
 # could initialize hardware and then launch an OS, or it could
 # do something entirely different.
 menuentry "Windows via shell script" {
-	icon \EFI\refind\icons\os_win.png
-	loader \EFI\tools\shell.efi
-	options "fs0:\EFI\tools\launch_windows.nsh"
-	disabled
+    icon \EFI\refind\icons\os_win.png
+    loader \EFI\tools\shell.efi
+    options "fs0:\EFI\tools\launch_windows.nsh"
+    disabled
 }
 
 # Mac OS is normally detected and run automatically; however,
@@ -474,8 +474,8 @@ menuentry "Windows via shell script" {
 # certainly need to change the "volume" line for this example
 # to work.
 menuentry "My Mac OS X" {
-	icon \EFI\refind\icons\os_mac.png
-	volume "OS X boot"
-	loader \System\Library\CoreServices\boot.efi
-	disabled
+    icon \EFI\refind\icons\os_mac.png
+    volume "OS X boot"
+    loader \System\Library\CoreServices\boot.efi
+    disabled
 }
