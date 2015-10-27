@@ -36,6 +36,7 @@
 #
 # Revision history:
 #
+# 0.9.3   -- Enable running under OS X's recovery system.
 # 0.9.2   -- Added --keepname option.
 # 0.8.7   -- Better detection of Secure Boot mode & fixed errors when copying
 #            Shim & MokManager files over themselves; fixed bug that caused

@@ -1,3 +1,12 @@
+0.9.3 (??/??/2015):
+-------------------
+
+- Under OS X, install.sh can now be run from the recovery system. This may
+  help work around OS X 10.11's problems with System Integrity Protection,
+  since it should be possible to reboot into the recovery system to install
+  rEFInd without disabling SIP for the main installation, even for just one
+  boot.
+
 0.9.2 (9/19/2015):
 ------------------
 
