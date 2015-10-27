@@ -94,6 +94,7 @@ VOID DebugPause(VOID);
 VOID EndlessIdleLoop(VOID);
 BOOLEAN ReadAllKeyStrokes(VOID);
 VOID PauseForKey(VOID);
+VOID PauseSeconds(UINTN Seconds);
 
 BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where);
 BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where);

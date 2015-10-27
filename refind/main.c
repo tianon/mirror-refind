@@ -156,11 +156,14 @@ REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL, 0, L"
                                      L"Insert or F2 for more options; Esc to refresh" };
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
-REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, TRUE,  0, 0, 0, DONT_CHANGE_TEXT_MODE, 20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC,
-                              0, 0, { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE }, BANNER_NOSCALE,
-                              NULL, NULL, NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                              { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY, TAG_MOK_TOOL,
-                                TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, 0, 0, 0, 0, 0, 0, 0, 0 }
+REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, TRUE, 0, 0, 0, DONT_CHANGE_TEXT_MODE,
+                              20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC,
+                              0, 0, { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE },
+                              BANNER_NOSCALE, NULL, NULL, NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL,
+                              NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                              { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY,
+                                TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE,
+                                0, 0, 0, 0, 0, 0, 0, 0 }
                             };
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
@@ -186,7 +189,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.2.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -2141,6 +2144,75 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
     } // if
 } // VOID SetConfigFilename()
 
+
+#define EFI_APPLE_SET_OS_PROTOCOL_GUID  \
+  { 0xc5c5da95, 0x7d5c, 0x45e6, \
+    { 0xb2, 0xf1, 0x3f, 0xd5, 0x2b, 0xb1, 0x00, 0x77 } \
+  }
+
+typedef struct efi_apple_set_os_interface {
+    UINT64 version;
+    EFI_STATUS EFIAPI (*set_os_version) (IN CHAR8 *version);
+    EFI_STATUS EFIAPI (*set_os_vendor) (IN CHAR8 *vendor);
+} efi_apple_set_os_interface;
+
+// Function to tell the firmware that OS X is being launched. This is
+// required to work around problems on some Macs that don't fully
+// initialize some hardware (especially video displays) when third-party
+// OSes are launched in EFI mode.
+static EFI_STATUS SetAppleOSInfo() {
+//    CHAR8 apple_os_version[] = "Mac OS X 10.9";
+    CHAR16 *AppleOSVersion = NULL;
+    CHAR8 *AppleOSVersion8 = NULL;
+//    CHAR8 apple_os_vendor[]  = "Apple Inc.";
+    EFI_STATUS Status;
+    EFI_GUID apple_set_os_guid = EFI_APPLE_SET_OS_PROTOCOL_GUID;
+    efi_apple_set_os_interface *set_os = NULL;
+
+    Status = refit_call3_wrapper(BS->LocateProtocol, &apple_set_os_guid, NULL, (VOID**) &set_os);
+
+    // Not a Mac, so ignore the call....
+    if ((Status != EFI_SUCCESS) || (!set_os)) {
+        Print(L"Not a Mac!\n");
+        PauseForKey();
+        return EFI_SUCCESS;
+    }
+
+    if ((set_os->version != 0) && GlobalConfig.SpoofOSXVersion) {
+        AppleOSVersion = StrDuplicate(L"Mac OS X");
+        MergeStrings(&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
+        Print(L"Setting OS version to '%s'\n", AppleOSVersion);
+        AppleOSVersion8 = AllocateZeroPool((StrLen(AppleOSVersion) + 1) * sizeof(CHAR8));
+        UnicodeStrToAsciiStr(AppleOSVersion, AppleOSVersion8);
+        if (AppleOSVersion8) {
+            Print(L"Calling set_os_version()\n");
+            Status = refit_call1_wrapper (set_os->set_os_version, AppleOSVersion8);
+            Print(L"Returned %lx\n", Status);
+            if (EFI_ERROR(Status))
+                Print(L"ERROR! Returned %x\n", Status);
+        } else {
+            Status = EFI_OUT_OF_RESOURCES;
+            Print(L"Out of resources!\n");
+        }
+    }
+
+    if (/* (Status == EFI_SUCCESS) && */ (set_os->version == 2)) {
+        Print(L"Setting OS vendor....");
+        Status = refit_call1_wrapper (set_os->set_os_vendor, "Apple Inc.");
+        Print(L"Returned %x\n", Status);
+    }
+
+    if (Status != EFI_SUCCESS) {
+        Print(L"Unable to set firmware boot type!\n");
+    }
+
+    MyFreePool(AppleOSVersion);
+    MyFreePool(AppleOSVersion8);
+    Print(L"Returning %x\n", Status);
+    PauseForKey();
+    return (Status);
+} // EFI_STATUS SetAppleOSInfo()
+
 //
 // main entry point
 //
@@ -2169,6 +2241,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
     SetConfigFilename(ImageHandle);
     ReadConfig(GlobalConfig.ConfigFilename);
+
+    if (GlobalConfig.SpoofOSXVersion) {
+        SetAppleOSInfo();
+    }
 
     InitScreen();
     WarnIfLegacyProblems();

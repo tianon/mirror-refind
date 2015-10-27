@@ -305,6 +305,7 @@ typedef struct {
    CHAR16           *WindowsRecoveryFiles;
    CHAR16           *DriverDirs;
    CHAR16           *IconsDir;
+   CHAR16           *SpoofOSXVersion;
    UINTN            ShowTools[NUM_TOOLS];
    CHAR8            ScanFor[NUM_SCAN_OPTIONS]; // codes of types of loaders for which to scan
 } REFIT_CONFIG;
