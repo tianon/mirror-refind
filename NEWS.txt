@@ -1,6 +1,18 @@
 0.9.3 (??/??/2015):
 -------------------
 
+- Worked around an EFI bug that affected my 32-bit Mac Mini: That system
+  seems to have a broken EFI, or possibly a buggy CPU, that causes some
+  (but not all) conversions from floating-point to integer numbers to hang
+  the computer. Such operations were performed only in rEFInd's
+  graphics-resizing code, and so would manifest only when icons or
+  background images were resized. My fix eliminates the use of
+  floating-point operations in the affected function, which eliminates the
+  crashes. There may be some degradation in the quality of resized images,
+  though, particularly on 32-bit systems. (64-bit systems use larger
+  integers, which enable greater precision in my floating-point
+  workaround.)
+
 - Under OS X, install.sh can now be run from the recovery system. This may
   help work around OS X 10.11's problems with System Integrity Protection,
   since it should be possible to reboot into the recovery system to install

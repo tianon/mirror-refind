@@ -64,6 +64,16 @@
 
 #define MAX_FILE_SIZE (1024*1024*1024)
 
+// Multiplier for pseudo-floating-point operations in egScaleImage().
+// A value of 4096 should keep us within limits 32-bit systems, but I've seen
+// some minor artifacts at this level, so give it a bit more precision on
+// 64-bit systems....
+#if defined(EFIX64)
+#define FP_MULTIPLIER 32768
+#else
+#define FP_MULTIPLIER 4096
+#endif
+
 #ifndef __MAKEWITH_GNUEFI
 #define LibLocateHandle gBS->LocateHandleBuffer
 #define LibOpenRoot EfiLibOpenRoot
@@ -142,13 +152,19 @@ EG_IMAGE * egCropImage(IN EG_IMAGE *Image, IN UINTN StartX, IN UINTN StartY, IN 
 // code presented at http://tech-algorithm.com/articles/bilinear-image-scaling/.
 // Resize an image; returns pointer to resized image if successful, NULL otherwise.
 // Calling function is responsible for freeing allocated memory.
+// NOTE: x_ratio, y_ratio, x_diff, and y_diff should really be float values;
+// however, I've found that my 32-bit Mac Mini has a buggy EFI (or buggy CPU?), which
+// causes this function to hang on float-to-UINT8 conversions on some (but not all!)
+// float values. Therefore, this function uses integer arithmetic but multiplies
+// all values by FP_MULTIPLIER to achieve something resembling the sort of precision
+// needed for good results.
 EG_IMAGE * egScaleImage(IN EG_IMAGE *Image, IN UINTN NewWidth, IN UINTN NewHeight) {
    EG_IMAGE *NewImage = NULL;
    EG_PIXEL a, b, c, d;
    UINTN x, y, Index ;
    UINTN i, j;
    UINTN Offset = 0;
-   float x_ratio, y_ratio, x_diff, y_diff;
+   UINTN x_ratio, y_ratio, x_diff, y_diff;
 
    if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0))
       return NULL;
@@ -160,15 +176,15 @@ EG_IMAGE * egScaleImage(IN EG_IMAGE *Image, IN UINTN NewWidth, IN UINTN NewHeigh
    if (NewImage == NULL)
       return NULL;
 
-   x_ratio = ((float)(Image->Width - 1)) / NewWidth;
-   y_ratio = ((float)(Image->Height - 1)) / NewHeight;
+   x_ratio = ((Image->Width - 1) * FP_MULTIPLIER) / NewWidth;
+   y_ratio = ((Image->Height - 1) * FP_MULTIPLIER) / NewHeight;
 
    for (i = 0; i < NewHeight; i++) {
       for (j = 0; j < NewWidth; j++) {
-         x = (UINTN)(x_ratio * j);
-         y = (UINTN)(y_ratio * i);
-         x_diff = (x_ratio * j) - x;
-         y_diff = (y_ratio * i) - y;
+         x = (j * (Image->Width - 1)) / NewWidth;
+         y = (i * (Image->Height - 1)) / NewHeight;
+         x_diff = (x_ratio * j) - x * FP_MULTIPLIER;
+         y_diff = (y_ratio * i) - y * FP_MULTIPLIER;
          Index = ((y * Image->Width) + x);
          a = Image->PixelData[Index];
          b = Image->PixelData[Index + 1];
@@ -176,24 +192,28 @@ EG_IMAGE * egScaleImage(IN EG_IMAGE *Image, IN UINTN NewWidth, IN UINTN NewHeigh
          d = Image->PixelData[Index + Image->Width + 1];
 
          // blue element
-         // Yb = Ab(1-Image->Width)(1-Image->Height) + Bb(Image->Width)(1-Image->Height) + Cb(Image->Height)(1-Image->Width) + Db(wh)
-         NewImage->PixelData[Offset].b = (a.b)*(1-x_diff)*(1-y_diff) + (b.b)*(x_diff)*(1-y_diff) +
-                                         (c.b)*(y_diff)*(1-x_diff)   + (d.b)*(x_diff*y_diff);
+         NewImage->PixelData[Offset].b = ((a.b) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
+                                          (b.b) * (x_diff) * (FP_MULTIPLIER - y_diff) +
+                                          (c.b) * (y_diff) * (FP_MULTIPLIER - x_diff) +
+                                          (d.b) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
 
          // green element
-         // Yg = Ag(1-Image->Width)(1-Image->Height) + Bg(Image->Width)(1-Image->Height) + Cg(Image->Height)(1-Image->Width) + Dg(wh)
-         NewImage->PixelData[Offset].g = (a.g)*(1-x_diff)*(1-y_diff) + (b.g)*(x_diff)*(1-y_diff) +
-                                         (c.g)*(y_diff)*(1-x_diff)   + (d.g)*(x_diff*y_diff);
+         NewImage->PixelData[Offset].g = ((a.g) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
+                                          (b.g) * (x_diff) * (FP_MULTIPLIER - y_diff) +
+                                          (c.g) * (y_diff) * (FP_MULTIPLIER - x_diff) +
+                                          (d.g) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
 
          // red element
-         // Yr = Ar(1-Image->Width)(1-Image->Height) + Br(Image->Width)(1-Image->Height) + Cr(Image->Height)(1-Image->Width) + Dr(wh)
-         NewImage->PixelData[Offset].r = (a.r)*(1-x_diff)*(1-y_diff) + (b.r)*(x_diff)*(1-y_diff) +
-                                         (c.r)*(y_diff)*(1-x_diff)   + (d.r)*(x_diff*y_diff);
+         NewImage->PixelData[Offset].r = ((a.r) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
+                                          (b.r) * (x_diff) * (FP_MULTIPLIER - y_diff) +
+                                          (c.r) * (y_diff) * (FP_MULTIPLIER - x_diff) +
+                                          (d.r) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
 
          // alpha element
-         NewImage->PixelData[Offset++].a = (a.a)*(1-x_diff)*(1-y_diff) + (b.a)*(x_diff)*(1-y_diff) +
-                                           (c.a)*(y_diff)*(1-x_diff)   + (d.a)*(x_diff*y_diff);
-
+         NewImage->PixelData[Offset++].a = ((a.a) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
+                                            (b.a) * (x_diff) * (FP_MULTIPLIER - y_diff) +
+                                            (c.a) * (y_diff) * (FP_MULTIPLIER - x_diff) +
+                                            (d.a) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
       } // for (j...)
    } // for (i...)
    return NewImage;
