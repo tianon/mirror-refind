@@ -65,13 +65,13 @@
 #define MAX_FILE_SIZE (1024*1024*1024)
 
 // Multiplier for pseudo-floating-point operations in egScaleImage().
-// A value of 4096 should keep us within limits 32-bit systems, but I've seen
-// some minor artifacts at this level, so give it a bit more precision on
-// 64-bit systems....
+// A value of 4096 should keep us within limits on 32-bit systems, but I've
+// seen some minor artifacts at this level, so give it a bit more precision
+// on 64-bit systems....
 #if defined(EFIX64)
-#define FP_MULTIPLIER 32768
+#define FP_MULTIPLIER (UINTN) 65536
 #else
-#define FP_MULTIPLIER 4096
+#define FP_MULTIPLIER (UINTN) 4096
 #endif
 
 #ifndef __MAKEWITH_GNUEFI
