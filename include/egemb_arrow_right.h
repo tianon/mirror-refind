@@ -2,7 +2,7 @@
  * include/egemb_arrow_right.h
  * An encoded right arrow icon
  *
- * Copyright (c) 2014-2015 Roderick W. Smith
+ * Copyright (c) 2015 Roderick W. Smith
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
