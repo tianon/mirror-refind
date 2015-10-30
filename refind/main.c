@@ -2150,66 +2150,51 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
     { 0xb2, 0xf1, 0x3f, 0xd5, 0x2b, 0xb1, 0x00, 0x77 } \
   }
 
-typedef struct efi_apple_set_os_interface {
-    UINT64 version;
-    EFI_STATUS EFIAPI (*set_os_version) (IN CHAR8 *version);
-    EFI_STATUS EFIAPI (*set_os_vendor) (IN CHAR8 *vendor);
-} efi_apple_set_os_interface;
+typedef struct EfiAppleSetOsInterface {
+    UINT64 Version;
+    EFI_STATUS EFIAPI (*SetOsVersion) (IN CHAR8 *Version);
+    EFI_STATUS EFIAPI (*SetOsVendor) (IN CHAR8 *Vendor);
+} EfiAppleSetOsInterface;
 
 // Function to tell the firmware that OS X is being launched. This is
 // required to work around problems on some Macs that don't fully
 // initialize some hardware (especially video displays) when third-party
 // OSes are launched in EFI mode.
 static EFI_STATUS SetAppleOSInfo() {
-//    CHAR8 apple_os_version[] = "Mac OS X 10.9";
     CHAR16 *AppleOSVersion = NULL;
     CHAR8 *AppleOSVersion8 = NULL;
-//    CHAR8 apple_os_vendor[]  = "Apple Inc.";
     EFI_STATUS Status;
     EFI_GUID apple_set_os_guid = EFI_APPLE_SET_OS_PROTOCOL_GUID;
-    efi_apple_set_os_interface *set_os = NULL;
+    EfiAppleSetOsInterface *SetOs = NULL;
 
-    Status = refit_call3_wrapper(BS->LocateProtocol, &apple_set_os_guid, NULL, (VOID**) &set_os);
+    Status = refit_call3_wrapper(BS->LocateProtocol, &apple_set_os_guid, NULL, (VOID**) &SetOs);
 
     // Not a Mac, so ignore the call....
-    if ((Status != EFI_SUCCESS) || (!set_os)) {
-        Print(L"Not a Mac!\n");
-        PauseForKey();
+    if ((Status != EFI_SUCCESS) || (!SetOs))
         return EFI_SUCCESS;
-    }
 
-    if ((set_os->version != 0) && GlobalConfig.SpoofOSXVersion) {
+    if ((SetOs->Version != 0) && GlobalConfig.SpoofOSXVersion) {
         AppleOSVersion = StrDuplicate(L"Mac OS X");
         MergeStrings(&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
-        Print(L"Setting OS version to '%s'\n", AppleOSVersion);
         AppleOSVersion8 = AllocateZeroPool((StrLen(AppleOSVersion) + 1) * sizeof(CHAR8));
         UnicodeStrToAsciiStr(AppleOSVersion, AppleOSVersion8);
         if (AppleOSVersion8) {
-            Print(L"Calling set_os_version()\n");
-            Status = refit_call1_wrapper (set_os->set_os_version, AppleOSVersion8);
-            Print(L"Returned %lx\n", Status);
-            if (EFI_ERROR(Status))
-                Print(L"ERROR! Returned %x\n", Status);
+            Status = refit_call1_wrapper (SetOs->SetOsVersion, AppleOSVersion8);
+            if (!EFI_ERROR(Status))
+                Status = EFI_SUCCESS;
         } else {
             Status = EFI_OUT_OF_RESOURCES;
             Print(L"Out of resources!\n");
         }
-    }
+        if ((Status == EFI_SUCCESS) && (SetOs->Version == 2))
+            Status = refit_call1_wrapper (SetOs->SetOsVendor, "Apple Inc.");
+    } // if
 
-    if (/* (Status == EFI_SUCCESS) && */ (set_os->version == 2)) {
-        Print(L"Setting OS vendor....");
-        Status = refit_call1_wrapper (set_os->set_os_vendor, "Apple Inc.");
-        Print(L"Returned %x\n", Status);
-    }
-
-    if (Status != EFI_SUCCESS) {
+    if (Status != EFI_SUCCESS)
         Print(L"Unable to set firmware boot type!\n");
-    }
 
     MyFreePool(AppleOSVersion);
     MyFreePool(AppleOSVersion8);
-    Print(L"Returning %x\n", Status);
-    PauseForKey();
     return (Status);
 } // EFI_STATUS SetAppleOSInfo()
 

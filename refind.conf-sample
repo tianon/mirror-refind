@@ -369,6 +369,21 @@ timeout 20
 #
 #enable_and_lock_vmx false
 
+# Tell a Mac's EFI that OS X is about to be launched, even when it's not.
+# This option causes some Macs to initialize their hardware differently than
+# when a third-party OS is launched normally. In some cases (particularly on
+# Macs with multiple video cards), using this option can cause hardware to
+# work that would not otherwise work. On the other hand, using this option
+# when it is not necessary can cause hardware (such as keyboards and mice) to
+# become inaccessible. Therefore, you should not enable this option if your
+# non-Apple OSes work correctly; enable it only if you have problems with
+# some hardware devices. When needed, a value of "10.9" usually works, but
+# you can experiment with other values. This feature has no effect on
+# non-Apple computers.
+# The default is inactive (no OS X spoofing is done).
+#
+#spoof_osx_version "10.9"
+
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its options appeared at the point of the "include"
 # token itself, so if you want to override a setting in the main file,

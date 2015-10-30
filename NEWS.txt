@@ -1,6 +1,14 @@
 0.9.3 (??/??/2015):
 -------------------
 
+- Added new "spoof_osx_version" token, which takes an OS X version number
+  (such as "10.9") as an option. This feature, when enabled, causes rEFInd
+  to tell a Mac's firmware that the specified version of OS X is being
+  launched. This option is usually unnecessary, but it can help properly
+  initialize some hardware -- particularly secondary video devices. OTOH,
+  on some Macs it can cause hardware (notably keyboards and mice) to become
+  unresponsive, so you should not use this option unnecessarily.
+
 - Worked around an EFI bug that affected my 32-bit Mac Mini: That system
   seems to have a broken EFI, or possibly a buggy CPU, that causes some
   (but not all) conversions from floating-point to integer numbers to hang
