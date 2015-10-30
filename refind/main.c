@@ -189,7 +189,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.2.2");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.2.3");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -2227,9 +2227,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     SetConfigFilename(ImageHandle);
     ReadConfig(GlobalConfig.ConfigFilename);
 
-    if (GlobalConfig.SpoofOSXVersion) {
+    if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')
         SetAppleOSInfo();
-    }
 
     InitScreen();
     WarnIfLegacyProblems();
