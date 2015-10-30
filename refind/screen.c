@@ -341,6 +341,11 @@ VOID PauseForKey(VOID)
     Print(L"\n");
 }
 
+// Pause a specified number of seconds
+VOID PauseSeconds(UINTN Seconds) {
+     refit_call1_wrapper(BS->Stall, 1000000 * Seconds);
+} // VOID PauseSeconds()
+
 #if REFIT_DEBUG > 0
 VOID DebugPause(VOID)
 {

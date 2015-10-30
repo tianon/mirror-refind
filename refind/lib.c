@@ -2140,4 +2140,3 @@ EFI_GUID StringAsGuid(CHAR16 * InString) {
 BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2) {
     return (CompareMem(Guid1, Guid2, 16) == 0);
 } // BOOLEAN GuidsAreEqual()
-
