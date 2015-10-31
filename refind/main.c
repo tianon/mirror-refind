@@ -2144,6 +2144,11 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
     } // if
 } // VOID SetConfigFilename()
 
+/*
+ * The below definitions and SetAppleOSInfo() function are based on a GRUB patch
+ * by Andreas Heider:
+ * https://lists.gnu.org/archive/html/grub-devel/2013-12/msg00442.html
+ */
 
 #define EFI_APPLE_SET_OS_PROTOCOL_GUID  \
   { 0xc5c5da95, 0x7d5c, 0x45e6, \
@@ -2176,25 +2181,26 @@ static EFI_STATUS SetAppleOSInfo() {
     if ((SetOs->Version != 0) && GlobalConfig.SpoofOSXVersion) {
         AppleOSVersion = StrDuplicate(L"Mac OS X");
         MergeStrings(&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
-        AppleOSVersion8 = AllocateZeroPool((StrLen(AppleOSVersion) + 1) * sizeof(CHAR8));
-        UnicodeStrToAsciiStr(AppleOSVersion, AppleOSVersion8);
-        if (AppleOSVersion8) {
-            Status = refit_call1_wrapper (SetOs->SetOsVersion, AppleOSVersion8);
-            if (!EFI_ERROR(Status))
-                Status = EFI_SUCCESS;
-        } else {
-            Status = EFI_OUT_OF_RESOURCES;
-            Print(L"Out of resources!\n");
-        }
-        if ((Status == EFI_SUCCESS) && (SetOs->Version == 2))
-            Status = refit_call1_wrapper (SetOs->SetOsVendor, "Apple Inc.");
+        if (AppleOSVersion) {
+            AppleOSVersion8 = AllocateZeroPool((StrLen(AppleOSVersion) + 1) * sizeof(CHAR8));
+            UnicodeStrToAsciiStr(AppleOSVersion, AppleOSVersion8);
+            if (AppleOSVersion8) {
+                Status = refit_call1_wrapper (SetOs->SetOsVersion, AppleOSVersion8);
+                if (!EFI_ERROR(Status))
+                    Status = EFI_SUCCESS;
+                MyFreePool(AppleOSVersion8);
+            } else {
+                Status = EFI_OUT_OF_RESOURCES;
+                Print(L"Out of resources in SetAppleOSInfo!\n");
+            }
+            if ((Status == EFI_SUCCESS) && (SetOs->Version == 2))
+                Status = refit_call1_wrapper (SetOs->SetOsVendor, "Apple Inc.");
+            MyFreePool(AppleOSVersion);
+        } // if (AppleOSVersion)
     } // if
-
     if (Status != EFI_SUCCESS)
         Print(L"Unable to set firmware boot type!\n");
 
-    MyFreePool(AppleOSVersion);
-    MyFreePool(AppleOSVersion8);
     return (Status);
 } // EFI_STATUS SetAppleOSInfo()
 
