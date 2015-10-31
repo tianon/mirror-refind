@@ -74,56 +74,22 @@ Program (C source code) files:
 Icons and graphics:
 -------------------
 
-* I replaced many of the original rEFIt icons with icons taken from the
-  Oxygen Icons project, originally from the Oxygen Refit package on its
-  page (http://deviantdark.deviantart.com/art/Oxygen-Refit-70199755) or
-  from the oxygen-icons version 4.7.4 package on my Gentoo Linux
-  development system. As of version 0.9.3, I refreshed these icons with
-  versions from Ubuntu's oxygen-icon-theme 4.13.0-0ubuntu1 package. These
-  icons are released under the GPLv3. If I'm reading the pages correctly,
-  the original creator was David Vignoni (aka "deviantdark" on the
-  deviantart site).
+* Most icons are derived from the Aw0ken icon set, version 2.5, by
+  Alessandro Roncone (aka alecive); see
+  http://alecive.deviantart.com/art/AwOken-163570862. Many of these icons
+  have been scaled or altered in color from their original forms.
 
-* Erik Kemperman provided the rEFInd icon, which is a combination of
-  the common refresh/reload icon and the search/find icon.
+* The Debian icon is based on the SVG available from
+  https://commons.wikimedia.org/wiki/File:Debian-OpenLogo.svg. I modified
+  it to fit the general style set by the Aw0ken icons.
 
-* The memtest icon (tool_memtest.icns) was originally memory.png from the
-  Gentoo kdeartwork-iconthemes-4.10.5 icons package, and was subsequently
-  updated from the Ubuntu kdeartwork 4:15.08.1-0ubuntu1 package.
+* The Elementary OS icon is based on the SVG available from
+  https://commons.wikimedia.org/wiki/File:Elementary_logo.svg. I modified
+  it to fit the general style set by the Aw0ken icons.
 
-* The gummiboot icon is taken from the gummiboot Web page
-  (http://freedesktop.org/wiki/Software/gummiboot) and scaled down
-  slightly.
+* Erik Kemperman provided the original (pre-0.9.3) rEFInd icon, which is a
+  combination of the common refresh/reload icon and the search/find icon.
+  For version 0.9.3, I created a new icon from Erik's basic design concept,
+  but to match the Aw0ken flat-with-drop-shadow style.
 
-* The Linux Mint icon comes from the Linux Mint 11.1 user guide
-  (http://ftp.heanet.ie/pub/linuxmint.com/docs/user-guide/)
-
-* The Kuubunut icon comes from "doctormo" on deviantart, at
-  http://doctormo.deviantart.com/art/Ubuntu-Icons-171616850.
-
-* The Arch Linux icon was created by ~IDRGSKYWALKER on Deviant Art
-  (http://idrgskywalker.deviantart.com/art/Arch-Linux-Logo-186211022).
-
-* The Fatdog Linux icon was created by the Fatdog developers (see
-  http://distro.ibiblio.org/fatdog/web/ for the Fatdog project).
-
-* The ALT Linux icon was donated by the ALT Linux developers (see
-  http://www.altlinux.com).
-
-* The ChromeOS icon (os_chrome.icns) is a cropped version of the icon from
-  Wikipedia
-  (http://en.wikipedia.org/wiki/File:Google_Chrome_icon_and_wordmark_%282011%29.svg),
-  which in turn is Google's original work.
-
-* The Windows 8 icon (icons/os_win8.png) is taken from Martz90's Cicle
-  Icons icon set
-  (http://www.iconarchive.com/show/circle-icons-by-martz90.html), which is
-  licensed under the CC Attribution-Noncommercial-No Derivate 4.0 license
-  (http://creativecommons.org/licenses/by-nc-nd/4.0/).
-
-* The icon used (at different sizes) for both the generic network OS and
-  for the network-boot badge is from
-  https://www.iconfinder.com/icons/37048/intranet_network_icon.
-
-* The icon used for the network-boot tool on the second row comes from
-  https://cdn2.iconfinder.com/data/icons/oxygen/48x48/devices/network-wired.png.
+* Additional icons were created by me.

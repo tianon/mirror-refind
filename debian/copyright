@@ -17,6 +17,9 @@ Upstream Authors:
     Peter Anvin
     Lode Vandevenne
     Gary S. Brown
+    Dan Rabbit
+    Alessandro Roncone
+    Debian Project
     Intel Corporation
     Regents of the University of California
     UNIX System Laboratories, Inc.
@@ -40,6 +43,7 @@ Documentation and icons are also included.
   * The ext2fs, ext4fs, ReiserFS, and NTFS drivers all use GPL-2+
     source files.
 * The documentation is licensed under the FDL 1.3
+* Icons use the CC-SA 3.0, LGPLv3+, or GPLv2 licenses.
 
 File-by-file details are described below.
 
@@ -205,13 +209,90 @@ Files: net/*
 Copyright: 2009 Michael Brown
 License: GPL-2+
 
+Icons
+-----
+
+Files: icons/arrow_left.png
+       icons/arrow_right.png
+       icons/boot_linux.png
+       icons/func_about.png
+       icons/func_exit.png
+       icons/func_firmware.png
+       icons/func_reset.png
+       icons/func_shutdown.png
+       icons/os_arch.png
+       icons/os_centos.png
+       icons/os_chakra.png
+       icons/os_chrome.png
+       icons/os_clover.png
+       icons/os_crunchbang.png
+       icons/os_fedora.png
+       icons/os_frugalware.png
+       icons/os_gentoo.png
+       icons/os_hwtest.png
+       icons/os_kubuntu.png
+       icons/os_linux.png
+       icons/os_linuxmint.png
+       icons/os_lubuntu.png
+       icons/os_mageia.png
+       icons/os_mandriva.png
+       icons/os_network.png
+       icons/os_opensuse.png
+       icons/os_slackware.png
+       icons/os_suse.png
+       icons/os_ubuntu.png
+       icons/os_unknown.png
+       icons/os_win8.png
+       icons/os_xubuntu.png
+       icons/tool_mok_tool.png
+       icons/tool_netboot.png
+       icons/tool_shell.png
+       icons/vol_external.png
+       icons/vol_internal.png
+       icons/vol_net.png
+       icons/vol_optical.png
+Copyright: 2013 by Alessandro Roncone (aka alecive on DeviantArt)
+License: Creative Commons Attribution-Share Alike 3.0 (CC-SA 3.0)
+
+Mappings of files to original Aw0ken package filenames is in the
+icons/README file.
+
+Files: icons/boot_win.png
+       icons/os_clover.png
+       icons/os_freebsd.png
+       icons/os_gummiboot.png
+       icons/os_haiku.png
+       icons/os_legacy.png
+       icons/os_mac.png
+       icons/os_netbsd.png
+       icons/os_redhat.png
+       icons/os_refind.png
+       icons/os_refit.png
+       icons/os_win.png
+       icons/tool_memtest.png
+       icons/transparent.png
+Copyright: 2015 by Roderick W. Smith
+License: LGPLv3+ or Creative Commons Attribution-Share Alike 3.0
+         (CC-SA 3.0)
+
+File: icons/os_debian.png
+Copyright: 1999 by Debian Project
+License: LGPLv3+ or Creative Commons Attribution-Share Alike 3.0
+         (CC-SA 3.0)
+
+File: icons/os_elementary.png
+Copyright: 2008 Dan Rabbit
+License: GPLv2
+
+SVG forms of some icons appear in the icons/svg subdirectory. When present,
+they have the same copyrights and licenses as the PNG versions noted above.
+
 Documentation
 -------------
 
 Files: docs/*
 Copyright: 2012-2015 Roderick W. Smith
 License: FDL 1.3
-
 
 License: GPL-3
 
