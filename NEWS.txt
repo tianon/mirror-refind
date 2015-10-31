@@ -1,6 +1,16 @@
 0.9.3 (??/??/2015):
 -------------------
 
+- Added detection of System Integrity Protection (SIP; aka "rootless") mode
+  to OS X portion of install.sh script. When detected, and if no existing
+  rEFInd installation is found, the script now prints a warning and brief
+  instructions of how to enter the Recovery mode to install rEFInd and
+  suggests aborting the installation. (The user can override and attempt
+  installation anyhow.) If SIP is detected along with an existing rEFInd
+  installation, the script moderates the warning and explains that an
+  update of a working rEFInd will probably succeed, but that re-installing
+  to fix a broken rEFInd will probably fail.
+
 - Added new "spoof_osx_version" token, which takes an OS X version number
   (such as "10.9") as an option. This feature, when enabled, causes rEFInd
   to tell a Mac's firmware that the specified version of OS X is being

@@ -36,7 +36,9 @@
 #
 # Revision history:
 #
-# 0.9.3   -- Enable running under OS X's recovery system.
+# 0.9.3   -- Enable running under OS X's recovery system & add warning about
+#            SIP & brief instructions on how to deal with it if SIP is
+#            detected to be enabled.
 # 0.9.2   -- Added --keepname option.
 # 0.8.7   -- Better detection of Secure Boot mode & fixed errors when copying
 #            Shim & MokManager files over themselves; fixed bug that caused
@@ -695,6 +697,55 @@ SetupMacHfs() {
 ENDOFHERE
 } # SetupMacHfs()
 
+CheckForSIP() {
+   if [[ -x "/usr/bin/csrutil" ]] ; then
+      local OKToInstall=`/usr/bin/csrutil status | grep "Protection status: enabled (Custom Configuration\|Apple Internal)"`
+      if [[ -z "$OKToInstall" ]] ; then
+         echo
+         echo "**** ALERT: SIP ENABLED! ****"
+         echo
+         if [[ "$Upgrade" == "1" ]] ; then
+            echo "You are attempting to upgrade an existing installation, but it appears that"
+            echo "System Integrity Protection (SIP) is enabled. If rEFInd is working now, then"
+            echo "this is fine; you can upgrade your existing rEFInd. If rEFInd is not working,"
+            echo "though, re-installing from this boot will not help. To re-enable rEFInd, you"
+            echo "must re-install it from a Recovery system or from another OS. To enter the"
+            echo "Recovery system and re-install rEFInd:"
+         else
+            echo "rEFInd cannot be installed because System Integrity Protection (SIP) seems"
+            echo "to be enabled! You must install rEFInd from your Recovery installation or"
+            echo "from another OS. To install from the Recovery system:"
+         fi
+         echo
+         echo "  1. Reboot"
+         echo "  2. Hold down Command+R as the chime sounds"
+         echo "  3. When the OS has booted, select Utilities->Terminal"
+         echo "  4. Change to this directory with the 'cd' command; it will probably be under"
+         if [[ "`pwd | cut -b 1-8`" == "/Volumes" ]] ; then
+            echo "     `pwd`"
+         else
+            local RootName=`diskutil info -plist / | grep -A 1 VolumeName | grep string | cut -d \> -f 2 | cut -d \< -f 1`
+            echo "     /Volumes/$RootName`pwd`"
+         fi
+         echo "  5. Re-run this script."
+         echo
+         if [[ "$Upgrade" != "1" ]] ; then
+            echo "If you believe SIP is NOT enabled, you may attempt an installation anyhow,"
+            echo "but it may fail."
+            echo
+         fi
+         echo "For more on this subject, see http://www.rodsbooks.com/refind/sip.html"
+         echo
+         echo -n "Do you want to attempt installation (Y/N)? "
+         ReadYesNo
+         if [[ $YesNo == "N" || $YesNo == "n" ]] ; then
+            echo "Exiting!"
+            exit
+         fi
+      fi # csrutil status suggests OK to install
+   fi # csrutil exists
+} # CheckForSIP()
+
 # Control the OS X installation.
 # Sets Problems=1 if problems found during the installation.
 InstallOnOSX() {
@@ -708,6 +759,7 @@ InstallOnOSX() {
    fi
    echo "Installing rEFInd to the partition mounted at $InstallDir"
    DetermineTargetDir
+   CheckForSIP
    Platform=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
    CopyRefindFiles
    if [[ $InstallToEspOnMac == "1" ]] ; then
