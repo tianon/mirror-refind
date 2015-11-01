@@ -228,7 +228,7 @@ Windows 8, this isn't an option for it. Unfortunately, the Shim and PreLoader pr
 <h3>Installing Shim and rEFInd</h3>
 </a>
 
-<p class="sidebar"><b>Note:</b> rEFInd's <tt>install.sh</tt> script attempts to identify whether your computer was booted with Secure Boot active and, if it was, to locate existing Shim binaries and make use of whatever it finds. Thus, you may not need to explicitly set up Shim after you install rEFInd, although you will probably have to enroll rEFInd's key in your MOK list, as described shortly.</p>
+<p class="sidebar"><b>Note:</b> rEFInd's <tt>refind-install</tt> script attempts to identify whether your computer was booted with Secure Boot active and, if it was, to locate existing Shim binaries and make use of whatever it finds. Thus, you may not need to explicitly set up Shim after you install rEFInd, although you will probably have to enroll rEFInd's key in your MOK list, as described shortly.</p>
 
 <p>A working Secure Boot installation of rEFInd involves at least three programs, and probably four or more, each of which must be installed in a specific way:</p>
 
@@ -244,7 +244,7 @@ Windows 8, this isn't an option for it. Unfortunately, the Shim and PreLoader pr
 
 </ul>
 
-<p>If you've installed a distribution that provides Shim and can boot it with Secure Boot active, and if you then install rEFInd using the RPM file that I provide or by running <tt>install.sh</tt>, chances are you'll end up with a working rEFInd that will start up the first time, with one caveat: You'll have to use MokManager to add rEFInd's MOK to your MOK list, as described shortly. If you don't already have a working copy of Shim on your ESP, your task is more complex. Broadly speaking, the procedure should be something like this:</p>
+<p>If you've installed a distribution that provides Shim and can boot it with Secure Boot active, and if you then install rEFInd using the RPM file that I provide or by running <tt>refind-install</tt>, chances are you'll end up with a working rEFInd that will start up the first time, with one caveat: You'll have to use MokManager to add rEFInd's MOK to your MOK list, as described shortly. If you don't already have a working copy of Shim on your ESP, your task is more complex. Broadly speaking, the procedure should be something like this:</p>
 
 <ol>
 
@@ -262,7 +262,7 @@ Windows 8, this isn't an option for it. Unfortunately, the Shim and PreLoader pr
     version, though; as noted earlier, it's inadequate for use with
     rEFInd.)</li>
 
-<p class="sidebar"><b>Tip:</b> If you're running Linux, you can save some effort by using the <tt>install.sh</tt> script with its <tt>--shim <tt class="variable">/path/to/shim.efi</tt></tt> option rather than installing manually, as in steps 4&ndash;6 of this procedure. If you've installed <tt>openssl</tt> and <tt>sbsign</tt>, using <tt>--localkeys</tt> will generate local signing keys and re-sign the rEFInd binaries with your own key, too. You can then use <tt>sbsign</tt> and the keys in <tt>/etc/refind.d/keys</tt> to sign your kernels or boot loaders.</p>
+<p class="sidebar"><b>Tip:</b> If you're running Linux, you can save some effort by using the <tt>refind-install</tt> script with its <tt>--shim <tt class="variable">/path/to/shim.efi</tt></tt> option rather than installing manually, as in steps 4&ndash;6 of this procedure. If you've installed <tt>openssl</tt> and <tt>sbsign</tt>, using <tt>--localkeys</tt> will generate local signing keys and re-sign the rEFInd binaries with your own key, too. You can then use <tt>sbsign</tt> and the keys in <tt>/etc/refind.d/keys</tt> to sign your kernels or boot loaders.</p>
 
 <li>Copy the <tt>shim.efi</tt> and <tt>MokManager.efi</tt> binaries to the
     directory you intend to use for rEFInd&mdash;for instance,
@@ -333,7 +333,7 @@ Windows 8, this isn't an option for it. Unfortunately, the Shim and PreLoader pr
 <h3>Managing Your MOKs</h3>
 </a>
 
-<p>The preceding instructions provided the basics of getting rEFInd up and running, including using MokManager to enroll a MOK on your computer. If you need to sign binaries, though, you'll have to use additional tools. The OpenSSL package provides the cryptographic tools necessary, but actually signing EFI binaries requires additional software. Two packages for this are available: <tt>sbsigntool</tt> and <tt>pesign</tt>. Both are available in binary form from <a href="https://build.opensuse.org/project/show?project=home%3Ajejb1%3AUEFI">this OpenSUSE Build Service (OBS)</a> repository, and many distributions ship with at least one of them. The following procedure uses <tt>sbsigntool</tt>. To sign your own binaries, follow these steps (you can skip the first five steps if you've successfully used <tt>install.sh</tt>'s <tt>--localkeys</tt> option):</p>
+<p>The preceding instructions provided the basics of getting rEFInd up and running, including using MokManager to enroll a MOK on your computer. If you need to sign binaries, though, you'll have to use additional tools. The OpenSSL package provides the cryptographic tools necessary, but actually signing EFI binaries requires additional software. Two packages for this are available: <tt>sbsigntool</tt> and <tt>pesign</tt>. Both are available in binary form from <a href="https://build.opensuse.org/project/show?project=home%3Ajejb1%3AUEFI">this OpenSUSE Build Service (OBS)</a> repository, and many distributions ship with at least one of them. The following procedure uses <tt>sbsigntool</tt>. To sign your own binaries, follow these steps (you can skip the first five steps if you've successfully used <tt>refind-install</tt>'s <tt>--localkeys</tt> option):</p>
 
 <ol>
 
@@ -341,8 +341,8 @@ Windows 8, this isn't an option for it. Unfortunately, the Shim and PreLoader pr
     normally comes in a package called <tt>openssl</tt>.)</li>
 
 <li>If you did <i>not</i> re-sign your rEFInd binaries with
-    <tt>install.sh</tt>'s <tt>--localkeys</tt> option, type the following
-    two commands to generate your public and private keys:
+    <tt>refind-install</tt>'s <tt>--localkeys</tt> option, type the
+    following two commands to generate your public and private keys:
 
 <pre class="listing">
 $ <tt class="userinput">openssl req -new -x509 -newkey rsa:2048 -keyout refind_local.key \
@@ -362,7 +362,7 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     are equivalent, but are used by different
     tools&mdash;<tt>sbsigntool</tt> uses <tt>refind_local.crt</tt> to sign
     binaries, but MokManager uses <tt>refind_local.cer</tt> to enroll the
-    key. If you used <tt>install.sh</tt>'s <tt>--localkeys</tt> option,
+    key. If you used <tt>refind-install</tt>'s <tt>--localkeys</tt> option,
     this step is unnecessary, since these keys have already been created
     and are stored in <tt>/etc/refind.d/keys/</tt>.</li>
 

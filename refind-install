@@ -4,7 +4,7 @@
 #
 # Usage:
 #
-# ./install.sh [options]
+# ./refind-install [options]
 #
 # options include:
 #    "--notesp" to install to the OS X root filesystem rather than to the ESP.

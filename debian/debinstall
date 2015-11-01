@@ -39,7 +39,7 @@ fi
 install -Dp -m0644 refind.conf-sample $BUILD_ROOT/usr/share/refind/refind/
 cp -a icons $BUILD_ROOT/usr/share/refind/refind/
 rm -rf $BUILD_ROOT/usr/share/refind/refind/icons/svg
-install -Dp -m0755 install.sh $BUILD_ROOT/usr/share/refind/
+install -Dp -m0755 refind-install $BUILD_ROOT/usr/share/refind/
 
 # Copy documentation to /usr/share/doc/refind
 mkdir -p $BUILD_ROOT/usr/share/doc/refind
@@ -52,8 +52,8 @@ install -Dp -m0644 keys/* $BUILD_ROOT/etc/refind.d/keys
 
 # Copy scripts to /usr/sbin
 mkdir -p $BUILD_ROOT/usr/sbin
-install -Dp -m0755 mkrlconf.sh $BUILD_ROOT/usr/sbin/
-install -Dp -m0755 mvrefind.sh $BUILD_ROOT/usr/sbin/
+install -Dp -m0755 mkrlconf $BUILD_ROOT/usr/sbin/
+install -Dp -m0755 mvrefind $BUILD_ROOT/usr/sbin/
 
 # Copy banners and fonts to /usr/share/refind
 cp -a banners $BUILD_ROOT/usr/share/refind/

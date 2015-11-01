@@ -158,11 +158,12 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     binary RPM file</a></b>&mdash;If you use an RPM-based <i>x</i>86-64
     Linux system such as Fedora or openSUSE, you can install the binary RPM
     package rather than use the binary zip file. (I don't provide an
-    equivalent 32-bit package.) This package runs the <tt>install.sh</tt>
-    script (described on the <a href="installing.html">Installing
-    rEFInd</a> page) as part of the installation process. Distribution
-    maintainers can examine the <tt>refind.spec</tt> file in the source
-    package and tweak it to their needs. The <a
+    equivalent 32-bit package.) This package runs the
+    <tt>refind-install</tt> script (described on the <a
+    href="installing.html">Installing rEFInd</a> page) as part of the
+    installation process. Distribution maintainers can examine the
+    <tt>refind.spec</tt> file in the source package and tweak it to their
+    needs. The <a
     href="http://sourceforge.net/projects/refind/files/0.9.2/refind-0.9.2-1.src.rpm/download">source
     RPM file</a> might or might not build on your system as-is; it relies
     on assumptions about the locations of the GNU-EFI development
@@ -196,12 +197,12 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p class="sidebar"><b>Tip:</b> If you want to make your own bootable USB
 flash drive, download the binary zip file or CD-R image file, prepare a USB
-flash drive with a FAT32 partition, and then use the <tt>install.sh</tt>
-program's <tt>--usedefault</tt> option, and perhaps the
-<tt>--alldrivers</tt> option, as in <tt class="userinput">bash install.sh
---usedefault /dev/sdd1 --alldrivers</tt> to install to the first partition
-on <tt>/dev/sdd</tt>. This procedure should work even on a BIOS-booted
-computer.</p>
+flash drive with a FAT32 partition, and then use the
+<tt>refind-install</tt> program's <tt>--usedefault</tt> option, and perhaps
+the <tt>--alldrivers</tt> option, as in <tt class="userinput">bash
+refind-install --usedefault /dev/sdd1 --alldrivers</tt> to install to the
+first partition on <tt>/dev/sdd</tt>. This procedure should work even on a
+BIOS-booted computer.</p>
 
 <li><b><a
     href="http://sourceforge.net/projects/refind/files/0.9.2/refind-flashdrive-0.9.2.zip/download">A

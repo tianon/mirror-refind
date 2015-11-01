@@ -86,7 +86,7 @@ fi
 install -Dp -m0644 refind.conf-sample $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
 cp -a icons $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
 rm -rf $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/icons/svg
-install -Dp -m0755 install.sh $RPM_BUILD_ROOT/usr/share/refind-%{version}/
+install -Dp -m0755 refind-install $RPM_BUILD_ROOT/usr/share/refind-%{version}/
 
 # Copy documentation to /usr/share/doc/refind-%{version}
 mkdir -p $RPM_BUILD_ROOT/usr/share/doc/refind-%{version}
@@ -99,8 +99,8 @@ install -Dp -m0644 keys/* $RPM_BUILD_ROOT/etc/refind.d/keys
 
 # Copy scripts to /usr/sbin
 mkdir -p $RPM_BUILD_ROOT/usr/sbin
-install -Dp -m0755 mkrlconf.sh $RPM_BUILD_ROOT/usr/sbin/
-install -Dp -m0755 mvrefind.sh $RPM_BUILD_ROOT/usr/sbin/
+install -Dp -m0755 mkrlconf $RPM_BUILD_ROOT/usr/sbin/
+install -Dp -m0755 mvrefind $RPM_BUILD_ROOT/usr/sbin/
 
 # Copy banners and fonts to /usr/share/refind-%{version}
 cp -a banners $RPM_BUILD_ROOT/usr/share/refind-%{version}/
@@ -112,8 +112,8 @@ cp -a fonts $RPM_BUILD_ROOT/usr/share/refind-%{version}/
 %files
 %defattr(-,root,root -)
 %doc /usr/share/doc/refind-%{version}
-/usr/sbin/mkrlconf.sh
-/usr/sbin/mvrefind.sh
+/usr/sbin/mkrlconf
+/usr/sbin/mvrefind
 /usr/share/refind-%{version}
 /etc/refind.d/
 
@@ -151,21 +151,21 @@ declare OpenSSL=`which openssl 2> /dev/null`
 # encourage users to use their own local keys.
 if [[ $IsSecureBoot == "1" && -n $ShimFile ]] ; then
    if [[ -n $SBSign && -n $OpenSSL ]] ; then
-      ./install.sh --shim $ShimFile --localkeys --yes
+      ./refind-install --shim $ShimFile --localkeys --yes
    else
-      ./install.sh --shim $ShimFile --yes
+      ./refind-install --shim $ShimFile --yes
    fi
 else
    if [[ -n $SBSign && -n $OpenSSL ]] ; then
-      ./install.sh --localkeys --yes
+      ./refind-install --localkeys --yes
    else
-      ./install.sh --yes
+      ./refind-install --yes
    fi
 fi
 
 # CAUTION: Don't create a %preun or a %postun script that deletes the files
-# installed by install.sh, since that script will run after an update, thus
-# wiping out the just-updated files.
+# installed by refind-install, since that script will run after an update,
+# thus wiping out the just-updated files.
 
 %changelog
 * Sat Sep 19 2015 R Smith <rodsmith@rodsbooks.com> - 0.9.2

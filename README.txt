@@ -13,9 +13,9 @@ following files and subdirectories:
    refind/drivers_ia32/             Subdirectory containing IA32 drivers
    refind/drivers_x64/              Subdirectory containing x86-64 drivers
    keys/                            Subdirectory containing MOKs
-   install.sh                       Linux/MacOS installation script
-   mkrlconf.sh                      A script to create refind_linux.conf
-   mvrefind.sh                      A script to move a rEFInd installation
+   refind-install                   Linux/MacOS installation script
+   mkrlconf                         A script to create refind_linux.conf
+   mvrefind                         A script to move a rEFInd installation
    README.txt                       This file
    NEWS.txt                         A summary of program changes
    LICENSE.txt                      The original rEFIt license
@@ -23,12 +23,12 @@ following files and subdirectories:
    CREDITS.txt                      Acknowledgments of code sources
    docs/                            Documentation in HTML format
 
-The easiest way of installing rEFInd is generally to use the install.sh
+The easiest way of installing rEFInd is generally to use the refind-install
 script; however, you must be running under Linux or OS X to do this. If
-you're using either of those OSes, simply typing "./install.sh" will
+you're using either of those OSes, simply typing "./refind-install" will
 generally install rEFInd. If you have problems with this method, though,
-you'll have to do a manual installation. The install.sh script supports a
-number of options that you might want to use; consult the
+you'll have to do a manual installation. The refind-install script supports
+a number of options that you might want to use; consult the
 docs/refind/installing.html file for details.
 
 To install the binary package manually, you must first access your EFI
@@ -66,6 +66,6 @@ Brief Installation Instructions (Source Package)
 rEFInd source code can be obtained from
 https://sourceforge.net/projects/refind/. Consult the BUILDING.txt file in
 the source code package for build instructions. Once  you've built the
-source code, you can use the install.sh script to install the binaries
+source code, you can use the refind-install script to install the binaries
 you've built. Alternatively, you can duplicate the directory tree described
 above by copying the individual files and the icons directory to the ESP.

@@ -1,6 +1,9 @@
 0.9.3 (??/??/2015):
 -------------------
 
+- Renamed support scripts: install.sh to refind-install, mvrefind.sh to
+  mvrefind, and mkrlconf.sh to mkrlconf.
+
 - New icons! The old ones were getting to be a jumbled mess of styles,
   particularly for OS tags. I used the AwOken icon set
   (http://alecive.deviantart.com/art/AwOken-163570862) for the core icons,

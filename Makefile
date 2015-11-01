@@ -54,10 +54,10 @@ clean:
 # binary packages (RPMs, Debian packages, etc.). (Gentoo could
 # use it in an ebuild, though....) You COULD, however, copy the
 # files to a directory somewhere (/usr/share/refind or whatever)
-# and then call install.sh as part of the binary package
+# and then call refind-install as part of the binary package
 # installation process.
 
 install:
-	./install.sh
+	./refind-install
 
 # DO NOT DELETE

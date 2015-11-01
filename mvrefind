@@ -4,7 +4,7 @@
 #
 # Usage:
 #
-# ./mvrefind.sh /path/to/source /path/to/destination
+# ./mvrefind /path/to/source /path/to/destination
 #
 # Typically used to "hijack" or "unhijack" a Windows boot loader location or
 # to help convert a rEFInd installation made in BIOS mode to one that works
@@ -12,9 +12,10 @@
 #
 # Revision history:
 #
+# 0.9.3   -- Renamed from mvrefind.sh to mvrefind
 # 0.6.3   -- Initial release
 #
-# Note: mvrefind.sh version numbers match those of the rEFInd package
+# Note: mvrefind version numbers match those of the rEFInd package
 # with which they first appeared.
 
 RootDir="/"

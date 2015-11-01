@@ -230,16 +230,16 @@ Installing rEFInd
 =================
 
 With rEFInd compiled, you can install it. The easiest way to do this is
-with the install.sh script, which works on both Linux and Mac OS X.
+with the refind-install script, which works on both Linux and Mac OS X.
 Alternatively, you can type "make install" to install using this script.
 Note that this script copies files to the ESP and uses "efibootmgr" (on
 Linux) or "bless" (on OS X) to add rEFInd to the firmware's boot loader
 list. The docs/refind/installing.html file provides more details on this
 script and its use.
 
-If install.sh doesn't work for you or if you prefer to do the job manually,
-you may. On a UEFI-based system, you'll want to copy files on the ESP as
-follows:
+If refind-install doesn't work for you or if you prefer to do the job
+manually, you may. On a UEFI-based system, you'll want to copy files on the
+ESP as follows:
 
 * Create a directory for rEFInd, such as EFI/refind.
 * Copy refind/refind_ia32.efi or refind_x64.efi to the ESP's EFI/refind
@@ -255,16 +255,16 @@ docs/refind/installing.html file for details.
 Note to Distribution Maintainers
 ================================
 
-The install.sh script, and therefore the "install" target in the Makefile,
-installs the program directly to the ESP and it modifies the *CURRENT
-COMPUTER's* NVRAM. Thus, you should *NOT* use this target as part of the
-build process for your binary packages (RPMs, Debian packages, etc.).
-(Gentoo could use it in an ebuild, though....) You COULD, however, install
-the files to a directory somewhere (/usr/share/refind or whatever) and then
-call install.sh as part of the binary package installation process. Placing
-the files directly in /boot/efi/EFI/{distname}/refind and then having a
-post-install script call efibootmgr is probably the better way to go,
-but this assumes that the ESP is mounted at /boot/efi.
+The refind-install script, and therefore the "install" target in the
+Makefile, installs the program directly to the ESP and it modifies the
+*CURRENT COMPUTER's* NVRAM. Thus, you should *NOT* use this target as part
+of the build process for your binary packages (RPMs, Debian packages,
+etc.). (Gentoo could use it in an ebuild, though....) You COULD, however,
+install the files to a directory somewhere (/usr/share/refind or whatever)
+and then call refind-install as part of the binary package installation
+process. Placing the files directly in /boot/efi/EFI/{distname}/refind and
+then having a post-install script call efibootmgr is probably the better
+way to go, but this assumes that the ESP is mounted at /boot/efi.
 
 
 Compiling the EFI Filesystem Drivers
@@ -282,10 +282,10 @@ builds with TianoCore.
 To install drivers, you can type "make install" in the "filesystems"
 directory. This copies all the drivers to the
 "/boot/efi/EFI/refind/drivers" directory. Alternatively, you can copy the
-files you want manually. As of version 0.4.8, the install.sh script
-includes an optional "--drivers" option that will install the drivers along
-with the main rEFInd program, but to the drivers_{arch} subdirectory of the
-main rEFInd installation directory.
+files you want manually. The refind-install script includes an optional
+"--drivers" option that will install the drivers along with the main rEFInd
+program, but to the drivers_{arch} subdirectory of the main rEFInd
+installation directory.
 
 *CAUTION:* Install drivers for your system's architecture *ONLY*.
 Installing drivers for the wrong architecture causes some systems to hang

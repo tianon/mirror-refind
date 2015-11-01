@@ -37,14 +37,14 @@ declare OpenSSL=`which openssl 2> /dev/null`
 # their own local keys.
 if [[ $IsSecureBoot == "1" && -n $ShimFile ]] ; then
    if [[ -n $SBSign && -n $OpenSSL ]] ; then
-      ./install.sh --shim $ShimFile --localkeys --yes
+      ./refind-install --shim $ShimFile --localkeys --yes
    else
-      ./install.sh --shim $ShimFile --yes
+      ./refind-install --shim $ShimFile --yes
    fi
 else
    if [[ -n $SBSign && -n $OpenSSL ]] ; then
-      ./install.sh --localkeys --yes
+      ./refind-install --localkeys --yes
    else
-      ./install.sh --yes
+      ./refind-install --yes
    fi
 fi
