@@ -1,6 +1,23 @@
 0.9.3 (??/??/2015):
 -------------------
 
+- New icons! The old ones were getting to be a jumbled mess of styles,
+  particularly for OS tags. I used the AwOken icon set
+  (http://alecive.deviantart.com/art/AwOken-163570862) for the core icons,
+  then expanded from there by creating my own icons and modifying icons for
+  Debian and Elementary OS. I'm also trying to keep better track of
+  copyrights and licenses on icons. Between that and some icons being for
+  OSes that probably see very little use (FreeDOS and eComstation, for
+  instance), a few OS icons have been lost. If you prefer the old icons,
+  you can continue to use them by upgrading rEFInd, renaming icons-backup
+  to something else (say, icons-classic), and then adding an "icons" line
+  in refind.conf to point to the old icons directory.
+
+- Changed from .zip to .tar.gz as source code archive format. I did this
+  because Linux is the only officially-supported build platform, and
+  tarballs are a more natural fit to a Linux environment. I'm leaving .zip,
+  .deb, and .rpm files as the formats for binary packages.
+
 - Added detection of System Integrity Protection (SIP; aka "rootless") mode
   to OS X portion of install.sh script. When detected, and if no existing
   rEFInd installation is found, the script now prints a warning and brief

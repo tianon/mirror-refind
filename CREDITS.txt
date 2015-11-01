@@ -74,22 +74,22 @@ Program (C source code) files:
 Icons and graphics:
 -------------------
 
-* Most icons are derived from the Aw0ken icon set, version 2.5, by
+* Most icons are derived from the AwOken icon set, version 2.5, by
   Alessandro Roncone (aka alecive); see
   http://alecive.deviantart.com/art/AwOken-163570862. Many of these icons
   have been scaled or altered in color from their original forms.
 
 * The Debian icon is based on the SVG available from
   https://commons.wikimedia.org/wiki/File:Debian-OpenLogo.svg. I modified
-  it to fit the general style set by the Aw0ken icons.
+  it to fit the general style set by the AwOken icons.
 
 * The Elementary OS icon is based on the SVG available from
   https://commons.wikimedia.org/wiki/File:Elementary_logo.svg. I modified
-  it to fit the general style set by the Aw0ken icons.
+  it to fit the general style set by the AwOken icons.
 
 * Erik Kemperman provided the original (pre-0.9.3) rEFInd icon, which is a
   combination of the common refresh/reload icon and the search/find icon.
   For version 0.9.3, I created a new icon from Erik's basic design concept,
-  but to match the Aw0ken flat-with-drop-shadow style.
+  but to match the AwOken flat-with-drop-shadow style.
 
 * Additional icons were created by me.

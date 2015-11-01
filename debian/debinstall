@@ -38,6 +38,7 @@ fi
 # Copy configuration and support files to /usr/share/refind
 install -Dp -m0644 refind.conf-sample $BUILD_ROOT/usr/share/refind/refind/
 cp -a icons $BUILD_ROOT/usr/share/refind/refind/
+rm -rf $BUILD_ROOT/usr/share/refind/refind/icons/svg
 install -Dp -m0755 install.sh $BUILD_ROOT/usr/share/refind/
 
 # Copy documentation to /usr/share/doc/refind

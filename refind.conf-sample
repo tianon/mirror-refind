@@ -46,6 +46,7 @@ timeout 20
 # Default is "icons".
 #
 #icons_dir myicons
+#icons_dir icons/snowy
 
 # Use a custom title banner instead of the rEFInd icon and name. The file
 # path is relative to the directory where refind.efi is located. The color
@@ -55,6 +56,7 @@ timeout 20
 #
 #banner hostname.bmp
 #banner mybanner.png
+#banner icons/snowy/banner-snowy.png
 
 # Specify how to handle banners that aren't exactly the same as the screen
 # size:
@@ -179,7 +181,7 @@ timeout 20
 #  netboot          - launch the ipxe.efi tool for network (PXE) booting
 # Default is shell,memtest,gdisk,apple_recovery,windows_recovery,mok_tool,about,shutdown,reboot,firmware
 #
-#showtools shell, gdisk, memtest, mok_tool, about, reboot, exit, firmware
+#showtools shell, gdisk, memtest, mok_tool, apple_recovery, windows_recovery, about, reboot, exit, firmware
 
 # Boot loaders that can launch a Windows restore or emergency system.
 # These tend to be OEM-specific.

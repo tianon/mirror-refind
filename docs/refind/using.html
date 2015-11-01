@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-9/19/2015, referencing rEFInd 0.9.2</p>
+11/1/2015, referencing rEFInd 0.9.3</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -164,15 +164,15 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Assuming rEFInd starts up correctly, you should see its main screen, which resembles the following:</p>
 
-    <br /><center><img src="refind.png" align="center" width="734"
-    height="552" alt="rEFInd presents a GUI menu for selecting your boot
+    <br /><center><img src="refind.png" align="center" width="750"
+    height="558" alt="rEFInd presents a GUI menu for selecting your boot
     OS." border=2 /></center> <br />
 
-<p>If you don't press a key before the timeout expires, the default boot loader will launch. (The timeout is shown beneath the description line until you press a key&mdash;note that it's absent from the preceding screen shot.) This is normally the item that you launched the last time rEFInd ran, but you can adjust the default by editing the configuration file. (In this example, it's the Ubuntu Linux loader, which is further identified by text as <i>boot\vmlinuz-3.16.0-31-generic.efi.signed from 49 GiB ext4 volume</i>.)</p>
+<p>If you don't press a key before the timeout expires, the default boot loader will launch. (The timeout is shown beneath the description line until you press a key.) This is normally the item that you launched the last time rEFInd ran, but you can adjust the default by editing the configuration file. (In this example, it's the Ubuntu Linux loader, which is further identified by text as <i>EFI\ubuntu\grubx64.efi from ESP</i>.)</p>
 
-<p>This display is dominated by the central set of OS <i>tags</i> (icons), which in this example includes tags for Windows, OS X, Ubuntu, and an unknown Linux distribution. All but the last of these are on hard disks, but the unknown Linux boot loader is on an optical disc, as revealed by the small icons (known as <i>badges</i>) in the lower-right corner of the OS icons.</p>
+<p>This display is dominated by the central set of OS <i>tags</i> (icons), which in this example includes tags for an unknown Linux distribution, Ubuntu, OS X, and Windows. All but the first of these are on hard disks, but the unknown Linux boot loader is on an optical disc, as revealed by the small icons (known as <i>badges</i>) in the lower-right corner of the OS icons.</p>
 
-<p>In this example, the Ubuntu tag is selected. You can move the selection left by pressing the left arrow key and right by pressing the right arrow key. If your system has many boot loaders, an arrow icon will appear to the right and/or left of the boot loader list, indicating that the boot loader list will scroll when you move off the edge. (Such an arrow is visible to the right in the sample screen.) You can scroll the list by one line full of icons by using the Page Up or Page Down keys to move left and right, respectively. Moving past the final selection or using the down arrow key moves the selection to the second row of small tags, which launch ancillary programs or perform special actions. If you've moved the selection cursor to the second row, pressing the up arrow key or scrolling past the left edge of the second row moves the cursor to the top row. In this figure, these six tags are present:</p>
+<p>In this example, the Ubuntu tag is selected. You can move the selection left by pressing the left arrow key and right by pressing the right arrow key. If your system has many boot loaders, an arrow icon will appear to the right and/or left of the boot loader list, indicating that the boot loader list will scroll when you move off the edge. (Such an arrow is visible to the right in the sample screen.) You can scroll the list by one line full of icons by using the Page Up or Page Down keys to move left and right, respectively. Moving past the final selection or using the down arrow key moves the selection to the second row of small tags, which launch ancillary programs or perform special actions. If you've moved the selection cursor to the second row, pressing the up arrow key or scrolling past the left edge of the second row moves the cursor to the top row. In this figure, these eight tags are present:</p>
 
 <ul>
 
@@ -181,8 +181,12 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <li>Launch the tool to partition a disk (<tt>gptsync</tt> or
     <tt>gdisk</tt>)</li>
 
+<li>Launch a memory-testing utility</li>
+
 <li>Launch a tool to edit Secure Boot keys (<tt>MokManager</tt>,
     <tt>HashTool</tt>, or <tt>KeyTool</tt>)
+
+<li>Launch a Windows recovery utility</li>
 
 <li>Produce an information page</li>
 
@@ -192,7 +196,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </ul>
 
-<p>By default, the options to display an information page, shutdown the computer, and reboot the computer are present. Options to launch a shell, launch <tt>gdisk</tt>, launch a memory test utility, launch the Apple recovery utility, launch the Windows recovery utility, and launch a Secure Boot key management utility will also appear automatically if these utilities are installed. The tag to reboot into the firmware appears if your firmware supports this feature. Options to launch the hybrid MBR tool (<tt>gptsync</tt>) and to exit from rEFInd are not displayed by default; you must edit the configuration file to enable these features, or to disable those that are displayed by default if you don't want them.</p>
+<p>By default, the options to display an information page, shutdown the computer, and reboot the computer are present. Options to launch a shell, launch <tt>gdisk</tt>, launch a memory test utility, launch the Apple recovery utility, launch the Windows recovery utility, and launch a Secure Boot key management utility will also appear automatically if these utilities are installed. A tag to reboot into the firmware appears if your firmware supports this feature. Options to launch the hybrid MBR tool (<tt>gptsync</tt>) and to exit from rEFInd are not displayed by default; you must edit the configuration file to enable these features, or to disable those that are displayed by default if you don't want them.</p>
 
 <p>To launch an OS or utility, you should select its tag and then press the Enter key or the space bar.</p>
 
@@ -209,7 +213,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>If you press the Insert, F2, or + key, rEFInd will show a menu that may hold additional options, depending on the OS type. (OS X and Linux are most likely to hold interesting options on their submenus.) The following figure shows the submenu for Mac OS X. You can use this menu much like the main menu; move the cursor to select the option you want to use, then press the Enter key to launch the boot loader with the selected options. Press the Esc key or select <tt>Return to Main Menu</tt> to return to the main menu.</p>
 
     <br /><center><img src="submenu.png" align="center" width="499"
-    height="259" alt="rEFInd submenus enable you to set session-specific
+    height="228" alt="rEFInd submenus enable you to set session-specific
     options." border=2></center> <br />
 
 <p>From the options submenu, you can press the Insert, F2, or + key again to edit your boot loader options. You're most likely to want to do this when booting Linux via its EFI stub loader, since you can then enter arbitrary kernel options. A simple text-mode line editor opens (shown below), enabling you to move a cursor back and forth in the line with your arrow keys, delete text, and type in new text. If you want to boot with your edited options, press the Enter key. If you decide you picked the wrong entry, press the Esc key. Note that long option lists, as shown in the figure, scroll off the edge of the screen. Moving the cursor past the screen edge scrolls the entire line of text.</p>
@@ -338,19 +342,19 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Booting Legacy OSes</h2>
 </a>
 
-<p>Sometimes it's necessary to boot a legacy (BIOS-based) OS on an EFI computer. This is especially true on Macs, since this is the usual method of dual-booting OS X and Windows. In fact, even most Linux distributions install more easily in BIOS mode on Macs, although running Linux in EFI mode has its advantages. (See my <a href="http://www.rodsbooks.com/ubuntu-efi/">EFI-Booting Ubuntu on a Mac</a> page for an in-depth look at this topic.)</p>
+<p>Sometimes it's necessary to boot a legacy (BIOS-based) OS on an EFI computer. This is especially true on Macs, since this has been the usual method of dual-booting OS X and Windows. (Since the release of Windows 8, though, booting Windows in EFI mode on Macs has become both more practical and more common.) In the past, many Linux distributions installed more easily in BIOS mode on Macs, but many Linux distributions now favor native EFI-mode installation on Macs. (See my <a href="http://www.rodsbooks.com/ubuntu-efi/">EFI-Booting Ubuntu on a Mac</a> page for an in-depth look at this topic.)</p>
 
-<p>On UEFI-based PCs, booting some OSes in EFI mode and others in BIOS mode is less often necessary, since it's usually easy to install all your OSes in BIOS mode. If you have a working EFI-mode OS installation, though, and if you want to install an OS that lacks EFI-mode boot support, you may need to boot in both modes. This may happen if you want to add one of the BSDs (FreeBSD, OpenBSD, NetBSD, and so on) to a working system, for instance. You might also want to boot a BIOS-mode emergency recovery CD, such as <a href="http://partedmagic.com">Parted Magic</a> or <a href="http://www.sysresccd.org">System Rescue CD.</a></p>
+<p>On UEFI-based PCs, booting some OSes in EFI mode and others in BIOS mode is less often necessary, since it's usually easy to install all your OSes in BIOS mode. If you have a working EFI-mode OS installation, though, and if you want to install an OS that lacks EFI-mode boot support, you may need to boot in both modes. Most of the BSDs (FreeBSD being a notable exception), Haiku, DOS, Windows XP and earlier, and many more obscure OSes still lack EFI support and so must be booted in BIOS mode. You might also want to boot a BIOS-mode emergency recovery CD, such as <a href="http://partedmagic.com">Parted Magic</a> or <a href="http://www.sysresccd.org">System Rescue CD.</a> Note, however, that EFI-mode support is being added to OSes. It's possible that some of those I've mentioned here will support EFI-mode booting by the time you read this!</p>
 
-<p>For all such cases, rEFInd supports booting legacy OSes; however, the details vary between Macs and UEFI PCs. Also, be aware that some UEFI PCs lack the Compatibility Support Module (CSM) that's required for this feature to work. This is true even of some computers that can boot BIOS-based OSes natively. This can happen because the firmware is basically a BIOS with a UEFI implementation tacked on top of it; such systems rely on the native BIOS to boot, and may not provide a way for EFI applications to access the BIOS features via CSM mechanisms. If you have such a computer and if you enable a legacy boot option in the configuration file, rEFInd notifies you of its inability to present legacy boot options when it starts up. rEFInd's legacy boot support also depends on features that are not available in the GNU-EFI development package, so you may see a similar notice if you run a version of rEFInd compiled with that package. (The primary build available on the <a href="getting.html">Getting rEFInd</a> page is compiled with the TianoCore EDK2 package, which does support the BIOS boot features.)</p>
+<p>To help out when you need to boot in BIOS mode, rEFInd supports booting legacy OSes; however, the details vary between Macs and UEFI PCs. Also, be aware that some UEFI PCs lack the Compatibility Support Module (CSM) that's required for this feature to work. This is true even of some computers that can boot BIOS-based OSes natively. This can happen because the firmware is basically a BIOS with a UEFI implementation tacked on top of it; such systems rely on the native BIOS to boot, and may not provide a way for EFI applications to access the BIOS features via CSM mechanisms. If you have such a computer and if you enable a legacy boot option in the configuration file, rEFInd notifies you of its inability to present legacy boot options when it starts up.</p>
 
 <p>The <tt>scanfor</tt> option, described on the <a href="configfile.html">Configuring the Boot Manager</a> page, controls rEFInd's detection of legacy OSes. On Macs, the default is to scan for such OSes, since a common boot scenario on Macs is dual-booting OS X and Windows, and of course BIOS support is required for this. On UEFI PCs, rEFInd defaults to <i>not</i> scanning for legacy OSes; thus, you must edit the <tt>scanfor</tt> item in the configuration file if you want to boot a legacy OS on a UEFI PC.</p>
 
-    <img src="os_legacy.png" align="right" width="128" height="128"
+    <img src="os_legacy.png" align="right" width="139" height="141"
     alt="The legacy OS icon is identical for all OSes on UEFI-based PCs."
     border=2 background="gray"/>
 
-<p>On Macs, rEFInd uses a flexible scanning algorithm inherited from rEFIt. This procedure detects most legacy OSes on most disks, although it can sometimes miss an OS. This scanning algorithm can often identify the legacy OS you've installed and present a suitable icon. On UEFI PCs, rEFInd relies on the computer's NVRAM settings to determine which legacy boot loaders to scan, but rEFInd does tell the firmware to find every BIOS-mode boot option and add it to its NVRAM list. On most UEFI PCs, at least one hard disk and your optical drive appear as options. On one computer I tested (a Lenovo laptop), the internal hard disk appears in the rEFInd menu as a removable disk, and selecting any BIOS-mode option causes the computer to attempt a network boot. Three other computers I've tested behave more sensibly. If you opt to scan for BIOS-mode optical disks (<tt>scanfor cd</tt>) on UEFI-based PCs, an icon will appear whether or not your drive holds a CD. The UEFI scanning procedure is also incapable of detecting the OS type, so you'll see a generic legacy OS icon, as shown at the right.</p>
+<p>On Macs, rEFInd uses a flexible scanning algorithm inherited from rEFIt. This procedure detects most legacy OSes on most disks, although it can sometimes miss an OS. This scanning algorithm can often identify the legacy OS you've installed and present a suitable icon. On UEFI PCs, rEFInd relies on the computer's NVRAM settings to determine which legacy boot loaders to scan, but rEFInd does tell the firmware to find every BIOS-mode boot option and add it to its NVRAM list. On most UEFI PCs, at least one hard disk and your optical drive appear as options. On one computer I tested (a Lenovo laptop), the internal hard disk appears in the rEFInd menu as a removable disk. If you have multiple hard disks, you may need to uncomment the <tt>uefi_deep_legacy_scan</tt> option to get entries for booting all of your disks. If you opt to scan for BIOS-mode optical disks (<tt>scanfor cd</tt>) on UEFI-based PCs, an icon will appear whether or not your drive holds a CD. The UEFI scanning procedure is also incapable of detecting the OS type, so you'll see a generic legacy OS icon, as shown at the right.</p>
 
 <p>On both PCs and Macs, if you see non-functional legacy boot options, you can remove them by using the <tt>dont_scan_volumes</tt> token in <tt>refind.conf</tt>: Add any substring from the description that appears when you highlight the non-functional option to the set of options to have rEFInd ignore that entry. (Note that you must provide a complete volume name when excluding EFI volumes from scanning. The legacy-mode exclusion operation is more flexible in this regard.)</p>
 

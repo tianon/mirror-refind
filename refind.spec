@@ -1,12 +1,12 @@
 Summary: EFI boot manager software
 Name: refind
-Version: 0.9.2
+Version: 0.9.2.4
 Release: 1%{?dist}
 Summary: EFI boot manager software
 License: GPLv3
 URL: http://www.rodsbooks.com/refind/
 Group: System Environment/Base
-Source: refind-src-%version.zip
+Source: refind-src-%version.tar.gz
 Requires: efibootmgr
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -85,6 +85,7 @@ fi
 # Copy configuration and support files to /usr/share/refind-%{version}
 install -Dp -m0644 refind.conf-sample $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
 cp -a icons $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
+rm -rf $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/icons/svg
 install -Dp -m0755 install.sh $RPM_BUILD_ROOT/usr/share/refind-%{version}/
 
 # Copy documentation to /usr/share/doc/refind-%{version}

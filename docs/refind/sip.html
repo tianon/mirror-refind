@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: rEFInd and System Integrity Protection</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager:<br />rEFInd and System Integrity Protection</h1>
+
+<p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 10/31/2015, referencing rEFInd 0.9.3</p>
+
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="Donate with PayPal" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="Donate with PayPal" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="Donate with PayPal" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="Donate with PayPal" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="Donate with PayPal" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="Donate with PayPal" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<p>Apple's OS X 10.11 (aka <i>El Capitan</i>) includes a new feature, known as System Integrity Protection (SIP), aka "rootless" mode. To understand SIP, you should first know that Unix-like systems, including OS X, have traditionally provided a model of security in which ordinary users can read and write their own files (word processor documents, their own digital photos, etc.), but not system files (programs, system configuration files, etc.). This system security model has worked well for decades on traditional Unix systems, which have been administered by computer professionals and used by individuals with less experience. For administrative tasks, the <tt>root</tt> account is used; on Macs, this access is generally granted by the <tt>sudo</tt> command or by various GUI tools. Most Macs are single-user computers that are administered by their users. Such people often lack the knowledge of the professional system administrators who have traditionally managed Unix systems; but they must still perform system administration tasks such as installing new software and configuring network settings. OS X has always provided some measure of security by requiring users to enter their passwords before performing these dangerous tasks, and by providing GUI tools to help guide users through these tasks in a way that minimizes the risk of damage.</p>
+
+<p>Apple has apparently decided that these safeguards are no longer sufficient. I won't try to speak for Apple or explain their motivations, but the result of Apple's decisions is SIP. With SIP active, as is the default, OS X limits your ability to perform some of these administrative tasks. You can still install and remove most third-party programs, configure your network, and so on; but some critical directories can no longer be written, even as <tt>root</tt>, and some utilities cannot be used in certain ways, even as <tt>root</tt>. These restrictions impact rEFInd because one of the affected tools, a command called <tt>bless</tt>, is required to tell the Mac to boot rEFInd rather than to boot OS X directly.</p>
+
+<p>The end result of SIP is that rEFInd cannot be installed under OS X 10.11 in the way described on the <a href="installing.html">Installing rEFInd</a> page&mdash;at least, not without first booting into <a href="#recovery">Recovery mode,</a> in which SIP restrictions are ignored or <a href="#disable">disabling SIP.</a> This page covers these two options in more detail, as well as a third: <a href="#another">Using another OS</a> to install rEFInd.</p>
+
+<a name="recovery">
+<h2>Using Recovery Mode</h2>
+</a>
+
+<p>Unless you've deleted its partition, the Recovery HD partition should be present on your Mac as a way to perform emergency recovery operations. The nature of this tool means that SIP cannot be enabled, so you can install rEFInd from a boot to this partition. The trouble is that this installation is not a full-fledged OS X system, so you may have trouble using it if you're not comfortable with such a bare-bones environment. Nontheless, it is arguably the best way to install rEFInd on a Mac that runs OS X 10.11. To do so, follow these steps:</p>
+
+<ol>
+
+<li><a href="getting.html">Download the rEFInd binary <tt>.zip</tt> file</a> and unpack it. You can unpack it on your regular hard disk or on a USB flash drive. Pay attention to where it's located, though; you'll need to find it later. Pay attention to both the name of the volume and the <i>complete</i> path to the directory in which it's stored. (Your home directory is normally <tt>/Users/<tt class="variable">yourname</tt></tt>, where <tt class="variable">yourname</tt> is your username. Your Desktop is normally <tt>/Users/<tt class="variable">yourname</tt>/Desktop</tt>.</li>
+
+<li>Reboot the computer.</li>
+
+<li>At the startup chime, hold down the Option+R key combination. The computer should launch into the Recovery system. This is a very bare system, with only a window providing a way to launch a handful of utilities and a menu bar, as shown here:</li>
+
+    <br /><center><img src="recovery-mode.png" align="center" width="814"
+    height="514" alt="To install rEFInd, you must launch the Terminal from
+    the menu bar." border=2> </center><br />
+
+<li>Select Utilities -&gt; Terminal from the menu bar. A Terminal window should open.</li>
+
+<li>If you unpacked rEFInd on a USB flash drive, insert it and wait for its access light (if it has one) to stop blinking.</li>
+
+<li>Increase the size of the Terminal a bit. (This just makes its output more legible, since the next step produces long lines.)</li>
+
+<li>Type <tt class="userinput">df -h</tt> in the Terminal. This produces a list of partitions that are mounted. Locate the one on which you unpacked the rEFInd files. It will normally be <tt>/Volumes/<tt class="variable">Somename</tt></tt>, where <tt class="variable">Somename"</tt> is the volume's name.</li>
+
+<li>In the Terminal, use <tt>cd</tt> to change to the directory where the rEFInd files you unpacked earlier are stored. For instance, on my MacBook, I would type <tt class="userinput">cd /Volumes/Macintosh\ HD/Users/rodsmith/Destkop/refind-0.9.3</tt>. Note that if any element of this path includes a space, you must either enclose the <i>entire path</i> in quotes or precede the space with a backslash (<tt>\</tt>), as in this example's <tt>Macintish\ HD</tt> volume name.</li>
+
+<li>Type <tt class="userinput">ls</tt> to verify that <tt>refind-install</tt> is present in this directory.</li>
+
+<li>Type <tt>./refind-install</tt> to run the installation script.</li> It should run normally, as described on the <a href="installing.html">Installing rEFInd</a> page. You can add options, if you like, as described on the Installing rEFInd page. Alternatively, you can perform a manual installation, also as described on that page.</li>
+
+<li>Reboot.</li>
+
+</ol>
+
+<p>At this point, rEFInd should come up and enable you to boot into OS X and any other OS(es) that are already installed. You should not need to perform these steps again unless OS X re-installs its own boot loader or a subsequent OS installation overrides the default boot option. You can install an updated rEFInd and it should install correctly, provided you're installing it to the EFI System Partition (ESP). The <tt>refind-install</tt> script may complain about a failure, but because you're overwriting one rEFInd binary with another one, it should continue to boot.</p>
+
+<a name="disable">
+<h2>Disabling SIP</h2>
+</a>
+
+<p>Another option is to disable SIP for your regular boot. This is a viable option if you're an expert who needs regular access to tools with which SIP interferes, such as low-level disk utilities. Regular users should probably avoid this option unless the preceding procedure does not work&mdash;and in that case, you should disable SIP temporarily and then re-enable it when you've finished installing rEFInd.</p>
+
+<p>To disable SIP, you must first boot into the Recovery HD, as in the previous procedure, and launch a Terminal window. Instead of locating and running the <tt>refind-instal</tt> script, though, you should type:</p>
+
+<pre class="listing"># <tt class="userinput">csrutil disable</tt></pre>
+
+<p>This command will disable SIP for all OSes that honor this setting. (In theory, multiple versions of OS X might be installed on a single computer, and all of them that support SIP should honor the SIP settings. To the best of my knowledge, no non-Apple OS honors SIP settings, although that could change.)</p>
+
+<p>Once you've typed this command, you can reboot the computer. When you return to your regular OS X installation, SIP should be disabled and rEFInd should install normally, as described on the <a href="installing.html">Installing rEFInd</a> page. You will also be able to use disk partitioning tools like my <a href="http://www.rodsbooks.com/gdisk/">GPT fdisk,</a> write to directories that are normally off-limits, and so on. Note that disabling SIP does <i>not</i> disable normal Unix-style protections&mdash;you'll still need to use <tt>sudo</tt> (or enter your password in a GUI dialog box) to acquire <tt>root</tt> privileges to perform these system-administration tasks. You'll be no less safe with SIP disabled under OS X 10.11 than you would be with OS X 10.10 or earlier.</p>
+
+<p>If you want to re-enable SIP, you can do so in exactly the way you disabled it, except that you should type <tt class="userinput">csrutil enable</tt> rather than <tt class="userinput">csrutil disable</tt> in the Recovery environment.</p>
+
+<a name="another">
+<h2>Using Another OS</h2>
+</a>
+
+<p>A final option for installing rEFInd on a Mac that runs with SIP enabled is to do the installation using another OS. This other OS could be an OS that's already installed or an emergency boot disk, such as an <a href="http://www.ubuntu.com">Ubuntu</a> installation/recovery system.</p>
+
+<p>If you follow this path, you'll need to know something about how to boot and use your non-Apple OS. The options are quite varied, so I can't provide every detail; however, I do have a few tips:</p>
+
+<ul>
+
+<li>If you've already installed another OS but can't boot it because of an upgrade to OS X 10.11, you can use rEFInd on CD-R or USB flash drive to boot to your other OS. You can download images for both media from the <a href="getting.html">rEFInd downloads page.</a> Prepare a boot medium, insert it in your computer, reboot, and hold down the Option (or Alt) key. The Mac's built-in boot menu should appear, enabling you to boot rEFInd from the removable disk. It should then let you boot your already-installed OS, whereupon you can follow the <a href="installing.html">regular rEFInd installation instructions</a> for that OS.</li>
+
+<li>It's imperative that your rEFInd installation occur in an <i>EFI-mode boot!</i> Many Windows installations on Macs, in particular, are done in BIOS/CSM/legacy mode, and so cannot be used for installing rEFInd. rEFInd can boot most Linux installations in EFI mode (as above), but if a BIOS-mode GRUB is installed, you might accidentally boot it. See the <a href="bootmode.html">What's Your Boot Mode?</a> page for information on how to determine your boot mode.</li>
+
+<li>You can use many Linux distributions' installers to run a minimal Linux system that you can use for installing rEFInd. This can be a useful trick even if you don't intend to run Linux normally. An <a href="http://www.ubuntu.com">Ubuntu</a> image can be useful for this. You should insert the boot medium and hold down Option (or Alt) while booting to launch the installer, but be sure to pick the option to "try Ubuntu before installing" (or a similar option for other Linux distributions). You may need to install the <tt>efibootmgr</tt> package to install rEFInd. (Typing <tt class="userinput">sudo apt-get install efibootmgr</tt> should do this in Ubuntu.)</li>
+
+</ul>
+
+<p>I've tested this method of installing rEFInd on my MacBook Air, but I can't promise it will work on all Macs&mdash;or even on an identical Mac with a configuration that's different from mine. My preference is to install rEFInd under OS X on Macs, because Apple likes to do things differently from everybody else, and so a Mac's firmware might not react in the usual way to tools like <tt>efibootmgr</tt> in Linux or <tt>bcdedit</tt> in Windows.</p>
+
+<a name="conclusion">
+<h2>Conclusion</h2>
+</a>
+
+<p>Although the goal of increased security is a good one, SIP is causing problems for intermediate and advanced users. The good news is that the process to install rEFInd on a system that runs OS X 10.11, although more complex than it used to be, is not an impossible one. Furthermore, once you've done it, you shouldn't have to do it again for a while. (An update to OS X's boot loader is entirely possible, though. If nothing else, the next major OS X update may require re-installing rEFInd.)</p>
+
+<p></p>
+
+<p></p>
+
+<hr />
+
+<p>copyright &copy; 2015 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="using.html">Learn how to use rEFInd</a></p>
+
+  <p><a href="http://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

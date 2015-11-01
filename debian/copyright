@@ -247,14 +247,17 @@ Files: icons/arrow_left.png
        icons/tool_mok_tool.png
        icons/tool_netboot.png
        icons/tool_shell.png
+       icons/tool_windows_rescue.png
        icons/vol_external.png
        icons/vol_internal.png
        icons/vol_net.png
        icons/vol_optical.png
 Copyright: 2013 by Alessandro Roncone (aka alecive on DeviantArt)
 License: Creative Commons Attribution-Share Alike 3.0 (CC-SA 3.0)
+Note: tool_windows_rescue is combination of os_win8.png with
+      tool_rescue.png.
 
-Mappings of files to original Aw0ken package filenames is in the
+Mappings of files to original AwOken package filenames is in the
 icons/README file.
 
 Files: icons/boot_win.png
@@ -269,11 +272,17 @@ Files: icons/boot_win.png
        icons/os_refind.png
        icons/os_refit.png
        icons/os_win.png
+       icons/tool_apple_rescue.png
        icons/tool_memtest.png
+       icons/tool_rescue.png
+       icons/tool_windows_rescue.png
        icons/transparent.png
 Copyright: 2015 by Roderick W. Smith
 License: LGPLv3+ or Creative Commons Attribution-Share Alike 3.0
          (CC-SA 3.0)
+Note: tool_windows_rescue is combination of os_win8.png with
+      tool_rescue.png.
+
 
 File: icons/os_debian.png
 Copyright: 1999 by Debian Project
