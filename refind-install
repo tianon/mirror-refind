@@ -762,6 +762,7 @@ InstallOnOSX() {
    CheckForSIP
    Platform=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
    CopyRefindFiles
+   cp "$ThisDir/mountesp" /usr/local/bin
    if [[ $InstallToEspOnMac == "1" ]] ; then
       bless --mount "$InstallDir" --setBoot --file "$InstallDir/$TargetDir/$Refind" --shortform
    elif [[ "$TargetDir" != "/EFI/BOOT" ]] ; then
