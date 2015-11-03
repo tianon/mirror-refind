@@ -183,13 +183,26 @@ struct LOADER_LIST {
 // misc functions
 //
 
+static INTN GetCsrStatus(VOID) {
+    CHAR8 *CsrValues;
+    UINTN CsrLength;
+    EFI_GUID CsrGuid = CSR_GUID;
+    EFI_STATUS Status;
+
+    Status = EfivarGetRaw(&CsrGuid, L"csr-active-config", &CsrValues, &CsrLength);
+    if ((Status == EFI_SUCCESS) && (CsrLength == 4))
+        return CsrValues[0];
+    else
+        return -1;
+} // INTN GetCsrStatus()
+
 static VOID AboutrEFInd(VOID)
 {
     CHAR16 *FirmwareVendor;
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.2.4");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.2.5");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -207,6 +220,18 @@ static VOID AboutrEFInd(VOID)
 #else
         AddMenuInfoLine(&AboutMenu, L" Platform: unknown");
 #endif
+        if (StriSubCmp(L"Apple", ST->FirmwareVendor)) {
+            switch (GetCsrStatus()) {
+                case SIP_ENABLED:
+                    AddMenuInfoLine(&AboutMenu, L" System Integrity Protection is enabled");
+                    break;
+                case SIP_DISABLED:
+                    AddMenuInfoLine(&AboutMenu, L" System Integrity Protection is disabled");
+                    break;
+                default:
+                    AddMenuInfoLine(&AboutMenu, L" System Integrity Protection status is unrecognized");
+            } // switch
+        } // if
         FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
         LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor, ST->FirmwareRevision >> 16,

@@ -147,6 +147,25 @@
 #define ICON_SIZE_SMALL 1
 #define ICON_SIZE_BIG   2
 
+// The constants related to Apple's System Integrity Protection (SIP)....
+#define CSR_GUID { 0x7c436110, 0xab2a, 0x4bbb, { 0xa8, 0x80, 0xfe, 0x41, 0x99, 0x5c, 0x9f, 0x82 } };
+// These codes are returned in the first byte of the csr-active-config variable
+#define CSR_ALLOW_UNTRUSTED_KEXTS       0x01
+#define CSR_ALLOW_UNRESTRICTED_FS       0x02
+#define CSR_ALLOW_TASK_FOR_PID          0x04
+#define CSR_ALLOW_KERNEL_DEBUGGER       0x08
+#define CSR_ALLOW_APPLE_INTERNAL        0x10
+#define CSR_ALLOW_UNRESTRICTED_DTRACE   0x20
+#define CSR_ALLOW_UNRESTRICTED_NVRAM    0x40
+// Some summaries....
+#define SIP_ENABLED  CSR_ALLOW_APPLE_INTERNAL
+#define SIP_DISABLED (CSR_ALLOW_UNRESTRICTED_NVRAM | \
+                      CSR_ALLOW_UNRESTRICTED_DTRACE | \
+                      CSR_ALLOW_APPLE_INTERNAL | \
+                      CSR_ALLOW_TASK_FOR_PID | \
+                      CSR_ALLOW_UNRESTRICTED_FS | \
+                      CSR_ALLOW_UNTRUSTED_KEXTS)
+
 // Names of binaries that can manage MOKs....
 #define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
 // Directories to search for these MOK-managing programs. Note that SelfDir is
