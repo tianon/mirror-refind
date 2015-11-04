@@ -261,6 +261,7 @@ Mappings of files to original AwOken package filenames is in the
 icons/README file.
 
 Files: icons/boot_win.png
+       icons/func_csr_rotate.png
        icons/os_clover.png
        icons/os_freebsd.png
        icons/os_gummiboot.png
