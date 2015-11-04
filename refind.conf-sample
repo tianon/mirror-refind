@@ -171,6 +171,8 @@ timeout 20
 #                     (see also the windows_recovery_files option)
 #  mok_tool         - makes available the Machine Owner Key (MOK) maintenance
 #                     tool, MokManager.efi, used on Secure Boot systems
+#  csr_rotate       - adjusts Apple System Integrity Protection (SIP)
+#                     policy. Requires "csr_values" to be set.
 #  about            - an "about this program" option
 #  exit             - a tag to exit from rEFInd
 #  shutdown         - shuts down the computer (a bug causes this to reboot
@@ -385,6 +387,22 @@ timeout 20
 # The default is inactive (no OS X spoofing is done).
 #
 #spoof_osx_version "10.9"
+
+# Set the CSR values for Apple's System Integrity Protection (SIP) feature.
+# Values are one-byte (two-character) hexadecimal numbers. These values
+# define which specific security features are enabled. Below are the codes
+# for what the values mean. Add them up (in hexadecimal!) to set new values.
+# Apple's "csrutil enable" and "csrutil disable" commands set values of 10
+# and 77, respectively.
+#   CSR_ALLOW_UNTRUSTED_KEXTS       0x01
+#   CSR_ALLOW_UNRESTRICTED_FS       0x02
+#   CSR_ALLOW_TASK_FOR_PID          0x04
+#   CSR_ALLOW_KERNEL_DEBUGGER       0x08
+#   CSR_ALLOW_APPLE_INTERNAL        0x10
+#   CSR_ALLOW_UNRESTRICTED_DTRACE   0x20
+#   CSR_ALLOW_UNRESTRICTED_NVRAM    0x40
+#
+#csr_values 10,77
 
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its options appeared at the point of the "include"

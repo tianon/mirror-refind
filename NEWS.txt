@@ -1,6 +1,22 @@
 0.9.3 (??/??/2015):
 -------------------
 
+- Added new System Integrity Protection (SIP) rotation feature for Macs
+  running OS X 10.11 or later. This feature is disabled by default. To
+  enable it, you must make TWO changes to refind.conf: Uncomment the new
+  "csr_values" item and add "csr_rotate" to the "showtools" line
+  (uncommenting it, too, if it's commented out). If desired, you can set
+  more values on "csr_values"; these are comma-delimited one-byte
+  hexadecimal values that define various SIP states.  When SIP/CSR rotation
+  is activated, a new shield icon appears among the tools. Selecting it
+  causes the next defined value to be set and a confirmation message to
+  appear for three seconds.
+
+- Added display of current System Integrity Protection (SIP) mode to
+  "About" display.
+
+- Added mountesp script for OS X to (you guessed it!) mount the ESP.
+
 - Renamed support scripts: install.sh to refind-install, mvrefind.sh to
   mvrefind, and mkrlconf.sh to mkrlconf.
 

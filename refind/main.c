@@ -64,6 +64,7 @@
 #include "menu.h"
 #include "mok.h"
 #include "gpt.h"
+#include "apple.h"
 #include "security_policy.h"
 #include "driver_support.h"
 #include "../include/Handle.h"
@@ -150,6 +151,7 @@ static REFIT_MENU_ENTRY MenuEntryShutdown = { L"Shut Down Computer", TAG_SHUTDOW
 REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryExit     = { L"Exit rEFInd", TAG_EXIT, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryFirmware = { L"Reboot to Computer Setup Utility", TAG_FIRMWARE, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryRotateCsr = { L"Change SIP Policy", TAG_CSR_ROTATE, 1, 0, 0, NULL, NULL, NULL };
 
 REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL, 0, L"Automatic boot",
                                      L"Use arrow keys to move cursor; Enter to boot;",
@@ -160,7 +162,7 @@ REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, TRUE, 0, 0, 0, DONT_CHA
                               20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC,
                               0, 0, { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE },
                               BANNER_NOSCALE, NULL, NULL, NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL,
-                              NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY,
                                 TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE,
                                 0, 0, 0, 0, 0, 0, 0, 0 }
@@ -183,26 +185,14 @@ struct LOADER_LIST {
 // misc functions
 //
 
-static INTN GetCsrStatus(VOID) {
-    CHAR8 *CsrValues;
-    UINTN CsrLength;
-    EFI_GUID CsrGuid = CSR_GUID;
-    EFI_STATUS Status;
-
-    Status = EfivarGetRaw(&CsrGuid, L"csr-active-config", &CsrValues, &CsrLength);
-    if ((Status == EFI_SUCCESS) && (CsrLength == 4))
-        return CsrValues[0];
-    else
-        return -1;
-} // INTN GetCsrStatus()
-
 static VOID AboutrEFInd(VOID)
 {
     CHAR16 *FirmwareVendor;
+    INTN   CsrStatus;
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.2.5");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.2.6");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -220,18 +210,10 @@ static VOID AboutrEFInd(VOID)
 #else
         AddMenuInfoLine(&AboutMenu, L" Platform: unknown");
 #endif
-        if (StriSubCmp(L"Apple", ST->FirmwareVendor)) {
-            switch (GetCsrStatus()) {
-                case SIP_ENABLED:
-                    AddMenuInfoLine(&AboutMenu, L" System Integrity Protection is enabled");
-                    break;
-                case SIP_DISABLED:
-                    AddMenuInfoLine(&AboutMenu, L" System Integrity Protection is disabled");
-                    break;
-                default:
-                    AddMenuInfoLine(&AboutMenu, L" System Integrity Protection status is unrecognized");
-            } // switch
-        } // if
+        CsrStatus = GetCsrStatus();
+        RecordgCsrStatus(CsrStatus);
+        if ((CsrStatus == -2) || (CsrStatus >= 0))
+            AddMenuInfoLine(&AboutMenu, gCsrStatus);
         FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
         LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor, ST->FirmwareRevision >> 16,
@@ -2060,6 +2042,14 @@ static VOID ScanForTools(VOID) {
                 FindTool(MokLocations, MOK_NAMES, L"MOK utility", BUILTIN_ICON_TOOL_MOK_TOOL);
                 break;
 
+            case TAG_CSR_ROTATE:
+                if ((GetCsrStatus() >= 0) && (GlobalConfig.CsrValues)) {
+                    TempMenuEntry = CopyMenuEntry(&MenuEntryRotateCsr);
+                    TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_CSR_ROTATE);
+                    AddMenuEntry(&MainMenu, TempMenuEntry);
+                } // if
+                break;
+
             case TAG_MEMTEST:
                 FindTool(MEMTEST_LOCATIONS, MEMTEST_NAMES, L"Memory test utility", BUILTIN_ICON_TOOL_MEMTEST);
                 break;
@@ -2168,66 +2158,6 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
         } // if
     } // if
 } // VOID SetConfigFilename()
-
-/*
- * The below definitions and SetAppleOSInfo() function are based on a GRUB patch
- * by Andreas Heider:
- * https://lists.gnu.org/archive/html/grub-devel/2013-12/msg00442.html
- */
-
-#define EFI_APPLE_SET_OS_PROTOCOL_GUID  \
-  { 0xc5c5da95, 0x7d5c, 0x45e6, \
-    { 0xb2, 0xf1, 0x3f, 0xd5, 0x2b, 0xb1, 0x00, 0x77 } \
-  }
-
-typedef struct EfiAppleSetOsInterface {
-    UINT64 Version;
-    EFI_STATUS EFIAPI (*SetOsVersion) (IN CHAR8 *Version);
-    EFI_STATUS EFIAPI (*SetOsVendor) (IN CHAR8 *Vendor);
-} EfiAppleSetOsInterface;
-
-// Function to tell the firmware that OS X is being launched. This is
-// required to work around problems on some Macs that don't fully
-// initialize some hardware (especially video displays) when third-party
-// OSes are launched in EFI mode.
-static EFI_STATUS SetAppleOSInfo() {
-    CHAR16 *AppleOSVersion = NULL;
-    CHAR8 *AppleOSVersion8 = NULL;
-    EFI_STATUS Status;
-    EFI_GUID apple_set_os_guid = EFI_APPLE_SET_OS_PROTOCOL_GUID;
-    EfiAppleSetOsInterface *SetOs = NULL;
-
-    Status = refit_call3_wrapper(BS->LocateProtocol, &apple_set_os_guid, NULL, (VOID**) &SetOs);
-
-    // Not a Mac, so ignore the call....
-    if ((Status != EFI_SUCCESS) || (!SetOs))
-        return EFI_SUCCESS;
-
-    if ((SetOs->Version != 0) && GlobalConfig.SpoofOSXVersion) {
-        AppleOSVersion = StrDuplicate(L"Mac OS X");
-        MergeStrings(&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
-        if (AppleOSVersion) {
-            AppleOSVersion8 = AllocateZeroPool((StrLen(AppleOSVersion) + 1) * sizeof(CHAR8));
-            UnicodeStrToAsciiStr(AppleOSVersion, AppleOSVersion8);
-            if (AppleOSVersion8) {
-                Status = refit_call1_wrapper (SetOs->SetOsVersion, AppleOSVersion8);
-                if (!EFI_ERROR(Status))
-                    Status = EFI_SUCCESS;
-                MyFreePool(AppleOSVersion8);
-            } else {
-                Status = EFI_OUT_OF_RESOURCES;
-                Print(L"Out of resources in SetAppleOSInfo!\n");
-            }
-            if ((Status == EFI_SUCCESS) && (SetOs->Version == 2))
-                Status = refit_call1_wrapper (SetOs->SetOsVendor, "Apple Inc.");
-            MyFreePool(AppleOSVersion);
-        } // if (AppleOSVersion)
-    } // if
-    if (Status != EFI_SUCCESS)
-        Print(L"Unable to set firmware boot type!\n");
-
-    return (Status);
-} // EFI_STATUS SetAppleOSInfo()
 
 //
 // main entry point
@@ -2346,6 +2276,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
             case TAG_FIRMWARE: // Reboot into firmware's user interface
                 RebootIntoFirmware();
+                break;
+
+            case TAG_CSR_ROTATE:
+                RotateCsrValue();
                 break;
 
         } // switch()

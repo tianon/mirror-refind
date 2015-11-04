@@ -605,6 +605,8 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.ShowTools[i - 1] = TAG_WINDOWS_RECOVERY;
                 } else if (MyStriCmp(FlagName, L"mok_tool")) {
                    GlobalConfig.ShowTools[i - 1] = TAG_MOK_TOOL;
+                } else if (MyStriCmp(FlagName, L"csr_rotate")) {
+                   GlobalConfig.ShowTools[i - 1] = TAG_CSR_ROTATE;
                 } else if (MyStriCmp(FlagName, L"firmware")) {
                    GlobalConfig.ShowTools[i - 1] = TAG_FIRMWARE;
                 } else if (MyStriCmp(FlagName, L"memtest86") || MyStriCmp(FlagName, L"memtest")) {
@@ -703,6 +705,9 @@ VOID ReadConfig(CHAR16 *FileName)
 
         } else if (MyStriCmp(TokenList[0], L"spoof_osx_version")) {
             HandleString(TokenList, TokenCount, &(GlobalConfig.SpoofOSXVersion));
+
+        } else if (MyStriCmp(TokenList[0], L"csr_values")) {
+            HandleStrings(TokenList, TokenCount, &(GlobalConfig.CsrValues));
 
         } else if (MyStriCmp(TokenList[0], L"include") && (TokenCount == 2) && MyStriCmp(FileName, GlobalConfig.ConfigFilename)) {
            if (!MyStriCmp(TokenList[1], FileName)) {

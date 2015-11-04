@@ -75,7 +75,8 @@
 #define TAG_MEMTEST          (15)
 #define TAG_GDISK            (16)
 #define TAG_NETBOOT          (17)
-#define NUM_TOOLS            (18)
+#define TAG_CSR_ROTATE       (18)
+#define NUM_TOOLS            (19)
 
 #define NUM_SCAN_OPTIONS 10
 
@@ -325,6 +326,7 @@ typedef struct {
    CHAR16           *DriverDirs;
    CHAR16           *IconsDir;
    CHAR16           *SpoofOSXVersion;
+   CHAR16           *CsrValues;
    UINTN            ShowTools[NUM_TOOLS];
    CHAR8            ScanFor[NUM_SCAN_OPTIONS]; // codes of types of loaders for which to scan
 } REFIT_CONFIG;
