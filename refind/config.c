@@ -62,6 +62,7 @@
 #include "menu.h"
 #include "config.h"
 #include "screen.h"
+#include "apple.h"
 #include "../include/refit_call_wrapper.h"
 #include "../mok/mok.h"
 
@@ -376,6 +377,48 @@ static VOID HandleStrings(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16
       } // if
    } // for
 } // static VOID HandleStrings()
+
+// Handle a parameter with a series of hexadecimal arguments, to replace or be added to a
+// linked list of UINT32 values. Any item with a non-hexadecimal value is discarded, as is
+// any value that exceeds MaxValue. If the first non-keyword token is "+", the new list is
+// added to the existing Target; otherwise, the interpreted tokens replace the current
+// Target.
+static VOID HandleHexes(IN CHAR16 **TokenList, IN UINTN TokenCount, IN UINTN MaxValue, OUT UINT32_LIST **Target) {
+    UINTN       InputIndex = 1, i;
+    UINT32      Value;
+    UINT32_LIST *EndOfList = NULL;
+    UINT32_LIST *NewEntry;
+
+    if ((TokenCount > 2) && (StrCmp(TokenList[1], L"+") == 0)) {
+        InputIndex = 2;
+        EndOfList = *Target;
+        while (EndOfList && (EndOfList->Next != NULL)) {
+            EndOfList = EndOfList->Next;
+        }
+    } else {
+        EraseUint32List(Target);
+    }
+
+    for (i = InputIndex; i < TokenCount; i++) {
+        if (IsValidHex(TokenList[i])) {
+            Value = (UINT32) StrToHex(TokenList[i], 0, 8);
+            if (Value <= MaxValue) {
+                NewEntry = AllocatePool(sizeof(UINT32_LIST));
+                if (NewEntry) {
+                    NewEntry->Value = Value;
+                    NewEntry->Next = NULL;
+                    if (EndOfList == NULL) {
+                        EndOfList = NewEntry;
+                        *Target = NewEntry;
+                    } else {
+                        EndOfList->Next = NewEntry;
+                        EndOfList = NewEntry;
+                    } // if/else
+                } // if allocated memory for NewEntry
+            } // if (Value < MaxValue)
+        } // if is valid hex value
+    } // for
+} // static VOID HandleHexes()
 
 // Convert TimeString (in "HH:MM" format) to a pure-minute format. Values should be
 // in the range from 0 (for 00:00, or midnight) to 1439 (for 23:59; aka LAST_MINUTE).
@@ -707,7 +750,7 @@ VOID ReadConfig(CHAR16 *FileName)
             HandleString(TokenList, TokenCount, &(GlobalConfig.SpoofOSXVersion));
 
         } else if (MyStriCmp(TokenList[0], L"csr_values")) {
-            HandleStrings(TokenList, TokenCount, &(GlobalConfig.CsrValues));
+            HandleHexes(TokenList, TokenCount, CSR_MAX_LEGAL_VALUE, &(GlobalConfig.CsrValues));
 
         } else if (MyStriCmp(TokenList[0], L"include") && (TokenCount == 2) && MyStriCmp(FileName, GlobalConfig.ConfigFilename)) {
            if (!MyStriCmp(TokenList[1], FileName)) {

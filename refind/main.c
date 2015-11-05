@@ -187,12 +187,12 @@ struct LOADER_LIST {
 
 static VOID AboutrEFInd(VOID)
 {
-    CHAR16 *FirmwareVendor;
-    INTN   CsrStatus;
+    CHAR16     *FirmwareVendor;
+    UINT32     CsrStatus;
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.2.6");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.9.2.7");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -210,10 +210,10 @@ static VOID AboutrEFInd(VOID)
 #else
         AddMenuInfoLine(&AboutMenu, L" Platform: unknown");
 #endif
-        CsrStatus = GetCsrStatus();
-        RecordgCsrStatus(CsrStatus);
-        if ((CsrStatus == -2) || (CsrStatus >= 0))
+        if (GetCsrStatus(&CsrStatus) == EFI_SUCCESS) {
+            RecordgCsrStatus(CsrStatus, FALSE);
             AddMenuInfoLine(&AboutMenu, gCsrStatus);
+        }
         FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
         LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor, ST->FirmwareRevision >> 16,
@@ -1912,6 +1912,7 @@ static VOID ScanForTools(VOID) {
     UINTN i, j, VolumeIndex;
     UINT64 osind;
     CHAR8 *b = 0;
+    UINT32 CsrValue;
 
     MokLocations = StrDuplicate(MOK_LOCATIONS);
     if (MokLocations != NULL)
@@ -2043,7 +2044,7 @@ static VOID ScanForTools(VOID) {
                 break;
 
             case TAG_CSR_ROTATE:
-                if ((GetCsrStatus() >= 0) && (GlobalConfig.CsrValues)) {
+                if ((GetCsrStatus(&CsrValue) == EFI_SUCCESS) && (GlobalConfig.CsrValues)) {
                     TempMenuEntry = CopyMenuEntry(&MenuEntryRotateCsr);
                     TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_CSR_ROTATE);
                     AddMenuEntry(&MainMenu, TempMenuEntry);

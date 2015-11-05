@@ -2031,6 +2031,23 @@ BOOLEAN EjectMedia(VOID) {
     return (Ejected > 0);
 } // VOID EjectMedia()
 
+// Returns TRUE if *Input contains nothing but valid hexadecimal characters,
+// FALSE otherwise. Note that a leading "0x" is NOT acceptable in the input!
+BOOLEAN IsValidHex(CHAR16 *Input) {
+    BOOLEAN IsHex = TRUE;
+    UINTN i = 0;
+
+    while ((Input[i] != L'\0') && IsHex) {
+        if (!(((Input[i] >= L'0') && (Input[i] <= L'9')) ||
+              ((Input[i] >= L'A') && (Input[i] <= L'F')) ||
+              ((Input[i] >= L'a') && (Input[i] <= L'f')))) {
+                IsHex = FALSE;
+        }
+        i++;
+    } // while
+    return IsHex;
+} // BOOLEAN IsValidHex()
+
 // Converts consecutive characters in the input string into a
 // number, interpreting the string as a hexadecimal number, starting
 // at the specified position and continuing for the specified number
@@ -2140,3 +2157,14 @@ EFI_GUID StringAsGuid(CHAR16 * InString) {
 BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2) {
     return (CompareMem(Guid1, Guid2, 16) == 0);
 } // BOOLEAN GuidsAreEqual()
+
+// Erase linked-list of UINT32 values....
+VOID EraseUint32List(UINT32_LIST **TheList) {
+    UINT32_LIST *NextItem;
+
+    while (*TheList) {
+        NextItem = (*TheList)->Next;
+        FreePool(*TheList);
+        *TheList = NextItem;
+    } // while
+} // EraseUin32List()

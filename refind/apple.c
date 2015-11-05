@@ -29,44 +29,42 @@
 CHAR16 *gCsrStatus = NULL;
 
 // Get CSR (Apple's System Integrity Protection [SIP], or "rootless") status
-// byte. Return values:
-// -2      = Call succeeded but returned value of unexpected length, so result
-//           is suspect
-// -1      = Call failed; likely not an Apple, or an Apple running OS X version
-//           that doesn't support CSR/SIP
-// 0-127   = Valid values (as of 11/2015)
-// 128-255 = High bit set unexpectedly, but value still returned
-INTN GetCsrStatus(VOID) {
-    CHAR8 *CsrValues;
-    UINTN CsrLength;
-    EFI_GUID CsrGuid = CSR_GUID;
-    EFI_STATUS Status;
+// information.
+EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
+    UINT32     *ReturnValue;
+    UINTN      CsrLength;
+    EFI_GUID   CsrGuid = CSR_GUID;
+    EFI_STATUS Status = EFI_INVALID_PARAMETER;
 
-    Status = EfivarGetRaw(&CsrGuid, L"csr-active-config", &CsrValues, &CsrLength);
-    if (Status == EFI_SUCCESS) {
-        if (CsrLength == 4) {
-            return CsrValues[0];
-        } else {
-            return -2;
+    if (CsrStatus) {
+        Status = EfivarGetRaw(&CsrGuid, L"csr-active-config", (CHAR8**) &ReturnValue, &CsrLength);
+        if (Status == EFI_SUCCESS) {
+            if (CsrLength == 4) {
+                *CsrStatus = *ReturnValue;
+            } else {
+                Status = EFI_BAD_BUFFER_SIZE;
+            }
         }
-    } else {
-        return -1;
+        MyFreePool(ReturnValue);
     }
+    return Status;
 } // INTN GetCsrStatus()
 
 // Store string describing CSR status byte in gCsrStatus variable, which appears
-// on the Info page.
-VOID RecordgCsrStatus(INTN CsrStatus) {
+// on the Info page. If DisplayMessage is TRUE, displays the new value of
+// gCsrStatus on the screen for three seconds.
+VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
+    EG_PIXEL    BGColor;
+
+    BGColor.b = 255;
+    BGColor.g = 175;
+    BGColor.r = 100;
+    BGColor.a = 0;
+
     if (gCsrStatus == NULL)
         gCsrStatus = AllocateZeroPool(256 * sizeof(CHAR16));
 
     switch (CsrStatus) {
-        case -2:
-            SPrint(gCsrStatus, 255, L" System Integrity Protection status is unrecognized");
-            break;
-        case -1:
-            SPrint(gCsrStatus, 255, L"System Integrity Protection status is unrecorded");
-            break;
         case SIP_ENABLED:
             SPrint(gCsrStatus, 255, L" System Integrity Protection is enabled (0x%02x)", CsrStatus);
             break;
@@ -76,63 +74,37 @@ VOID RecordgCsrStatus(INTN CsrStatus) {
         default:
             SPrint(gCsrStatus, 255, L" System Integrity Protection status: 0x%02x", CsrStatus);
     } // switch
+    if (DisplayMessage) {
+        egDisplayMessage(gCsrStatus, &BGColor);
+        PauseSeconds(3);
+    } // if
 } // VOID RecordgCsrStatus
 
 // Find the current CSR status and reset it to the next one in the
 // GlobalConfig.CsrValues list, or to the first value if the current
 // value is not on the list.
 // Returns the value to which the CSR is being set.
-INTN RotateCsrValue(VOID) {
-    INTN        CurrentValue;
-    UINTN       Index = 0;
-    CHAR16      *CurrentValueAsString = NULL;
-    CHAR16      *TargetValueAsString = NULL;
-    CHAR16      *ListItem;
-    CHAR8       TargetCsr[4];
-    EFI_GUID    CsrGuid = CSR_GUID;
-    EFI_STATUS  Status;
-    EG_PIXEL    BGColor;
+VOID RotateCsrValue(VOID) {
+    UINT32       CurrentValue;
+    UINT32_LIST  *ListItem;
+    UINT32       TargetCsr;
+    EFI_GUID     CsrGuid = CSR_GUID;
+    EFI_STATUS   Status;
 
-    BGColor.b = 255;
-    BGColor.g = 175;
-    BGColor.r = 100;
-    BGColor.a = 0;
-    CurrentValue = GetCsrStatus();
-    if ((CurrentValue >= 0) && GlobalConfig.CsrValues) {
-        CurrentValueAsString = PoolPrint(L"%02x", CurrentValue);
-        while (TargetValueAsString == NULL) {
-            ListItem = FindCommaDelimited(GlobalConfig.CsrValues, Index++);
-            if (ListItem) {
-                if (MyStriCmp(ListItem, CurrentValueAsString)) {
-                    TargetValueAsString = FindCommaDelimited(GlobalConfig.CsrValues, Index);
-                    if (TargetValueAsString == NULL)
-                        TargetValueAsString = FindCommaDelimited(GlobalConfig.CsrValues, 0);
-                }
-            } else {
-                TargetValueAsString = FindCommaDelimited(GlobalConfig.CsrValues, 0);
-            } // if/else
-            MyFreePool(ListItem);
-        } // while
-        TargetCsr[0] = (CHAR8) StrToHex(TargetValueAsString, 0, 2);
-        Status = EfivarSetRaw(&CsrGuid, L"csr-active-config", TargetCsr, 4, TRUE);
-        if (Status == EFI_SUCCESS) {
-            switch (TargetCsr[0]) {
-                case SIP_ENABLED:
-                    egDisplayMessage(PoolPrint(L"Set System Integrity Protection to enabled (0x%x)", (UINTN) TargetCsr[0]), &BGColor);
-                    break;
-                case SIP_DISABLED:
-                    egDisplayMessage(PoolPrint(L"Set System Integrity Protection status to disabled (0x%x)", (UINTN) TargetCsr[0]), &BGColor);
-                    break;
-                default:
-                    egDisplayMessage(PoolPrint(L"Set System Integrity Protection status to 0x%x", (UINTN) TargetCsr[0]), &BGColor);
-            }
-            RecordgCsrStatus((INTN) TargetCsr[0]);
+    Status = GetCsrStatus(&CurrentValue);
+    if ((Status == EFI_SUCCESS) && GlobalConfig.CsrValues) {
+        ListItem = GlobalConfig.CsrValues;
+        while ((ListItem != NULL) && (ListItem->Value != CurrentValue))
+            ListItem = ListItem->Next;
+        if (ListItem == NULL || ListItem->Next == NULL) {
+            TargetCsr = GlobalConfig.CsrValues->Value;
         } else {
-            egDisplayMessage(L"Error setting System Integrity Protection status", &BGColor);
+            TargetCsr = ListItem->Next->Value;
         }
-        PauseSeconds(3);
+        Status = EfivarSetRaw(&CsrGuid, L"csr-active-config", (CHAR8 *) &TargetCsr, 4, TRUE);
+        if (Status == EFI_SUCCESS)
+            RecordgCsrStatus(TargetCsr, TRUE);
     } // if
-    return (INTN) TargetCsr[0];
 } // INTN RotateCsrValue()
 
 
@@ -166,7 +138,7 @@ EFI_STATUS SetAppleOSInfo() {
 
     Status = refit_call3_wrapper(BS->LocateProtocol, &apple_set_os_guid, NULL, (VOID**) &SetOs);
 
-    // Not a Mac, so ignore the call....
+    // If not a Mac, ignore the call....
     if ((Status != EFI_SUCCESS) || (!SetOs))
         return EFI_SUCCESS;
 

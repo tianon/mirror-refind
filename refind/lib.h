@@ -141,10 +141,13 @@ VOID MyFreePool(IN OUT VOID *Pointer);
 
 BOOLEAN EjectMedia(VOID);
 
+BOOLEAN IsValidHex(CHAR16 *Input);
 UINT64 StrToHex(CHAR16 *Input, UINTN Position, UINTN NumChars);
 BOOLEAN IsGuid(CHAR16 *UnknownString);
 CHAR16 * GuidAsString(EFI_GUID *GuidData);
 EFI_GUID StringAsGuid(CHAR16 * InString);
 BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2);
+
+VOID EraseUint32List(UINT32_LIST **TheList);
 
 #endif
