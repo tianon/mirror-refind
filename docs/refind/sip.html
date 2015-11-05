@@ -131,7 +131,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <div style="float:right; width:55%">
 
-<p>Apple's OS X 10.11 (aka <i>El Capitan</i>) includes a new feature, known as System Integrity Protection (SIP), aka "rootless" mode. This feature is causing some consternation for advanced users, because it restricts what you can do with your computer, even as <tt>root</tt>. This page is dedicated to this new feature, including basic information on why SIP exists, how to install rEFInd on a computer with SIP enabled, and how to use rEFInd to manage SIP.</p>
+<p>Apple's OS X 10.11 (aka <i>El Capitan</i>) includes a new feature, known as System Integrity Protection (SIP), aka "rootless" mode. This feature is causing some consternation for advanced users, because it restricts what you can do with your computer, even as <tt>root</tt>. This page is dedicated to this new feature, including basic information on why SIP exists, how to install rEFInd on a computer with SIP enabled, and how to use rEFInd to manage SIP. Note that if you've come here for help installing rEFInd on a Mac with SIP enabled, you can click to one of the methods in the "Contents" box to the left of this paragraph. I recommend trying Recovery mode first; but if you have reason to try another method, you can do so.</p>
 
 </div>
 
@@ -147,15 +147,20 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
   <ul>
 
-  <li class="tight"><a href="#recovery">Using Recovery Mode</a>
+  <li class="tight"><a href="#recovery">Using Recovery Mode</a></li>
 
   <li class="tight"><a href="#disable">Disabling SIP</a>
+  <ul>
 
-  <li class="tight"><a href="#another">Using Another OS</a>
+  <li class="tight"><a href="#disable_in_osx">Disabling SIP with Recovery HD</a></li>
 
-  </ul>
+  <li class="tight"><a href="#disable_in_refind">Disabling SIP with rEFInd</a></li>
 
-</li>
+  </ul></li>
+
+  <li class="tight"><a href="#another">Using Another OS</a></li>
+
+  </ul></li>
 
 <li class="tight"><a href="#refind_manage">Using rEFInd to Manage SIP</a></li>
 
@@ -201,7 +206,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>Type <tt class="userinput">df -h</tt> in the Terminal. This produces a list of partitions that are mounted. Locate the one on which you unpacked the rEFInd files. It will normally be <tt>/Volumes/<tt class="variable">Somename</tt></tt>, where <tt class="variable">Somename</tt> is the volume's name.</li>
 
-<li>In the Terminal, use <tt>cd</tt> to change to the directory where the rEFInd files you unpacked earlier are stored. For instance, on my MacBook, I would type <tt class="userinput">cd /Volumes/Macintosh\ HD/Users/rodsmith/Destkop/refind-0.10.1</tt>. Note that if any element of this path includes a space, you must either enclose the <i>entire path</i> in quotes or precede the space with a backslash (<tt>\</tt>), as in this example's <tt>Macintish\ HD</tt> volume name.</li>
+<li>In the Terminal, use <tt>cd</tt> to change to the directory where the rEFInd files you unpacked earlier are stored. For instance, on my MacBook, I would type <tt class="userinput">cd /Volumes/Macintosh\ HD/Users/rodsmith/Destkop/refind-0.10.0</tt>. Note that if any element of this path includes a space, you must either enclose the <i>entire path</i> in quotes or precede the space with a backslash (<tt>\</tt>), as in this example's <tt>Macintish\ HD</tt> volume name.</li>
 
 <li>Type <tt class="userinput">ls</tt> to verify that <tt>refind-install</tt> is present in this directory.</li>
 
@@ -217,9 +222,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h3>Disabling SIP</h3>
 </a>
 
-<p>Another option is to disable SIP for your regular boot. This is a viable option if you're an expert who needs regular access to tools with which SIP interferes, such as low-level disk utilities. Regular users should probably avoid this option unless the preceding procedure does not work&mdash;and in that case, you should disable SIP temporarily and then re-enable it when you've finished installing rEFInd.</p>
+<p>Another option is to disable SIP for your regular boot. This is a viable option if you're an expert who needs regular access to tools with which SIP interferes, such as low-level disk utilities. Regular users should probably avoid this option unless the preceding procedure does not work&mdash;and in that case, you should disable SIP temporarily and then re-enable it when you've finished installing rEFInd. On this page, I describe two methods of disabling SIP: <a href="#disable_in_osx">using OS X's Recovery HD system</a> and <a href="#disable_in_refind">using rEFInd on CD-R or USB flash drive.</a></p>
 
-<p>To disable SIP, you must first boot into the Recovery HD, as in the previous procedure, and launch a Terminal window. Instead of locating and running the <tt>refind-instal</tt> script, though, you should type:</p>
+<a name="disable_in_osx">
+<h4>Disabling SIP with Recovery HD</h4>
+</a>
+
+<p>You can use the Recovery HD, as in the previous procedure, to disable SIP. To do so, boot it and launch a Terminal window, as described in the previous section. Instead of locating and running the <tt>refind-instal</tt> script, though, you should type:</p>
 
 <pre class="listing"># <tt class="userinput">csrutil disable</tt></pre>
 
@@ -228,6 +237,30 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>Once you've typed this command, you can reboot the computer. When you return to your regular OS X installation, SIP should be disabled and rEFInd should install normally, as described on the <a href="installing.html">Installing rEFInd</a> page. You will also be able to use disk partitioning tools like my <a href="http://www.rodsbooks.com/gdisk/">GPT fdisk,</a> write to directories that are normally off-limits, and so on. Note that disabling SIP does <i>not</i> disable normal Unix-style protections&mdash;you'll still need to use <tt>sudo</tt> (or enter your password in a GUI dialog box) to acquire <tt>root</tt> privileges to perform these system-administration tasks. You'll be no less safe with SIP disabled under OS X 10.11 than you would be with OS X 10.10 or earlier.</p>
 
 <p>If you want to re-enable SIP, you can do so in exactly the way you disabled it, except that you should type <tt class="userinput">csrutil enable</tt> rather than <tt class="userinput">csrutil disable</tt> in the Recovery environment.</p>
+
+<a name="disable_in_refind">
+<h4>Disabling SIP with rEFInd</h4>
+</a>
+
+<p>As described later on this page, rEFInd provides SIP control features, but they're disabled by default&mdash;except on the USB flash drive and CD-R images available from the <a href="http://www.rodsbooks.com/refind/getting.html">rEFInd downloads page.</a> On these images, the SIP control features are enabled, and can toggle between the two main modes you can set via <tt class="userinput">csrutil enable</tt> and <tt class="userinput">csrutil disable</tt> in the Recovery HD system. Thus, to disable SIP to install rEFInd, you can:</p>
+
+<ol>
+
+<li>Download the USB flash drive or CD-R version of rEFInd, as suitable for your computer.</li>
+
+<li>Prepare a boot medium. With the CD-R image, you can use your favorite disc-burning software. With the USB flash drive image, you can use <tt>dd</tt> to copy the image to a blank disk, as in <tt class="userinput">dd if=refind-flashdrive-0.10.0.img of=/dev/disk3</tt> to write the image to <tt>/dev/disk3</tt>. <b>Any existing data on the target disk will be destroyed!</b> For this reason, it's <b><i>imperative</i></b> that you specify the correct target (<tt>of=</tt>) disk; if you accidentally point this command to your regular hard disk, recovery will be difficult!</li>
+
+<li>Reboot and hold down the Option (or Alt) key to see the Mac's built-in boot manager.</li>
+
+<li>Select your external boot medium to boot to rEFInd.</li>
+
+<li>Use the SIP "shield" icon on the second row to toggle between SIP setting, as described in more detail in <a href="#refind_manage">Using rEFInd to Manage SIP.</a></li>
+
+</ol>
+
+<p>Once you install rEFInd, you can leave SIP enabled, adjust its SIP settings to enable the features from rEFInd and disable it from within your regular rEFInd, or boot again from your external rEFInd to disable SIP.</p>
+
+<p>This procedure has the advantage of being a bit quicker than using the Recovery HD&mdash;at least, if you've already got rEFInd 0.10.0 or later on an external medium. It will also work if your Recovery HD installation is missing or broken. On the other hand, it's probably easier to boot to the Recovery HD once or twice than to download and prepare a rEFInd boot medium. Also, some Macs are a little flaky when it comes to booting from external media, so you may have trouble booting in this way. Finally, if you don't already have rEFInd on an external medium and if you don't have an optical drive, writing a USB flash drive with <tt>dd</tt> carries a small risk of accidentally trashing your hard disk, particularly if you're unfamiliar with disk devices and <tt>dd</tt>.</p>
 
 <a name="another">
 <h3>Using Another OS</h3>

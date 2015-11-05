@@ -35,7 +35,9 @@ cp $StartDir/shell*.efi ./
 # EFI-boot CD...
 ln ../../refind/refind_ia32.efi ./bootia32.efi
 ln ../../refind/refind_x64.efi ./bootx64.efi
-ln ../../refind/refind.conf-sample ./refind.conf
+cp ../../refind/refind.conf-sample ./refind.conf
+sed -i '/#showtools/a showtools shell,memtest,gdisk,apple_recovery,csr_rotate,windows_recovery,mok_tool,about,shutdown,reboot,firmware' refind.conf
+sed -i '/#csr_values/a csr_values 10,77' refind.conf
 mkdir icons
 cd icons
 ln ../../../refind/icons/* ./
