@@ -72,21 +72,9 @@ mkisofs -A "Bootable rEFInd" -V "rEFInd_$Version" -volset "rEFInd_$Version" \
     -eltorito-alt-boot -efi-boot refind-bin-$Version.img \
     -no-emul-boot ./
 
-# Below is like above, but also creates an El Torito entry for BIOS
-# booting. That's useless, but in case something flakes out without
-# it, I'll preserve this version for a while....
-#mkisofs -A "Bootable rEFInd" -V "rEFInd $Version" -volset "rEFInd $Version" \
-#    -J -r -v -x ./lost+found -o ../../refind-cd-$Version.iso \
-#    -b refind-bin-$Version.img -c boot.cat -no-emul-boot -boot-load-size 4 \
-#    -eltorito-alt-boot -efi-boot refind-bin-$Version.img \
-#    -no-emul-boot ./
-
 # Create a bootable USB flash drive image, using the FAT filesystem
 # created above and a stored partition table image (plus some empty
 # sectors)....
-#
-# Note: Seems to work on only a few systems, so I'm not distributing
-# the resulting images yet....
 #
 rm -f ../../refind-flashdrive-$Version.*
 let FatSize=`du -s refind-bin-$Version.img | cut -f 1`

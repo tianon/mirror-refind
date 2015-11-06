@@ -31,7 +31,7 @@ CHAR16 *gCsrStatus = NULL;
 // Get CSR (Apple's System Integrity Protection [SIP], or "rootless") status
 // information.
 EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
-    UINT32     *ReturnValue;
+    UINT32     *ReturnValue = NULL;
     UINTN      CsrLength;
     EFI_GUID   CsrGuid = CSR_GUID;
     EFI_STATUS Status = EFI_INVALID_PARAMETER;
@@ -44,9 +44,9 @@ EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
             } else {
                 Status = EFI_BAD_BUFFER_SIZE;
             }
-        }
-        MyFreePool(ReturnValue);
-    }
+            MyFreePool(ReturnValue);
+        } // if (Status == EFI_SUCCESS)
+    } // if (CsrStatus)
     return Status;
 } // INTN GetCsrStatus()
 

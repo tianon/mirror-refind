@@ -167,11 +167,11 @@ GetParams() {
       echo "or --preloader! Aborting!"
       exit 1
    fi
-   if [[ "$KeepName" == 1 && "$OSTYPE" != "linux-gnu" ]] ; then
+   if [[ "$KeepName" == 1 && ("$OSTYPE" != "linux" && "$OSTYPE" != "linux-gnu") ]] ; then
       echo "The --keepname option is valid only under Linux! Aborting!"
       exit 1
    fi
-   if [[ "$KeepName" == 1 && "$TargetDir" != "/EFI/BOOT" ]] ; then
+   if [[ "$KeepName" == 1 && "$TargetDir" == "/EFI/BOOT" ]] ; then
       echo "The --keepname option is incompatible with --usedefault! Aborting!"
       exit 1
    fi
@@ -398,13 +398,11 @@ DetermineTargetDir() {
 # Determine (or guess) the filesystem used on the Linux /boot filesystem.
 # Store the result in the BootFS global variable.
 SetBootFS() {
-   local Blkid
-
    BootFS=""
    case "$OSTYPE" in
-      linux-gnu)
-           if command -v blkid 2>/dev/null; then
-              BootPart=`df /boot | grep dev | cut -f 1 -d " "`
+      linux*)
+           if command -v blkid &>/dev/null; then
+              BootPart=`df $RootDir/boot | grep dev | cut -f 1 -d " "`
               BootFS=`blkid -o export $BootPart 2> /dev/null | grep TYPE= | cut -f 2 -d =`
            fi
            ;;
@@ -607,7 +605,7 @@ MountDefaultTarget() {
       else
          mount -t msdos "$TargetPart" "$InstallDir"
       fi
-   elif [[ $OSTYPE == linux-gnu ]] ; then
+   elif [[ $OSTYPE == linux* ]] ; then
       mount -t vfat "$TargetPart" "$InstallDir"
    fi
    if [[ $? != 0 ]] ; then
@@ -1074,24 +1072,31 @@ GenerateRefindLinuxConf() {
       echo "Existing $RLConfFile found; not overwriting."
    else
       echo "Creating $RLConfFile; edit it to adjust kernel options."
-      if [[ -f "$RootDir/etc/default/grub" ]] ; then
-         # We want the default options used by the distribution, stored here....
-         source "$RootDir/etc/default/grub"
-         echo "Setting default boot options based on $RootDir/etc/default/grub"
-      fi
       RootFS=`df "$RootDir" | grep dev | cut -f 1 -d " "`
+      echo "RootFS starts as $RootFS"
       StartOfDevname=`echo "$RootFS" | cut -b 1-7`
       if [[ "$StartOfDevname" == "/dev/sd" || "$StartOfDevName" == "/dev/hd" ]] ; then
          # Identify root filesystem by UUID rather than by device node, if possible
          Uuid=`blkid -o export -s UUID "$RootFS" 2> /dev/null | grep UUID=`
          if [[ -n $Uuid ]] ; then
             RootFS="$Uuid"
+            echo "Uuid is $Uuid"
+            echo "Adjusting RootFS to $RootFS"
          fi
       fi
-      DefaultOptions="$GRUB_CMDLINE_LINUX $GRUB_CMDLINE_LINUX_DEFAULT"
-      echo "\"Boot with standard options\"        \"ro root=$RootFS $DefaultOptions \"" > $RLConfFile
-      echo "\"Boot to single-user mode\"          \"ro root=$RootFS $DefaultOptions single\"" >> $RLConfFile
-      echo "\"Boot with minimal options\"         \"ro root=$RootFS\"" >> $RLConfFile
+      if [[ $RootDir == "/" ]] ; then
+         DefaultOptions=`cat /proc/cmdline | cut -d ' ' -f 2- | sed 's/$/ /' | sed 's/initrd=.* //g' | sed 's/ *$//'`
+      else
+         if [[ -f "$RootDir/etc/default/grub" ]] ; then
+            # We want the default options used by the distribution, stored here....
+            source "$RootDir/etc/default/grub"
+            echo "Setting default boot options based on $RootDir/etc/default/grub"
+         fi
+         DefaultOptions="ro root=$RootFS $GRUB_CMDLINE_LINUX $GRUB_CMDLINE_LINUX_DEFAULT"
+      fi
+      echo "\"Boot with standard options\"  \"$DefaultOptions\"" > $RLConfFile
+      echo "\"Boot to single-user mode\"    \"$DefaultOptions single\"" >> $RLConfFile
+      echo "\"Boot with minimal options\"   \"ro root=$RootFS\"" >> $RLConfFile
    fi
 }
 
@@ -1190,7 +1195,7 @@ case "$OSTYPE" in
         fi
         InstallOnOSX $1
         ;;
-   linux-gnu)
+   linux*)
         InstallOnLinux
         ;;
    *)
