@@ -26,7 +26,7 @@
 #include "apple.h"
 #include "refit_call_wrapper.h"
 
-CHAR16 *gCsrStatus = NULL;
+CHAR16 gCsrStatus[256];
 
 // Get CSR (Apple's System Integrity Protection [SIP], or "rootless") status
 // information.
@@ -43,6 +43,7 @@ EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
                 *CsrStatus = *ReturnValue;
             } else {
                 Status = EFI_BAD_BUFFER_SIZE;
+                SPrint(gCsrStatus, 255, L" Unknown System Integrity Protection version");
             }
             MyFreePool(ReturnValue);
         } // if (Status == EFI_SUCCESS)
@@ -50,7 +51,7 @@ EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
     return Status;
 } // INTN GetCsrStatus()
 
-// Store string describing CSR status byte in gCsrStatus variable, which appears
+// Store string describing CSR status value in gCsrStatus variable, which appears
 // on the Info page. If DisplayMessage is TRUE, displays the new value of
 // gCsrStatus on the screen for three seconds.
 VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
@@ -60,9 +61,6 @@ VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
     BGColor.g = 175;
     BGColor.r = 100;
     BGColor.a = 0;
-
-    if (gCsrStatus == NULL)
-        gCsrStatus = AllocateZeroPool(256 * sizeof(CHAR16));
 
     switch (CsrStatus) {
         case SIP_ENABLED:
@@ -83,11 +81,9 @@ VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
 // Find the current CSR status and reset it to the next one in the
 // GlobalConfig.CsrValues list, or to the first value if the current
 // value is not on the list.
-// Returns the value to which the CSR is being set.
 VOID RotateCsrValue(VOID) {
-    UINT32       CurrentValue;
+    UINT32       CurrentValue, TargetCsr;
     UINT32_LIST  *ListItem;
-    UINT32       TargetCsr;
     EFI_GUID     CsrGuid = CSR_GUID;
     EFI_STATUS   Status;
 
@@ -104,8 +100,10 @@ VOID RotateCsrValue(VOID) {
         Status = EfivarSetRaw(&CsrGuid, L"csr-active-config", (CHAR8 *) &TargetCsr, 4, TRUE);
         if (Status == EFI_SUCCESS)
             RecordgCsrStatus(TargetCsr, TRUE);
+        else
+            SPrint(gCsrStatus, 255, L" Error setting System Integrity Protection code.");
     } // if
-} // INTN RotateCsrValue()
+} // VOID RotateCsrValue()
 
 
 /*

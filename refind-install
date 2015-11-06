@@ -36,9 +36,10 @@
 #
 # Revision history:
 #
-# 0.9.3   -- Enable running under OS X's recovery system & add warning about
+# 0.10.0  -- Enable running under OS X's recovery system & add warning about
 #            SIP & brief instructions on how to deal with it if SIP is
-#            detected to be enabled.
+#            detected to be enabled. Also change way refind_linux.conf default
+#            options are found; use /proc/cmdline as base.
 # 0.9.2   -- Added --keepname option.
 # 0.8.7   -- Better detection of Secure Boot mode & fixed errors when copying
 #            Shim & MokManager files over themselves; fixed bug that caused
@@ -167,7 +168,7 @@ GetParams() {
       echo "or --preloader! Aborting!"
       exit 1
    fi
-   if [[ "$KeepName" == 1 && ("$OSTYPE" != "linux" && "$OSTYPE" != "linux-gnu") ]] ; then
+   if [[ "$KeepName" == 1 && "$OSTYPE" != "linux" && "$OSTYPE" != "linux-gnu" ]] ; then
       echo "The --keepname option is valid only under Linux! Aborting!"
       exit 1
    fi
@@ -1073,15 +1074,12 @@ GenerateRefindLinuxConf() {
    else
       echo "Creating $RLConfFile; edit it to adjust kernel options."
       RootFS=`df "$RootDir" | grep dev | cut -f 1 -d " "`
-      echo "RootFS starts as $RootFS"
       StartOfDevname=`echo "$RootFS" | cut -b 1-7`
       if [[ "$StartOfDevname" == "/dev/sd" || "$StartOfDevName" == "/dev/hd" ]] ; then
          # Identify root filesystem by UUID rather than by device node, if possible
          Uuid=`blkid -o export -s UUID "$RootFS" 2> /dev/null | grep UUID=`
          if [[ -n $Uuid ]] ; then
             RootFS="$Uuid"
-            echo "Uuid is $Uuid"
-            echo "Adjusting RootFS to $RootFS"
          fi
       fi
       if [[ $RootDir == "/" ]] ; then

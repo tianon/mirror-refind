@@ -12,7 +12,7 @@
 #
 # Revision history:
 #
-# 0.9.3   -- Renamed from mvrefind.sh to mvrefind
+# 0.10.0  -- Renamed from mvrefind.sh to mvrefind
 # 0.6.3   -- Initial release
 #
 # Note: mvrefind version numbers match those of the rEFInd package

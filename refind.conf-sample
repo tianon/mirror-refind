@@ -386,7 +386,7 @@ timeout 20
 # non-Apple computers.
 # The default is inactive (no OS X spoofing is done).
 #
-#spoof_osx_version "10.9"
+#spoof_osx_version 10.9
 
 # Set the CSR values for Apple's System Integrity Protection (SIP) feature.
 # Values are one-byte (two-character) hexadecimal numbers. These values

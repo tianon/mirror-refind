@@ -1,6 +1,16 @@
 0.9.3 (??/??/2015):
 -------------------
 
+- Modified refind-install and mkrlconf scripts to use /proc/cmdline as
+  source for default boot options EXCEPT when refind-install receives the
+  --root option. In that case, refind-install continues to use
+  /etc/default/grub as the source of default options. The idea behind this
+  change is that it's more reliable to get boot options from /proc/cmdline
+  when the targeted system is the one that's booted; but --root would be
+  used from emergency disks or live CDs, in which case the current boot
+  options would be completely wrong, so extracting boot options from GRUB
+  files is the best bet for getting close to the right options.
+
 - Added "@/boot" to default also_scan_dirs setting. This makes kernels
   show up on Btrfs volumes under Ubuntu (and perhaps others), at least when
   the Btrfs driver is loaded.

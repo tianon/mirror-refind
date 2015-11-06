@@ -48,7 +48,7 @@
                              CSR_ALLOW_UNRESTRICTED_DTRACE | \
                              CSR_ALLOW_UNRESTRICTED_NVRAM)
 
-extern CHAR16 *gCsrStatus;
+extern CHAR16 gCsrStatus[256];
 
 EFI_STATUS GetCsrStatus(UINT32 *CsrValue);
 VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage);
