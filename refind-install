@@ -698,7 +698,8 @@ ENDOFHERE
 
 CheckForSIP() {
    if [[ -x "/usr/bin/csrutil" ]] ; then
-      local OKToInstall=`/usr/bin/csrutil status | grep "Protection status: enabled (Custom Configuration\|Apple Internal)"`
+      local OKToInstall=`/usr/bin/csrutil status | \
+                         grep "Protection status: disabled\|enabled (Apple Internal)\|NVRAM Protections: disabled"`
       if [[ -z "$OKToInstall" ]] ; then
          echo
          echo "**** ALERT: SIP ENABLED! ****"
@@ -761,7 +762,7 @@ InstallOnOSX() {
    CheckForSIP
    Platform=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
    CopyRefindFiles
-   cp "$ThisDir/mountesp" /usr/local/bin
+   cp "$ThisDir/mountesp" /usr/local/bin &> /dev/null
    if [[ $InstallToEspOnMac == "1" ]] ; then
       bless --mount "$InstallDir" --setBoot --file "$InstallDir/$TargetDir/$Refind" --shortform
    elif [[ "$TargetDir" != "/EFI/BOOT" ]] ; then
@@ -1219,7 +1220,14 @@ fi
 
 if [[ $UnmountEsp == '1' ]] ; then
    echo "Unmounting install dir"
-   umount $InstallDir
+   case "$OSTYPE" in
+   darwin*)
+      diskutil unmount $InstallDir
+      ;;
+   *)
+      umount $InstallDir
+      ;;
+   esac
 fi
 
 if [[ "$InstallDir" == /tmp/refind_install ]] ; then

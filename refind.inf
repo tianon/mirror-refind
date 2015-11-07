@@ -37,10 +37,13 @@
   mok/guid.c
   mok/security_policy.c
   mok/simple_file.c
+  refind/apple.c
   refind/main.c
   refind/config.c
   refind/icns.c
+  refind/legacy.c
   refind/lib.c
+  refind/line_edit.c
   refind/menu.c
   refind/screen.c
   refind/driver_support.c
