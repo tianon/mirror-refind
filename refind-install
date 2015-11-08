@@ -690,7 +690,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.9.2</string>
+        <string>0.10.0</string>
 </dict>
 </plist>
 ENDOFHERE
@@ -1134,9 +1134,8 @@ InstallOnLinux() {
          echo "CAUTION: This Linux installation uses a 32-bit kernel. 32-bit EFI-based"
          echo "computers are VERY RARE. If you've installed a 32-bit version of Linux"
          echo "on a 64-bit computer, you should manually install the 64-bit version of"
-         echo "rEFInd. If you're installing on a Mac, you should do so from OS X. If"
-         echo "you're positive you want to continue with this installation, answer 'Y'"
-         echo "to the following question..."
+         echo "rEFInd. If you're positive you want to continue with this installation,"
+         echo "answer 'Y' to the following question..."
          echo
          echo -n "Are you sure you want to continue (Y/N)? "
          ReadYesNo

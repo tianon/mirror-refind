@@ -1,3 +1,9 @@
+refind (0.10.0-0ppa1) trusty; urgency=medium
+
+  * Version bump
+
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Sun, 08 Nov 2015 16:53:35 -0500
+
 refind (0.9.2-0ppa1) trusty; urgency=medium
 
   * Version bump

@@ -1,6 +1,6 @@
 Summary: EFI boot manager software
 Name: refind
-Version: 0.9.2.7
+Version: 0.10.0
 Release: 1%{?dist}
 Summary: EFI boot manager software
 License: GPLv3
@@ -90,8 +90,14 @@ install -Dp -m0755 refind-install $RPM_BUILD_ROOT/usr/share/refind-%{version}/
 
 # Copy documentation to /usr/share/doc/refind-%{version}
 mkdir -p $RPM_BUILD_ROOT/usr/share/doc/refind-%{version}
-cp -a docs/* $RPM_BUILD_ROOT/usr/share/doc/refind-%{version}/
+cp -a docs/Styles $RPM_BUILD_ROOT/usr/share/doc/refind-%{version}/
+cp -a docs/refind $RPM_BUILD_ROOT/usr/share/doc/refind-%{version}/
 install -Dp -m0644 NEWS.txt COPYING.txt LICENSE.txt README.txt CREDITS.txt $RPM_BUILD_ROOT/usr/share/doc/refind-%{version}
+
+# Copy man pages to /usr/share/man/man8
+mkdir -p $RPM_BUILD_ROOT/usr/share/man/man8
+install -Dp -m0644 docs/man/mvrefind.8 $RPM_BUILD_ROOT/usr/share/man/man8
+install -Dp -m0644 docs/man/mkrlconf.8 $RPM_BUILD_ROOT/usr/share/man/man8
 
 # Copy keys to /etc/refind.d/keys
 mkdir -p $RPM_BUILD_ROOT/etc/refind.d/keys
@@ -112,6 +118,7 @@ cp -a fonts $RPM_BUILD_ROOT/usr/share/refind-%{version}/
 %files
 %defattr(-,root,root -)
 %doc /usr/share/doc/refind-%{version}
+%doc /usr/share/man/man8
 /usr/sbin/mkrlconf
 /usr/sbin/mvrefind
 /usr/share/refind-%{version}
@@ -168,6 +175,8 @@ fi
 # thus wiping out the just-updated files.
 
 %changelog
+* Sun Nov 8 2015 R Smith <rodsmith@rodsbooks.com> - 0.10.0
+- Updated spec file for 0.10.0
 * Sat Sep 19 2015 R Smith <rodsmith@rodsbooks.com> - 0.9.2
 - Updated spec file for 0.9.2
 * Sun Sep 13 2015 R Smith <rodsmith@rodsbooks.com> - 0.9.1
@@ -178,7 +187,7 @@ fi
 - Updated spec file for 0.8.7
 * Sun Feb 8 2015 R Smith <rodsmith@rodsbooks.com> - 0.8.6
 - Updated spec file for 0.8.6
-* Sun Feb 2 2015 R Smith <rodsmith@rodsbooks.com> - 0.8.5
+* Sun Feb 1 2015 R Smith <rodsmith@rodsbooks.com> - 0.8.5
 - Updated spec file for 0.8.5
 * Mon Dec 8 2014 R Smith <rodsmith@rodsbooks.com> - 0.8.4
 - Updated spec file for 0.8.4

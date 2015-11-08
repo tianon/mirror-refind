@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 11/13/2012; last Web page update:
-9/19/2015, referencing rEFInd 0.9.2</p>
+11/8/2015, referencing rEFInd 0.10.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -153,6 +153,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 </ul>
 
 </div>
+
+<p class="sidebar"><b>Note:</b> Macs don't (yet?) support Secure Boot, but
+as of version 10.11 ("El Capitan"), OS X uses its own new security feature,
+<i>System Integrity Protection (SIP),</i> which creates its own set of
+hoops through which rEFInd users must jump. See the <a
+href="sip.html">rEFInd and System Integrity Protection</a> page for
+details.</p>
 
 <p>If you're using a computer that supports Secure Boot, you may run into extra complications. This feature is intended to make it difficult for malware to insert itself early into the computer's boot process. Unfortunately, it also complicates multi-boot configurations such as those that rEFInd is intended to manage. This page describes some <a href="#basic">Secure Boot basics</a> and two specific ways of using rEFInd with Secure Boot: <a href="#shim">Using the Shim program</a> and <a href="#preloader">using the PreLoader program.</a> (My separate <a href="http://www.rodsbooks.com/efi-bootloaders/secureboot.html">EFI Boot Loaders for Linux page on Secure Boot</a> covers the additional topics of disabling Secure Boot and adding keys to the firmware's own set of keys.) This page concludes with a look at <a href="#caveats">known bugs and limitations</a> in rEFInd's Secure Boot features.</p>
 

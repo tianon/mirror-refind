@@ -50,11 +50,11 @@ MountOSXESP() {
         fi
         MountPoint="/Volumes/ESP"
         mkdir /Volumes/ESP &> /dev/null
-        mount -t msdos "$Esp" /Volumes/ESP
+        mount -t msdos "$Esp" $MountPoint
         # Some systems have HFS+ "ESPs." They shouldn't, but they do. If this is
         # detected, mount it as such and set appropriate options.
         if [[ $? != 0 ]] ; then
-            mount -t hfs "$Esp" /Volumes/Esp
+            mount -t hfs "$Esp" $MountPoint
             if [[ $? != 0 ]] ; then
                 echo "Unable to mount ESP!\n"
                 exit 1

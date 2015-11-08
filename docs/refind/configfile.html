@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-11/1/2015, referencing rEFInd 0.9.3</p>
+11/8/2015, referencing rEFInd 0.10.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -132,7 +132,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <div style="float:right; width:55%">
 
-<p>Many casual users will be able to use rEFInd without making changes to its settings; in its default configuration, the boot manager automatically detects all the EFI boot loader programs you have on your EFI System Partition (ESP) (or your OS X boot partition, in the case of Macs) and displays icons for them. On Macs, rEFInd also presents legacy BIOS boot options by default. Sometimes, though, you may want to tweak rEFInd's configuration. Sometimes you can obtain your desired results by adjusting the filenames of your boot loaders. Other times, you can edit rEFInd's configuration file, <tt>refind.conf</tt>, which resides in the same directory as its binary file (<tt>refind_x64.efi</tt> or whatever you've renamed it).</p>
+<p>Many casual users will be able to use rEFInd without making changes to its settings; in its default configuration, the boot manager automatically detects all the EFI boot loader programs you have on your EFI System Partition (ESP) (or your OS X boot partition, in the case of Macs) in conventional locations and displays icons for them. On Macs, rEFInd also presents legacy BIOS boot options by default. Sometimes, though, you may want to tweak rEFInd's configuration. Sometimes you can obtain your desired results by adjusting the filenames of your boot loaders. Other times, you can edit rEFInd's configuration file, <tt>refind.conf</tt>, which resides in the same directory as its binary file (<tt>refind_x64.efi</tt> or whatever you've renamed it).</p>
 
 </div>
 
@@ -396,9 +396,9 @@ timeout 20
    <td>On some Macs, this option causes rEFInd to tell the firmware that the specified version of OS X is being launched, even when another OS is selected. The effect is that the firmware may initialize hardware differently, which may have beneficial (or detrimental) results. If your Mac's video output isn't working normally, this option may help. On the other hand, keyboards and mice are known to sometimes stop functioning if this option is used, so you shouldn't use it unnecessarily. This option has no effect on non-Apple hardware. The default is to not use this feature.</td>
 </tr>
 <tr>
-   <td><tt>csr_rotate</tt></td>
+   <td><tt>csr_values</tt></td>
    <td>List of hexadecimal values</td>
-   <td>Specifies values that may be set via the <tt>csr_rotate</tt> tool for Apple's System Integrity Protection (SIP). SIP stores values in NVRAM to set restrictions on what users (even <tt>root</tt>) may do in recent versions of OS X. If you want to be able to control these restrictions in rEFInd, you must set the values you want to use here <i>and</i> set <tt>csr_rotate</tt> on the <tt>showtools</tt> line (which must also be uncommented). Note that values are specified in hexadecimal, with no leading <tt>0x</tt> or other hexadecimal indicator. SIP is described in more detail on many Web sites, such as <a href="http://osxarena.com/2015/10/guide-details-apples-system-integrity-protection-sip-for-hackintosh/">here</a> and <a href="http://www.idelta.info/archives/sip-rootless-internal-in-el-capitan/">here.</a></td>
+   <td>Specifies values that may be set via the <tt>csr_rotate</tt> tool for Apple's System Integrity Protection (SIP). SIP stores values in NVRAM to set restrictions on what users (even <tt>root</tt>) may do in OS X 10.11. If you want to be able to control these restrictions in rEFInd, you must set the values you want to use here <i>and</i> set <tt>csr_rotate</tt> on the <tt>showtools</tt> line (which must also be uncommented). Note that values are specified in hexadecimal, with no leading <tt>0x</tt> or other hexadecimal indicator. SIP is described in more detail on many Web sites, such as <a href="http://osxarena.com/2015/10/guide-details-apples-system-integrity-protection-sip-for-hackintosh/">here</a> and <a href="http://www.idelta.info/archives/sip-rootless-internal-in-el-capitan/">here.</a></td>
 </tr>
 <tr>
    <td><tt>include</tt></td>
@@ -406,8 +406,6 @@ timeout 20
    <td>Includes the specified file into the current configuration file. Essentially, the included file replaces the <tt>include</tt> line, so positioning of this token is important if the included file includes options that contradict those in the main file. The included file must reside in the same directory as the rEFInd binary and the main configuration file. This option is valid only in the main configuration file; included files may not include third-tier configuration files.</td>
 </tr>
 </table>
-
-<p>Prior to version 0.2.4, rEFInd supported a token called <tt>disable</tt>, whose function partially overlapped with <tt>hideui</tt>. Version 0.2.4 merges many of the features of these two tokens into <tt>hideui</tt> and creates the new <tt>showtools</tt> option, which provides the remaining functionality in a more flexible way.</p>
 
 <p>As an example of rEFInd configuration, consider the following <tt>refind.conf</tt> file:</p>
 
@@ -505,7 +503,7 @@ default_selection elilo
 <p>As an example, consider the following entries:</p>
 
 <pre class="listing">
-menuentry "Ubuntu Linux" {
+menuentry "Ubuntu" {
     loader /EFI/ubuntu/grubx64.efi
     disabled
 }
@@ -525,7 +523,7 @@ menuentry "Windows via shell script" {
 }
 </pre>
 
-<p>This example sets up three entries: one for Ubuntu Linux, one for Arch Linux, and one to launch a shell script. Note that the final entry uses different directory separators from the first two, simply to demonstrate the fact that it's possible. (The form of directory separators in <tt>options</tt> lines is important, though, because the program being launched may expect a particular directory separator character.) The Ubuntu entry sets no icon, since rEFInd will note that the boot loader is stored in the <tt>ubuntu</tt> directory, and it will automatically find the appropriate Ubuntu icon (<tt>os_ubuntu.png</tt>). This option is, however, disabled, so no matching icon will appear when you reboot unless you first comment out or delete the <tt>disabled</tt> line.</p>
+<p>This example sets up three entries: one for Ubuntu, one for Arch Linux, and one to launch a shell script. Note that the final entry uses different directory separators from the first two, simply to demonstrate the fact that it's possible. (The form of directory separators in <tt>options</tt> lines is important, though, because the program being launched may expect a particular directory separator character.) The Ubuntu entry sets no icon, since rEFInd will note that the boot loader is stored in the <tt>ubuntu</tt> directory, and it will automatically find the appropriate Ubuntu icon (<tt>os_ubuntu.png</tt>). This entire entry is, however, disabled, so no matching icon will appear when you reboot unless you first comment out or delete the <tt>disabled</tt> line.</p>
 
 <p class="sidebar"><b>Tip:</b> Under Linux, you can learn a filesystem's label by using <tt>blkid</tt>, as in <tt class="userinput">blkid /dev/sda1</tt>. The filesystem's label, if set, is identified by the keyword <tt>LABEL</tt> in the output. Some versions also return the partition's label and partition GUID (referred to as <tt>PARTUUID</tt> by <tt>blkid</tt>). You can obtain the partition's name and unique GUID using <tt>sgdisk</tt>, as in <tt class="userinput">sgdisk -i 1 /dev/sda</tt> to find the data on <tt>/dev/sda1</tt>.</p>
 
@@ -641,7 +639,7 @@ menuentry Arch {
 <h2>Adjusting the Default Boot Option</h2>
 </a>
 
-<p>Just before launching an OS, rEFInd stores the description in the EFI variable <tt>PreviousBoot</tt> with a GUID of 36d08fa7-cf0b-42f5-8f14-68df73ed3740. The next time it launches, it reads that same variable and sets the default boot loader to that value, if it's still available and if the first item in <tt>default_selection</tt> in the <tt>refind.conf</tt> file is a plus sign (<tt>+</tt>).</p>
+<p>Just before launching an OS, rEFInd stores the description in the EFI variable <tt>PreviousBoot</tt> with a GUID of 36d08fa7-cf0b-42f5-8f14-68df73ed3740. The next time rEFInd launches, it reads that same variable and sets the default boot loader to that value, if it's still available and if the first item in <tt>default_selection</tt> in the <tt>refind.conf</tt> file is a plus sign (<tt>+</tt>).</p>
 
 <p>Under Linux, the variable that rEFInd uses to store this information is accessible as <tt>/sys/firmware/efi/efivars/PreviousBoot-36d08fa7-cf0b-42f5-8f14-68df73ed3740</tt>. Thus, you can back up this value, modify it, and write it back out to adjust your next-booted OS. Getting this string just right can be a bit tricky, though, and if the kernel doesn't like its format, it will not let you modify the variable. If you try to modify the variable, be aware that it's stored in UTF-16 format. As with the <tt>default_selection</tt> token in <tt>refind.conf</tt>, you can enter any substring that uniquely identifies the entry you want to boot.</p>
 

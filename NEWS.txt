@@ -1,5 +1,8 @@
-0.9.3 (??/??/2015):
--------------------
+0.9.3 (11/8/2015):
+------------------
+
+- Fixed bug that caused refind-install to not unmount the ESP when it
+  should under OS X.
 
 - Modified refind-install and mkrlconf scripts to use /proc/cmdline as
   source for default boot options EXCEPT when refind-install receives the

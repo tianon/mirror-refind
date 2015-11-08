@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Originally written: 10/31/2015, referencing rEFInd 0.9.3</p>
+<p>Originally written: 11/8/2015, referencing rEFInd 0.10.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -174,9 +174,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>What Is SIP?</h2>
 </a>
 
-<p>To understand SIP, you should first know that Unix-like systems, including OS X, have traditionally provided a model of security in which ordinary users can read and write their own files (word processor documents, their own digital photos, etc.), but cannot write to system files (programs, system configuration files, etc.)&mdash;and users cannot even read some system files. This system security model has worked well for decades on traditional Unix systems, which have been administered by computer professionals and used by individuals with less experience. For administrative tasks, the <tt>root</tt> account is used. On Macs, this access is generally granted by the <tt>sudo</tt> command or by various GUI tools. Most Macs are single-user computers that are administered by their users. Such people often lack the knowledge of the professional system administrators who have traditionally managed Unix systems; but they must still perform system administration tasks such as installing new software and configuring network settings. OS X has always provided some measure of security by requiring users to enter their passwords before performing these dangerous tasks, and by providing GUI tools to help guide users through these tasks in a way that minimizes the risk of damage.</p>
+<p>To understand SIP, you should first know that Unix-like systems, including OS X, have traditionally provided a model of security in which ordinary users can read and write their own files (word processor documents, their own digital photos, etc.), but cannot write to system files (programs, system configuration files, etc.)&mdash;and users cannot even read some system files. This system security model has worked well for decades on traditional Unix systems, which have been administered by computer professionals and used by individuals with less experience. For administrative tasks, the <tt>root</tt> account is used. On Macs, this access is generally granted by the <tt>sudo</tt> command or by various GUI tools. Most Macs, in contrast to traditional Unix mainframes and minicomputers from the 20th century, are single-user computers that are administered by their users. Such people often lack the knowledge of the professional system administrators who have traditionally managed Unix systems; but they must still perform system administration tasks such as installing new software and configuring network settings. OS X has always provided some measure of security by requiring users to enter their passwords before performing these dangerous tasks, and by providing GUI tools to help guide users through these tasks in a way that minimizes the risk of damage.</p>
 
-<p>Apple has apparently decided that these safeguards are no longer sufficient. I won't try to speak for Apple or explain their motivations, but the result of Apple's decisions is SIP. With SIP active, as is the default, OS X limits your ability to perform some of these administrative tasks. You can still install and remove most third-party programs, configure your network, and so on; but some critical directories can no longer be written, even as <tt>root</tt>, and some utilities cannot be used in certain ways, even as <tt>root</tt>. These restrictions impact rEFInd because one of the affected tools, a command called <tt>bless</tt>, is required to tell the Mac to boot rEFInd rather than to boot OS X directly.</p>
+<p>Apple has apparently decided that these safeguards are no longer sufficient, at least for certain tasks, such as writing files to certain system directories and installing boot loaders. I won't try to speak for Apple or explain their motivations, but the result of Apple's decisions is SIP. With SIP active, as is the default, OS X 10.11 limits your ability to perform some of these administrative tasks. You can still install and remove most third-party programs, configure your network, and so on; but some critical directories can no longer be written, even as <tt>root</tt>, and some utilities cannot be used in certain ways, even as <tt>root</tt>. These restrictions impact rEFInd because one of the affected tools, a command called <tt>bless</tt>, is required to tell the Mac to boot rEFInd rather than to boot OS X directly.</p>
 
 <a name="sip_enabled">
 <h2>Installing rEFInd with SIP Enabled</h2>
@@ -216,7 +216,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </ol>
 
-<p>At this point, rEFInd should come up and enable you to boot into OS X and any other OS(es) that are already installed. You should not need to perform these steps again unless OS X re-installs its own boot loader or a subsequent OS installation overrides the default boot option. You can install an updated rEFInd and it should install correctly, provided you're installing it to the EFI System Partition (ESP). The <tt>refind-install</tt> script may complain about a failure, but because you're overwriting one rEFInd binary with another one, it should continue to boot.</p>
+<p>At this point, rEFInd should come up and enable you to boot into OS X and any other OS(es) that are already installed. You should not need to perform these steps again unless OS X re-installs its own boot loader or a subsequent OS installation overrides the default boot option. You can install an updated rEFInd and it should install correctly, provided you're installing it to the EFI System Partition (ESP). The <tt>refind-install</tt> script may complain about a failure, but because you're overwriting one rEFInd binary with another one, it should continue to boot. (If you installed rEFInd to an HFS+ partition, though, replacing the original file will require using <tt>bless</tt> to tell the firmware about the change, so updating such an installation probably won't work with SIP active.)</p>
 
 <a name="disable">
 <h3>Disabling SIP</h3>
@@ -228,13 +228,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h4>Disabling SIP with Recovery HD</h4>
 </a>
 
-<p>You can use the Recovery HD, as in the previous procedure, to disable SIP. To do so, boot it and launch a Terminal window, as described in the previous section. Instead of locating and running the <tt>refind-instal</tt> script, though, you should type:</p>
+<p>You can use the Recovery HD, as in the previous procedure, to disable SIP. To do so, boot it and launch a Terminal window, as described in the previous section. Instead of locating and running the <tt>refind-install</tt> script, though, you should type:</p>
 
 <pre class="listing"># <tt class="userinput">csrutil disable</tt></pre>
 
 <p>This command will disable SIP for all OSes that honor this setting. (In theory, multiple versions of OS X might be installed on a single computer, and all of them that support SIP should honor the SIP settings. To the best of my knowledge, no non-Apple OS honors SIP settings, although that could change.)</p>
 
-<p>Once you've typed this command, you can reboot the computer. When you return to your regular OS X installation, SIP should be disabled and rEFInd should install normally, as described on the <a href="installing.html">Installing rEFInd</a> page. You will also be able to use disk partitioning tools like my <a href="http://www.rodsbooks.com/gdisk/">GPT fdisk,</a> write to directories that are normally off-limits, and so on. Note that disabling SIP does <i>not</i> disable normal Unix-style protections&mdash;you'll still need to use <tt>sudo</tt> (or enter your password in a GUI dialog box) to acquire <tt>root</tt> privileges to perform these system-administration tasks. You'll be no less safe with SIP disabled under OS X 10.11 than you would be with OS X 10.10 or earlier.</p>
+<p>Once you've typed this command, you can reboot the computer. When you return to your regular OS X installation, SIP should be disabled and rEFInd should install normally, as described on the <a href="installing.html">Installing rEFInd</a> page. You will also be able to use disk partitioning tools like my <a href="http://www.rodsbooks.com/gdisk/">GPT fdisk,</a> write to directories that are normally off-limits, and so on. Note that disabling SIP does <i>not</i> disable normal Unix-style protections&mdash;you'll still need to use <tt>sudo</tt> (or enter your password in a GUI dialog box) to acquire <tt>root</tt> privileges to perform these system-administration tasks. You'll be no less safe with SIP disabled under OS X 10.11 than you would be with OS X 10.10 or earlier; you simply won't have its added protections against user error or malicious software.</p>
 
 <p>If you want to re-enable SIP, you can do so in exactly the way you disabled it, except that you should type <tt class="userinput">csrutil enable</tt> rather than <tt class="userinput">csrutil disable</tt> in the Recovery environment.</p>
 
@@ -242,7 +242,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h4>Disabling SIP with rEFInd</h4>
 </a>
 
-<p>As described later on this page, rEFInd provides SIP control features, but they're disabled by default&mdash;except on the USB flash drive and CD-R images available from the <a href="http://www.rodsbooks.com/refind/getting.html">rEFInd downloads page.</a> On these images, the SIP control features are enabled, and can toggle between the two main modes you can set via <tt class="userinput">csrutil enable</tt> and <tt class="userinput">csrutil disable</tt> in the Recovery HD system. Thus, to disable SIP to install rEFInd, you can:</p>
+<p>As described later on this page, rEFInd 0.10.0 provides SIP control features, but they're disabled by default&mdash;except on the USB flash drive and CD-R images available from the <a href="http://www.rodsbooks.com/refind/getting.html">rEFInd downloads page.</a> On these images, the SIP control features are enabled, and can toggle between the two main modes you can set via <tt class="userinput">csrutil enable</tt> and <tt class="userinput">csrutil disable</tt> in the Recovery HD system. Thus, to disable SIP to install rEFInd, you can:</p>
 
 <ol>
 
@@ -254,11 +254,11 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>Select your external boot medium to boot to rEFInd.</li>
 
-<li>Use the SIP "shield" icon on the second row to toggle between SIP setting, as described in more detail in <a href="#refind_manage">Using rEFInd to Manage SIP.</a></li>
+<li>Use the SIP "shield" icon on the second row to toggle between SIP settings, as described in more detail in <a href="#refind_manage">Using rEFInd to Manage SIP.</a></li>
 
 </ol>
 
-<p>Once you install rEFInd, you can leave SIP enabled, adjust its SIP settings to enable the features from rEFInd and disable it from within your regular rEFInd, or boot again from your external rEFInd to disable SIP.</p>
+<p>Once you install rEFInd, you can leave SIP enabled, enable your newly-installed rEFInd's SIP features and use them to disable SIP, or boot again from your external rEFInd to disable SIP.</p>
 
 <p>This procedure has the advantage of being a bit quicker than using the Recovery HD&mdash;at least, if you've already got rEFInd 0.10.0 or later on an external medium. It will also work if your Recovery HD installation is missing or broken. On the other hand, it's probably easier to boot to the Recovery HD once or twice than to download and prepare a rEFInd boot medium. Also, some Macs are a little flaky when it comes to booting from external media, so you may have trouble booting in this way. Finally, if you don't already have rEFInd on an external medium and if you don't have an optical drive, writing a USB flash drive with <tt>dd</tt> carries a small risk of accidentally trashing your hard disk, particularly if you're unfamiliar with disk devices and <tt>dd</tt>.</p>
 
@@ -280,7 +280,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </ul>
 
-<p>I've tested this method of installing rEFInd on my MacBook Air, but I can't promise it will work on all Macs&mdash;or even on an identical Mac with a configuration that's different from mine. My preference is to install rEFInd under OS X on Macs, because Apple likes to do things differently from everybody else, and so a Mac's firmware might not react in the usual way to tools like <tt>efibootmgr</tt> in Linux or <tt>bcdedit</tt> in Windows.</p>
+<p>I've tested this method of installing rEFInd on my MacBook Air (purchased in late 2014) and on my first-generation 32-bit Mac Mini, but I can't promise it will work on all Macs&mdash;or even on a Mac that's identical to one of mine but with a configuration that's different from mine. My preference is to install rEFInd under OS X on Macs, because Apple likes to do things differently from everybody else, and so a Mac's firmware might not react in the usual way to tools like <tt>efibootmgr</tt> in Linux or <tt>bcdedit</tt> in Windows.</p>
 
 <a name="refind_manage">
 <h2>Using rEFInd to Manage SIP</h2>
@@ -294,20 +294,20 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li><tt class="userinput">showtools</tt>&mdash;This line specifies tools that appear on the second row of icons in rEFInd. The new tool for managing SIP is called <tt>csr_rotate</tt>, so you must uncomment <tt>showtools</tt> and add this option, or create a new <tt>showtools</tt> line.</li>
 
-<li><tt class="userinput">csr_values</tt>&mdash;This line lists the hexadecimal values through which you can rotate once <tt>csr_rotate</tt> is active on the <tt>showtools</tt> line. The trick to this token is selecting appropriate options. Several sites, such as <a href="http://www.idelta.info/archives/sip-rootless-internal-in-el-capitan/">this one</a> and <a href="http://osxarena.com/2015/10/guide-details-apples-system-integrity-protection-sip-for-hackintosh/">this one,</a> describe the meanings of the various options, but often not in much detail. Apple's own <tt>csrutil</tt> command sets values of 77 (disabled) or 10 (enabled). Note also that you specify hexadecimal values on this line, but without a leading <tt>0x</tt> or other hexadecimal-notation indicator. If you put gibberish values, or hexadecimal values higher than those used by SIP, rEFInd ignores the bad entries. Thus, if some of your values are being ignored, you should check your <tt>csr_values</tt> line for typos.</li>
+<li><tt class="userinput">csr_values</tt>&mdash;This line lists the hexadecimal values through which you can rotate once <tt>csr_rotate</tt> is active on the <tt>showtools</tt> line. The trick to this token is selecting appropriate options. Several sites, such as <a href="http://www.idelta.info/archives/sip-rootless-internal-in-el-capitan/">this one</a> and <a href="http://osxarena.com/2015/10/guide-details-apples-system-integrity-protection-sip-for-hackintosh/">this one,</a> describe the meanings of the various options, but often not in much detail. Apple's own <tt>csrutil</tt> command sets values of 77 (disabled) or 10 (enabled). Note also that you specify hexadecimal values on this line, but without a leading <tt>0x</tt> or other hexadecimal-notation indicator. If you specify gibberish values, or hexadecimal values higher than those used by SIP, rEFInd ignores the bad entries. Thus, if some of your values are being ignored, you should check your <tt>csr_values</tt> line for typos.</li>
 
 </ul>
 
 <p>Note that <i><b>both</b></i> of these options must be set appropriately. If either of them is missing or misconfigured, rEFInd will not display the new SIP tool. A typical configuration using these features might look like this:</p>
 
-<pre class="listing">showtools shell,memtest,gdisk,csr_rotate,apple_recovery,windows_recovery,mok_tool,about,shutdown,reboot,firmware
+<pre class="listing">showtools shell,memtest,gdisk,csr_rotate,apple_recovery,windows_recovery,about,shutdown,reboot
 csr_values 10,77</pre>
 
     <img src="func_csr_rotate.png" align="right" width="48" height="48"
     alt="The SIP rotation tool rotates through all the CSR values you set"
     border=2 background="gray"/>
 
-<p>Once these options are set and you reboot into rEFInd, you should see a new shield icon, as shown at the right. When you select this tool, rEFInd identifies the next available CSR value from the list you specified and switches to that mode, rotating back to the start of the list once the end is reached. To confirm that the SIP mode has changed, rEFInd displays, for three seconds, a message identifying the new mode.</p>
+<p>Once these options are set and you reboot into rEFInd, you should see a new shield icon on the second row, as shown at the right. When you select this tool, rEFInd identifies the next available CSR value from the list you specified and switches to that mode, rotating back to the start of the list once the end is reached. To confirm that the SIP mode has changed, rEFInd displays, for three seconds, a message identifying the new mode.</p>
 
 <p>Whether or not you've enabled these SIP features in <tt>refind.conf</tt>, rEFInd displays the current SIP status on its "About" page:</p>
 
@@ -315,11 +315,11 @@ csr_values 10,77</pre>
     height="559" alt="rEFInd presents a graphical menu for selecting your
     boot OS." border=2> </center><br />
 
-<p>Note the line that reads "System Integrity Protection is disabled (0x77)." This line will be updated whenever you use the CSR rotation tool, so if you've specified a large number of values and have forgotten where you are in your rotation, you can use the About screen to figure it out.</p>
+<p>Note the line that reads "System Integrity Protection is disabled (0x77)" (highlighted in this screen shot). This line will be updated whenever you use the CSR rotation tool, so if you've specified a large number of values and have forgotten where you are in your rotation, you can use the About screen to figure it out.</p>
 
 <p>Both the summary on the About page and the CSR rotation tool depend on the presence of the <tt>csr-active-config</tt> NVRAM variable, which is where this information is stored. Thus, these features will not be present on older Macs that have not seen the presence of an OS X version that sets this variable. Likewise, you probably won't see the SIP summary in About or be able to set these values via <tt>csr_rotate</tt> and <tt>csr_values</tt> on a UEFI-based PC. (You could always create the variable on such a system in some other way, in which case rEFInd would let you adjust it, but it would have no effect on any OS except OS X.)</p>
 
-<p>I provide these features in rEFInd as a convenience for developers and other advanced users who have a legitimate need to adjust their SIP settings. Using rEFInd for this purpose is much faster than booting into the OS X Recovery system to make these adjustments. I discourage others from playing with these settings, since changing them inappropriately could cause problems; that's why they're not enabled by default.</p>
+<p>I provide these features in rEFInd as a convenience for developers and other advanced users who have a need to adjust their SIP settings. Using rEFInd for this purpose is much faster than booting into the OS X Recovery system to make these adjustments. I discourage others from playing with these settings, since changing them inappropriately could cause problems; that's why they're not enabled by default.</p>
 
 <a name="conclusion">
 <h2>Conclusion</h2>

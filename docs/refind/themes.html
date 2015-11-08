@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-11/1/2015, referencing rEFInd 0.9.3</p>
+11/8/2015, referencing rEFInd 0.10.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -192,7 +192,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Note that in this example, the text immediately below the icons is white, whereas the hint text at the bottom of the screen is black. The text color is determined by the brightness of the background; rEFInd uses black text against light backgrounds and light text against dark backgrounds. This adjustment is done on a line-by-line basis, so it copes better with horizontal lines than with vertical lines.</p>
 
-<p>If you want to use a full-screen background but also include the rEFInd logo, you can merge the two in a graphics editor by including the <tt>refind_banner-alpha.png</tt> image from the <tt>banners</tt> subdirectory of the rEFInd package in your background.</p>
+<p>If you want to use a full-screen background but also include the rEFInd logo, you can merge the two in a graphics editor by including the <tt>refind_banner-alpha.png</tt> or <tt>refind-banner.svg</tt> image from the <tt>banners</tt> subdirectory of the rEFInd package in your background.</p>
 
 <p>Beginning with rEFInd 0.7.8, it's possible to stretch or shrink any image to fill the screen. To do so, you should use the <tt>banner_scale</tt> option in <tt>refind.conf</tt>: Set it to <tt>noscale</tt> (the default) to use small banners as such or to crop larger images; or set it to <tt>fillscreen</tt> to adjust your banner's size to exactly fill the screen. This should be particularly handy for theme developers who want to use a full-screen background image, since you can now do this with just one image file.</p>
 
@@ -200,9 +200,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Icons</h2>
 </a>
 
-<p class="sidebar">Prior to version 0.9.3, rEFInd's icons came from a variety of sources&mdash;mostly from the <a href="http://deviantdark.deviantart.com/art/Oxygen-Refit-70199755">Oxygen Refit</a> package, with OS icons from rEFIt and assorted other sources. If you prefer these icons to the new ones, you can pull them out of a rEFInd 0.9.2 package</p>
+<p class="sidebar">Prior to version 0.10.0, rEFInd's icons came from a variety of sources&mdash;mostly from the <a href="http://deviantdark.deviantart.com/art/Oxygen-Refit-70199755">Oxygen Refit</a> package, with OS icons from rEFIt and assorted other sources. If you prefer these icons to the new ones, you can pull them out of a rEFInd 0.9.2 (or earlier) package</p>
 
-<p>The core icons in rEFInd 0.9.3 and later come from the <a
+<p>The core icons in rEFInd 0.10.0 and later come from the <a
 href="http://alecive.deviantart.com/art/AwOken-163570862">AwOken 2.5 icon
 set,</a> with additional icons created by me, and a few others taken from
 other sources. (The details are documented in the <tt>README</tt> file in
@@ -230,7 +230,7 @@ graphics, so you can change them.</p>
 
 </ul>
 
-<p>As an example of what the combination of icons and backgrounds can do, consider my own Snowy theme, showing the same boot options as the preceding image:</p>
+<p>As an example of what the combination of icons and backgrounds can do, consider my own <a href="https://sourceforge.net/projects/refind/files/themes/">Snowy theme,</a> showing the same boot options as the preceding image:</p>
 
     <br /><center><img src="refind-background-snowy.png" align="center"
     width="750" height="563" alt="The Snowy theme uses predominantly white
@@ -295,7 +295,7 @@ to be tedious.</p>
 
 <ul>
 
-<li><a href="https://sourceforge.net/projects/refind/files/">Snowy</a> is my own theme. It's built from (mostly) white variants of rEFInd's standard icons and includes a photo of a snowy field as a background image. It's shown earlier on this page.</li>
+<li><a href="https://sourceforge.net/projects/refind/files/themes/">Snowy</a> is my own theme. It's built from (mostly) white variants of rEFInd's standard icons and includes a photo of a snowy field as a background image. It's shown earlier on this page.</li>
 
 <li><a href="http://ecto-plazm.deviantart.com/art/rEFInd-Icon-Theme-296571397">ecto-plazm's theme</a> was one of the first independent themes to be created for rEFInd.</li>
 
