@@ -24,6 +24,7 @@
 #include "lib.h"
 #include "screen.h"
 #include "apple.h"
+#include "mystrings.h"
 #include "refit_call_wrapper.h"
 
 CHAR16 gCsrStatus[256];

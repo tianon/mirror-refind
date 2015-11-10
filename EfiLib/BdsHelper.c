@@ -7,6 +7,7 @@
 
 #include "BdsHelper.h"
 #include "legacy.h"
+#include "mystrings.h"
 #include "../refind/screen.h"
 #include "../refind/lib.h"
 #include "../include/refit_call_wrapper.h"

@@ -35,7 +35,7 @@ ALL_EFILIBS     = $(EFILIB)/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevel
 #		  /usr/local/UDK2010/MyWorkSpace/Build/MdeModule/RELEASE_GCC46/X64/MdeModulePkg/Core/Dxe/DxeMain/OUTPUT/DxeMain/DxeMain.obj
 
 
-SOURCE_NAMES     = apple config line_edit driver_support icns lib main menu screen gpt crc32 legacy AutoGen
+SOURCE_NAMES     = apple config mystrings line_edit driver_support icns lib main menu screen gpt crc32 legacy AutoGen
 OBJS             = $(SOURCE_NAMES:=.obj)
 
 all: $(BUILDME)

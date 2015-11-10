@@ -63,6 +63,7 @@
 #include "refit_call_wrapper.h"
 #include "screen.h"
 #include "syslinux_mbr.h"
+#include "mystrings.h"
 #include "../EfiLib/BdsHelper.h"
 #include "../EfiLib/legacy.h"
 #include "Handle.h"

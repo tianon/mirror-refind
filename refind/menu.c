@@ -63,6 +63,7 @@
 #include "libeg.h"
 #include "libegint.h"
 #include "line_edit.h"
+#include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 
 #include "../include/egemb_back_selected_small.h"

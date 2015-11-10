@@ -38,6 +38,7 @@
 #include "lib.h"
 #include "icns.h"
 #include "config.h"
+#include "mystrings.h"
 #include "../refind/screen.h"
 
 //

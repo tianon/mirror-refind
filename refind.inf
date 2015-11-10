@@ -45,6 +45,7 @@
   refind/lib.c
   refind/line_edit.c
   refind/menu.c
+  refind/mystrings.c
   refind/screen.c
   refind/driver_support.c
   refind/gpt.c

@@ -63,6 +63,7 @@
 #include "config.h"
 #include "screen.h"
 #include "apple.h"
+#include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "../mok/mok.h"
 

@@ -118,34 +118,18 @@ CHAR16 * StripEfiExtension(CHAR16 *FileName);
 INTN FindMem(IN VOID *Buffer, IN UINTN BufferLength, IN VOID *SearchString, IN UINTN SearchStringLength);
 VOID ReinitVolumes(VOID);
 
-BOOLEAN StriSubCmp(IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
-BOOLEAN MyStriCmp(IN CONST CHAR16 *String1, IN CONST CHAR16 *String2);
-CHAR16* MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet);
-VOID ToLower(CHAR16 * MyString);
-VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
-VOID MergeWords(CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 CHAR16 *FindExtension(IN CHAR16 *Path);
 CHAR16 *FindLastDirName(IN CHAR16 *Path);
 CHAR16 *FindPath(IN CHAR16* FullPath);
-BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit);
 VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **DeviceVolume, OUT CHAR16 **loader);
 BOOLEAN SplitVolumeAndFilename(IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
-CHAR16 *FindNumbers(IN CHAR16 *InString);
-CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index);
 VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename);
-BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List);
-BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List);
 BOOLEAN FilenameIn(IN REFIT_VOLUME *Volume, IN CHAR16 *Directory, IN CHAR16 *Filename, IN CHAR16 *List);
 BOOLEAN VolumeNumberToName(REFIT_VOLUME *Volume, CHAR16 **VolName);
 VOID MyFreePool(IN OUT VOID *Pointer);
 
 BOOLEAN EjectMedia(VOID);
 
-BOOLEAN IsValidHex(CHAR16 *Input);
-UINT64 StrToHex(CHAR16 *Input, UINTN Position, UINTN NumChars);
-BOOLEAN IsGuid(CHAR16 *UnknownString);
-CHAR16 * GuidAsString(EFI_GUID *GuidData);
-EFI_GUID StringAsGuid(CHAR16 * InString);
 BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2);
 
 VOID EraseUint32List(UINT32_LIST **TheList);

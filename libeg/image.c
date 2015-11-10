@@ -59,6 +59,7 @@
 #include "../refind/global.h"
 #include "../refind/lib.h"
 #include "../refind/screen.h"
+#include "../refind/mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "lodepng.h"
 
