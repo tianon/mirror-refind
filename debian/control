@@ -1,13 +1,13 @@
 Source: refind
 Maintainer: Rod Smith <rod.smith@canonical.com>
-Section: misc
+Section: admin
 Priority: optional
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Build-Depends: debhelper (>= 9), gnu-efi
 
 Package: refind
-Architecture: i386, amd64
-Depends: ${misc:Depends}, efibootmgr, openssl, sbsigntool, util-linux, parted
+Architecture: i386 amd64
+Depends: ${misc:Depends}, efibootmgr, openssl, sbsigntool, parted
 Description: boot manager for EFI-based computers
  A graphical boot manager for EFI- and UEFI-based computers, such as all
  Intel-based Macs and recent (most 2011 and later) PCs. rEFInd presents a
