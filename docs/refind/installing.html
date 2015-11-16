@@ -446,11 +446,11 @@ refind-install [--notesp | --usedefault <tt class="variable">device-file</tt> | 
 </tr>
 <tr>
    <td><tt>--nodrivers</tt></td>
-   <td>Ordinarily <tt>refind-install</tt> attempts to install the driver required to read <tt>/boot</tt> on Linux. This attempt works only if you're using ext2fs, ext3fs, ext4fs, or ReiserFS on the relevant partition. If you want to forego this driver installation, pass the <tt>--nodrivers</tt> option. This option is the implicit when you use <tt>--usedefault</tt>.</td>
+   <td>Ordinarily <tt>refind-install</tt> attempts to install the driver required to read <tt>/boot</tt> on Linux. This attempt works only if you're using ext2fs, ext3fs, ext4fs, ReiserFS, or Btrfs on the relevant partition. If you want to forego this driver installation, pass the <tt>--nodrivers</tt> option. This option is implicit when you use <tt>--usedefault</tt>.</td>
 </tr>
 <tr>
    <td><tt>--alldrivers</tt></td>
-   <td>When you specify this option, <tt>refind-install</tt> copies <i>all</i> the driver files for your architecture. You may want to remove unused driver files after you use this option, especially if your computer uses Secure Boot. Note that some computers hang or fail to work with any drivers if you use this option, so use it with caution.</td>
+   <td>When you specify this option, <tt>refind-install</tt> copies <i>all</i> the driver files for your architecture. You may want to remove unused driver files after you use this option. Note that some computers hang or fail to work with any drivers if you use this option, so use it with caution.</td>
 </tr>
 <tr>
    <td><tt>--shim <tt class="variable">shim-filename</tt></tt> or <tt>--preloader <tt class="variable">preloader-filename</tt></tt></td>

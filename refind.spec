@@ -107,6 +107,7 @@ install -Dp -m0644 keys/* $RPM_BUILD_ROOT/etc/refind.d/keys
 mkdir -p $RPM_BUILD_ROOT/usr/sbin
 install -Dp -m0755 mkrlconf $RPM_BUILD_ROOT/usr/sbin/
 install -Dp -m0755 mvrefind $RPM_BUILD_ROOT/usr/sbin/
+ln -sr $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind-install $RPM_BUILD_ROOT/usr/sbin
 
 # Copy banners and fonts to /usr/share/refind-%{version}
 cp -a banners $RPM_BUILD_ROOT/usr/share/refind-%{version}/
@@ -121,6 +122,7 @@ cp -a fonts $RPM_BUILD_ROOT/usr/share/refind-%{version}/
 %doc /usr/share/man/man8
 /usr/sbin/mkrlconf
 /usr/sbin/mvrefind
+/usr/sbin/refind-install
 /usr/share/refind-%{version}
 /etc/refind.d/
 

@@ -194,9 +194,24 @@ ReadYesNo() {
 
 # Abort if the rEFInd files can't be found.
 # Also sets $ConfFile to point to the configuration file,
-# $IconsDir to point to the icons directory, and
-# $ShimSource to the source of the shim.efi file (if necessary).
+# $IconsDir to point to the icons directory,
+# $ShimSource to the source of the shim.efi file (if necessary),
+# $ThisDir to point to the directory in which this script resides,
+# and $RefindDir to point to where the rEFInd binaries live
 CheckForFiles() {
+   # Note: $ThisDir points to real (not symlinked) script home on Linux,
+   # enabling creating a symlink in /usr/sbin (or wherever); but on OS X,
+   # "readlink" doesn't do the right thing, so the script must not be a
+   # symlink under OS X.
+   case "$OSTYPE" in
+      darwin*)
+           ThisDir="$( cd -P "${BASH_SOURCE%/*}" && pwd )"
+           ;;
+      linux*)
+           ThisDir="$(dirname "$(readlink -f "$0")")"
+           ;;
+   esac
+   RefindDir="$ThisDir/refind"
    # Note: This check is satisfied if EITHER the 32- or the 64-bit version
    # is found, even on the wrong platform. This is because the platform
    # hasn't yet been determined. This could obviously be improved, but it
@@ -1168,8 +1183,6 @@ InstallOnLinux() {
 # install under OS X or Linux, depending on the detected platform.
 #
 GetParams "$@"
-ThisDir="$( cd -P "${BASH_SOURCE%/*}" && pwd )"
-RefindDir="$ThisDir/refind"
 if [[ $UID != 0 ]] ; then
    echo "Not running as root; attempting to elevate privileges via sudo...."
    sudo "$BASH_SOURCE" "$@"

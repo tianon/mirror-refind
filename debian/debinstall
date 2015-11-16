@@ -60,6 +60,7 @@ install -Dp -m0644 keys/* $BUILD_ROOT/etc/refind.d/keys
 mkdir -p $BUILD_ROOT/usr/sbin
 install -Dp -m0755 mkrlconf $BUILD_ROOT/usr/sbin/
 install -Dp -m0755 mvrefind $BUILD_ROOT/usr/sbin/
+ln -sr refind-install $BUILD_ROOT/usr/sbin
 
 # Copy banners and fonts to /usr/share/refind
 cp -a banners $BUILD_ROOT/usr/share/refind/
