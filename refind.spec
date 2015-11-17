@@ -98,6 +98,7 @@ install -Dp -m0644 NEWS.txt COPYING.txt LICENSE.txt README.txt CREDITS.txt $RPM_
 mkdir -p $RPM_BUILD_ROOT/usr/share/man/man8
 install -Dp -m0644 docs/man/mvrefind.8 $RPM_BUILD_ROOT/usr/share/man/man8
 install -Dp -m0644 docs/man/mkrlconf.8 $RPM_BUILD_ROOT/usr/share/man/man8
+install -Dp -m0644 docs/man/refind-install.8 $RPM_BUILD_ROOT/usr/share/man/man8
 
 # Copy keys to /etc/refind.d/keys
 mkdir -p $RPM_BUILD_ROOT/etc/refind.d/keys

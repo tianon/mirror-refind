@@ -1,5 +1,14 @@
-0.9.3 (11/8/2015):
-------------------
+0.10.1 (??/??/201?):
+--------------------
+
+- The refind-install script can now be run as a symbolic link in Linux.
+  This enables creating a /usr/sbin/refind-install link in Linux packages,
+  with the binaries stashed wherever the package system likes them. This
+  feature does NOT work in OS X, but there's relatively little need for it
+  there.
+
+0.10.0 (11/8/2015):
+-------------------
 
 - Fixed bug that caused refind-install to not unmount the ESP when it
   should under OS X.
