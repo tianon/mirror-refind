@@ -201,8 +201,8 @@ ReadYesNo() {
 CheckForFiles() {
    # Note: $ThisDir points to real (not symlinked) script home on Linux,
    # enabling creating a symlink in /usr/sbin (or wherever); but on OS X,
-   # "readlink" doesn't do the right thing, so the script must not be a
-   # symlink under OS X.
+   # "readlink" doesn't do the same thing as under Linux, so the script
+   # must not be a symlink under OS X.
    case "$OSTYPE" in
       darwin*)
            ThisDir="$( cd -P "${BASH_SOURCE%/*}" && pwd )"
