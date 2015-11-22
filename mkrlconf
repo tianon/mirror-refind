@@ -45,7 +45,12 @@ if [[ ! -f $RLConfFile || $1 == "--force" ]] ; then
             RootFS=$Uuid
         fi
     fi
-    DefaultOptions=`cat /proc/cmdline | cut -d ' ' -f 2- | sed 's/$/ /' | sed 's/initrd=.* //g' | sed 's/ *$//'`
+    FirstCmdlineOption=`cat /proc/cmdline | cut -d ' ' -f 1`
+    if [[ "$FirstCmdlineOption" =~ (vmlinuz|bzImage|kernel) ]] ; then
+        DefaultOptions=`cat /proc/cmdline | cut -d ' ' -f 2- | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//'`
+    else
+        DefaultOptions=`cat /proc/cmdline | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//'`
+    fi
     echo "\"Boot with standard options\"  \"$DefaultOptions\"" > $RLConfFile
     echo "\"Boot to single-user mode\"    \"$DefaultOptions single\"" >> $RLConfFile
     echo "\"Boot with minimal options\"   \"ro root=$RootFS\"" >> $RLConfFile

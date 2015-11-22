@@ -1099,7 +1099,12 @@ GenerateRefindLinuxConf() {
          fi
       fi
       if [[ $RootDir == "/" ]] ; then
-         DefaultOptions=`cat /proc/cmdline | cut -d ' ' -f 2- | sed 's/$/ /' | sed 's/initrd=.* //g' | sed 's/ *$//'`
+         local FirstCmdlineOption=`cat /proc/cmdline | cut -d ' ' -f 1`
+         if [[ "$FirstCmdlineOption" =~ (vmlinuz|bzImage|kernel) ]] ; then
+            DefaultOptions=`cat /proc/cmdline | cut -d ' ' -f 2- | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//'`
+         else
+            DefaultOptions=`cat /proc/cmdline | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//'`
+         fi
       else
          if [[ -f "$RootDir/etc/default/grub" ]] ; then
             # We want the default options used by the distribution, stored here....

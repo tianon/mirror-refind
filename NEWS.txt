@@ -1,6 +1,20 @@
 0.10.1 (??/??/201?):
 --------------------
 
+- Fixed bugs in mkrlconf and in refind-install that could cause some kernel
+  options to be excluded from refind_linux.conf. There were two trouble
+  conditions:
+  - Previously, these scripts assumed that the first option in
+    /proc/cmdline was the kernel's filename, but this isn't always the
+    case. (In particular, when gummiboot launches the kernel, this is not
+    true. It might be an incorrect assumption in some other cases, too.)
+    The fix involves checking for likely signs of a kernel filename before
+    discarding this first option.
+  - These scripts cut the "initrd=*" option from /proc/cmdline, but the
+    call to "sed" was overzealous and cut until the end of input. This
+    usually worked, since the initrd= option was usually last on the line;
+    but if it wasn't, any options following initrd= would be lost.
+
 - Added "kernel*" as a matching pattern for Linux kernels, since this is
   what Gentoo uses by default.
 
