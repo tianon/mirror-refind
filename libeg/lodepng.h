@@ -24,7 +24,7 @@ freely, subject to the following restrictions:
 */
 /*
  * This version of lodepng.h is modified for use with rEFInd. Some options
- * are commented out and two definitions (commented on shortly) are added
+ * are commented out and several definitions (commented on shortly) are added
  * for GNU-EFI compatibility. The associated lodepng.c file is unmodified
  * from the original.
  */
@@ -34,7 +34,7 @@ freely, subject to the following restrictions:
 
 #include <string.h> /*for size_t*/
 
-// Below two lines required for GNU-EFI (program hangs when run without them,
+// Below block of lines required for GNU-EFI (program hangs when run without them,
 // and associated function in lodepng_xtra.c)
 int MyStrlen(const char *InString);
 #define strlen(c) MyStrlen(c)

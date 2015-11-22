@@ -1,6 +1,11 @@
 0.10.1 (??/??/201?):
 --------------------
 
+- Moved detailed descriptions of refind-install from installing.html to
+  a refind-install man page. To keep this information Web-accessible, I've
+  also created HTML versions of the three man pages and linked them into
+  the HTML documentation.
+
 - Updated LodePNG to latest version (20151024).
 
 - Fixed bugs in mkrlconf and in refind-install that could cause some kernel

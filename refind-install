@@ -36,6 +36,7 @@
 #
 # Revision history:
 #
+# 0.10.1  -- Improve extraction of default kernel options from /proc/cmdline.
 # 0.10.0  -- Enable running under OS X's recovery system & add warning about
 #            SIP & brief instructions on how to deal with it if SIP is
 #            detected to be enabled. Also change way refind_linux.conf default

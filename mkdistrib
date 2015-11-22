@@ -47,6 +47,11 @@ make clean
 # Remove temporary files from the "debian" subdirectory
 rm -rf debian/refind debian/*.log
 
+# Convert man pages to HTML form
+man2html docs/man/mkrlconf.8 > docs/refind/mkrlconf.html
+man2html docs/man/mvrefind.8 > docs/refind/mvrefind.html
+man2html docs/man/refind-install.8 > docs/refind/refind-install.html
+
 # Prepare a place and copy files there....
 mkdir -p ../snapshots/$1/refind-$1/icons/licenses ../snapshots/$1/refind-$1/icons/svg
 cp --preserve=timestamps icons/*png icons/README ../snapshots/$1/refind-$1/icons/
