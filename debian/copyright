@@ -85,8 +85,8 @@ Files: EfiLib/*
 Copyright: 2004-2011 Intel Corp.
 License: BSD 2-clause
 
-Files: libeg/lodepng.c
-Copyright: 2005-2013 Lode Vandevenne
+Files: libeg/lodepng.[ch]
+Copyright: 2005-2015 Lode Vandevenne
 License: zlib
 
 Files: mok/*

@@ -1,6 +1,8 @@
 0.10.1 (??/??/201?):
 --------------------
 
+- Updated LodePNG to latest version (20151024).
+
 - Fixed bugs in mkrlconf and in refind-install that could cause some kernel
   options to be excluded from refind_linux.conf. There were two trouble
   conditions:
