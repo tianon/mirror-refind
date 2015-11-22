@@ -141,7 +141,7 @@ EFI_GUID gFreedesktopRootGuid = { 0xb921b045, 0x1df0, 0x41c3, { 0xaf, 0x44, 0x4c
 // Patterns that identify Linux kernels. Added to the loader match pattern when the
 // scan_all_linux_kernels option is set in the configuration file. Causes kernels WITHOUT
 // a ".efi" extension to be found when scanning for boot loaders.
-#define LINUX_MATCH_PATTERNS    L"vmlinuz*,bzImage*"
+#define LINUX_MATCH_PATTERNS    L"vmlinuz*,bzImage*,kernel*"
 
 // Maximum length of a text string in certain menus
 #define MAX_LINE_LENGTH 65
@@ -193,7 +193,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.10.0.1");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.10.0.2");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -1003,7 +1003,7 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
     } // if/else network boot
 
     // detect specific loaders
-    if (StriSubCmp(L"bzImage", NameClues) || StriSubCmp(L"vmlinuz", NameClues)) {
+    if (StriSubCmp(L"bzImage", NameClues) || StriSubCmp(L"vmlinuz", NameClues) || StriSubCmp(L"kernel", NameClues)) {
         if (Volume->DiskKind != DISK_KIND_NET) {
             GuessLinuxDistribution(&OSIconName, Volume, LoaderPath);
             Entry->LoadOptions = GetMainLinuxOptions(LoaderPath, Volume);
@@ -1417,7 +1417,9 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
 
        NewLoader = LoaderList;
        while (NewLoader != NULL) {
-           IsLinux = (StriSubCmp(L"bzImage", NewLoader->FileName) || StriSubCmp(L"vmlinuz", NewLoader->FileName));
+           IsLinux = (StriSubCmp(L"bzImage", NewLoader->FileName) ||
+                      StriSubCmp(L"vmlinuz", NewLoader->FileName) ||
+                      StriSubCmp(L"kernel", NewLoader->FileName));
            if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
                AddKernelToSubmenu(FirstKernel, NewLoader->FileName, Volume);
            } else {

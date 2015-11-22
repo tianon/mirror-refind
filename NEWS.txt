@@ -1,6 +1,9 @@
 0.10.1 (??/??/201?):
 --------------------
 
+- Added "kernel*" as a matching pattern for Linux kernels, since this is
+  what Gentoo uses by default.
+
 - The refind-install script can now be run as a symbolic link in Linux.
   This enables creating a /usr/sbin/refind-install link in Linux packages,
   with the binaries stashed wherever the package system likes them. This
