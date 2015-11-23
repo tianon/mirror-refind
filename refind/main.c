@@ -2075,9 +2075,9 @@ static VOID RescanAll(BOOLEAN DisplayMessage) {
     FreeList((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
     MainMenu.Entries = NULL;
     MainMenu.EntryCount = 0;
-    ReadConfig(GlobalConfig.ConfigFilename);
     ConnectAllDriversToAllControllers();
     ScanVolumes();
+    ReadConfig(GlobalConfig.ConfigFilename);
     ScanForBootloaders();
     ScanForTools();
     SetupScreen();
@@ -2190,6 +2190,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)
        CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
     SetConfigFilename(ImageHandle);
+    LoadDrivers();
+    ScanVolumes(); // Do before ReadConfig() because it needs SelfVolume->VolName
     ReadConfig(GlobalConfig.ConfigFilename);
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')
@@ -2204,8 +2206,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     // further bootstrap (now with config available)
     MokProtocol = SecureBootSetup();
-    LoadDrivers();
-    ScanVolumes();
     ScanForBootloaders();
     ScanForTools();
     SetupScreen();

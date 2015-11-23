@@ -1,6 +1,10 @@
 0.10.1 (??/??/201?):
 --------------------
 
+- Fixed bug that caused rEFInd to fail to scan EFI boot loaders on
+  removable media when rEFInd itself was launched from the fallback
+  filename.
+
 - Moved detailed descriptions of refind-install from installing.html to
   a refind-install man page. To keep this information Web-accessible, I've
   also created HTML versions of the three man pages and linked them into
