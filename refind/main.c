@@ -2190,6 +2190,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)
        CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
     SetConfigFilename(ImageHandle);
+    MokProtocol = SecureBootSetup();
     LoadDrivers();
     ScanVolumes(); // Do before ReadConfig() because it needs SelfVolume->VolName
     ReadConfig(GlobalConfig.ConfigFilename);
@@ -2205,7 +2206,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     refit_call4_wrapper(BS->SetWatchdogTimer, 0x0000, 0x0000, 0x0000, NULL);
 
     // further bootstrap (now with config available)
-    MokProtocol = SecureBootSetup();
     ScanForBootloaders();
     ScanForTools();
     SetupScreen();
