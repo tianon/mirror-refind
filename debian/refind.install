@@ -1,7 +1,9 @@
 drivers_* usr/share/refind/refind
-icons usr/share/refind/refind
 refind.conf-sample usr/share/refind/refind
 refind/refind*.efi usr/share/refind/refind
+
+icons/*.png usr/share/refind/refind/icons
+icons/README usr/share/refind/refind/icons
 
 banners usr/share/refind
 fonts usr/share/refind

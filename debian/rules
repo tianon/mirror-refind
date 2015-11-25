@@ -2,6 +2,18 @@
 
 export DH_VERBOSE := 1
 
+DEB_HOST_ARCH_CPU := $(shell dpkg-architecture -qDEB_HOST_ARCH_CPU 2>/dev/null)
+ifeq (amd64, $(DEB_HOST_ARCH_CPU))
+	EFI_ARCH := x64
+else
+ifeq (i386, $(DEB_HOST_ARCH_CPU))
+	EFI_ARCH := ia32
+else
+	$(warning EFI architecture for $(DEB_HOST_ARCH_CPU) is unknown)
+	EFI_ARCH := $(DEB_HOST_ARCH_CPU)
+endif
+endif
+
 %:
 	dh $@
 
@@ -15,12 +27,11 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	# "make install" actually runs "efi-install" for the current system, so let's not do that :)
-	./debian/debinstall ./debian/refind
 
 override_dh_install:
 	dh_install
-	rm -r debian/refind/usr/share/refind/refind/icons/svg # we don't want the SVGs installed
-	# TODO gptsync into tools_...?
+	mkdir -p debian/refind/usr/share/refind/refind/tools_$(EFI_ARCH)
+	cp gptsync/gptsync_$(EFI_ARCH).efi debian/refind/usr/share/refind/refind/tools_$(EFI_ARCH)/
 
 override_dh_installchangelogs:
 	dh_installchangelogs NEWS.txt
