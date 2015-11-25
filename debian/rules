@@ -1,0 +1,17 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE := 1
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	$(MAKE) clean
+	rm -f drivers_*/*
+
+override_dh_auto_build:
+	$(MAKE) gnuefi
+	$(MAKE) fs_gnuefi
+
+override_dh_auto_install:
+	./debian/debinstall $(CURDIR)/debian/refind
