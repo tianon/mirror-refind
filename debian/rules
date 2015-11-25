@@ -6,7 +6,7 @@ export DH_VERBOSE := 1
 	dh $@
 
 override_dh_auto_clean:
-	$(MAKE) clean
+	dh_auto_clean
 	rm -f drivers_*/*
 
 override_dh_auto_build:
@@ -14,4 +14,4 @@ override_dh_auto_build:
 	$(MAKE) fs_gnuefi
 
 override_dh_auto_install:
-	./debian/debinstall $(CURDIR)/debian/refind
+	./debian/debinstall ./debian/refind
