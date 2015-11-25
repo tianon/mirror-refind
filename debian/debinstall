@@ -41,12 +41,6 @@ cp -a icons $BUILD_ROOT/usr/share/refind/refind/
 rm -rf $BUILD_ROOT/usr/share/refind/refind/icons/svg
 install -Dp -m0755 refind-install $BUILD_ROOT/usr/share/refind/
 
-# Copy documentation to /usr/share/doc/refind
-mkdir -p $BUILD_ROOT/usr/share/doc/refind
-cp -a docs/Styles $BUILD_ROOT/usr/share/doc/refind/
-cp -a docs/refind $BUILD_ROOT/usr/share/doc/refind/
-install -Dp -m0644 NEWS.txt COPYING.txt LICENSE.txt README.txt CREDITS.txt $BUILD_ROOT/usr/share/doc/refind
-
 # Copy man pages to /usr/share/man/man8
 mkdir -p $BUILD_ROOT/usr/share/man/man8
 install -Dp -m0644 docs/man/mvrefind.8 $BUILD_ROOT/usr/share/man/man8
