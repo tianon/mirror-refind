@@ -1,7 +1,7 @@
 #!/bin/bash
+set -e
 
 BUILD_ROOT=$1
-KEYDIR=/mnt/refind
 
 UNAMEARCH=`uname -m`
 if [[ $UNAMEARCH == "x86_64" ]] ; then
@@ -12,53 +12,8 @@ else
    EFIARCH=$UNAMEARCH
 fi
 
-rm -rf $BUILD_ROOT
 mkdir -p $BUILD_ROOT/usr/share/refind/refind/
 
-# Copy the rEFInd binaries (rEFInd proper and drivers) to /usr/share/refind,
-# including signing the binaries if sbsign is installed and a $KEYDIR/refind.key file
-# is available
-declare SBSign=`which sbsign 2> /dev/null`
-if [[ -f $KEYDIR/refind.key && -x $SBSign ]] ; then
-   $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind/refind/refind_$EFIARCH.efi refind/refind_$EFIARCH.efi
-   mkdir -p $BUILD_ROOT/usr/share/refind/refind/drivers_$EFIARCH
-   for File in `ls drivers_$EFIARCH/*_$EFIARCH.efi` ; do
-      $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind/refind/$File $File
-   done
-   mkdir -p $BUILD_ROOT/usr/share/refind/refind/tools_$EFIARCH
-   $SBSign --key $KEYDIR/refind.key --cert $KEYDIR/refind.crt --output $BUILD_ROOT/usr/share/refind/refind/tools_$EFIARCH/gptsync_$EFIARCH.efi gptsync/gptsync_$EFIARCH.efi
-else
-   install -Dp -m0644 refind/refind*.efi $BUILD_ROOT/usr/share/refind/refind/
-   mkdir -p $BUILD_ROOT/usr/share/refind/refind/drivers_$EFIARCH
-   cp -a drivers_$EFIARCH/* $BUILD_ROOT/usr/share/refind/refind/drivers_$EFIARCH/
-   mkdir -p $BUILD_ROOT/usr/share/refind/refind/tools_$EFIARCH
-   install -Dp -m0644 gptsync/gptsync_$EFIARCH.efi $BUILD_ROOT/usr/share/refind/refind/tools_$EFIARCH/gptsync_$EFIARCH.efi
-fi
-
-# Copy configuration and support files to /usr/share/refind
-install -Dp -m0644 refind.conf-sample $BUILD_ROOT/usr/share/refind/refind/
-cp -a icons $BUILD_ROOT/usr/share/refind/refind/
-rm -rf $BUILD_ROOT/usr/share/refind/refind/icons/svg
-install -Dp -m0755 refind-install $BUILD_ROOT/usr/share/refind/
-
-# Copy man pages to /usr/share/man/man8
-mkdir -p $BUILD_ROOT/usr/share/man/man8
-install -Dp -m0644 docs/man/mvrefind.8 $BUILD_ROOT/usr/share/man/man8
-install -Dp -m0644 docs/man/mkrlconf.8 $BUILD_ROOT/usr/share/man/man8
-install -Dp -m0644 docs/man/refind-install.8 $BUILD_ROOT/usr/share/man/man8
-
-# Copy keys to /etc/refind.d/keys
-mkdir -p $BUILD_ROOT/etc/refind.d/keys
-install -Dp -m0644 keys/* $BUILD_ROOT/etc/refind.d/keys
-
-# Copy scripts to /usr/sbin
-mkdir -p $BUILD_ROOT/usr/sbin
-install -Dp -m0755 mkrlconf $BUILD_ROOT/usr/sbin/
-install -Dp -m0755 mvrefind $BUILD_ROOT/usr/sbin/
-ln -sr refind-install $BUILD_ROOT/usr/sbin
-
-# Copy banners and fonts to /usr/share/refind
-cp -a banners $BUILD_ROOT/usr/share/refind/
-cp -a fonts $BUILD_ROOT/usr/share/refind/
+install -Dp -m0644 gptsync/gptsync_$EFIARCH.efi $BUILD_ROOT/usr/share/refind/refind/tools_$EFIARCH/gptsync_$EFIARCH.efi
 
 echo "*** Exiting debinstall! ***"
