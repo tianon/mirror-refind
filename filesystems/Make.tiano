@@ -22,11 +22,19 @@ ifeq ($(ARCH),ia32)
 endif
 
 ifeq ($(ARCH),x86_64)
-  ARCH_C_FLAGS = "-DEFIAPI=__attribute__((ms_abi))" -mcmodel=large -m64
+  ARCH_C_FLAGS = "-DEFIAPI=__attribute__((ms_abi))" -mcmodel=large -m64 -mno-red-zone
   ARCHDIR = X64
   UC_ARCH = X64
   FILENAME_CODE = x64
   LD_CODE = elf_x86_64
+endif
+
+ifeq ($(ARCH),aarch64)
+  ARCH_C_FLAGS = -DEFIAARCH64 -mcmodel=large
+  ARCHDIR = AArch64
+  UC_ARCH = AARCH64
+  FILENAME_CODE = aa64
+  LD_CODE = aarch64elf
 endif
 
 EDK2BASE = /usr/local/UDK2014/MyWorkSpace
@@ -49,6 +57,10 @@ ALL_EFILIBS     = $(EFILIB)/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevel
 		  $(EFILIB)/UefiLib/UefiLib/OUTPUT/UefiLib.lib \
 		  $(EFILIB)/UefiDriverEntryPoint/UefiDriverEntryPoint/OUTPUT/UefiDriverEntryPoint.lib
 
+ifeq ($(ARCH),aarch64)
+  ALL_EFILIBS +=  $(EFILIB)/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckLib.lib
+endif
+
 INCLUDE_DIRS    = -I $(EDK2BASE)/MdePkg \
                   -I $(EDK2BASE)/MdePkg/Include \
                   -I $(EDK2BASE)/MdePkg/Include/$(ARCHDIR) \
@@ -60,7 +72,7 @@ OBJS            = $(FSW_NAMES:=.obj)
 #DRIVERNAME      = ext2
 BUILDME          = $(DRIVERNAME)_$(FILENAME_CODE).efi
 
-OPTIMFLAGS      = -fno-strict-aliasing -mno-red-zone -Wno-address -Os
+OPTIMFLAGS      = -fno-strict-aliasing -Wno-address -Os
 DEBUGFLAGS      = -Wall -Wno-missing-braces -Wno-array-bounds -ffunction-sections -fdata-sections
 CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c -include AutoGen.h -DHOST_EFI_EDK2
 

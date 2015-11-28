@@ -114,6 +114,17 @@ EFI_GUID gFreedesktopRootGuid = { 0x4f68bce3, 0xe8cd, 0x4db1, { 0x96, 0xe7, 0xfb
 #define FALLBACK_BASENAME       L"bootia32.efi"
 #define EFI_STUB_ARCH           0x014c
 EFI_GUID gFreedesktopRootGuid = { 0x44479540, 0xf297, 0x41b2, { 0x9a, 0xf7, 0xd1, 0x31, 0xd5, 0xf0, 0x45, 0x8a }};
+#elif defined (EFIAARCH64)
+#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellaa64.efi,\\shell.efi,\\shellaa64.efi"
+#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_aa64.efi"
+#define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_aa64.efi"
+#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
+#define MEMTEST_NAMES           L"memtest86.efi,memtest86_aa64.efi,memtest86aa64.efi,bootaa64.efi"
+#define DRIVER_DIRS             L"drivers,drivers_aa64"
+#define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootaa64.efi"
+#define FALLBACK_BASENAME       L"bootaa64.efi"
+#define EFI_STUB_ARCH           0xaa64
+EFI_GUID gFreedesktopRootGuid = { 0xb921b045, 0x1df0, 0x41c3, { 0xaf, 0x44, 0x4c, 0x6f, 0x28, 0x0d, 0x3f, 0xae }};
 #else
 #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\shell.efi"
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi"
@@ -193,7 +204,7 @@ static VOID AboutrEFInd(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.10.0.3");
+        AddMenuInfoLine(&AboutMenu, L"rEFInd Version 0.10.0.4");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2015 Roderick W. Smith");
@@ -207,6 +218,9 @@ static VOID AboutrEFInd(VOID)
                                               secure_mode() ? L"active" : L"inactive"));
 #elif defined(EFIX64)
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86_64 (64 bit); Secure Boot %s",
+                                              secure_mode() ? L"active" : L"inactive"));
+#elif defined(EFIAARCH64)
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: ARM (64 bit); Secure Boot %s",
                                               secure_mode() ? L"active" : L"inactive"));
 #else
         AddMenuInfoLine(&AboutMenu, L" Platform: unknown");
@@ -259,7 +273,7 @@ static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
 // Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
 static BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     BOOLEAN         IsValid = TRUE;
-#if defined (EFIX64) | defined (EFI32)
+#if defined (EFIX64) | defined (EFI32) | defined (EFIAARCH64)
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
     CHAR8           Header[512];
@@ -483,6 +497,7 @@ VOID StoreLoaderName(IN CHAR16 *Name) {
 // for information on Intel VMX features
 static VOID DoEnableAndLockVMX(VOID)
 {
+#if defined (EFIX64) | defined (EFI32)
     UINT32 msr = 0x3a;
     UINT32 low_bits = 0, high_bits = 0;
 
@@ -495,7 +510,8 @@ static VOID DoEnableAndLockVMX(VOID)
         low_bits = 0x05;
         msr = 0x3a;
         __asm__ volatile ("wrmsr" : : "c" (msr), "a" (low_bits), "d" (high_bits));
-    } 
+    }
+#endif
 } // VOID DoEnableAndLockVMX()
 
 static VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName)

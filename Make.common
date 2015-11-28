@@ -22,9 +22,10 @@ CPPFLAGS        = -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -I../incl
 OPTIMFLAGS      = -O2 -fno-strict-aliasing
 DEBUGFLAGS      = -Wall
 #CFLAGS          = $(ARCH3264) $(OPTIMFLAGS) -fpic -fshort-wchar $(DEBUGFLAGS)
-CFLAGS          = $(ARCH3264) $(OPTIMFLAGS) -fno-stack-protector -fpic -fshort-wchar -mno-red-zone $(DEBUGFLAGS)
+CFLAGS          = $(ARCH3264) $(OPTIMFLAGS) -fno-stack-protector -fpic -fshort-wchar $(DEBUGFLAGS)
 ASFLAGS         = $(ARCH3264)
-LDFLAGS         = -nostdlib -znocombreloc -zdefs
+export LDFLAGS  = -nostdlib
+export DRV_LDFLAGS = 
 
 prefix          = /usr/bin/
 CC              = $(prefix)gcc
@@ -39,9 +40,13 @@ ifeq ($(ARCH),ia64)
   CFLAGS       += -frename-registers -mfixed-range=f32-f127
 endif
 
+FORMAT          = --target=efi-app-$(ARCH)
+FORMAT_DRIVER   = --target=efi-bsdrv-$(ARCH)
+
 ifeq ($(ARCH),x86_64)
-  CFLAGS += -DEFI_FUNCTION_WRAPPER
+  CFLAGS += -DEFI_FUNCTION_WRAPPER -mno-red-zone 
   CPPFLAGS += -DEFIX64
+  LDFLAGS += -znocombreloc -zdefs
 
   ifeq ($(HOSTARCH),ia32)
     ARCH3264 = -m64
@@ -54,6 +59,7 @@ endif
 
 ifeq ($(ARCH),ia32)
   CPPFLAGS += -DEFI32 -malign-double
+  LDFLAGS += -znocombreloc -zdefs
 
   ifeq ($(HOSTARCH),x86_64)
     ARCH3264 = -m32
@@ -64,6 +70,14 @@ ifeq ($(ARCH),ia32)
   endif
 endif
 
+ifeq ($(ARCH), aarch64)
+  CFLAGS += -fno-stack-check -g -fno-merge-constants -ffreestanding -fno-stack-check 
+  CPPFLAGS += -DEFIAARCH64
+  FORMAT          = -O binary
+  FORMAT_DRIVER   = -O binary
+  LDFLAGS         += --defsym=EFI_SUBSYSTEM=0xa --warn-common --no-undefined --fatal-warnings
+  DRV_LDFLAGS     += --defsym=EFI_SUBSYSTEM=0xb --warn-common --no-undefined --fatal-warnings
+endif
 
 CRTOBJS         = $(EFICRT0)/crt0-efi-$(ARCH).o
 
@@ -78,9 +92,8 @@ else
 endif
 
 LDFLAGS        += -T $(LDSCRIPT) -shared -Bsymbolic -L$(EFILIB) -L$(GNUEFILIB) $(CRTOBJS)
+DRV_LDFLAGS    += -T $(LDSCRIPT) -shared -Bsymbolic -L$(EFILIB) -L$(GNUEFILIB) $(CRTOBJS)
 LIBS            = -lefi -lgnuefi $(shell $(CC) $(ARCH3264) -print-libgcc-file-name)
-FORMAT          = efi-app-$(ARCH)
-FORMAT_DRIVER   = efi-bsdrv-$(ARCH)
 
 
 # general rules
@@ -93,13 +106,6 @@ FORMAT_DRIVER   = efi-bsdrv-$(ARCH)
 ifneq (,$(filter %.efi,$(TARGET)))
 
 SHLIB_TARGET = $(subst .efi,.so,$(TARGET))
-
-$(SHLIB_TARGET): $(OBJS)
-	$(LD) $(LOCAL_LDFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LOCAL_LIBS) $(LIBS)
-
-#$(TARGET): $(SHLIB_TARGET)
-#	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel \
-#		   -j .rela -j .reloc --target=$(FORMAT) $< $@
 
 endif
 

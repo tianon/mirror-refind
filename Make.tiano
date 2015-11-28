@@ -22,11 +22,19 @@ ifeq ($(ARCH),ia32)
 endif
 
 ifeq ($(ARCH),x86_64)
-  ARCH_C_FLAGS = "-DEFIAPI=__attribute__((ms_abi))" -DEFIX64 -mcmodel=large -m64
+  ARCH_C_FLAGS = "-DEFIAPI=__attribute__((ms_abi))" -DEFIX64 -mcmodel=large -m64 -mno-red-zone 
   ARCHDIR = X64
   UC_ARCH = X64
   FILENAME_CODE = x64
   LD_CODE = elf_x86_64
+endif
+
+ifeq ($(ARCH),aarch64)
+  ARCH_C_FLAGS = -DEFIAARCH64 -mcmodel=large
+  ARCHDIR = AArch64
+  UC_ARCH = AARCH64
+  FILENAME_CODE = aa64
+  LD_CODE = aarch64elf
 endif
 
 EDK2BASE = /usr/local/UDK2014/MyWorkSpace
@@ -49,7 +57,7 @@ INCLUDE_DIRS    = -I $(EDK2BASE)/MdePkg \
 		  -I ../include \
 		  -I ../mok
 
-OPTIMFLAGS      = -fno-strict-aliasing -mno-red-zone -Wno-address -Os
+OPTIMFLAGS      += -fno-strict-aliasing -Wno-address -Os
 DEBUGFLAGS      = -Wall -Wno-missing-braces -Wno-array-bounds -ffunction-sections -fdata-sections
 CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c
 

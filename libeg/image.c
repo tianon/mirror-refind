@@ -69,7 +69,7 @@
 // A value of 4096 should keep us within limits on 32-bit systems, but I've
 // seen some minor artifacts at this level, so give it a bit more precision
 // on 64-bit systems....
-#if defined(EFIX64)
+#if defined(EFIX64) | defined(EFIAARCH64)
 #define FP_MULTIPLIER (UINTN) 65536
 #else
 #define FP_MULTIPLIER (UINTN) 4096

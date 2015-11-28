@@ -34,15 +34,19 @@ freely, subject to the following restrictions:
 
 #include <string.h> /*for size_t*/
 
-// Below block of lines required for GNU-EFI (program hangs when run without them,
-// and associated function in lodepng_xtra.c)
+// Below block of lines required for GNU-EFI and TianoCore (program hangs
+// when run without them, and associated function in lodepng_xtra.c)
 int MyStrlen(const char *InString);
 #define strlen(c) MyStrlen(c)
+#include <stdlib.h>
+#define abs(x) (((x) < 0) ? -(x) : (x))
 #ifdef __MAKEWITH_GNUEFI
 #include <efi.h>
 #include <efilib.h>
-#define memcpy(a, b, c) CopyMem(a, b, c)
+#else
+#include "../include/tiano_includes.h"
 #endif
+#define memcpy(a, b, c) CopyMem(a, b, c)
 
 #ifdef __cplusplus
 #include <vector>

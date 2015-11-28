@@ -42,7 +42,7 @@
 //
 
 
-#if defined(EFI32) || defined(EFIX64)
+#if defined(EFI32) || defined(EFIX64) || defined(EFIAARCH64)
 #define CONFIG_EFI
 #endif
 
@@ -81,6 +81,7 @@ typedef CHAR16 CHARN;
 #include <sys/time.h>
 #include <fcntl.h>
 
+/*
 typedef int                 INTN;
 typedef unsigned int        UINTN;
 typedef unsigned char       UINT8;
@@ -88,6 +89,7 @@ typedef unsigned short      UINT16;
 typedef unsigned long       UINT32;
 typedef unsigned long long  UINT64;
 typedef void                VOID;
+*/
 
 typedef int                 BOOLEAN;
 #ifndef FALSE
@@ -104,9 +106,6 @@ typedef char                CHARN;
 void Print(wchar_t *format, ...);
 
 // FUTURE: use STR(),  #define Print printf
-
-#define CopyMem     memcpy
-#define CompareMem  memcmp
 
 #define copy_guid(destguid, srcguid) (memcpy(destguid, srcguid, 16))
 #define guids_are_equal(guid1, guid2) (memcmp(guid1, guid2, 16) == 0)
