@@ -12,6 +12,7 @@
 #
 # Revision history:
 #
+# 0.10.1  -- Generalized to support ARM64 (aka AARCH64, aa64)
 # 0.10.0  -- Renamed from mvrefind.sh to mvrefind
 # 0.6.3   -- Initial release
 #
@@ -19,10 +20,6 @@
 # with which they first appeared.
 
 RootDir="/"
-SourceX64="refind_x64.efi"
-TargetX64=$SourceX64
-SourceIA32="refind_ia32.efi"
-TargetIA32=$SourceIA32
 SourceShim="shim.efi"
 TargetShim=$SourceShim
 SourceDir=`readlink -f ${1}`
@@ -76,14 +73,34 @@ FindLinuxESP() {
    fi
 } # FindLinuxESP
 
+DeterminePlatform() {
+    CpuType=`uname -m`
+    case "$CpuType" in
+    aarch64)
+        Platform="aa64"
+        ;;
+    x86_64)
+        Platform="x64"
+        ;;
+    i?86)
+        Platform="ia32"
+        ;;
+    *)
+        echo "Unsupported CPU type; aborting!"
+        exit 1
+    esac
+    Source="refind_$Platform.efi"
+    Target=$Source
+}
+
 # Adjust filename variables appropriately for their locations and detected
 # presence (or lack thereof) of shim installation
 AdjustFilenames() {
-   if [[ -f $SourceDir/grubx64.efi ]] ; then
-      SourceX64="grubx64.efi"
-      TargetX64=$SourceX64
+   if [[ -f $SourceDir/grub$Platform.efi ]] ; then
+      Source="grub$Platform.efi"
+      Target=$Source
       if [[ $EspSourceDir == "/efi/boot" ]] ; then
-         SourceShim="bootx64.efi"
+         SourceShim="boot$Platform.efi"
       elif [[ $EspSourceDir == "/efi/microsoft/boot" ]] ; then
          SourceShim="bootmgfw.efi"
       fi
@@ -91,23 +108,21 @@ AdjustFilenames() {
       SourceShim="none"
       TargetShim="none"
       if [[ $EspSourceDir == "/efi/boot" ]] ; then
-         SourceX64="bootx64.efi"
-         SourceIA32="bootia32.efi"
+         Source="boot$Platform.efi"
       elif [[ $EspSourceDir == "/efi/microsoft/boot" ]] ; then
-         SourceX64="bootmgfw.efi"
+         Source="bootmgfw.efi"
       fi
    fi
 
    if [[ $EspTargetDir == "/efi/boot" ]] ; then
       if [[ $TargetShim == "none" ]] ; then
-         TargetX64="bootx64.efi"
-         TargetIA32="bootia32.efi"
+         Target="boot$Platform.efi"
       else
-         TargetShim="bootx64.efi"
+         TargetShim="boot$Platform.efi"
       fi
    elif [[ $EspTargetDir == "/efi/microsoft/boot" ]] ; then
       if [[ $TargetShim == "none" ]] ; then
-         TargetX64="bootmgfw.efi"
+         Target="bootmgfw.efi"
       else
          TargetShim="bootmgfw.efi"
       fi
@@ -117,7 +132,7 @@ AdjustFilenames() {
 # Checks for the presence of necessary files, including both boot loaders
 # and support utilities (efibootmgr, etc.)
 CheckForFiles() {
-   if [[ (! -f $SourceDir/$SourceX64 && ! -f $SourceDir/$SourceIA32) ||
+   if [[ (! -f $SourceDir/$Source) ||
          ($SourceShim != "none" && ! -f $SourceDir/SourceShim) ||
          ! -f $SourceDir/refind.conf ]] ; then
       echo "There doesn't seem to be a rEFInd installation at $SourceDir!"
@@ -174,8 +189,7 @@ MoveFiles() {
    mv $SourceDir/icons-backup $TargetDir/ 2> /dev/null
    mv $SourceDir/drivers_* $TargetDir/ 2> /dev/null
    mv $SourceDir/keys $TargetDir 2> /dev/null
-   mv $SourceDir/$SourceX64 $TargetDir/$TargetX64 2> /dev/null
-   mv $SourceDir/$SourceIA32 $TargetDir/$TargetIA32 2> /dev/null
+   mv $SourceDir/$Source $TargetDir/$Target 2> /dev/null
    mv $SourceDir/$SourceShim $TargetDir/$TargetShim 2> /dev/null
    mv $SourceDir/refind.conf* $TargetDir/ 2> /dev/null
    rmdir $SourceDir 2> /dev/null
@@ -201,12 +215,7 @@ AddNvramEntry() {
    if [[ $TargetShim != "none" ]] ; then
       EntryFilename=$EspTargetDir/$TargetShim
    else
-      CpuType=`uname -m`
-      if [[ $CpuType == 'x86_64' ]] ; then
-         EntryFilename=$EspTargetDir/$TargetX64
-      else
-         EntryFilename=$EspTargetDir/$TargetIA32
-      fi
+      EntryFilename=$EspTargetDir/$Target
    fi # if/else
 
    EfiEntryFilename=`echo ${EntryFilename//\//\\\}`
@@ -258,6 +267,7 @@ if [[ `whoami` != "root" ]] ; then
 fi
 
 FindLinuxESP
+DeterminePlatform
 AdjustFilenames
 CheckForFiles
 MoveFiles

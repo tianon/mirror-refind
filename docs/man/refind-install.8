@@ -149,8 +149,9 @@ logical volumes.
 .TP
 .B \-\-usedefault \fIdevice-file\fR
 You can install rEFInd to a disk using the default/fallback filename of
-\fBEFI/BOOT/bootx64.efi\fR (and \fBEFI/BOOT/bootia32.efi\fR, if the 32\-bit
-build is available) using this option. The device\-file should be an
+\fBEFI/BOOT/bootx64.efi\fR (as well as \fBEFI/BOOT/bootia32.efi\fR and
+\fBEFI/BOOT/bootaa64.efi\fR, if the IA\-32 and ARM64
+builds are available) using this option. The device\-file should be an
 unmounted ESP, or at least a FAT partition, as in \fB\-\-usedefault
 /dev/sdc1\fR. Your computer's NVRAM entries will not be modified when
 installing in this way. The intent is that you can create a bootable USB

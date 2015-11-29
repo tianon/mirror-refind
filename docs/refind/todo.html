@@ -179,11 +179,16 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	optical drives and uses generic icons rather than OS-specific
 	icons.</li>
 
-    <li>Currently, rEFInd can detect whether it's compiled for <i>x</i>86
-	or <i>x</i>86-64 systems and displays this information in its
-	"About" screen (<tt>AboutrEFInd()</tt> in <tt>main.c</tt>). I'd
-	like to add detection for Itanium and ARM systems, but I have no
-	way to test such changes.</li>
+    <li>rEFInd's <tt>Makefile</tt>s and, to a lesser extent, C code,
+	support <i>x</i>86, <i>x</i>86-64, and ARM64 CPUs. EFI is also
+	available for Itanium (IA-64) and ARM32 CPUs, so I'd like to add
+	this support.</li>
+
+    <li>Currently, rEFInd can detect whether it's compiled for <i>x</i>86,
+	<i>x</i>86-64, or ARM64 systems and displays this information in
+	its "About" screen (<tt>AboutrEFInd()</tt> in <tt>main.c</tt>). I'd
+	like to add detection for Itanium and 32-bit ARM systems, but I
+	have no way to test such changes.</li>
 
     <li>Further to the preceding, rEFInd's GPT-scanning code (used to
 	extract partition names) includes assumptions about byte order, and
