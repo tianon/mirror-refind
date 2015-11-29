@@ -37,6 +37,7 @@
 # Revision history:
 #
 # 0.10.1  -- Improve extraction of default kernel options from /proc/cmdline.
+#            Add support for AMD64 (aka AARCH64, aa64) platform.
 # 0.10.0  -- Enable running under OS X's recovery system & add warning about
 #            SIP & brief instructions on how to deal with it if SIP is
 #            detected to be enabled. Also change way refind_linux.conf default
@@ -193,6 +194,71 @@ ReadYesNo() {
    fi
 }
 
+# Determine what CPU type and EFI bit depth we're using.
+# Sets Platform global variable to lowercase EFI platform code (currently
+# "x64", "ia32", or "aa64") -- the same code used in filenames.
+DeterminePlatform() {
+   local CpuType
+   case "$OSTYPE" in
+   darwin*)
+      CpuType=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
+      if [[ "$CpuType" == EFI32 ]] ; then
+         Platform="ia32"
+      else
+         Platform="x64"
+      fi
+      ;;
+   linux*)
+      CpuType=`uname -m`
+      case "$CpuType" in
+      aarch64)
+         Platform="aa64"
+         ;;
+      x86_64)
+         Platform="x64"
+         ;;
+      i?86)
+         Platform="ia32"
+         # If we're in EFI mode, do some sanity checks, and alert the user or even
+         # abort. Not in BIOS mode, though, since that could be used on an emergency
+         # disc to try to recover a troubled Linux installation.
+         if [[ -d /sys/firmware/efi ]] ; then
+            if [[ "$ShimSource" != "none" && "$TargetDir" != "/BOOT/EFI" ]] ; then
+               echo ""
+               echo "CAUTION: shim does not currently supports 32-bit systems, so you should not"
+               echo "use the --shim option to install on such systems. Aborting!"
+               echo ""
+               exit 1
+            fi
+            echo
+            echo "CAUTION: This Linux installation uses a 32-bit kernel. 32-bit EFI-based"
+            echo "computers are VERY RARE. If you've installed a 32-bit version of Linux"
+            echo "on a 64-bit computer, you should manually install the 64-bit version of"
+            echo "rEFInd. If you're positive you want to continue with this installation,"
+            echo "answer 'Y' to the following question..."
+            echo
+            echo -n "Are you sure you want to continue (Y/N)? "
+            ReadYesNo
+            if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
+               echo "OK; continuing with the installation..."
+            else
+               exit 0
+            fi
+         fi # In EFI mode
+         ;;
+      *)
+         echo "Unknown CPU type '$CpuType'; aborting!"
+         exit 1
+         ;;
+      esac # case "$CpuType"....
+      ;;
+   *)
+      echo "Unknown OS; aborting!"
+      exit 1
+      ;;
+   esac # case "$OSTYPE"....
+} # DeterminePlatform()
+
 # Abort if the rEFInd files can't be found.
 # Also sets $ConfFile to point to the configuration file,
 # $IconsDir to point to the icons directory,
@@ -213,11 +279,8 @@ CheckForFiles() {
            ;;
    esac
    RefindDir="$ThisDir/refind"
-   # Note: This check is satisfied if EITHER the 32- or the 64-bit version
-   # is found, even on the wrong platform. This is because the platform
-   # hasn't yet been determined. This could obviously be improved, but it
-   # would mean restructuring lots more code....
-   if [[ ! -f "$RefindDir/refind_ia32.efi" && ! -f "$RefindDir/refind_x64.efi" ]] ; then
+
+   if [[ ! -f "$RefindDir/refind_$Platform.efi" ]] ; then
       echo "The rEFInd binary file is missing! Aborting installation!"
       exit 1
    fi
@@ -245,6 +308,7 @@ CheckForFiles() {
       if [[ -f "$ShimSource" ]] ; then
          if [[ $ShimType == "shimx64.efi" || $ShimType == "shim.efi" ]] ; then
             TargetX64="grubx64.efi"
+            TargetAARCH64="grubaa64.efi"
             MokManagerSource=`dirname "$ShimSource"`/MokManager.efi
          elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
             TargetX64="loader.efi"
@@ -301,9 +365,11 @@ SetVarsForBoot() {
    if [[ $ShimSource == "none" ]] ; then
       TargetX64="bootx64.efi"
       TargetIA32="bootia32.efi"
+      TargetAARCH64="bootaa64.efi"
    else
-      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" ]] ; then
+      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" || $ShimType = "shimaa64.efi" ]] ; then
          TargetX64="grubx64.efi"
+         TargetAARCH64="grubaa64.efi"
       elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
          TargetX64="loader.efi"
       else
@@ -312,7 +378,7 @@ SetVarsForBoot() {
          exit 1
       fi
       TargetIA32="bootia32.efi"
-      TargetShim="bootx64.efi"
+      TargetShim="boot$Platform.efi"
    fi
    if [[ $KeepName == 1 ]] ; then
       echo "Installation is to /EFI/BOOT, which is incompatible with --keepname! Aborting!"
@@ -326,9 +392,11 @@ SetVarsForMsBoot() {
    if [[ $ShimSource == "none" ]] ; then
       TargetX64="bootmgfw.efi"
       TargetIA32="bootmgfw.efi"
+      TargetAARCH64="bootmgfw.efi"
    else
-      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" ]] ; then
+      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" || $ShimType == "shimaa64.efi" ]] ; then
          TargetX64="grubx64.efi"
+         TargetAARCH64="grubaa64.efi"
       elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
          TargetX64="loader.efi"
       else
@@ -370,6 +438,7 @@ DetermineTargetDir() {
       if [[ $ShimSource == "none" || $KeepName == 1 ]] ; then
          TargetX64="refind_x64.efi"
          TargetIA32="refind_ia32.efi"
+         TargetAARCH64="refind_aa64.efi"
       fi
       Upgrade=1
    fi
@@ -504,6 +573,10 @@ CopyRefindFiles() {
       if [[ $? != 0 ]] ; then
          Problems=1
       fi
+      cp "$RefindDir/refind_aa64.efi" "$InstallDir/$TargetDir/$TargetAARCH64" 2> /dev/null
+      if [[ $? != 0 && $Platform == "aa64" ]] ; then
+         Problems=1
+      fi
       if [[ "$ShimSource" != "none" ]] ; then
          TargetShim="bootx64.efi"
          CopyShimFiles
@@ -512,22 +585,12 @@ CopyRefindFiles() {
          cp -r "$RefindDir"/drivers_* "$InstallDir/$TargetDir/" 2> /dev/null
          cp -r "$ThisDir"/drivers_* "$InstallDir/$TargetDir/" 2> /dev/null
       elif [[ $Upgrade == 1 || $InstallToEspOnMac == 1 ]] ; then
-         if [[ $Platform == 'EFI64' ]] ; then
-            CopyDrivers x64
-            CopyTools x64
-         else
-            CopyDrivers ia32
-            CopyTools ia32
-         fi
+         CopyDrivers "$Platform"
+         CopyTools "$Platform"
       fi
-      Refind=""
-      if [[ $Platform == 'EFI64' ]] ; then
-         Refind='bootx64.efi'
-      elif [[ $Platform == 'EFI32' ]] ; then
-         Refind='bootia32.efi'
-      fi
+      Refind="boot$Platform.efi"
       CopyKeys
-   elif [[ $Platform == 'EFI64' || $TargetDir == "/EFI/Microsoft/Boot" ]] ; then
+   elif [[ $Platform == 'x64' || $TargetDir == "/EFI/Microsoft/Boot" ]] ; then
       cp "$RefindDir/refind_x64.efi" "$InstallDir/$TargetDir/$TargetX64"
       if [[ $? != 0 ]] ; then
          Problems=1
@@ -552,14 +615,21 @@ CopyRefindFiles() {
       if [[ "$TargetDir" == '/System/Library/CoreServices' ]] ; then
          SetupMacHfs $TargetX64
       fi
-   elif [[ $Platform == 'EFI32' ]] ; then
-      cp "$RefindDir/refind_ia32.efi" "$InstallDir/$TargetDir/$TargetIA32"
-      if [[ $? != 0 ]] ; then
-         Problems=1
+   elif [[ $Platform == 'ia32' || $Platform == 'aa64' ]] ; then
+      if [[ $Platform == 'ia32' ]] ; then
+         cp "$RefindDir/refind_ia32.efi" "$InstallDir/$TargetDir/$TargetIA32"
+         if [[ $? != 0 ]] ; then
+            Problems=1
+         fi
+      else
+         cp "$RefindDir/refind_aa64.efi" "$InstallDir/$TargetDir/$TargetAARCH64"
+         if [[ $? != 0 ]] ; then
+            Problems=1
+         fi
       fi
-      CopyDrivers ia32
-      CopyTools ia32
-      Refind="refind_ia32.efi"
+      CopyDrivers $Platform
+      CopyTools $Platform
+      Refind="refind_$Platform.efi"
       if [[ "$TargetDir" == '/System/Library/CoreServices' ]] ; then
          SetupMacHfs $TargetIA32
       fi
@@ -776,7 +846,6 @@ InstallOnOSX() {
    echo "Installing rEFInd to the partition mounted at $InstallDir"
    DetermineTargetDir
    CheckForSIP
-   Platform=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
    CopyRefindFiles
    cp "$ThisDir/mountesp" /usr/local/bin &> /dev/null
    if [[ $InstallToEspOnMac == "1" ]] ; then
@@ -800,11 +869,6 @@ InstallOnOSX() {
          echo "Not deleting rEFItBlesser."
       fi
    fi
-   echo
-   echo "WARNING: If you have an Advanced Format disk, *DO NOT* attempt to check the"
-   echo "bless status with 'bless --info', since this is known to cause disk corruption"
-   echo "on some systems!!"
-   echo
 } # InstallOnOSX()
 
 
@@ -945,18 +1009,18 @@ ReSignBinaries() {
       exit 1
    fi
    GenerateKeys
-   mkdir -p "$TempDir/drivers_x64"
+   mkdir -p "$TempDir/drivers_$Platform"
    cp "$RefindDir/refind.conf-sample $TempDir" 2> /dev/null
    cp "$ThisDir/refind.conf-sample $TempDir" 2> /dev/null
    cp "$RefindDir/refind_ia32.efi $TempDir" 2> /dev/null
    cp -a "$RefindDir/drivers_ia32 $TempDir" 2> /dev/null
    cp -a "$ThisDir/drivers_ia32 $TempDir" 2> /dev/null
-   SignOneBinary "$RefindDir/refind_x64.efi" "$TempDir/refind_x64.efi"
+   SignOneBinary "$RefindDir/refind_$Platform.efi" "$TempDir/refind_$Platform.efi"
    SaveIFS=$IFS
    IFS=$(echo -en "\n\b")
-   for Driver in `ls "$RefindDir"/drivers_x64/*.efi "$ThisDir"/drivers_x64/*.efi 2> /dev/null` ; do
+   for Driver in `ls "$RefindDir"/drivers_$Platform/*.efi "$ThisDir"/drivers_$Platform/*.efi 2> /dev/null` ; do
       TempName=`basename "$Driver"`
-      SignOneBinary "$Driver" "$TempDir/drivers_x64/$TempName"
+      SignOneBinary "$Driver" "$TempDir/drivers_$Platform/$TempName"
    done
    IFS=$SaveIFS
    RefindDir="$TempDir"
@@ -1076,8 +1140,9 @@ AddBootEntry() {
    if [[ $EfibootmgrProblems ]] ; then
       echo
       echo "ALERT: There were problems running the efibootmgr program! You may need to"
-      echo "rename the $Refind binary to the default name (EFI/boot/bootx64.efi"
-      echo "on x86-64 systems or EFI/boot/bootia32.efi on x86 systems) to have it run!"
+      echo "rename the $Refind binary to the default name (EFI/BOOT/bootx64.efi"
+      echo "on x86-64 systems, EFI/BOOT/bootia32.efi on x86 systems, or"
+      echo "EFI/BOOT/bootaa64.efi on ARM64 systems) to have it run!"
       echo
    else
       echo "rEFInd has been set as the default boot manager."
@@ -1135,41 +1200,6 @@ InstallOnLinux() {
       FindMountedESP
       DetermineTargetDir
    fi
-   CpuType=`uname -m`
-   if [[ $CpuType == 'x86_64' ]] ; then
-      Platform="EFI64"
-   elif [[ ($CpuType == 'i386' || $CpuType == 'i486' || $CpuType == 'i586' || $CpuType == 'i686') ]] ; then
-      Platform="EFI32"
-      # If we're in EFI mode, do some sanity checks, and alert the user or even
-      # abort. Not in BIOS mode, though, since that could be used on an emergency
-      # disc to try to recover a troubled Linux installation.
-      if [[ -d /sys/firmware/efi ]] ; then
-         if [[ "$ShimSource" != "none" && "$TargetDir" != "/BOOT/EFI" ]] ; then
-            echo ""
-            echo "CAUTION: shim does not currently supports 32-bit systems, so you should not"
-            echo "use the --shim option to install on such systems. Aborting!"
-            echo ""
-            exit 1
-         fi
-         echo
-         echo "CAUTION: This Linux installation uses a 32-bit kernel. 32-bit EFI-based"
-         echo "computers are VERY RARE. If you've installed a 32-bit version of Linux"
-         echo "on a 64-bit computer, you should manually install the 64-bit version of"
-         echo "rEFInd. If you're positive you want to continue with this installation,"
-         echo "answer 'Y' to the following question..."
-         echo
-         echo -n "Are you sure you want to continue (Y/N)? "
-         ReadYesNo
-         if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
-            echo "OK; continuing with the installation..."
-         else
-            exit 0
-         fi
-      fi # in EFI mode
-   else
-      echo "Unknown CPU type '$CpuType'; aborting!"
-      exit 1
-   fi
 
    if [[ $LocalKeys == 1 ]] ; then
       ReSignBinaries
@@ -1199,6 +1229,7 @@ if [[ $UID != 0 ]] ; then
       exit 0
    fi
 fi
+DeterminePlatform
 CheckForFiles
 case "$OSTYPE" in
    darwin*)

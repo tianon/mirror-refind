@@ -1,6 +1,19 @@
 0.10.1 (??/??/201?):
 --------------------
 
+- Added support for compiling rEFInd for ARM64 (aka AARCH64 or aa64). This
+  works with both GNU-EFI and Tianocore UDK2014.SP1.P1. This support is
+  currently poorly tested. In particular, I used QEMU on an x86-64 computer
+  to create a virtualized ARM64 environment; I've not yet tested on a real
+  computer. I couldn't get QEMU to create a video card, so I used a serial
+  terminal, which means that the graphics features are untested -- I ran
+  rEFInd with "textonly" uncommented in refind.conf. I've tested the ext4fs
+  driver but no other drivers, although they all compile. (So does gptsync,
+  although it's unlikely to be useful on ARM64.) Some rEFInd features are
+  meaningless on ARM64, such as BIOS-mode boot support, anything geared
+  toward Macs (csr_values/csr_rotate, spoof_osx_version, etc.), and
+  enable_and_lock_vmx.
+
 - Fixed bug that caused rEFInd to fail to scan EFI boot loaders on
   removable media when rEFInd itself was launched from the fallback
   filename.

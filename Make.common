@@ -24,8 +24,8 @@ DEBUGFLAGS      = -Wall
 #CFLAGS          = $(ARCH3264) $(OPTIMFLAGS) -fpic -fshort-wchar $(DEBUGFLAGS)
 CFLAGS          = $(ARCH3264) $(OPTIMFLAGS) -fno-stack-protector -fpic -fshort-wchar $(DEBUGFLAGS)
 ASFLAGS         = $(ARCH3264)
-export LDFLAGS  = -nostdlib
-export DRV_LDFLAGS = 
+LDFLAGS         = -nostdlib
+DRV_LDFLAGS     =
 
 prefix          = /usr/bin/
 CC              = $(prefix)gcc

@@ -391,7 +391,6 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN EFI_DRIVER_BINDING_PROTOCOL  *T
                           This->DriverBindingHandle,
                           ControllerHandle);
     }
-
     return Status;
 }
 
@@ -522,7 +521,7 @@ fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *
    FSW_VOLUME_DATA  *Volume = (FSW_VOLUME_DATA *)vol->host_data;
    EFI_STATUS       Status = EFI_SUCCESS;
    BOOLEAN          ReadOneBlock = FALSE;
-   fsw_u64          StartRead = phys_bno * vol->phys_blocksize;
+   UINT64           StartRead = (UINT64) phys_bno * (UINT64) vol->phys_blocksize;
 
    if (buffer == NULL)
       return (fsw_status_t) EFI_BAD_BUFFER_SIZE;
@@ -536,7 +535,7 @@ fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *
    i = 0;
    do {
       if ((Caches[i].Volume == Volume) &&
-	  (Caches[i].CacheValid == TRUE) &&
+          (Caches[i].CacheValid == TRUE) &&
           (StartRead >= Caches[i].CacheStart) &&
           ((StartRead + vol->phys_blocksize) <= (Caches[i].CacheStart + CACHE_SIZE))) {
          ReadCache = i;
@@ -553,8 +552,14 @@ fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *
       if (Caches[ReadCache].Cache == NULL)
          Caches[ReadCache].Cache = AllocatePool(CACHE_SIZE);
       if (Caches[ReadCache].Cache != NULL) {
+         // TODO: Below call hangs on my 32-bit Mac Mini when compiled with GNU-EFI.
+         // The same binary is fine under VirtualBox, and the same call is fine when
+         // compiled with Tianocore. Further clue: Omitting "Status =" avoids the
+         // hang but produces a failure to mount the filesystem, even when the same
+         // change is made to later similar call. Calling Volume->DiskIo->ReadDisk()
+         // directly (without refit_call5_wrapper()) changes nothing. FIGURE THIS OUT!
          Status = refit_call5_wrapper(Volume->DiskIo->ReadDisk, Volume->DiskIo, Volume->MediaId,
-                                      StartRead, CACHE_SIZE, Caches[ReadCache].Cache);
+                                      StartRead, (UINTN) CACHE_SIZE, (VOID*) Caches[ReadCache].Cache);
          if (!EFI_ERROR(Status)) {
             Caches[ReadCache].CacheStart = StartRead;
             Caches[ReadCache].CacheValid = TRUE;
@@ -577,8 +582,8 @@ fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *
    if (ReadOneBlock) { // Something's failed, so try a simple disk read of one block....
       Status = refit_call5_wrapper(Volume->DiskIo->ReadDisk, Volume->DiskIo, Volume->MediaId,
                                    phys_bno * vol->phys_blocksize,
-                                   vol->phys_blocksize,
-                                   buffer);
+                                   (UINTN) vol->phys_blocksize,
+                                   (VOID*) buffer);
    }
    Volume->LastIOStatus = Status;
 
