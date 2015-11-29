@@ -1,54 +1,7 @@
-This package was debianized by Roderick W. Smith <rod.smith@canonical.com>  Wed,
-29 Jan 2014 10:25:54 -0500.
-
-It was downloaded from http://sourceforge.net/p/refind/code/ci/master/tree/
-
-Upstream Authors:
-    Roderick W. Smith <rodsmith@rodsbooks.com>
-    Christoph Pfisterer <cp@chrisp.de>
-    Dave Vasilevsky <dave@vasilevsky.ca>
-    John Bressler <jrb1327@gmail.com>
-    Stefan Agner <stefan@agner.ch>
-    James Bottomley <James.Bottomley@HansenPartnership.com>
-    Kay Sievers <kay.sievers@vrfy.org>
-    Harald Hoyer <harald@redhat.com>
-    Mark Adler
-    Markus Franz Xaver Johannes Oberhumer
-    Peter Anvin
-    Lode Vandevenne
-    Gary S. Brown
-    Dan Rabbit
-    Alessandro Roncone
-    Debian Project
-    Intel Corporation
-    Regents of the University of California
-    UNIX System Laboratories, Inc.
-    Oracle Corporation
-    Tencent, Inc.
-    Apple, Inc.
-
-Copyright:
-
-This package builds two EFI application programs and several drivers.
-Documentation and icons are also included.
-
-* The main rEFInd binary (refind_x64.efi or refind_ia32.efi) uses source
-  code with various licenses, all of which are compatible with the GPL-3,
-  which is the overarching license.
-* The gptsync binary uses source files that all use the BSD 2-clause
-  license.
-* Drivers all rely on a BSD 2-clause base. Beyond that, things diverge:
-  * The HFS+ and ISO-9660 drivers use GPL-2 source files
-  * The Btrfs driver uses GPL-2+ and GPL-3+ source files
-  * The ext2fs, ext4fs, ReiserFS, and NTFS drivers all use GPL-2+
-    source files.
-* The documentation is licensed under the FDL 1.3
-* Icons use the CC-SA 3.0, LGPLv3+, or GPLv2 licenses.
-
-File-by-file details are described below.
-
-Files Used to Create Main rEFInd Binary
----------------------------------------
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: rEFInd
+Upstream-Contact: Roderick W. Smith <rodsmith@rodsbooks.com>
+Source: http://www.rodsbooks.com/refind
 
 Files: refind/*
        libeg/image.c
@@ -110,9 +63,6 @@ Files: include/RemovableMedia.h
 Copyright: 2005 Apple Computer, Inc.
 License: See comments in file
 
-Files Used to Create gptsync Binary
------------------------------------
-
 Files: gptsync/*
 Copyright: 2006 Christoph Pfisterer
 License: BSD 2-clause
@@ -121,9 +71,6 @@ Files: gptsync/gptsync.c
 Copyright: 2006 Christoph Pfisterer
            2013 Roderick W. Smith
 License: BSD 2-clause
-
-Base Filesystem Driver Files
-----------------------------
 
 Files: filesystems/fsw_core.[ch]
        filesystems/fsw_efi.[ch]
@@ -136,10 +83,6 @@ License: BSD 3-clause
 Files: filesystems/fsw_efi_edk2_base.h
 Copyright: 2012 Stefan Agner
 License BSD 3-clause
-
-Files Used by ext2fs, ext4fs, ReiserFS, NTFS Filesystem Drivers
-(Used in addition to Base Filesystem Driver Files)
----------------------------------------------------------------
 
 Files: filesystems/fsw_ext2.[ch]
        filesystems/fsw_ext2_disk.h
@@ -167,10 +110,6 @@ Files: filesystems/fsw_ntfs.c
 Copyright: Samuel Liao
 License: GPL-2+
 
-Files Used by Btrfs Filesystem Driver
-(Used in addition to Base Filesystem Driver Files)
---------------------------------------------------
-
 Files: filesystems/crc32c.c
        filesystems/gzio.c
 Copyright: 2008 Free Software Foundation, Inc.
@@ -189,10 +128,6 @@ Files: filesystems/scandisk.c
 Copyright: 2013 Tencent, Inc. (Samuel Liao)
 License: GPL-3+
 
-Files Used by HFS+ & ISO-9660 Filesystem Drivers
-(Used in addition to Base Filesystem Driver Files)
---------------------------------------------------
-
 Files: filesystems/fsw_hfs.[ch]
 Copyright: 2010 Oracle Corporation
 License: GPL-2
@@ -202,15 +137,9 @@ Copyright: 2006 Christoph Pfisterer
            2010 Oracle Corporation
 License: BSD 3-clause & GPL-2
 
-Files Used to Build iPXE (not built by default)
------------------------------------------------
-
 Files: net/*
 Copyright: 2009 Michael Brown
 License: GPL-2+
-
-Icons
------
 
 Files: icons/arrow_left.png
        icons/arrow_right.png
@@ -257,9 +186,6 @@ License: Creative Commons Attribution-Share Alike 3.0 (CC-SA 3.0)
 Note: tool_windows_rescue is combination of os_win8.png with
       tool_rescue.png.
 
-Mappings of files to original AwOken package filenames is in the
-icons/README file.
-
 Files: icons/boot_win.png
        icons/func_csr_rotate.png
        icons/os_clover.png
@@ -284,7 +210,6 @@ License: LGPLv3+ or Creative Commons Attribution-Share Alike 3.0
 Note: tool_windows_rescue is combination of os_win8.png with
       tool_rescue.png.
 
-
 File: icons/os_debian.png
 Copyright: 1999 by Debian Project
 License: LGPLv3+ or Creative Commons Attribution-Share Alike 3.0
@@ -294,30 +219,8 @@ File: icons/os_elementary.png
 Copyright: 2008 Dan Rabbit
 License: GPLv2
 
-SVG forms of some icons appear in the icons/svg subdirectory. When present,
-they have the same copyrights and licenses as the PNG versions noted above.
-
-Documentation
--------------
-
 Files: docs/*
 Copyright: 2012-2015 Roderick W. Smith
 License: FDL 1.3
 
-License: GPL-3
-
-    This package is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-On Debian systems, the complete text of the GNU General
-Public License can be found in `/usr/share/common-licenses/GPL'.
+# TODO clean up names in "License:" headers and list all license texts here
