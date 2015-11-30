@@ -6,6 +6,11 @@
 # in the fsw_efi.c file on the filesystem type; this file must be
 # recompiled for each new filesystem built.
 
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 INSTALL_DIR = /boot/efi/EFI/refind/drivers
 
 FILESYSTEMS = ext2 ext4 reiserfs iso9660 hfs btrfs ntfs

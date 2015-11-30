@@ -3,6 +3,11 @@
 # Common Makefile options for rEFInd using TianoCore EDK2
 #
 
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 HOSTARCH        = $(shell uname -m | sed s,i[3456789]86,ia32,)
 ARCH            ?= $(HOSTARCH)
 

@@ -1,5 +1,12 @@
 #!/bin/bash
 #
+# copyright (c) 2013 by Roderick W. Smith
+#
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 # Program to generate a PNG file suitable for use as a rEFInd font
 # To obtain a list of available font names, type:
 #

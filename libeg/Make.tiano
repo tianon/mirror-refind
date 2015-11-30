@@ -3,6 +3,11 @@
 # Build control file for libeg components of rEFInd, using TianoCore EDK2
 #
 
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 include ../Make.tiano
 
 SOURCE_NAMES     = image load_bmp load_icns lodepng lodepng_xtra screen text

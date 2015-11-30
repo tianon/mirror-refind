@@ -1,7 +1,15 @@
 #!/bin/bash
 #
-# Linux script to move an existing rEFInd installation from one directory to another
+# Linux script to move an existing rEFInd installation from one directory to
+# another
 #
+# copyright (c) 2013-2015 by Roderick W. Smith
+#
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 # Usage:
 #
 # ./mvrefind /path/to/source /path/to/destination

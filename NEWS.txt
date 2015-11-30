@@ -1,6 +1,9 @@
 0.10.1 (??/??/201?):
 --------------------
 
+- Removed Luxi Sans Mono font, since I discovered it was not open source;
+  and changed the default font from Nimbus Mono to Liberation Mono.
+
 - Added support for compiling rEFInd for ARM64 (aka AARCH64 or aa64). This
   works with both GNU-EFI and Tianocore UDK2014.SP1.P1. This support is
   currently poorly tested. In particular, I used QEMU on an x86-64 computer
