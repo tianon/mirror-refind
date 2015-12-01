@@ -9,8 +9,12 @@ else
 ifeq (i386, $(DEB_HOST_ARCH_CPU))
 	EFI_ARCH := ia32
 else
+ifeq (arm64, $(DEB_HOST_ARCH_CPU))
+	EFI_ARCH := aa64
+else
 	$(warning EFI architecture for $(DEB_HOST_ARCH_CPU) is unknown)
 	EFI_ARCH := $(DEB_HOST_ARCH_CPU)
+endif
 endif
 endif
 
