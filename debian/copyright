@@ -39,7 +39,7 @@ License: BSD-3-clause and GPL-3+
 Files: refind/icns.c
        libeg/*
 Copyright: 2006-2007 Christoph Pfisterer
-License BSD-3-clause
+License: BSD-3-clause
 
 Files: refind/gpt.[ch]
        libeg/lodepng_xtra.c
@@ -114,7 +114,7 @@ License: BSD-3-clause
 
 Files: filesystems/fsw_efi_edk2_base.h
 Copyright: 2012 Stefan Agner
-License BSD-3-clause
+License: BSD-3-clause
 
 Files: filesystems/fsw_ext2.[ch]
        filesystems/fsw_ext2_disk.h
