@@ -81,14 +81,14 @@ OPTIMFLAGS      = -fno-strict-aliasing -Wno-address -Os
 DEBUGFLAGS      = -Wall -Wno-missing-braces -Wno-array-bounds -ffunction-sections -fdata-sections
 CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c -include AutoGen.h -DHOST_EFI_EDK2
 
-prefix          = /usr/bin/
-CC              = $(prefix)gcc
-AS              = $(prefix)as
-LD              = $(prefix)ld
-AR              = $(prefix)ar
-RANLIB          = $(prefix)ranlib
-OBJCOPY         = $(prefix)objcopy
-GENFW           = $(EDK2BASE)/BaseTools/Source/C/bin/GenFw
+prefix          ?= /usr/bin/
+CC              ?= $(prefix)gcc
+AS              ?= $(prefix)as
+LD              ?= $(prefix)ld
+AR              ?= $(prefix)ar
+RANLIB          ?= $(prefix)ranlib
+OBJCOPY         ?= $(prefix)objcopy
+GENFW           ?= $(EDK2BASE)/BaseTools/Source/C/bin/GenFw
 
 
 LDSCRIPT = $(EDK2BASE)/BaseTools/Scripts/gcc4.4-ld-script

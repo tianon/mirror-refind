@@ -42,7 +42,7 @@ ifeq ($(ARCH),aarch64)
   LD_CODE = aarch64elf
 endif
 
-EDK2BASE = /usr/local/UDK2014/MyWorkSpace
+#EDK2BASE = /usr/local/UDK2014/MyWorkSpace
 #EDK2BASE = /usr/local/EDK2/tianocore-edk2
 #ENTRYPOINT=_ModuleEntryPoint
 ENTRYPOINT=efi_main
@@ -65,16 +65,6 @@ INCLUDE_DIRS    = -I $(EDK2BASE)/MdePkg \
 OPTIMFLAGS      += -fno-strict-aliasing -Wno-address -Os
 DEBUGFLAGS      = -Wall -Wno-missing-braces -Wno-array-bounds -ffunction-sections -fdata-sections
 CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c
-
-prefix          = /usr/bin/
-CC              = $(prefix)gcc
-AS              = $(prefix)as
-LD              = $(prefix)ld
-AR              = $(prefix)ar
-RANLIB          = $(prefix)ranlib
-OBJCOPY         = $(prefix)objcopy
-GENFW           = $(EDK2BASE)/BaseTools/Source/C/bin/GenFw
-
 
 LDSCRIPT = $(EDK2BASE)/BaseTools/Scripts/gcc4.4-ld-script
 

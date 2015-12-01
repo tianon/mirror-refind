@@ -57,7 +57,7 @@ mkdir -p ../snapshots/$1/refind-$1/icons/licenses ../snapshots/$1/refind-$1/icon
 cp --preserve=timestamps icons/*png icons/README ../snapshots/$1/refind-$1/icons/
 cp --preserve=timestamps -r icons/licenses/* ../snapshots/$1/refind-$1/icons/licenses/
 cp --preserve=timestamps -r icons/svg/* ../snapshots/$1/refind-$1/icons/svg/
-cp -a debian docs images keys fonts banners include EfiLib libeg mok net refind filesystems gptsync refind.spec refind-install mkrlconf mvrefind mountesp CREDITS.txt NEWS.txt BUILDING.txt COPYING.txt LICENSE.txt README.txt refind.inf Make.tiano Make.common Makefile refind.conf-sample ../snapshots/$1/refind-$1
+cp -a debian docs images keys fonts banners include EfiLib libeg mok net refind filesystems gptsync refind.spec refind-install mkrlconf mvrefind mountesp CREDITS.txt NEWS.txt BUILDING.txt COPYING.txt LICENSE.txt README.txt refind.inf Make.tiano Make.common Make.aarch64 Makefile refind.conf-sample ../snapshots/$1/refind-$1
 
 # Go there and prepare a souce code tarball....
 cd ../snapshots/$1/
@@ -68,8 +68,21 @@ gzip -9 refind-src-$1.tar
 # Remove SVG files, since they aren't needed for binary packages....
 rm -rf refind-$1/icons/svg
 
-# Build the IA32 binaries
+# Build the ARM64 binaries
 cd refind-$1
+ARCH=aarch64 make -j1
+ARCH=aarch64 make fs
+mkdir -p refind-bin-$1/refind/drivers_aa64
+cp --preserve=timestamps drivers_aa64/*_aa64.efi refind-bin-$1/refind/drivers_aa64/
+cp --preserve=timestamps filesystems/LICENSE*txt refind-bin-$1/refind/drivers_aa64/
+cp refind/refind_aa64.efi refind-bin-$1/refind/refind_aa64.efi
+cp refind/refind_aa64.efi $StartDir/
+mkdir -p refind-bin-$1/refind/tools_aa64
+# Don't copy gptsync_aa64.efi because it won't build in cross-compile environment
+# and because it's likely to be useless on ARM64.
+
+# Build the IA32 binaries
+make clean
 ARCH=ia32 make -j1
 ARCH=ia32 make fs
 mkdir -p refind-bin-$1/refind/drivers_ia32
@@ -133,7 +146,7 @@ mv ~/rpmbuild/RPMS/*/refind-$1* ./
 mv ~/rpmbuild/SRPMS/refind-$1* ./
 sudo alien --to-deb -k -c refind-$1*x86_64.rpm
 sudo chown rodsmith: refind*deb
-rm ~/rpmbuild/SOURCES/refind-src-$1.tar.gz
+rm ~/rpmbuild/SOURCES/refind-src-*
 
 # Clean up
 if [[ $SignIt == 1 ]] ; then

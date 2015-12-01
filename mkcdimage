@@ -35,6 +35,7 @@ cp $StartDir/shell*.efi ./
 # EFI-boot CD...
 ln ../../refind/refind_ia32.efi ./bootia32.efi
 ln ../../refind/refind_x64.efi ./bootx64.efi
+ln ../../refind/refind_aa64.efi ./bootaa64.efi
 cp ../../refind/refind.conf-sample ./refind.conf
 sed -i '/#showtools/a showtools shell,memtest,gdisk,apple_recovery,csr_rotate,windows_recovery,mok_tool,about,shutdown,reboot,firmware' refind.conf
 sed -i '/#csr_values/a csr_values 10,77' refind.conf
@@ -49,6 +50,10 @@ cd ..
 mkdir drivers_ia32
 cd drivers_ia32
 ln ../../../refind/drivers_ia32/* ./
+cd ..
+mkdir drivers_aa64
+cd drivers_aa64
+ln ../../../refind/drivers_aa64/* ./
 cd ../../..
 
 # Get the size of the binaries to go in the El Torito image in kB

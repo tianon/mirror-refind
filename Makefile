@@ -5,8 +5,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-CC=gcc
-CXX=g++
 CXXFLAGS=-O2 -fpic -D_REENTRANT -D_GNU_SOURCE -Wall -g
 NAMES=refind
 SRCS=$(NAMES:=.c)
@@ -18,6 +16,25 @@ LIBEG_DIR=libeg
 MOK_DIR=mok
 GPTSYNC_DIR=gptsync
 EFILIB_DIR=EfiLib
+
+export EDK2BASE        = /usr/local/UDK2014/MyWorkSpace
+export GENFW           = $(EDK2BASE)/BaseTools/Source/C/bin/GenFw
+export prefix          = /usr/bin/
+ifeq ($(ARCH),aarch64)
+  export CC            = $(prefix)aarch64-linux-gnu-gcc
+  export AS            = $(prefix)aarch64-linux-gnu-as
+  export LD            = $(prefix)aarch64-linux-gnu-ld
+  export AR            = $(prefix)aarch64-linux-gnu-ar
+  export RANLIB        = $(prefix)aarch64-linux-gnu-ranlib
+  export OBJCOPY       = $(prefix)aarch64-linux-gnu-objcopy
+else
+  export CC            = $(prefix)gcc
+  export AS            = $(prefix)as
+  export LD            = $(prefix)ld
+  export AR            = $(prefix)ar
+  export RANLIB        = $(prefix)ranlib
+  export OBJCOPY       = $(prefix)objcopy
+endif
 
 # Build rEFInd, including libeg
 all:	tiano
@@ -41,8 +58,16 @@ tiano:
 	+make AR_TARGET=libeg -C $(LIBEG_DIR) -f Make.tiano
 	+make AR_TARGET=mok -C $(MOK_DIR) -f Make.tiano
 	+make BUILDME=refind DLL_TARGET=refind -C $(LOADER_DIR) -f Make.tiano
+ifneq ($(ARCH),aarch64)
 	+make -C $(GPTSYNC_DIR) -f Make.tiano
+endif
 #	+make -C $(FS_DIR)
+
+gptsync:
+	+make -C $(GPTSYNC_DIR) -f Make.tiano
+
+gptsync_gnuefi:
+	+make -C $(GPTSYNC_DIR) gnuefi
 
 clean:
 	make -C $(LIBEG_DIR) clean

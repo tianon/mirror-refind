@@ -107,7 +107,7 @@ void Print(wchar_t *format, ...);
 
 // FUTURE: use STR(),  #define Print printf
 
-#define copy_guid(destguid, srcguid) (memcpy(destguid, srcguid, 16))
+#define copy_guid(destguid, srcguid) (CopyMem(destguid, srcguid, 16))
 #define guids_are_equal(guid1, guid2) (memcmp(guid1, guid2, 16) == 0)
 
 #define EFI_UNSUPPORTED 1

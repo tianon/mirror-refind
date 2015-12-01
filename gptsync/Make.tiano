@@ -37,7 +37,7 @@ ifeq ($(ARCH),aarch64)
   LD_CODE = aarch64elf
 endif
 
-EDK2BASE = /usr/local/UDK2014/MyWorkSpace
+export EDK2BASE = /usr/local/UDK2014/MyWorkSpace
 #EDK2BASE = /usr/local/edk2
 
 # Below file defines TARGET (RELEASE or DEBUG) and TOOL_CHAIN_TAG (GCC44, GCC45, or GCC46)
@@ -83,14 +83,14 @@ DEBUGFLAGS      = -Wall -Wno-missing-braces -Wno-array-bounds -ffunction-section
 CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c -DHOST_EFI_EDK2 -D__MAKEWITH_TIANO
 #CFLAGS          = $(OPTIMFLAGS) -g -fshort-wchar -fno-stack-protector $(DEBUGFLAGS) -c -include AutoGen.h -DHOST_EFI_EDK2
 
-prefix          = /usr/bin/
-CC              = $(prefix)gcc
-AS              = $(prefix)as
-LD              = $(prefix)ld
-AR              = $(prefix)ar
-RANLIB          = $(prefix)ranlib
-OBJCOPY         = $(prefix)objcopy
-GENFW           = $(EDK2BASE)/BaseTools/Source/C/bin/GenFw
+prefix          ?= /usr/bin/
+CC              ?= $(prefix)gcc
+AS              ?= $(prefix)as
+LD              ?= $(prefix)ld
+AR              ?= $(prefix)ar
+RANLIB          ?= $(prefix)ranlib
+OBJCOPY         ?= $(prefix)objcopy
+GENFW           ?= $(EDK2BASE)/BaseTools/Source/C/bin/GenFw
 
 
 LDSCRIPT = $(EDK2BASE)/BaseTools/Scripts/gcc4.4-ld-script
