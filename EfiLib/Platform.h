@@ -1,6 +1,18 @@
 /*
 Headers collection for procedures
 */
+/**
+
+Copyright (c) 2004 - 2008, Intel Corporation. All rights reserved.<BR>
+This program and the accompanying materials
+are licensed and made available under the terms and conditions of the BSD License
+which accompanies this distribution.  The full text of the license may be found at
+http://opensource.org/licenses/bsd-license.php
+
+THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+
+**/
 
 #ifndef __REFIT_PLATFORM_H__
 #define __REFIT_PLATFORM_H__
@@ -60,10 +72,6 @@ Headers collection for procedures
 #define EFI_HANDLE_TYPE_PARENT_HANDLE               0x100
 #define EFI_HANDLE_TYPE_CONTROLLER_HANDLE           0x200
 #define EFI_HANDLE_TYPE_CHILD_HANDLE                0x400
-
-#pragma pack(1)
-
-#pragma pack(0)
 
 EFI_STATUS  EFIAPI InitializeConsoleSim (VOID);
 

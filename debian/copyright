@@ -61,14 +61,8 @@ Copyright: 2012 Harald Hoyer <harald@redhat.com>
 License: LGPL-2.1+
 
 Files: EfiLib/*
-Copyright: 2004-2011 Intel Corp.
+Copyright: 2004-2014 Intel Corp.
 License: BSD-2-clause
-
-Files: EfiLib/BdsHelper.[ch]
-       Platform.h
-Copyright: ????
-License: ????
-Comment: In style of TianoCore; Google to find source
 
 Files: libeg/lodepng.[ch]
 Copyright: 2005-2015 Lode Vandevenne
@@ -287,7 +281,49 @@ Copyright: 2010,2011 Canonical Ltd.
 License: UFL-1 (Ubuntu Font License)
 Comment: PNG bitmap derived from TrueType font
 
+Files: keys/altlinux.cer
+Copyright: 2013 Alt Linux
+License: Public-Domain
+Comment: RPM spec file at
+	 http://www.sisyphus.ru/br/srpm/Sisyphus/alt-uefi-certs/spec claims
+	 "public domain" as the license.
+
+Files: keys/canonical-uefi-ca.*
+Copyright: ??? ???
+License: BSD-2-Clause
+Comment: Debian package at https://launchpad.net/ubuntu/+source/shim claims
+         copyright by Red Hat and Intel, but that's clearly meant to refer
+	 to the bulk of Shim, not to Canonical's public key. The .crt file
+	 is derived from the .der file. I'm pinging the package's
+	 maintainer for clarification.
+
+Files: keys/fedora-ca.c*
+Copyright: 2012 Red Hat, Inc.
+License: BSD-2-Clause
+Comment: The .cer file is taken from the Fedora RPM for shim 0.8. The
+         .crt file was created from that by using openssl.
+
+Files: keys/microsoft-kekca-public.der
+       keys/microsoft-pca-public.der
+       keys/microsoft-uefica-public.crt
+       keys/microsoft-uefica-public.der
+Copyright: ??? ???
+License: ???
+
+Files: keys/openSUSE*
+       keys/SLES*
+Copyright: 2015 SUSE LINUX Products GmbH
+License: BSD-2-Clause
+Comment: .crt files are original; .der files are converted from original
+         .crt files by openssl. Taken from openSUSE shim
+	 0.7.318.81ee561d-7.2 RPM package.
+
+Files: keys/refind.*
+Copyright: 2012 Roderick W. Smith
+License: BSD-2-Clause
+
 Files: docs/*
+       */README*
 Copyright: 2012-2015 Roderick W. Smith
 License: FDL 1.3
 

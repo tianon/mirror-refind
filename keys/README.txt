@@ -20,12 +20,14 @@ used by shim.
 The files in this directory are, in alphabetical order:
 
 - altlinux.cer -- The public key for ALT Linux (http://www.altlinux.com).
+  Taken from the alt-uefi-certs package
+  (http://www.sisyphus.ru/br/srpm/Sisyphus/alt-uefi-certs/spec).
 
 - canonical-uefi-ca.crt & canonical-uefi-ca.der -- Canonical's public key,
   matched to the one used to sign Ubuntu boot loaders and kernels.
 
 - fedora-ca.cer & fedora-ca.crt -- Fedora's public key, matched to the one
-  used used to sign Fedora 18's version of shim and Fedora 18's kernels.
+  used used to sign Fedora's shim 0.8 binary.
 
 - microsoft-kekca-public.der -- Microsoft's key exchange key (KEK), which
   is present on most UEFI systems with Secure Boot. The purpose of
@@ -46,12 +48,21 @@ The files in this directory are, in alphabetical order:
   Microsoft. There's no reason to add it to your MOK list if your computer
   came this key pre-installed and you did not replace the default keys.
 
-- openSUSE-UEFI-CA-Certificate.cer & openSUSE-UEFI-CA-Certificate.crt --
-  Public keys matched to the ones used to sign OpenSUSE 12.3.
+- openSUSE-UEFI-CA-Certificate.cer, openSUSE-UEFI-CA-Certificate.crt,
+  openSUSE-UEFI-CA-Certificate-4096.cer, &
+  openSUSE-UEFI-CA-Certificate-4096.crt -- Public keys matched to the ones
+  used to sign OpenSUSE; taken from openSUSE's shim 0.7.318.81ee56d
+  package.
 
 - refind.cer & refind.crt -- My own (Roderick W. Smith's) public key,
   matched to the one used to sign refind_x64.efi and the 64-bit rEFInd
   drivers.
 
-- SLES-UEFI-CA-Certificate.cer & SLES-UEFI-CA-Certificate.crt -- The
-  Public key for SUSE Linux Enterprise Server.
+- SLES-UEFI-CA-Certificate.cer & SLES-UEFI-CA-Certificate.crt -- The Public
+  key for SUSE Linux Enterprise Server; taken from openSUSE's shim
+  0.7.318.81ee56d package.
+
+The refind.cer and refind.crt files are my creations and are distributed
+under the terms of the BSD 2-clause license. The rest of the files are
+distributed on the assumption that doing so constitutes fair use. Certainly
+they're all easily obtained on the Internet from other sources.

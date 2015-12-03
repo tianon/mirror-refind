@@ -102,10 +102,10 @@ EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  EFI_COMPONENT_NAME
                                                           IN  CHAR8                          *Language,
                                                           OUT CHAR16                         **ControllerName);
 
-void fsw_efi_change_blocksize(struct fsw_volume *vol,
+void EFIAPI fsw_efi_change_blocksize(struct fsw_volume *vol,
                               fsw_u32 old_phys_blocksize, fsw_u32 old_log_blocksize,
                               fsw_u32 new_phys_blocksize, fsw_u32 new_log_blocksize);
-fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *buffer);
+fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *buffer);
 
 EFI_STATUS fsw_efi_map_status(fsw_status_t fsw_status, FSW_VOLUME_DATA *Volume);
 
@@ -498,7 +498,7 @@ EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  EFI_COMPONENT_NAME
  * when the file system driver changes the block sizes for the volume.
  */
 
-void fsw_efi_change_blocksize(struct fsw_volume *vol,
+void EFIAPI fsw_efi_change_blocksize(struct fsw_volume *vol,
                               fsw_u32 old_phys_blocksize, fsw_u32 old_log_blocksize,
                               fsw_u32 new_phys_blocksize, fsw_u32 new_log_blocksize)
 {
@@ -516,7 +516,7 @@ void fsw_efi_change_blocksize(struct fsw_volume *vol,
  * disk.
  */
 
-fsw_status_t fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *buffer) {
+fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *buffer) {
    int              i, ReadCache = -1;
    FSW_VOLUME_DATA  *Volume = (FSW_VOLUME_DATA *)vol->host_data;
    EFI_STATUS       Status = EFI_SUCCESS;
