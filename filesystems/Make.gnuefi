@@ -24,7 +24,7 @@ endif
 
 ifeq ($(ARCH),ia32)
   LIBEG = build32
-  ARCH_C_FLAGS = -m32 -malign-double
+  ARCH_C_FLAGS = -m32 
   FILENAME_CODE = ia32
   LD_CODE = elf_i386
 endif

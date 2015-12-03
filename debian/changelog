@@ -1,5 +1,5 @@
-refind (0.10.0~git20151201.030531.0.dca8799-1) UNRELEASED; urgency=medium
+refind (0.10.0-1) UNRELEASED; urgency=medium
 
   * Initial release (Closes: #715426)
 
- -- Tianon Gravi <tianon@debian.org>  Mon, 30 Nov 2015 20:16:30 -0800
+ -- Tianon Gravi <tianon@debian.org>  Wed, 25 Nov 2015 09:07:15 -0800

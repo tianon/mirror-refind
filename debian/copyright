@@ -326,30 +326,6 @@ Copyright: 2010,2011 Canonical Ltd.
 License: UFL-1
 Comment: PNG bitmap derived from TrueType font
 
-Files: banners/*
-Copyright: 2015 Roderick W. Smith
-License: LGPLv3+ or Creative Commons Attribution-Share Alike 3.0 (CC-SA 3.0)
-
-Files: fonts/liberation*
-Copyright: 2010 Google & 2012 Red Hat
-License: SIL-1.10
-Comment: PNG bitmap derived from TrueType font;
-         liberation-mono-regular-14.png embedded in rEFInd binary
-
-Files: fonts/mkfont.sh
-Copyright: 2013 Roderick W. Smith
-License: GPL-3+
-
-Files: fonts/nimbus*
-Copyright: 1984, 1996, 2009 URW Studio
-License: GPL-2
-Comment: PNG bitmap derived from PostScript font
-
-Files: fonts/ubuntu*
-Copyright: 2010,2011 Canonical Ltd.
-License: UFL-1 (Ubuntu Font License)
-Comment: PNG bitmap derived from TrueType font
-
 Files: keys/altlinux.cer
 Copyright: 2013 Alt Linux
 License: Public-Domain
@@ -372,10 +348,7 @@ License: BSD-2-Clause
 Comment: The .cer file is taken from the Fedora RPM for shim 0.8. The
          .crt file was created from that by using openssl.
 
-Files: keys/microsoft-kekca-public.der
-       keys/microsoft-pca-public.der
-       keys/microsoft-uefica-public.crt
-       keys/microsoft-uefica-public.der
+Files: keys/microsoft-*
 Copyright: ??? ???
 License: ???
 

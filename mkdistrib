@@ -139,7 +139,19 @@ zip -9r ../refind-bin-gnuefi-$1.zip refind-bin-$1
 cd ..
 rm -r refind-$1
 
-# Prepare the RPM & Debian package files
+# Prepare NATIVE Debian package files
+tar xvfz refind-src-$1.tar.gz
+ln -s refind-src-$1.tar.gz refind_$1.orig.tar.gz
+cd refind-$1
+debuild -S -sa -rfakeroot -k'Rod Smith <rodsmith@rodsbooks.com>'
+debuild -sa -rfakeroot -k'Rod Smith <rodsmith@rodsbooks.com>'
+cd ..
+#rm refind_$1.orig.tar.gz
+#rm -r refind-$1
+
+exit
+
+# Prepare the RPM & alien-built Debian package files
 cp refind-src-$1.tar.gz ~/rpmbuild/SOURCES/
 rpmbuild -ba $StartDir/refind.spec
 mv ~/rpmbuild/RPMS/*/refind-$1* ./

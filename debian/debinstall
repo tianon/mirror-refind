@@ -8,6 +8,8 @@ if [[ $UNAMEARCH == "x86_64" ]] ; then
    EFIARCH=x64
 elif [[ $UNAMEARCH == "i686" || $UNAMEARCH == "i586" || $UNAMEARCH == "i486" || $UNAMEARCH == "i386" ]] ; then
    EFIARCH=ia32
+elif [[ $UNAMEARCH == "aarch64" ]] ; then
+   EFIARCH=aa64
 else
    EFIARCH=$UNAMEARCH
 fi

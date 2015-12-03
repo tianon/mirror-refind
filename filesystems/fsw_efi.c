@@ -557,7 +557,11 @@ fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno,
          // compiled with Tianocore. Further clue: Omitting "Status =" avoids the
          // hang but produces a failure to mount the filesystem, even when the same
          // change is made to later similar call. Calling Volume->DiskIo->ReadDisk()
-         // directly (without refit_call5_wrapper()) changes nothing. FIGURE THIS OUT!
+         // directly (without refit_call5_wrapper()) changes nothing. Placing Print()
+         // statements at the start and end of the function, and before and after the
+         // ReadDisk() call, suggests that when it fails, the program is executing
+         // code starting mid-function, so there seems to be something messed up in
+         // the way the function is being called. FIGURE THIS OUT!
          Status = refit_call5_wrapper(Volume->DiskIo->ReadDisk, Volume->DiskIo, Volume->MediaId,
                                       StartRead, (UINTN) CACHE_SIZE, (VOID*) Caches[ReadCache].Cache);
          if (!EFI_ERROR(Status)) {
