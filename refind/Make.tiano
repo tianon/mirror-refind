@@ -46,13 +46,13 @@ $(AR_TARGET): $(OBJS)
 
 $(DLL_TARGET)_$(FILENAME_CODE).dll: $(OBJS) ../libeg/libeg.lib ../EfiLib/EfiLib.lib ../mok/mok.lib
 	$(LD) -o $(DLL_TARGET)_$(FILENAME_CODE).dll $(TIANO_LDFLAGS) \
-	  --start-group $(ALL_EFILIBS) $(OBJS) ../libeg/libeg.lib \
-	  ../EfiLib/EfiLib.lib ../mok/mok.lib --end-group
+		  --start-group $(ALL_EFILIBS) $(OBJS) ../libeg/libeg.lib \
+		  ../EfiLib/EfiLib.lib ../mok/mok.lib --end-group
 
 $(BUILDME): $(DLL_TARGET)_$(FILENAME_CODE).dll
 	$(OBJCOPY) --strip-unneeded -R .eh_frame $(DLL_TARGET)_$(FILENAME_CODE).dll
 	$(GENFW) -e UEFI_APPLICATION -o $(BUILDME)_$(FILENAME_CODE).efi \
-	  $(DLL_TARGET)_$(FILENAME_CODE).dll
+		 $(DLL_TARGET)_$(FILENAME_CODE).dll
 
 clean:
 	make clean

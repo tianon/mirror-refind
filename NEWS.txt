@@ -6,6 +6,10 @@
   it; but it should make future extensions to additional platforms or
   building in different environments easier.
 
+- Added workaround to gptsync for issue with some Macs' EFIs that caused
+  the program to skip through all prompts accepting the default option.
+  This would normally cause gptsync to do nothing.
+
 - Added type code 53746F72-6167-11AA-AA11-00306543ECAC (Apple Core Storage,
   gdisk type AF05) to list of partition types recognized by gptsync.
 

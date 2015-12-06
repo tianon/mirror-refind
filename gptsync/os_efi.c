@@ -125,15 +125,13 @@ UINTN input_boolean(CHARN *prompt, BOOLEAN *bool_out)
 
     Print(prompt);
 
-    if (ReadAllKeyStrokes()) {  // remove buffered key strokes
-        refit_call1_wrapper(BS->Stall, 500000);      // 0.5 seconds delay
-        ReadAllKeyStrokes();    // empty the buffer again
-    }
-
-    refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &Index);
-    Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &Key);
-    if (EFI_ERROR(Status))
-        return 1;
+    ReadAllKeyStrokes(); // Remove buffered key strokes
+    do {
+        refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &Index);
+        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &Key);
+        if (EFI_ERROR(Status) && Status != EFI_NOT_READY)
+            return 1;
+    } while (Status == EFI_NOT_READY);
 
     if (Key.UnicodeChar == 'y' || Key.UnicodeChar == 'Y') {
         Print(L"Yes\n");

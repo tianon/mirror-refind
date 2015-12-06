@@ -113,8 +113,6 @@ FORMAT_DRIVER   = --target=efi-bsdrv-$(ARCH)
 #
 
 ifeq ($(ARCH),x86_64)
-#  CFLAGS += -DEFI_FUNCTION_WRAPPER
-#  GNUEFI_CFLAGS += -DEFIX64
   GNUEFI_LDFLAGS += -znocombreloc -zdefs
 
   ARCH_CFLAGS = -DEFIX64 -DEFI_FUNCTION_WRAPPER -m64 -mno-red-zone 
@@ -128,23 +126,14 @@ endif
   UC_ARCH = X64
   FILENAME_CODE = x64
   LD_CODE = elf_x86_64
-
-#   ifeq ($(HOSTARCH),ia32)
-#     ARCH3264 = -m64
-# 
-#     GNUEFILIB := $(GNUEFILIB)64
-#     EFILIB    := $(EFILIB)64
-#     EFICRT0   := $(EFICRT0)64
-#   endif
 endif
 
 ifeq ($(ARCH),ia32)
-#  GNUEFI_CFLAGS += -DEFI32 -malign-double
   GNUEFI_LDFLAGS += -znocombreloc -zdefs
 
+  # In practice, cross-compiling filesystem drivers works, but not the main
+  # rEFInd binary....
   ifeq ($(HOSTARCH),x86_64)
-#    ARCH3264 = -m32
-
     GNUEFILIB := $(GNUEFILIB)32
     EFILIB    := $(EFILIB)32
     EFICRT0   := $(EFICRT0)32
@@ -161,7 +150,6 @@ endif
 endif
 
 ifeq ($(ARCH), aarch64)
-#  CFLAGS += -fno-stack-check 
   GNUEFI_CFLAGS += -DEFIAARCH64
   FORMAT          = -O binary
   FORMAT_DRIVER   = -O binary
@@ -181,24 +169,12 @@ ifeq ($(ARCH), aarch64)
   LD_CODE = aarch64elf
 endif
 
-# ifneq (,$(findstring FreeBSD,$(OS)))
-#  ifeq ($(ARCH),x86_64)
-# 	LDSCRIPT = $(EFICRT0)/elf_$(ARCH)_fbsd_efi.lds
-#  else
-# 	LDSCRIPT = $(EFICRT0)/elf_$(ARCH)_efi.lds
-#  endif
-# else
-# 	LDSCRIPT = $(EFICRT0)/elf_$(ARCH)_efi.lds
-# endif
-
-#
-# general rules
-#
-
+# GNU-EFI compilation path uses .o files for compiled object code
 %.o: %.c
 	$(CC) $(CFLAGS) $(ARCH_CFLAGS) $(GNUEFI_CFLAGS) $(LOCAL_GNUEFI_CFLAGS) \
 	      -D__MAKEWITH_GNUEFI -DREFIND_VERSION=$(REFIND_VERSION) -c $< -o $@
 
+# TianoCore compilation path uses .obj files for compiled object code
 %.obj: %.c
 	$(CC) $(CFLAGS) $(ARCH_CFLAGS) $(TIANO_INCLUDE_DIRS) -DNO_BUILTIN_VA_FUNCS \
 	      -D__MAKEWITH_TIANO -DREFIND_VERSION=$(REFIND_VERSION) -c $< -o $@

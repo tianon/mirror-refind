@@ -13,8 +13,6 @@ SRCDIR = .
 VPATH = $(SRCDIR)
 HOSTARCH        = $(shell uname -m | sed s,i[3456789]86,ia32,)
 
-# Note: IA64 options are untested; taken from Debian's rEFIt package.
-
 LOCAL_GNUEFI_CFLAGS   = -DFSTYPE=$(DRIVERNAME) -I$(SRCDIR) 
 ifeq ($(HOSTARCH),x86_64)
   LOCAL_GNUEFI_CFLAGS += "-DEFIAPI=__attribute__((ms_abi))" 
