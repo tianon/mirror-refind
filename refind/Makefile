@@ -30,24 +30,27 @@ ifeq ($(ARCH),aarch64)
   TARGET = refind_aa64.efi
 endif
 
-LOCAL_CPPFLAGS  = -I$(SRCDIR) -I$(SRCDIR)/../include -I$(SRCDIR)/../libeg -I$(SRCDIR)/../mok
+LOCAL_GNUEFI_CFLAGS  = -I$(SRCDIR) -I$(SRCDIR)/../include -I$(SRCDIR)/../libeg -I$(SRCDIR)/../mok
 LOCAL_LDFLAGS   = -L$(SRCDIR)/../libeg/ -L$(SRCDIR)/../mok/ -L$(SRCDIR)/../EfiLib/
 LOCAL_LIBS      = -leg -lmok -lEfiLib
 
 OBJS            = main.o mystrings.o apple.o line_edit.o config.o menu.o screen.o icns.o gpt.o crc32.o lib.o driver_support.o legacy.o
 
-all: $(TARGET)
-
 include $(SRCDIR)/../Make.common
 
+all: $(TARGET)
+
 $(SHLIB_TARGET): $(OBJS)
-	$(LD) $(LOCAL_LDFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LOCAL_LIBS) $(LIBS)
+	$(LD) $(LOCAL_LDFLAGS) $(GNUEFI_LDFLAGS) $(SUBSYSTEM_LDFLAG) $(OBJS) -o $@ $(LOCAL_LIBS) $(GNUEFI_LIBS)
 
 $(TARGET): $(SHLIB_TARGET)
 	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel \
 	           -j .rela -j .rel.* -j .rela.* -j .rel* -j .rela* \
 		   -j .reloc $(FORMAT) $< $@
 	chmod a-x $(TARGET)
+
+clean:
+	rm -f $(TARGET) *~ *.so $(OBJS) *.efi *.obj refind_*.txt refind_*.dll *.lib
 
 # EOF
 # DO NOT DELETE

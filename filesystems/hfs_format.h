@@ -47,7 +47,7 @@
 #ifndef __HFS_FORMAT__
 #define __HFS_FORMAT__
 
-// #if !defined(HOST_EFI_EDK2) && !defined(HOST_POSIX)
+// #if !defined(__MAKEWITH_TIANO) && !defined(HOST_POSIX)
 // // Only available on Mac? and Intel EFI Toolkit?
 // #include <sys/types.h>
 // #include <sys/appleapiopts.h>

@@ -12,11 +12,12 @@ TARGET = tiano
 all:	$(TARGET)
 
 gnuefi:
-	+make -f Make.gnuefi gptsync.efi
+	+make -f Make.gnuefi
 
 tiano:
 	+make -f Make.tiano
 
+# TODO: Fix Make.unix; currently broken....
 unix:
 	+make -f Make.unix
 

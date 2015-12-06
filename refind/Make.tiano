@@ -10,7 +10,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-include ../Make.tiano
+include ../Make.common
 
 EFILIB          = $(EDK2BASE)/Build/Mde/$(TARGET)_$(TOOL_CHAIN_TAG)/$(UC_ARCH)/MdePkg/Library
 ALL_EFILIBS     = $(EFILIB)/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib/OUTPUT/BaseDebugPrintErrorLevelLib.lib \
@@ -30,19 +30,13 @@ ALL_EFILIBS     = $(EFILIB)/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevel
                   $(EFILIB)/DxeServicesTableLib/DxeServicesTableLib/OUTPUT/DxeServicesTableLib.lib \
                   $(EFILIB)/DxeHobLib/DxeHobLib/OUTPUT/DxeHobLib.lib \
                   $(EFILIB)/BasePeCoffLib/BasePeCoffLib/OUTPUT/BasePeCoffLib.lib
-#		  $(EFILIB)/BasePerformanceLibNull/BasePerformanceLibNull/OUTPUT/BasePerformanceLibNull.lib \
-#		  /usr/local/UDK2010/MyWorkSpace/Build/Mde/RELEASE_GCC46/X64/MdePkg/Library/SecPeiDxeTimerLibCpu/SecPeiDxeTimerLibCpu/OUTPUT/SecPeiDxeTimerLibCpu.lib \
-#		  /usr/local/UDK2010/MyWorkSpace/Build/MdeModule/RELEASE_GCC46/X64/MdeModulePkg/Core/Dxe/DxeMain/OUTPUT/DxeCore.lib \
-#		  /usr/local/UDK2010/MyWorkSpace/Build/Mde/RELEASE_GCC46/X64/MdePkg/Library/BaseCacheMaintenanceLib/BaseCacheMaintenanceLib/OUTPUT/BaseCacheMaintenanceLib.lib \
-#		  /usr/local/UDK2010/MyWorkSpace/Build/Mde/RELEASE_GCC46/X64/MdePkg/Library/BasePerformanceLibNull/BasePerformanceLibNull/OUTPUT/BasePerformanceLibNull.lib
-#                  $(EFILIB)/../../MdeModulePkg/Core/Dxe/DxeMain/OUTPUT/DxeCore.lib
-#		  /usr/local/UDK2010/MyWorkSpace/Build/MdeModule/RELEASE_GCC46/X64/MdeModulePkg/Core/Dxe/DxeMain/OUTPUT/DxeMain/DxeMain.obj
 
 ifeq ($(ARCH),aarch64)
   ALL_EFILIBS +=    $(EFILIB)/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckLib.lib
 endif
 
-SOURCE_NAMES     = apple config mystrings line_edit driver_support icns lib main menu screen gpt crc32 legacy AutoGen
+SOURCE_NAMES     = apple config mystrings line_edit driver_support icns \
+		   lib main menu screen gpt crc32 legacy AutoGen
 OBJS             = $(SOURCE_NAMES:=.obj)
 
 all: $(BUILDME)
@@ -51,11 +45,14 @@ $(AR_TARGET): $(OBJS)
 	$(AR) -cr $(AR_TARGET).lib $(OBJS)
 
 $(DLL_TARGET)_$(FILENAME_CODE).dll: $(OBJS) ../libeg/libeg.lib ../EfiLib/EfiLib.lib ../mok/mok.lib
-	$(LD) -o $(DLL_TARGET)_$(FILENAME_CODE).dll $(LDFLAGS) --start-group $(ALL_EFILIBS) $(OBJS) ../libeg/libeg.lib ../EfiLib/EfiLib.lib ../mok/mok.lib --end-group
+	$(LD) -o $(DLL_TARGET)_$(FILENAME_CODE).dll $(TIANO_LDFLAGS) \
+	  --start-group $(ALL_EFILIBS) $(OBJS) ../libeg/libeg.lib \
+	  ../EfiLib/EfiLib.lib ../mok/mok.lib --end-group
 
 $(BUILDME): $(DLL_TARGET)_$(FILENAME_CODE).dll
 	$(OBJCOPY) --strip-unneeded -R .eh_frame $(DLL_TARGET)_$(FILENAME_CODE).dll
-	$(GENFW) -e UEFI_APPLICATION -o $(BUILDME)_$(FILENAME_CODE).efi $(DLL_TARGET)_$(FILENAME_CODE).dll
+	$(GENFW) -e UEFI_APPLICATION -o $(BUILDME)_$(FILENAME_CODE).efi \
+	  $(DLL_TARGET)_$(FILENAME_CODE).dll
 
 clean:
 	make clean

@@ -1,6 +1,14 @@
 0.10.1 (??/??/201?):
 --------------------
 
+- Significantly reworked the project's Makefiles. This should have no
+  impact on ordinary users, and even most developers should barely notice
+  it; but it should make future extensions to additional platforms or
+  building in different environments easier.
+
+- Added type code 53746F72-6167-11AA-AA11-00306543ECAC (Apple Core Storage,
+  gdisk type AF05) to list of partition types recognized by gptsync.
+
 - Removed Luxi Sans Mono font, since I discovered it was not open source;
   and changed the default font from Nimbus Mono to Liberation Mono.
 

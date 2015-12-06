@@ -78,7 +78,7 @@ EFI_GUID gEfiFileSystemVolumeLabelInfoIdGuid = EFI_FILE_SYSTEM_VOLUME_LABEL_INFO
 /** Helper macro for stringification. */
 #define FSW_EFI_STRINGIFY(x) #x
 /** Expands to the EFI driver name given the file system type name. */
-#define FSW_EFI_DRIVER_NAME(t) L"rEFInd 0.9.1 " FSW_EFI_STRINGIFY(t) L" File System Driver"
+#define FSW_EFI_DRIVER_NAME(t) L"rEFInd 0.10.1 " FSW_EFI_STRINGIFY(t) L" File System Driver"
 
 // function prototypes
 
@@ -221,7 +221,7 @@ EFI_STATUS EFIAPI fsw_efi_main(IN EFI_HANDLE         ImageHandle,
 {
     EFI_STATUS  Status;
 
-#ifndef HOST_EFI_EDK2
+#ifndef __MAKEWITH_TIANO
     // Not available in EDK2 toolkit
     InitializeLib(ImageHandle, SystemTable);
 #endif

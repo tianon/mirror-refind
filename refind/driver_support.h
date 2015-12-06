@@ -19,7 +19,7 @@
 
 #ifdef __MAKEWITH_GNUEFI
 #include <efi.h>
-#include <efi/efilib.h>
+//#include <efi/efilib.h>
 #else
 #include "../include/tiano_includes.h"
 #endif

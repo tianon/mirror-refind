@@ -11,50 +11,29 @@
 SRCDIR = .
 
 VPATH = $(SRCDIR)
-
 HOSTARCH        = $(shell uname -m | sed s,i[3456789]86,ia32,)
-ARCH            ?= $(HOSTARCH)
 
 # Note: IA64 options are untested; taken from Debian's rEFIt package.
-ifeq ($(ARCH),ia64)
-  # EFI specs allows only lower floating point partition to be used
-  ARCH_C_CFLAGS  = -frename-registers -mfixed-range=f32-f127
-  # TODO: Add FILENAME_CODE as appropriate
-endif
 
-ifeq ($(ARCH),ia32)
-  LIBEG = build32
-  ARCH_C_FLAGS = -m32 
-  FILENAME_CODE = ia32
-  LD_CODE = elf_i386
+LOCAL_GNUEFI_CFLAGS   = -DFSTYPE=$(DRIVERNAME) -I$(SRCDIR) 
+ifeq ($(HOSTARCH),x86_64)
+  LOCAL_GNUEFI_CFLAGS += "-DEFIAPI=__attribute__((ms_abi))" 
 endif
-
-ifeq ($(ARCH),x86_64)
-  LIBEG = build64
-  ARCH_C_FLAGS = "-DEFIAPI=__attribute__((ms_abi))" -m64
-  FILENAME_CODE = x64
-  LD_CODE = elf_x86_64
-endif
-
-ifeq ($(ARCH),aarch64)
-  LIBEG = build64
-  ARCH_C_FLAGS = 
-  FILENAME_CODE = aa64
-  LD_CODE = elf_aarch64
-  FORMAT_DRIVER = -O binary
-endif
-
-LOCAL_CPPFLAGS   = -DFSTYPE=$(DRIVERNAME) $(ARCH_C_FLAGS) -I$(SRCDIR) -I$(SRCDIR)/../include -I$(SRCDIR)/../libeg
 
 OBJS            = fsw_core.o fsw_efi.o fsw_efi_lib.o fsw_lib.o fsw_$(DRIVERNAME).o
 TARGET          = $(DRIVERNAME)_$(FILENAME_CODE).efi
 
-all: $(TARGET)
-
 include $(SRCDIR)/../Make.common
 
+all: $(TARGET)
+
+ifeq ($(HOSTARCH),aarch64)
+  # Set symbol for driver
+  SUBSYSTEM_LDFLAG = -defsym=EFI_SUBSYSTEM=0xb
+endif
+
 $(SHLIB_TARGET): $(OBJS)
-	$(LD) $(LOCAL_LDFLAGS) $(DRV_LDFLAGS) $(OBJS) -o $@ $(LOCAL_LIBS) $(LIBS)
+	$(LD) $(GNUEFI_LDFLAGS) $(SUBSYSTEM_LDFLAG) $(OBJS) -o $@ $(LOCAL_LIBS) $(GNUEFI_LIBS)
 
 $(TARGET): $(SHLIB_TARGET)
 	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel \

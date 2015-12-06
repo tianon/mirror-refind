@@ -191,7 +191,7 @@ static BOOLEAN VerifyGoOn(VOID) {
    BOOLEAN GoOn = TRUE;
    UINTN invalid;
 
-   if (MyStriCmp(L"Apple", ST->FirmwareVendor)) {
+   if (!MyStriCmp(L"Apple", ST->FirmwareVendor)) {
       Print(L"Your firmware is made by %s.\n", ST->FirmwareVendor);
       Print(L"Ordinarily, a hybrid MBR (which this program creates) should be used ONLY on\n");
       Print(L"Apple Macs that dual-boot with Windows or some other BIOS-mode OS. Are you\n");

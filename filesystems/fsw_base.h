@@ -40,11 +40,7 @@
 #ifndef _FSW_BASE_H_
 #define _FSW_BASE_H_
 
-#ifdef HOST_EFI_EDK2
-#define HOST_EFI
-#endif
-
-#ifdef HOST_EFI
+#ifdef __MAKEWITH_TIANO
 #include "fsw_efi_base.h"
 #endif
 

@@ -5,69 +5,80 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-CXXFLAGS=-O2 -fpic -D_REENTRANT -D_GNU_SOURCE -Wall -g
-NAMES=refind
-SRCS=$(NAMES:=.c)
-OBJS=$(NAMES:=.o)
-HEADERS=$(NAMES:=.h)
 LOADER_DIR=refind
 FS_DIR=filesystems
 LIBEG_DIR=libeg
 MOK_DIR=mok
 GPTSYNC_DIR=gptsync
 EFILIB_DIR=EfiLib
+export EDK2BASE=/usr/local/UDK2014/MyWorkSpace
+export REFIND_VERSION='L"0.10.0.10"'
 
-export EDK2BASE        = /usr/local/UDK2014/MyWorkSpace
-export GENFW           = $(EDK2BASE)/BaseTools/Source/C/bin/GenFw
-export prefix          = /usr/bin/
-ifeq ($(ARCH),aarch64)
-  export CC            = $(prefix)aarch64-linux-gnu-gcc
-  export AS            = $(prefix)aarch64-linux-gnu-as
-  export LD            = $(prefix)aarch64-linux-gnu-ld
-  export AR            = $(prefix)aarch64-linux-gnu-ar
-  export RANLIB        = $(prefix)aarch64-linux-gnu-ranlib
-  export OBJCOPY       = $(prefix)aarch64-linux-gnu-objcopy
+# The "all" target builds with the TianoCore library if possible, but falls
+# back on the more easily-installed GNU-EFI library if TianoCore isn't
+# installed at $(EDK2BASE)
+all:
+ifneq ($(wildcard $(EDK2BASE)/*),)
+	@echo "Found $(EDK2BASE); building with TianoCore"
+	+make tiano
 else
-  export CC            = $(prefix)gcc
-  export AS            = $(prefix)as
-  export LD            = $(prefix)ld
-  export AR            = $(prefix)ar
-  export RANLIB        = $(prefix)ranlib
-  export OBJCOPY       = $(prefix)objcopy
+	@echo "Did not find $(EDK2BASE); building with GNU-EFI"
+	+make gnuefi
 endif
 
-# Build rEFInd, including libeg
-all:	tiano
+# The "fs" target, like "all," attempts to build with TianoCore but falls
+# back to GNU-EFI.
+fs:
+ifneq ($(wildcard $(EDK2BASE)/*),)
+	@echo "Found $(EDK2BASE); building with TianoCore"
+	+make fs_tiano
+else
+	@echo "Did not find $(EDK2BASE); building with GNU-EFI"
+	+make fs_gnuefi
+endif
+
+# Likewise for GPTsync....
+GPTsync:
+ifneq ($(wildcard $(EDK2BASE)/*),)
+	@echo "Found $(EDK2BASE); building with TianoCore"
+	+make gptsync_tiano
+else
+	@echo "Did not find $(EDK2BASE); building with GNU-EFI"
+	+make gptsync_gnuefi
+endif
+
+# Don't build gptsync under TianoCore by default because it errors out when
+# using a cross-compiler on an x86-64 system. Because gptsync is pretty
+# useless on ARM64, skipping it is no big deal....
+tiano:
+	+make MAKEWITH=TIANO AR_TARGET=EfiLib -C $(EFILIB_DIR) -f Make.tiano
+	+make MAKEWITH=TIANO AR_TARGET=libeg -C $(LIBEG_DIR) -f Make.tiano
+	+make MAKEWITH=TIANO AR_TARGET=mok -C $(MOK_DIR) -f Make.tiano
+	+make MAKEWITH=TIANO BUILDME=refind DLL_TARGET=refind -C $(LOADER_DIR) -f Make.tiano
+ifneq ($(ARCH),aarch64)
+	+make MAKEWITH=TIANO -C $(GPTSYNC_DIR) -f Make.tiano
+endif
+#	+make MAKEWITH=TIANO -C $(FS_DIR)
 
 gnuefi:
-	+make -C $(LIBEG_DIR)
-	+make -C $(MOK_DIR)
-	+make -C $(EFILIB_DIR)
-	+make -C $(LOADER_DIR)
-	+make -C $(GPTSYNC_DIR) gnuefi
-#	+make -C $(FS_DIR) all_gnuefi
+	+make MAKEWITH=GNUEFI -C $(LIBEG_DIR)
+	+make MAKEWITH=GNUEFI -C $(MOK_DIR)
+	+make MAKEWITH=GNUEFI -C $(EFILIB_DIR)
+	+make MAKEWITH=GNUEFI -C $(LOADER_DIR)
+	+make MAKEWITH=GNUEFI -C $(GPTSYNC_DIR) gnuefi
+#	+make MAKEWITH=GNUEFI -C $(FS_DIR) all_gnuefi
 
-fs:
-	+make -C $(FS_DIR)
+fs_tiano:
+	+make MAKEWITH=TIANO -C $(FS_DIR)
 
 fs_gnuefi:
-	+make -C $(FS_DIR) all_gnuefi
+	+make MAKEWITH=GNUEFI -C $(FS_DIR) all_gnuefi
 
-tiano:
-	+make AR_TARGET=EfiLib -C $(EFILIB_DIR) -f Make.tiano
-	+make AR_TARGET=libeg -C $(LIBEG_DIR) -f Make.tiano
-	+make AR_TARGET=mok -C $(MOK_DIR) -f Make.tiano
-	+make BUILDME=refind DLL_TARGET=refind -C $(LOADER_DIR) -f Make.tiano
-ifneq ($(ARCH),aarch64)
-	+make -C $(GPTSYNC_DIR) -f Make.tiano
-endif
-#	+make -C $(FS_DIR)
-
-gptsync:
-	+make -C $(GPTSYNC_DIR) -f Make.tiano
+gptsync_tiano:
+	+make MAKEWITH=TIANO -C $(GPTSYNC_DIR) -f Make.tiano
 
 gptsync_gnuefi:
-	+make -C $(GPTSYNC_DIR) gnuefi
+	+make MAKEWITH=GNUEFI -C $(GPTSYNC_DIR) gnuefi
 
 clean:
 	make -C $(LIBEG_DIR) clean

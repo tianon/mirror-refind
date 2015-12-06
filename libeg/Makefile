@@ -12,7 +12,7 @@ SRCDIR = .
 
 VPATH = $(SRCDIR)
 
-LOCAL_CPPFLAGS  = -I$(SRCDIR) -I$(SRCDIR)/../include
+LOCAL_GNUEFI_CFLAGS  = -I$(SRCDIR) -I$(SRCDIR)/../include
 
 OBJS            = screen.o image.o text.o load_bmp.o load_icns.o lodepng.o lodepng_xtra.o
 TARGET          = libeg.a
@@ -20,5 +20,8 @@ TARGET          = libeg.a
 all: $(TARGET)
 
 include $(SRCDIR)/../Make.common
+
+clean:
+	rm -f $(TARGET) *~ *.so $(OBJS) *.efi *.obj refind_*.txt refind_*.dll *.lib
 
 # EOF

@@ -16,7 +16,7 @@ License: GPL-3+
 Files: */Make*
 Copyright: 2012-2015 Roderick W. Smith
 License: GPL-3+
-Comment: Except for gptsync/Make* and net/Makefile; see below
+Comment: Except for gptsync/Make.unix and net/Makefile; see below
 
 Files: */AutoGen.[ch]
 Copyright: 2004-2011 Intel Corporation
@@ -138,6 +138,7 @@ License: Apple-BSD
  POSSIBILITY OF SUCH DAMAGE.
 
 Files: gptsync/*
+       gptsync/Make.unix
 Copyright: 2006 Christoph Pfisterer
 License: BSD-2-clause
 

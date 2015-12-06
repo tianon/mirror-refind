@@ -11,7 +11,7 @@ SRCDIR = .
 
 VPATH = $(SRCDIR)
 
-LOCAL_CPPFLAGS  = -I$(SRCDIR) -I$(SRCDIR)/../include
+LOCAL_GNUEFI_CFLAGS  = -I$(SRCDIR) -I$(SRCDIR)/../include
 
 OBJS            = gnuefi-helper.o legacy.o BdsHelper.o BdsTianoCore.o
 TARGET          = libEfiLib.a
