@@ -65,8 +65,7 @@ OPTIMFLAGS      = -Os -fno-strict-aliasing
 CFLAGS          = $(OPTIMFLAGS) -fno-stack-protector -fshort-wchar -Wall
 
 # ...for GNU-EFI....
-GNUEFI_CFLAGS   = -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -I../include -I../refind -I../libeg -I../mok
-#GNUEFI_CFLAGS   = -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -I. -I./../include -I./../libeg -I./../mok -I../include -I../refind -I../libeg
+GNUEFI_CFLAGS   = -fpic -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -I../include -I../refind -I../libeg -I../mok
 
 # ...and for TianoCore....
 TIANO_INCLUDE_DIRS = -I $(EDK2BASE)/MdePkg \
@@ -98,15 +97,12 @@ TIANO_LDSCRIPT   = $(EDK2BASE)/BaseTools/Scripts/gcc4.4-ld-script
 TIANO_LDFLAGS   = -nostdlib -n -q --gc-sections --script=$(EDK2BASE)/BaseTools/Scripts/gcc4.4-ld-script \
                   --entry $(ENTRYPOINT) -u $(ENTRYPOINT) -m $(LD_CODE)
 
-
-
 #
 # objcopy flags for GNU-EFI
 #
 
 FORMAT          = --target=efi-app-$(ARCH)
 FORMAT_DRIVER   = --target=efi-bsdrv-$(ARCH)
-
 
 #
 # Modifications on a per-architecture basis....
@@ -118,9 +114,6 @@ ifeq ($(ARCH),x86_64)
   ARCH_CFLAGS = -DEFIX64 -DEFI_FUNCTION_WRAPPER -m64 -mno-red-zone 
 ifeq ($(MAKEWITH),TIANO)
   ARCH_CFLAGS += -mcmodel=large "-DEFIAPI=__attribute__((ms_abi))" 
-endif
-ifeq ($(MAKEWITH),GNUEFI)
-  ARCH_CFLAGS += -fpic
 endif
   ARCHDIR = X64
   UC_ARCH = X64
@@ -140,9 +133,6 @@ ifeq ($(ARCH),ia32)
   endif
 
   ARCH_CFLAGS = -m32 -DEFI32 -malign-double
-ifeq ($(MAKEWITH),GNUEFI)
-  ARCH_CFLAGS += -fpic
-endif
   ARCHDIR = Ia32
   UC_ARCH = IA32
   FILENAME_CODE = ia32

@@ -21,10 +21,6 @@ TEXTFILES = $(FILESYSTEMS:=*.txt)
 
 all:	$(FILESYSTEMS)
 
-xfs:
-	rm -f fsw_efi.obj
-	+make DRIVERNAME=xfs -f Make.tiano
-
 ext2:
 	rm -f fsw_efi.obj
 	+make DRIVERNAME=ext2 -f Make.tiano
@@ -58,10 +54,6 @@ ntfs:
 gnuefi: $(FILESYSTEMS_GNUEFI)
 
 all_gnuefi:	$(FILESYSTEMS_GNUEFI)
-
-xfs_gnuefi:
-	rm -f fsw_efi.o
-	+make DRIVERNAME=xfs -f Make.gnuefi
 
 ext2_gnuefi:
 	rm -f fsw_efi.o

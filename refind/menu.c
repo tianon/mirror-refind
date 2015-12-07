@@ -970,17 +970,15 @@ static VOID DrawMainMenuEntry(REFIT_MENU_ENTRY *Entry, BOOLEAN selected, UINTN X
 {
    EG_IMAGE *Background;
 
-   if (SelectionImages != NULL) {
-      if (selected) {
-         Background = egCropImage(GlobalConfig.ScreenBackground, XPos, YPos,
+   if (selected) {
+      Background = egCropImage(GlobalConfig.ScreenBackground, XPos, YPos,
+                               SelectionImages[Entry->Row]->Width, SelectionImages[Entry->Row]->Height);
+      egComposeImage(Background, SelectionImages[Entry->Row], 0, 0);
+      BltImageCompositeBadge(Background, Entry->Image, Entry->BadgeImage, XPos, YPos);
+   } else { // Image not selected; copy background
+      egDrawImageWithTransparency(Entry->Image, Entry->BadgeImage, XPos, YPos,
                                   SelectionImages[Entry->Row]->Width, SelectionImages[Entry->Row]->Height);
-         egComposeImage(Background, SelectionImages[Entry->Row], 0, 0);
-         BltImageCompositeBadge(Background, Entry->Image, Entry->BadgeImage, XPos, YPos);
-      } else { // Image not selected; copy background
-         egDrawImageWithTransparency(Entry->Image, Entry->BadgeImage, XPos, YPos,
-                                     SelectionImages[Entry->Row]->Width, SelectionImages[Entry->Row]->Height);
-      } // if/else
-   } // if
+   } // if/else
 } // VOID DrawMainMenuEntry()
 
 static VOID PaintAll(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, UINTN *itemPosX,

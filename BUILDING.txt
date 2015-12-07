@@ -11,7 +11,10 @@ To compile rEFInd, you'll need the following:
   normally run Linux, you can run it in a VirtualBox or similar virtual
   machine. (I describe some unsupported non-Linux build options shortly.)
 
-* A standard set of Linux development tools, based on GCC.
+* A standard set of Linux development tools, based on GCC. (I've tried
+  using clang 3.4 under Ubuntu, with partial success. The main rEFInd
+  binary, gptsync, and some drivers compile successfully; but only gptsync
+  runs normally. The drivers I've tried and the main rEFInd binary crash.)
 
 * One of the following:
 

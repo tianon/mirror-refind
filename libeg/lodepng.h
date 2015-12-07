@@ -46,7 +46,6 @@ int MyStrlen(const char *InString);
 #else
 #include "../include/tiano_includes.h"
 #endif
-#define memcpy(a, b, c) CopyMem(a, b, c)
 
 #ifdef __cplusplus
 #include <vector>

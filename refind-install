@@ -40,7 +40,8 @@
 # Revision history:
 #
 # 0.10.1  -- Improve extraction of default kernel options from /proc/cmdline.
-#            Add support for AMD64 (aka AARCH64, aa64) platform.
+#            Add support for AMD64 (aka AARCH64, aa64) platform. Added
+#            warning when --alldrivers used without --usedefault.
 # 0.10.0  -- Enable running under OS X's recovery system & add warning about
 #            SIP & brief instructions on how to deal with it if SIP is
 #            detected to be enabled. Also change way refind_linux.conf default
@@ -180,6 +181,17 @@ GetParams() {
    if [[ "$KeepName" == 1 && "$TargetDir" == "/EFI/BOOT" ]] ; then
       echo "The --keepname option is incompatible with --usedefault! Aborting!"
       exit 1
+   fi
+   if [[ "$InstallDrivers" == "all" && "$TargetDir" != "/EFI/BOOT" ]] ; then
+      echo "The --alldrivers option is meant for creating USB flash drives with (near-)"
+      echo "universal boot support. Using it on a hard disk partition runs the risk of"
+      echo "creating serious problems, up to and including rendering your computer"
+      echo -n "unbootable. Are you SURE you want to proceed (Y/N)? "
+      ReadYesNo
+      if [[ "$YesNo" != "Y" && "$YesNo" != "y" ]] ; then
+         echo "Aborting installation!"
+         exit 0
+      fi
    fi
    RLConfFile="$RootDir/boot/refind_linux.conf"
    EtcKeysDir="$RootDir/etc/refind.d/keys"
