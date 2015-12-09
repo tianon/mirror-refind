@@ -1000,12 +1000,12 @@ GenerateKeys() {
 # Sign a single binary. Requires parameters:
 #   $1 = source file
 #   $2 = destination file
-# Also assumes that the SBSign, PESign, UseSBSign, UsePESign, and various key variables are set
-# appropriately.
+# Also assumes that the SBSign and various key variables are set appropriately.
 # Aborts script on error
 SignOneBinary() {
-   $SBSign --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1"
-   if [[ $? != 0 ]] ; then
+   $SBSign --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1" 2>&1 >/dev/null | \
+           grep -v "data remaining.*gaps between PE/COFF sections"
+   if [[ "${PIPESTATUS[0]}" != 0 ]] ; then
       echo "Problem signing the binary $1! Aborting!"
       exit 1
    fi
