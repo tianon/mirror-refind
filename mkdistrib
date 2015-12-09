@@ -30,6 +30,12 @@ KeysInfo=`df $KeysDir 2> /dev/null | grep $KeysDir`
 StartDir=`pwd`
 SBSign=`which sbsign 2> /dev/null`
 
+ShowUsage() {
+   echo "Usage:"
+   echo "$0 [--nosign] [--norpm] [--nodebian] [--nozip] version"
+   exit
+}
+
 GetParams() {
    while [[ $# -gt 0 ]]; do
       echo "$1"
@@ -42,14 +48,15 @@ GetParams() {
               ;;
          --nozip) MakeZip=0
               ;;
-         --help) echo "Usage:"
-                 echo "$0 [--nosign] [--norpm] [--nodebian] [--nozip] version"
-                 exit
+         --help) ShowUsage $0
               ;;
          * ) Version=$1
       esac
       shift
    done
+   if [[ -z "$Version" ]] ; then
+      ShowUsage $0
+   fi
 } # GetParams()
 
 # Copy rEFInd source files to refind-$Version inside $TargetDir directory
@@ -64,7 +71,7 @@ MakeTarball() {
     cp --preserve=timestamps -r icons/svg/* $TargetDir/refind-$Version/icons/svg/
     cp -a debian docs images keys fonts banners include EfiLib libeg mok net refind filesystems \
         gptsync refind.spec refind-install mkrlconf mvrefind mountesp CREDITS.txt NEWS.txt BUILDING.txt \
-        COPYING.txt LICENSE.txt README.txt refind.inf Make.tiano Make.common Make.aarch64 Makefile \
+        COPYING.txt LICENSE.txt README.txt refind.inf Make.common Makefile \
         refind.conf-sample $TargetDir/refind-$Version
 
     # Go there and prepare a souce code tarball....

@@ -3,9 +3,9 @@
 # refind.inf file to build rEFInd using the EDK2/UDK2010/UDK2014 development
 # kit.
 #
-# Copyright (c) 2012-2014 by Roderick W. Smith
-# Released under the terms of the GPLv3, a copy of which should come
-# with this file.
+# Copyright (c) 2012-2015 by Roderick W. Smith
+# Released under the terms of the GPLv3 (or, at your discretion, any later
+# version), a copy of which should come with this file.
 #
 ##
 

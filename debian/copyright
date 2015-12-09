@@ -39,6 +39,15 @@ Files: mvrefind
 Copyright: 2013-2015 Roderick W. Smith
 License: GPL-3+
 
+Files: refind.conf-sample
+Copyright: 2006-2010 Christoph Pfisterer
+           2012-2015 Roderick W. Smith
+License: BSD-3-clause
+
+Files: refind.inf
+Copyright: 2012-2015 Roderick W. Smith
+License: GPL-3+
+
 Files: refind/*
        libeg/image.c
        libeg/screen.c
@@ -63,6 +72,8 @@ License: unrestricted-crc32
  without restriction.
 
 Files: refind/driver_support.[ch]
+       libeg/efiConsoleControl.h
+       libeg/efiUgaDraw.h
 Copyright: 2006-2011 Intel Corporation
 License: BSD-2-clause
 
@@ -74,6 +85,10 @@ License: LGPL-2.1+
 Files: EfiLib/*
 Copyright: 2004-2014 Intel Corp.
 License: BSD-2-clause
+
+Files: EfiLib/Make*
+Copyright: 2012-2015 Roderick W. Smith
+License: GPL-3+
 
 Files: libeg/lodepng.[ch]
 Copyright: 2005-2015 Lode Vandevenne
@@ -95,6 +110,20 @@ License: BSD-2-clause
 Files: include/syslinux_mbr.h
 Copyright: 2003-2004 H. Peter Anvin
 License: Expat
+
+Files: include/egemb_*
+Copyright: 2012-2015 Roderick W. Smith
+License: LGPL-3+ or CC-BY-SA-3.0
+Comment: Header-file transformations of files from "images" directory.
+
+Files: include/refit_call_wrapper.h
+Copyright: 2006 Christoph Pfisterer
+           2012 Roderick W. Smith
+License: BSD-3-clause
+
+Files: include/tiano_includes.h
+Copyright: 2012 Roderick W. Smith
+License: GPL-3+
 
 Files: include/RemovableMedia.h
 Copyright: 2005 Apple Computer, Inc.
@@ -139,19 +168,27 @@ License: Apple-BSD
 
 Files: gptsync/*
        gptsync/Make.unix
-Copyright: 2006 Christoph Pfisterer
-License: BSD-2-clause
+Copyright: 2006-2007 Christoph Pfisterer
+License: BSD-3-clause
 
 Files: gptsync/gptsync.c
 Copyright: 2006 Christoph Pfisterer
            2013 Roderick W. Smith
-License: BSD-2-clause
+License: BSD-3-clause
 
-Files: filesystems/fsw_core.[ch]
+Files: gptsync/gptsync.8
+Copyright: 2006 Christoph Pfisterer & Junichi Uekawa
+License: BSD-3-clause
+
+Files: filesystems/fsw_base.h
+       filesystems/fsw_core.[ch]
        filesystems/fsw_efi.[ch]
        filesystems/fsw_efi_lib.c
        filesystems/fsw_efi_base.h
        filesystems/fsw_lib.c
+       filesystems/fsw_strfunc.h
+       filesystems/mk_fsw_strfunc.py
+       filesystems/design.dox
 Copyright: 2006 Christoph Pfisterer
 License: BSD-3-clause
 
@@ -204,6 +241,7 @@ Copyright: 2013 Tencent, Inc. (Samuel Liao)
 License: GPL-3+
 
 Files: filesystems/fsw_hfs.[ch]
+       filesystems/fsw_format.h
 Copyright: 2010 Oracle Corporation
 License: GPL-2
 
@@ -211,6 +249,24 @@ Files: filesystems/fsw_iso9660.[ch]
 Copyright: 2006 Christoph Pfisterer
            2010 Oracle Corporation
 License: BSD-3-clause and GPL-2
+
+Files: filesystems/lzoconf.h
+Copyright: 1996-2011 Markus Franz Xaver Johannes Oberhumer
+License: GPL-2+
+
+Files: filesystems/edk2/ComponentName.h
+       filesystems/edk2/DriverBinding.h
+Copyright: 2004-2011 Intel Corporation
+License: BSD-2-clause
+
+Files: filesystems/test/*
+Copyright: 2006 Christoph Pfisterer
+License: BSD-3-clause
+
+Files: filesystems/test/lslr.c
+Copyright: 2006 Christoph Pfisterer
+           2012 Stefan Agner
+License: BSD-3-clause
 
 Files: net/*
 Copyright: 2009 Michael Brown
@@ -228,7 +284,6 @@ Files: icons/arrow_left.png
        icons/os_centos.png
        icons/os_chakra.png
        icons/os_chrome.png
-       icons/os_clover.png
        icons/os_crunchbang.png
        icons/os_fedora.png
        icons/os_frugalware.png
@@ -258,8 +313,8 @@ Files: icons/arrow_left.png
        icons/vol_optical.png
 Copyright: 2013 by Alessandro Roncone (aka alecive on DeviantArt)
 License: CC-BY-SA-3.0
-Note: tool_windows_rescue is combination of os_win8.png with
-      tool_rescue.png.
+Comment: tool_windows_rescue is combination of os_win8.png with
+         tool_rescue.png.
 
 Files: icons/boot_win.png
        icons/func_csr_rotate.png
@@ -277,11 +332,10 @@ Files: icons/boot_win.png
        icons/tool_apple_rescue.png
        icons/tool_memtest.png
        icons/tool_rescue.png
-       icons/tool_windows_rescue.png
        icons/transparent.png
+       icons/README
 Copyright: 2015 by Roderick W. Smith
 License: LGPL-3+ or CC-BY-SA-3.0
-Comment: tool_windows_rescue is combination of os_win8.png with tool_rescue.png.
 
 Files: icons/os_debian.png
 Copyright: 1999 by Debian Project
@@ -307,11 +361,28 @@ Files: banners/*
 Copyright: 2015 Roderick W. Smith
 License: LGPL-3+ or CC-BY-SA-3.0
 
+Files: images/arrow_left.png
+       images/arrow_right.png
+       images/back-selected-big.png
+       images/back-selected-small.png
+       images/refind-banner*
+Copyright: 2015 Roderick W. Smith
+License: LGPL-3+ or CC-BY-SA-3.0
+Comment: Some of these are incorporated into the rEFInd binary via header
+         files in the "include" directory.
+
+Files: images/*.py
+       images/txt.pl
+Copyright: 2006-2010 Christoph Pfisterer
+License: BSD-3-clause
+
 Files: fonts/liberation*
+       libeg/egemb_font.h
 Copyright: 2010 Google & 2012 Red Hat
 License: OFL-1.1
-Comment: PNG bitmap derived from TrueType font;
-         liberation-mono-regular-14.png embedded in rEFInd binary
+Comment: PNG bitmaps derived from TrueType font;
+         liberation-mono-regular-14.png embedded in rEFInd binary via the
+	 libeg/egemb_font.h file
 
 Files: fonts/mkfont.sh
 Copyright: 2013 Roderick W. Smith
