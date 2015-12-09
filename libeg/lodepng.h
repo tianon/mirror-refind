@@ -46,6 +46,10 @@ int MyStrlen(const char *InString);
 #else
 #include "../include/tiano_includes.h"
 #endif
+VOID *MyMemSet(VOID *s, int c, size_t n);
+VOID *MyMemCpy(void *__restrict __dest, const void *__restrict __src, size_t __n);
+#define memset(s, c, n) MyMemSet(s, c, n)
+#define memcpy(d, s, n) MyMemCpy(d, s, n)
 
 #ifdef __cplusplus
 #include <vector>

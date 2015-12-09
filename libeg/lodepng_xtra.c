@@ -85,12 +85,12 @@ int MyStrlen(const char *InString) {
    return Length;
 } // int MyStrlen()
 
-VOID *memset (VOID *s, int c, size_t n) {
+VOID *MyMemSet(VOID *s, int c, size_t n) {
     SetMem(s, c, n);
     return s;
 }
 
-VOID *memcpy (void *__restrict __dest, const void *__restrict __src, size_t __n) {
+VOID *MyMemCpy(void *__restrict __dest, const void *__restrict __src, size_t __n) {
     CopyMem(__dest, __src, __n);
     return __dest;
 }
