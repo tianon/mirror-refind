@@ -1177,16 +1177,22 @@ INTN TimeComp(IN EFI_TIME *Time1, IN EFI_TIME *Time2) {
     return 0;
 } // INTN TimeComp()
 
-// Adds a loader list element, keeping it sorted by date. Returns the new
-// first element (the one with the most recent date).
+// Adds a loader list element, keeping it sorted by date. EXCEPTION: Fedora's rescue
+// kernel, which begins with "vmlinuz-0-rescue," should not be at the top of the list,
+// since that will make it the default if kernel folding is enabled, so float it to
+// the end.
+// Returns the new first element (the one with the most recent date).
 static struct LOADER_LIST * AddLoaderListEntry(struct LOADER_LIST *LoaderList, struct LOADER_LIST *NewEntry) {
     struct LOADER_LIST *LatestEntry, *CurrentEntry, *PrevEntry = NULL;
+    BOOLEAN LinuxRescue = FALSE;
 
     LatestEntry = CurrentEntry = LoaderList;
     if (LoaderList == NULL) {
         LatestEntry = NewEntry;
     } else {
-        while ((CurrentEntry != NULL) && (TimeComp(&(NewEntry->TimeStamp), &(CurrentEntry->TimeStamp)) < 0)) {
+        if (StriSubCmp(L"vmlinuz-0-rescue", NewEntry->FileName))
+            LinuxRescue = TRUE;
+        while ((CurrentEntry != NULL) && (LinuxRescue || (TimeComp(&(NewEntry->TimeStamp), &(CurrentEntry->TimeStamp)) < 0))) {
             PrevEntry = CurrentEntry;
             CurrentEntry = CurrentEntry->NextEntry;
         } // while

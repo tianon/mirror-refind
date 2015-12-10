@@ -1,14 +1,22 @@
 0.10.1 (??/??/201?):
 --------------------
 
+- Modified time-based sorting of loaders in a single directory to push
+  anything starting with "vmlinuz-0-rescue" to the end of the list. Fedora
+  gives its rescue kernels filenames that begin with that string, and if
+  such a kernel happens to be the most recent, treating it normally will
+  cause it to become the default when kernel folding is in use. This is
+  almost certainly undesirable, so this change keeps the rescue kernel at
+  the end of the list instead, which is saner.
+
 - Significantly reworked the project's Makefiles. This should have no
   impact on ordinary users, and even most developers should barely notice
   it; but it should make future extensions to additional platforms or
   building in different environments easier.
 
 - Added workaround to gptsync for issue with some Macs' EFIs that caused
-  the program to skip through all prompts accepting the default option.
-  This would normally cause gptsync to do nothing.
+  the program to skip through all prompts, thus accepting the default
+  option. This would normally cause gptsync to do nothing.
 
 - Added type code 53746F72-6167-11AA-AA11-00306543ECAC (Apple Core Storage,
   gdisk type AF05) to list of partition types recognized by gptsync.
