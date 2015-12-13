@@ -42,15 +42,15 @@ install_to_esp() {
     # their own local keys.
     if [[ $IsSecureBoot == "1" && -n $ShimFile ]] ; then
         if [[ -n $SBSign && -n $OpenSSL ]] ; then
-            ./refind-install --shim $ShimFile --localkeys --yes
+            ./refind-install --shim $ShimFile --localkeys --yes > /dev/null
         else
-            ./refind-install --shim $ShimFile --yes
+            ./refind-install --shim $ShimFile --yes > /dev/null
         fi
     else
         if [[ -n $SBSign && -n $OpenSSL ]] ; then
-            ./refind-install --localkeys --yes
+            ./refind-install --localkeys --yes > /dev/null
         else
-            ./refind-install --yes
+            ./refind-install --yes > /dev/null
         fi
     fi
 } # install_to_esp()
@@ -94,3 +94,5 @@ case "$1" in
         exit 0
     ;;
 esac
+
+#DEBHELPER#

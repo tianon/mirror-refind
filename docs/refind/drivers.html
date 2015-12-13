@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-11/8/2015, referencing rEFInd 0.10.0</p>
+12/12/2015, referencing rEFInd 0.10.1</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -348,6 +348,8 @@ controller card.</p>
 <a name="notes">
 <h2>Notes on Specific Drivers</h2>
 </a>
+
+<p class="sidebar"><b>Warning:</b> When compiled with GNU-EFI, rEFInd's drivers hang when run on my 32-bit Mac Mini. The TianoCore-compiled versions are fine, and the GNU-EFI-built binaries are fine on a 32-bit VirtualBox. The 64-bit GNU-EFI-built versions are fine on a MacBook Pro. Thus, the problem is very limited in scope. The problem can be quite serious if you run into it, though, since you must bypass rEFInd to boot the computer. In debugging the problem, I found that a key funtion was being entered mid-function, which suggests either an EFI bug or a problem with the compiler or related tools. In any event, the solution is simple: Use driver binaries built with TianoCore if you have a 32-bit Mac.</p>
 
 <p>I've tested several of the drivers described on this page on a handful
 of systems. The Pfisterer ext2fs driver (from any source) works on both

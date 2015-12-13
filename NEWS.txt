@@ -1,5 +1,9 @@
-0.10.1 (??/??/201?):
+0.10.1 (12/12/2015):
 --------------------
+
+- Change to PPA version: Installing the PPA now queries the user about
+  whether to install to the ESP. Upgrades will remember the initial
+  selection.
 
 - Modified time-based sorting of loaders in a single directory to push
   anything starting with "vmlinuz-0-rescue" to the end of the list. Fedora

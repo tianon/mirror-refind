@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-11/8/2015, referencing rEFInd 0.10.0</p>
+12/12/2015, referencing rEFInd 0.10.1</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -241,6 +241,8 @@ such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
 <li>Beginning with version 0.10.0, the ability to spoof the booting of OS X when booting non-Apple OSes. This changes the way a Mac's EFI initializes hardware, which can get secondary video chipsets working on some Macs. This feature is controlled via the <tt>spoof_osx_version</tt> token in <tt>refind.conf</tt>.</li>
 
 <li>Beginning with version 0.10.0, the ability to adjust Apple System Integrity Protection (SIP; aka "rootless" or "CSR") settings. These settings control what features are off-limits even to <tt>root</tt> in OS X 10.11 (El Capitan) and later. To use this feature, you must set specific CSR values on <tt>refind.conf</tt>'s <tt>csr_values</tt> line <i>and</i> add <tt>csr_rotate</tt> to the <tt>showtools</tt> line.</li>
+
+<li>Beginning with version 0.10.1, support for ARM64 (aka AARCH64 or AA64) CPUs. Such systems that boot using UEFI are quite rare, at least in December of 2015.</li>
 
 </ul>
 

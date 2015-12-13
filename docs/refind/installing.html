@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-11/8/2015, referencing rEFInd 0.10.0</p>
+12/12/2015, referencing rEFInd 0.10.1</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -227,7 +227,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 $ <tt class="userinput">sudo apt-get update</tt>
 $ <tt class="userinput">sudo apt-get install refind</tt></pre></pre>
 
-<p>The PPA version will update automatically with your other software, which you might or might not want to have happen. It's also built with GNU-EFI rather than with TianoCore. This last detail <i>should</i> have no practical effects, but it might be important if you've got a buggy EFI or if there's some undiscovered rEFInd bug that interacts with the build environment.</p>
+<p class="sidebar"><b>Warning:</b> I know of one bug with the version of rEFInd built with GNU-EFI: On my 32-bit Mac Mini, the filesystem drivers hang when launched. This can render the system unbootable until you bypass rEFInd. This bug does <i>not</i> manifest when running the same binaries under a 32-bit VirtualBox, and I've never run into it on any 64-bit system (including a 64-bit MacBook Air). Debugging suggests that a function is being entered mid-function, which implies a bug in the EFI or in the development tools. In any event, the bottom line is to not use the PPA on a 32-bit Mac.</p>
+
+<p>The PPA version asks if you want to install rEFInd to your ESP. (Chances are you want to respond affirmatively.) The PPA version will update automatically with your other software, which you might or might not want to have happen. It's also built with GNU-EFI rather than with TianoCore. This last detail <i>should</i> have no practical effects, but it might be important if you've got a buggy EFI or if there's some undiscovered rEFInd bug that interacts with the build environment.</p>
 
 <p>Since version 0.6.3, the installation script makes an attempt to install rEFInd in a bootable way even if you run the script from a BIOS-mode boot, and therefore the RPM and Debian packages do the same. I cannot guarantee that this will work, though, and even if it does, some of the tricks that <tt>refind-install</tt> uses might not persist for long. You might therefore want to use <tt><a href="#mvrefind">mvrefind</a></tt> to move your rEFInd installation to another name after you boot Linux for the first time from rEFInd.</p>
 
@@ -278,12 +280,6 @@ Copied rEFInd binary files
 Copying sample configuration file as refind.conf; edit this file to configure
 rEFInd.
 
-
-WARNING: If you have an Advanced Format disk, *DO NOT* attempt to check the
-bless status with 'bless --info', since this is known to cause disk corruption
-on some systems!!
-
-
 Installation has completed successfully.
 
 Unmounting install dir</pre>
@@ -324,9 +320,9 @@ Filesystem     1K-blocks  Used Available Use% Mounted on
 
 <li>Type <tt><b>cd /boot/efi/EFI/refind</b></tt> to change into rEFInd's new directory on the ESP.</li>
 
-<li>Type <tt><b>rm refind_ia32.efi</b></tt> to remove the IA32 binary if you're using an <i>x</i>86-64 (64-bit) system; or type <tt><b>rm refind_x64.efi</b></tt> to remove the <i>x</i>86-64 binary if you're using an <i>x</i>86 (32-bit) system. (Note that you must keep the version that's the correct bit width for your EFI; if you've installed a 32-bit Linux on a 64-bit PC with a 64-bit EFI, you'd keep <tt>refind_x64.efi</tt>.</li>
+<li>You may optionally remove the rEFInd binaries for the CPU types you're not using. For instance, you might type <tt class="userinput">rm refind_ia32.efi refind_aa64.efi</tt> to remove the IA32 and AARCH64 binaries if you're using an <i>x</i>86-64 (AMD64, X64) system.</li>
 
-<li>Optionally, type <tt class="userinput">rm -r drivers_ia32</tt> to remove the <i>x</i>86 drivers from an <i>x</i>86-64 system, or <tt class="userinput">rm -r drivers_x64</tt> to remove the <i>x</i>86-64 drivers from a 32-bit <i>x</i>86 system. You may also want to remove some or all of the drivers for the architecture you are using. If you don't need them, they'll slow down the start process, and worse, loading unnecessary drivers can cause some systems to hang or interfere with the drivers you do need. See the <a href="drivers.html">page on drivers</a> for more on this topic.</li>
+<li>Similarly, you may optionally remove the drivers subdirectories for the CPU types you're not using. For instance, you could type <tt class="userinput">rm -r drivers_ia32 drivers_aa64</tt> to remove the <i>x</i>86 and ARM64 drivers from an <i>x</i>86-64 system. You may also want to remove some or all of the drivers for the architecture you are using. If you don't need them, they'll slow down the start process, and worse, loading unnecessary drivers can cause some systems to hang or interfere with the drivers you do need. See the <a href="drivers.html">page on drivers</a> for more on this topic.</li>
 
 <li>Rename the configuration file by typing <tt><b>mv refind.conf-sample refind.conf</b></tt>. Consult the <a href="configfile.html">Editing the rEFInd Configuration File</a> page for information on how to adjust your options.</li>
 
@@ -393,20 +389,22 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
     /Volumes/ESP/efi/refind/</tt></b> in your Terminal window after
     changing into the rEFInd package's main directory.</li>
 
-<li>Remove the file for the version of rEFInd you're not using, as in
-    <b><tt>sudo rm Volumes/esp/efi/refind/refind_ia32.efi</tt></b> on a Mac
-    with a 64-bit EFI or <b><tt>sudo rm
-    /Volumes/ESP/efi/refind/refind_x64.efi</tt></b> on a Mac with a 32-bit
-    EFI.</li>
+<li>Remove the files for the versions of rEFInd you're not using, as in <tt
+    class="userinput">sudo rm Volumes/esp/efi/refind/refind_ia32.efi
+    Volumes/esp/efi/refind/refind_aa64.efi</tt> on a Mac with a 64-bit EFI or
+    <tt class="userinput">sudo rm /Volumes/ESP/efi/refind/refind_x64.efi
+    Volumes/esp/efi/refind/refind_aa64.efi</tt> on a Mac with a 32-bit EFI.</li>
 
-<li>Optionally, remove the drivers directory for the architecture you're
-    not using&mdash;<tt>/Volumes/ESP/efi/refind/drivers_ia32</tt> or
-    <tt>/Volumes/ESP/efi/refind/drivers_x64</tt>, as appropriate. You may
-    also want to remove some or all of the drivers for the architecture you
-    are using; if you don't need them, they'll slow down the start process.
-    See the <a href="drivers.html">page on drivers</a> for more on this
-    topic. Note that Apple's firmware includes its own HFS+ driver, so the
-    HFS+ driver provided with rEFInd is useless on Macs.</li>
+<li>Optionally, remove the drivers directories for the architectures you're not
+    using&mdash;<tt>/Volumes/ESP/efi/refind/drivers_ia32</tt> or
+    <tt>/Volumes/ESP/efi/refind/drivers_x64</tt>, as appropriate. (No Mac uses
+    an ARM CPU, so you'd also remove
+    <tt>/Volumes/ESP/efi/refind/drivers_aa64</tt> You may also want to remove
+    some or all of the drivers for the architecture you are using; if you don't
+    need them, they'll slow down the start process. See the <a
+    href="drivers.html">page on drivers</a> for more on this topic. Note that
+    Apple's firmware includes its own HFS+ driver, so the HFS+ driver provided
+    with rEFInd is useless on Macs.</li>
 
 <li>If this is your first installation, type <b><tt>sudo mv
     /Volumes/ESP/efi/refind/refind.conf-sample
@@ -473,7 +471,7 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <li>Type <b><tt>cd EFI\refind</tt></b> to change into the <tt>refind</tt> subdirectory</li>
 
-<li>You may want to selectively delete some of the drivers in the <tt>drivers_x64</tt> or <tt>drivers_ia32</tt> directory, depending on your architecture and needs. Unnecessary drivers will slow the rEFInd start process, and can even cause the drivers you need to not work or cause a system crash. See the <a href="drivers.html">page on drivers</a> for more on this topic.</li>
+<li>You may want to selectively delete some of the drivers in the <tt>drivers_x64</tt>, <tt>drivers_ia32</tt>, or <tt>drivers_aa64</tt> directory, depending on your architecture and needs. Unnecessary drivers will slow the rEFInd start process, and can even cause the drivers you need to not work or cause a system crash. See the <a href="drivers.html">page on drivers</a> for more on this topic.</li>
 
 <li>Type <b><tt>rename refind.conf-sample refind.conf</tt></b> to rename rEFInd's configuration file.</li>
 
@@ -548,8 +546,8 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <li>Change to the directory in which rEFInd's files exist.</li>
 
-<li>Type <tt class="userinput">cp refind_x64.efi fs0:\EFI\refind</tt> to
-    copy the rEFInd binary file. (Adjust the name if you're using a 32-bit
+<li>Type <tt class="userinput">cp refind_x64.efi fs0:\EFI\refind</tt> to copy
+    the rEFInd binary file. (Adjust the name if you're using an IA32 or AARCH64
     computer.)</li>
 
 <li>Type <tt class="userinput">cp refind.conf-sample
@@ -560,9 +558,9 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
     rEFInd's icons.</li>
 
 <li>Optionally, type <tt class="userinput">cp -r drivers_x64
-    fs0:\EFI\refind\</tt> to copy rEFInd's 64-bit drivers. (You could
-    instead copy the 32-bit drivers or limit yourself to just the drivers
-    you need, of course.)</li>
+    fs0:\EFI\refind\</tt> to copy rEFInd's X64 drivers. (You could instead copy
+    the IA32 or AARCH64 drivers or limit yourself to just the drivers you need,
+    of course.)</li>
 
 <li>Type <tt class="userinput">fs0:</tt>, if necessary, to change to the
     ESP.</li>
@@ -741,7 +739,11 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
     install the update to the ESP; you might need to manually re-run the
     installation script. Consult your distribution's documentation for
     details. My Ubuntu PPA will automatically run <tt>refind-install</tt> after
-    the package is installed.</li>
+    the package is installed <i>if</i> you selected the option to install
+    to the ESP; if you opted to skip this step, my PPA version will
+    continue to do so at every update, leaving you to manually update the
+    copy on the ESP. (You can change this behavior by typing <tt
+    class="userinput">sudo dpkg-reconfigure refind</tt>.)</li>
 
 </ul>
 

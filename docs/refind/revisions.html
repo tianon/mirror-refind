@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 11/8/2015</p>
+<p>Last Web page update: 12/12/2015</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,38 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.10.1 (12/12/2015)</b>&mdash;This version of the program features one big change that will affect very few people, another big behind-the-scenes change, and a number of small changes that will affect more people:
+
+  <ul>
+
+  <li>rEFInd now compiles and runs on ARM64 (aka AARCH64 or AA64) systems. To date, I've tested it only using QEMU, so this support is <i>very</i> preliminary, almost to the point of being theoretical.</li>
+
+  <li>I've made significant changes to the <tt>Makefiles</tt> used to compile rEFInd. This should have no effect on the way rEFInd functions, or even in how most programming tasks are done; but the changes should help simplify some future changes.</li>
+
+  <li>I've made font changes: I've removed Luxi Sans Mono and changed the default font from Nimbus Mono to Liberation Mono.</li>
+
+  <li>A bug that causes rEFInd to fail to detect boot loaders on removable media when rEFInd itself was launched from the fallback filename is now history.</li>
+
+  <li>Fedora, Red Hat, and CentOS use a special recovery kernel with a name beginning <tt>vmlinuz-0-rescue</tt>. This kernel could be newer than others, which would make it the default on in a "folded" set of kernels&mdash;a highly undesirable situation. I've therefore modified rEFInd's loader-sorting algorithm to move this rescue kernel to the end of the list, no matter what its time stamp reads.</li>
+
+  <li>I've added a workaround to <tt>gptsync</tt> to fix problems that caused it to skip through its menus using the defaults without taking user input on some Macs. I've also added 53746F72-6167-11AA-AA11-00306543ECAC (Apple Core Storage, <tt>gdisk</tt> type AF05) to the list of partition types that <tt>gptsync</tt> recognizes.</li>
+
+  <li>The <tt>refind-install</tt> script can now be run as a symbolic link in Linux, which means it can be run as a normal command.</li>
+
+  <li>I've fixed bugs in <tt>refind-install</tt> and in <tt>mkrlconf</tt> that could cause them to misidentify kernel options. See <tt>NEWS.txt</tt> for details.</li>
+
+  <li>I've moved the detailed description of <tt>refind-install</tt> from <a href="installing.html">Installing rEFInd</a> to <a href="refind-install.html">a man page,</a> and I've created HTML versions of the three man pages that the project now includes.</li>
+
+  <li>I've added <tt>kernel*</tt> as a pattern for matching Linux kernels, since Gentoo Linux names its kernels by this pattern.</li>
+
+  <li>I've updated <a href="http://lodev.org/lodepng/">LodePNG,</a> which is the PNG graphics library that rEFInd uses, to version 20151024.</li>
+
+  <li>The rEFInd PPA now asks for confirmation before installing to the ESP when the package is first installed. Updates follow the instructions given on first installation. You can modify this setting by typing <tt class="userinput">dpkg-reconfigure refind</tt>.</li>
+
+  </ul>
+
+</li>
 
 <li><b>0.10.0 (11/8/2015)</b>&mdash;I've given this version an extra-large version number bump because of some highly user-visible changes, especially for Mac users. Changes include:
 
