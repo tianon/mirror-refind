@@ -26,6 +26,12 @@ The files in this directory are, in alphabetical order:
 - canonical-uefi-ca.crt & canonical-uefi-ca.der -- Canonical's public key,
   matched to the one used to sign Ubuntu boot loaders and kernels.
 
+- centos.crt & centos.cer -- Public keys used to sign CentOS binaries, taken
+  from shim-signed-0.9-2.el7.src.rpm. Note that the binary's centos.crt file
+  was actually in .cer format, and has been renamed appropriately. The
+  centos.crt file included here is transformed from the original file by
+  openssl. Tested booting CentOS 7.
+
 - fedora-ca.cer & fedora-ca.crt -- Fedora's public key, matched to the one
   used used to sign Fedora's shim 0.8 binary.
 
