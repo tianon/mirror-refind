@@ -2216,6 +2216,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     LoadDrivers();
     ScanVolumes(); // Do before ReadConfig() because it needs SelfVolume->VolName
     ReadConfig(GlobalConfig.ConfigFilename);
+    SetVolumeIcons();
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')
         SetAppleOSInfo();

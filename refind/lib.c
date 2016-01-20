@@ -998,9 +998,6 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
    // open the root directory of the volume
    Volume->RootDir = LibOpenRoot(Volume->DeviceHandle);
 
-   // Set volume icon based on .VolumeBadge icon or disk kind
-   SetVolumeBadgeIcon(Volume);
-
    Volume->VolName = GetVolumeName(Volume);
 
    if (Volume->RootDir == NULL) {
@@ -1015,10 +1012,6 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
       }
    } // if/else
 
-   // get custom volume icons if present
-   if (!Volume->VolIconImage) {
-      Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-   }
 } // ScanVolume()
 
 static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_INFO *MbrEntry)
@@ -1211,6 +1204,23 @@ VOID ScanVolumes(VOID)
         }
     } // for
 } /* VOID ScanVolumes() */
+
+VOID SetVolumeIcons(VOID) {
+    UINTN        VolumeIndex;
+    REFIT_VOLUME *Volume;
+
+    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+        Volume = Volumes[VolumeIndex];
+        // Set volume icon based on .VolumeBadge icon or disk kind
+        SetVolumeBadgeIcon(Volume);
+        if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL) {
+            // get custom volume icons if present
+            if (!Volume->VolIconImage) {
+                Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+            }
+        }
+    } // for
+} // VOID SetVolumeIcons()
 
 //
 // file and dir functions

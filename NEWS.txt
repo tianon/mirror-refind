@@ -1,5 +1,9 @@
-0.10.2 (?/??/201?):
+0.10.2 (?/??/2016):
 -------------------
+
+- Fixed bug that caused custom volume badges (vol_????.png) to be read only
+  from default location ("icons" subdirectory), effectively eliminating the
+  ability to adjust them.
 
 - Added centos.crt and centos.cer public key files.
 

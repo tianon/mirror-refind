@@ -103,6 +103,7 @@ VOID FreeList(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount);
 
 VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume);
 VOID ScanVolumes(VOID);
+VOID SetVolumeIcons(VOID);
 
 BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath);
 
