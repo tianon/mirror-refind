@@ -798,7 +798,7 @@ ENDOFHERE
 } # SetupMacHfs()
 
 CheckForSIP() {
-   if [[ -x "/usr/bin/csrutil" ]] ; then
+   if [[ -x "/usr/bin/csrutil" && -z "$TargetPart" ]] ; then
       local OKToInstall=`/usr/bin/csrutil status | \
                          grep "Protection status: disabled\|enabled (Apple Internal)\|NVRAM Protections: disabled"`
       if [[ -z "$OKToInstall" ]] ; then
@@ -851,7 +851,7 @@ CheckForSIP() {
 # Sets Problems=1 if problems found during the installation.
 InstallOnOSX() {
    echo "Installing rEFInd on OS X...."
-   if [[ "$InstallToEspOnMac" == "1" ]] ; then
+   if [[ "$InstallToEspOnMac" == "1" && -z "$TargetPart" ]] ; then
       MountOSXESP
    elif [[ "$TargetDir" == "/EFI/BOOT" || "$OwnHfs" == '1' ]] ; then
       MountDefaultTarget
@@ -863,7 +863,7 @@ InstallOnOSX() {
    CheckForSIP
    CopyRefindFiles
    cp "$ThisDir/mountesp" /usr/local/bin &> /dev/null
-   if [[ $InstallToEspOnMac == "1" ]] ; then
+   if [[ $InstallToEspOnMac == "1" && -z "$TargetPart" ]] ; then
       bless --mount "$InstallDir" --setBoot --file "$InstallDir/$TargetDir/$Refind" --shortform
    elif [[ "$TargetDir" != "/EFI/BOOT" ]] ; then
       bless --setBoot --folder "$InstallDir/$TargetDir" --file "$InstallDir/$TargetDir/$Refind"
@@ -896,11 +896,11 @@ InstallOnOSX() {
 # If we're NOT in Secure Boot mode but the user HAS specified the --shim
 # or --localkeys option, warn the user and offer to abort.
 CheckSecureBoot() {
-   local IsSecureBoot
-   if [[ -f /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data ]] ; then
+   IsSecureBoot="0"
+   if [[ -f /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c ]] ; then
+      IsSecureBoot=`od -An -t u1 /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c | awk '{print substr($0,length,1)}'`
+   elif [[ -f /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data ]] ; then
       IsSecureBoot=`od -An -t u1 /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data | tr -d '[[:space:]]'`
-   else
-      IsSecureBoot="0"
    fi
    if [[ $IsSecureBoot == "1" && "$TargetDir" != '/EFI/BOOT' && "$ShimSource" == "none" ]] ; then
       echo ""
