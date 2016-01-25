@@ -1,7 +1,16 @@
 0.10.2 (?/??/2016):
 -------------------
 
-- Fixed bug that caused custom volume badges (vol_????.png) to be read only
+- Worked around bug/quirk in some EFIs (in HP ProBook 6470b laptop, at
+  least) that prevented EFI filesystem drivers from working. (Drivers would
+  load but not provide access to filesystems.)
+
+- Fixed refind-install bug that caused --usedefault option to not work in OS
+  X. (This bug did not affect Linux.)
+
+- Improved Secure Boot detection in refind-install in Linux.
+
+- Fixed bug that caused custom volume badges (vol_*.png) to be read only
   from default location ("icons" subdirectory), effectively eliminating the
   ability to adjust them.
 

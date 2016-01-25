@@ -5,11 +5,11 @@ Source: http://www.rodsbooks.com/refind
 
 Files: *
 Copyright: 2006 Christoph Pfisterer
-           2012 Roderick W. Smith
+           2012-2016 Roderick W. Smith
 License: BSD-3-clause and GPL-3+
 
 Files: debian/*
-Copyright: 2014 Roderick W. Smith
+Copyright: 2014-2016 Roderick W. Smith
            2015 Tianon Gravi
 License: GPL-3+
 
@@ -52,7 +52,7 @@ Files: refind/*
        libeg/image.c
        libeg/screen.c
 Copyright: 2006-2010 Christoph Pfisterer
-           2012-2015 Roderick W. Smith
+           2012-2016 Roderick W. Smith
 License: BSD-3-clause and GPL-3+
 
 Files: refind/icns.c
@@ -72,7 +72,12 @@ License: unrestricted-crc32
  without restriction.
 
 Files: refind/driver_support.[ch]
-       libeg/efiConsoleControl.h
+Copyright: 2006-2011 Intel Corporation
+           2006-2010 Christoph Pfisterer
+           2012-2016 Roderick W. Smith
+License: BSD-2-clause and BSD-3-clause and GPL-3+
+
+Files: libeg/efiConsoleControl.h
        libeg/efiUgaDraw.h
 Copyright: 2006-2011 Intel Corporation
 License: BSD-2-clause

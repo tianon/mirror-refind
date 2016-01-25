@@ -158,6 +158,13 @@
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi"
 
+// Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
+// L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive
+// comparison when it should do a case-insensitive comparison, so I'm doubling this up. It does
+// no harm on other computers, AFAIK. In theory, every case variation should be done for
+// completeness, but that's ridiculous....
+#define LOADER_MATCH_PATTERNS   L"*.efi,*.EFI"
+
 // Definitions for the "hideui" option in refind.conf
 #define HIDEUI_FLAG_NONE       (0x0000)
 #define HIDEUI_FLAG_BANNER     (0x0001)
@@ -340,6 +347,12 @@ EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
                              OUT UINTN *ErrorInStep,
                              IN BOOLEAN Verbose,
                              IN BOOLEAN IsDriver);
+EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
+                         IN CHAR16 *LoadOptions, IN UINTN LoaderType,
+                         IN CHAR16 *ImageTitle, IN CHAR8 OSType,
+                         OUT UINTN *ErrorInStep,
+                         IN BOOLEAN Verbose,
+                         IN BOOLEAN IsDriver);
 LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry);
 REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry);
 VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN GenerateReturn);

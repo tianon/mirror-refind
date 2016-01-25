@@ -98,7 +98,6 @@
 #define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi"
 #define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
 #define MEMTEST_NAMES           L"memtest86.efi,memtest86_x64.efi,memtest86x64.efi,bootx64.efi"
-#define DRIVER_DIRS             L"drivers,drivers_x64"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
 #define EFI_STUB_ARCH           0x8664
@@ -109,7 +108,6 @@ EFI_GUID gFreedesktopRootGuid = { 0x4f68bce3, 0xe8cd, 0x4db1, { 0x96, 0xe7, 0xfb
 #define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_ia32.efi"
 #define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
 #define MEMTEST_NAMES           L"memtest86.efi,memtest86_ia32.efi,memtest86ia32.efi,bootia32.efi"
-#define DRIVER_DIRS             L"drivers,drivers_ia32"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #define FALLBACK_BASENAME       L"bootia32.efi"
 #define EFI_STUB_ARCH           0x014c
@@ -120,7 +118,6 @@ EFI_GUID gFreedesktopRootGuid = { 0x44479540, 0xf297, 0x41b2, { 0x9a, 0xf7, 0xd1
 #define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_aa64.efi"
 #define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
 #define MEMTEST_NAMES           L"memtest86.efi,memtest86_aa64.efi,memtest86aa64.efi,bootaa64.efi"
-#define DRIVER_DIRS             L"drivers,drivers_aa64"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootaa64.efi"
 #define FALLBACK_BASENAME       L"bootaa64.efi"
 #define EFI_STUB_ARCH           0xaa64
@@ -141,13 +138,6 @@ EFI_GUID gFreedesktopRootGuid = { 0x69dad710, 0x2ce4, 0x4e3c, { 0xb1, 0x6c, 0x21
 
 #define IPXE_DISCOVER_NAME      L"\\efi\\tools\\ipxe_discover.efi"
 #define IPXE_NAME               L"\\efi\\tools\\ipxe.efi"
-
-// Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
-// L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive
-// comparison when it should do a case-insensitive comparison, so I'm doubling this up. It does
-// no harm on other computers, AFAIK. In theory, every case variation should be done for
-// completeness, but that's ridiculous....
-#define LOADER_MATCH_PATTERNS   L"*.efi,*.EFI"
 
 // Patterns that identify Linux kernels. Added to the loader match pattern when the
 // scan_all_linux_kernels option is set in the configuration file. Causes kernels WITHOUT
@@ -420,6 +410,8 @@ EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
         if (ErrorInStep != NULL)
             *ErrorInStep = 3;
     }
+    if (IsDriver)
+        ConnectFilesystemDriver(ChildImageHandle);
 
     // re-open file handles
     ReinitRefitLib();
@@ -434,13 +426,12 @@ bailout:
     return ReturnStatus;
 } /* EFI_STATUS StartEFIImageList() */
 
-static EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
-                                IN CHAR16 *LoadOptions, IN UINTN LoaderType,
-                                IN CHAR16 *ImageTitle, IN CHAR8 OSType,
-                                OUT UINTN *ErrorInStep,
-                                IN BOOLEAN Verbose,
-                                IN BOOLEAN IsDriver
-                               )
+EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
+                         IN CHAR16 *LoadOptions, IN UINTN LoaderType,
+                         IN CHAR16 *ImageTitle, IN CHAR8 OSType,
+                         OUT UINTN *ErrorInStep,
+                         IN BOOLEAN Verbose,
+                         IN BOOLEAN IsDriver)
 {
     EFI_DEVICE_PATH *DevicePaths[2];
 
@@ -1703,149 +1694,6 @@ static LOADER_ENTRY * AddToolEntry(EFI_HANDLE DeviceHandle, IN CHAR16 *LoaderPat
     return Entry;
 } /* static LOADER_ENTRY * AddToolEntry() */
 
-//
-// pre-boot driver functions
-//
-
-static UINTN ScanDriverDir(IN CHAR16 *Path)
-{
-    EFI_STATUS              Status;
-    REFIT_DIR_ITER          DirIter;
-    UINTN                   NumFound = 0;
-    EFI_FILE_INFO           *DirEntry;
-    CHAR16                  FileName[256];
-
-    CleanUpPathNameSlashes(Path);
-    // look through contents of the directory
-    DirIterOpen(SelfRootDir, Path, &DirIter);
-    while (DirIterNext(&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
-        if (DirEntry->FileName[0] == '.')
-            continue;   // skip this
-
-        SPrint(FileName, 255, L"%s\\%s", Path, DirEntry->FileName);
-        NumFound++;
-        Status = StartEFIImage(FileDevicePath(SelfLoadedImage->DeviceHandle, FileName),
-                               L"", TYPE_EFI, DirEntry->FileName, 0, NULL, FALSE, TRUE);
-    }
-    Status = DirIterClose(&DirIter);
-    if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
-        SPrint(FileName, 255, L"while scanning the %s directory", Path);
-        CheckError(Status, FileName);
-    }
-    return (NumFound);
-}
-
-#ifdef __MAKEWITH_GNUEFI
-static EFI_STATUS ConnectAllDriversToAllControllers(VOID)
-{
-    EFI_STATUS           Status;
-    UINTN                AllHandleCount;
-    EFI_HANDLE           *AllHandleBuffer;
-    UINTN                Index;
-    UINTN                HandleCount;
-    EFI_HANDLE           *HandleBuffer;
-    UINT32               *HandleType;
-    UINTN                HandleIndex;
-    BOOLEAN              Parent;
-    BOOLEAN              Device;
-
-    Status = LibLocateHandle(AllHandles,
-                             NULL,
-                             NULL,
-                             &AllHandleCount,
-                             &AllHandleBuffer);
-    if (EFI_ERROR(Status))
-        return Status;
-
-    for (Index = 0; Index < AllHandleCount; Index++) {
-        //
-        // Scan the handle database
-        //
-        Status = LibScanHandleDatabase(NULL,
-                                       NULL,
-                                       AllHandleBuffer[Index],
-                                       NULL,
-                                       &HandleCount,
-                                       &HandleBuffer,
-                                       &HandleType);
-        if (EFI_ERROR (Status))
-            goto Done;
-
-        Device = TRUE;
-        if (HandleType[Index] & EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE)
-            Device = FALSE;
-        if (HandleType[Index] & EFI_HANDLE_TYPE_IMAGE_HANDLE)
-            Device = FALSE;
-
-        if (Device) {
-            Parent = FALSE;
-            for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
-                if (HandleType[HandleIndex] & EFI_HANDLE_TYPE_PARENT_HANDLE)
-                    Parent = TRUE;
-            } // for
-
-            if (!Parent) {
-                if (HandleType[Index] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
-                   Status = refit_call4_wrapper(BS->ConnectController,
-                                                AllHandleBuffer[Index],
-                                                NULL,
-                                                NULL,
-                                                TRUE);
-                }
-            }
-        }
-
-        MyFreePool (HandleBuffer);
-        MyFreePool (HandleType);
-    }
-
-Done:
-    MyFreePool (AllHandleBuffer);
-    return Status;
-} /* EFI_STATUS ConnectAllDriversToAllControllers() */
-#else
-static EFI_STATUS ConnectAllDriversToAllControllers(VOID) {
-    BdsLibConnectAllDriversToAllControllers();
-    return 0;
-}
-#endif
-
-// Load all EFI drivers from rEFInd's "drivers" subdirectory and from the
-// directories specified by the user in the "scan_driver_dirs" configuration
-// file line.
-static VOID LoadDrivers(VOID)
-{
-    CHAR16        *Directory, *SelfDirectory;
-    UINTN         i = 0, Length, NumFound = 0;
-
-    // load drivers from the subdirectories of rEFInd's home directory specified
-    // in the DRIVER_DIRS constant.
-    while ((Directory = FindCommaDelimited(DRIVER_DIRS, i++)) != NULL) {
-       SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
-       CleanUpPathNameSlashes(SelfDirectory);
-       MergeStrings(&SelfDirectory, Directory, L'\\');
-       NumFound += ScanDriverDir(SelfDirectory);
-       MyFreePool(Directory);
-       MyFreePool(SelfDirectory);
-    }
-
-    // Scan additional user-specified driver directories....
-    i = 0;
-    while ((Directory = FindCommaDelimited(GlobalConfig.DriverDirs, i++)) != NULL) {
-       CleanUpPathNameSlashes(Directory);
-       Length = StrLen(Directory);
-       if (Length > 0) {
-          NumFound += ScanDriverDir(Directory);
-       } // if
-       MyFreePool(Directory);
-    } // while
-
-    // connect all devices
-    if (NumFound > 0) {
-       ConnectAllDriversToAllControllers();
-    }
-} /* static VOID LoadDrivers() */
-
 // Locates boot loaders. NOTE: This assumes that GlobalConfig.LegacyType is set correctly.
 static VOID ScanForBootloaders(VOID) {
     UINTN    i;
@@ -2100,6 +1948,7 @@ static VOID RescanAll(BOOLEAN DisplayMessage) {
     ConnectAllDriversToAllControllers();
     ScanVolumes();
     ReadConfig(GlobalConfig.ConfigFilename);
+    SetVolumeIcons();
     ScanForBootloaders();
     ScanForTools();
     SetupScreen();

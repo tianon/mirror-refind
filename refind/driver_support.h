@@ -17,30 +17,15 @@
  *
  */
 
+#ifndef _DRIVER_SUPPORT
+#define _DRIVER_SUPPORT
+
 #ifdef __MAKEWITH_GNUEFI
 #include <efi.h>
-//#include <efi/efilib.h>
 #else
 #include "../include/tiano_includes.h"
 #endif
 #include "global.h"
-
-#ifndef _DRIVER_SUPPORT
-#define _DRIVER_SUPPORT
-
-// Below is from http://git.etherboot.org/?p=mirror/efi/shell/.git;a=commitdiff;h=b1b0c63423cac54dc964c2930e04aebb46a946ec;
-// Seems to have been replaced by ParseHandleDatabaseByRelationshipWithType(), but the latter isn't working for me....
-EFI_STATUS
-LibScanHandleDatabase (
-  EFI_HANDLE  DriverBindingHandle, OPTIONAL
-  UINT32      *DriverBindingHandleIndex, OPTIONAL
-  EFI_HANDLE  ControllerHandle, OPTIONAL
-  UINT32      *ControllerHandleIndex, OPTIONAL
-  UINTN       *HandleCount,
-  EFI_HANDLE  **HandleBuffer,
-  UINT32      **HandleType
-  );
-
 
 #define EFI_HANDLE_TYPE_UNKNOWN                     0x000
 #define EFI_HANDLE_TYPE_IMAGE_HANDLE                0x001
@@ -54,5 +39,21 @@ LibScanHandleDatabase (
 #define EFI_HANDLE_TYPE_PARENT_HANDLE               0x100
 #define EFI_HANDLE_TYPE_CONTROLLER_HANDLE           0x200
 #define EFI_HANDLE_TYPE_CHILD_HANDLE                0x400
+
+// Below is from http://git.etherboot.org/?p=mirror/efi/shell/.git;a=commitdiff;h=b1b0c63423cac54dc964c2930e04aebb46a946ec;
+// Seems to have been replaced by ParseHandleDatabaseByRelationshipWithType(), but the latter isn't working for me....
+EFI_STATUS
+LibScanHandleDatabase (
+  EFI_HANDLE  DriverBindingHandle, OPTIONAL
+  UINT32      *DriverBindingHandleIndex, OPTIONAL
+  EFI_HANDLE  ControllerHandle, OPTIONAL
+  UINT32      *ControllerHandleIndex, OPTIONAL
+  UINTN       *HandleCount,
+  EFI_HANDLE  **HandleBuffer,
+  UINT32      **HandleType
+  );
+EFI_STATUS ConnectAllDriversToAllControllers(VOID);
+VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle);
+VOID LoadDrivers(VOID);
 
 #endif
