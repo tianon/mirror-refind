@@ -1094,12 +1094,12 @@ VOID ScanVolumes(VOID)
 
     // get all filesystem handles
     Status = LibLocateHandle(ByProtocol, &BlockIoProtocol, NULL, &HandleCount, &Handles);
-    UuidList = AllocateZeroPool(sizeof(EFI_GUID) * HandleCount);
     if (Status == EFI_NOT_FOUND) {
         return;  // no filesystems. strange, but true...
     }
     if (CheckError(Status, L"while listing all file systems"))
         return;
+    UuidList = AllocateZeroPool(sizeof(EFI_GUID) * HandleCount);
 
     // first pass: collect information about all handles
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {

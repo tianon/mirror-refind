@@ -39,7 +39,9 @@
 
 # Revision history:
 #
-# 0.10.2  -- Improved Secure Boot detection in Linux & fixed --usedefault in OS X.
+# 0.10.2  -- Improved Secure Boot detection in Linux, fixed --usedefault in OS X,
+#            and fixed bug that could cause mountesp to be installed as a FILE
+#            called /usr/local/bin in OS X.
 # 0.10.1  -- Improve extraction of default kernel options from /proc/cmdline.
 #            Add support for AMD64 (aka AARCH64, aa64) platform. Added
 #            warning when --alldrivers used without --usedefault.
@@ -863,7 +865,8 @@ InstallOnOSX() {
    DetermineTargetDir
    CheckForSIP
    CopyRefindFiles
-   cp "$ThisDir/mountesp" /usr/local/bin &> /dev/null
+   mkdir -p /usr/local/bin &> /dev/null
+   cp "$ThisDir/mountesp" /usr/local/bin/ &> /dev/null
    if [[ $InstallToEspOnMac == "1" && -z "$TargetPart" ]] ; then
       bless --mount "$InstallDir" --setBoot --file "$InstallDir/$TargetDir/$Refind" --shortform
    elif [[ "$TargetDir" != "/EFI/BOOT" ]] ; then

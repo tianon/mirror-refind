@@ -201,7 +201,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>Type <tt class="userinput">df -h</tt> in the Terminal. This produces a list of partitions that are mounted. Locate the one on which you unpacked the rEFInd files. It will normally be <tt>/Volumes/<tt class="variable">Somename</tt></tt>, where <tt class="variable">Somename</tt> is the volume's name.</li>
 
-<li>In the Terminal, use <tt>cd</tt> to change to the directory where the rEFInd files you unpacked earlier are stored. For instance, on my MacBook, I would type <tt class="userinput">cd /Volumes/Macintosh\ HD/Users/rodsmith/Destkop/refind-0.10.0</tt>. Note that if any element of this path includes a space, you must either enclose the <i>entire path</i> in quotes or precede the space with a backslash (<tt>\</tt>), as in this example's <tt>Macintosh\ HD</tt> volume name.</li>
+<li>In the Terminal, use <tt>cd</tt> to change to the directory where the rEFInd files you unpacked earlier are stored. For instance, on my MacBook, I would type <tt class="userinput">cd /Volumes/Macintosh\ HD/Users/rodsmith/Destkop/refind-0.10.2</tt>. Note that if any element of this path includes a space, you must either enclose the <i>entire path</i> in quotes or precede the space with a backslash (<tt>\</tt>), as in this example's <tt>Macintosh\ HD</tt> volume name.</li>
 
 <li>Type <tt class="userinput">ls</tt> to verify that <tt>refind-install</tt> is present in this directory.</li>
 
@@ -237,13 +237,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h4>Disabling SIP with rEFInd</h4>
 </a>
 
-<p>As described later on this page, rEFInd 0.10.0 provides SIP control features, but they're disabled by default&mdash;except on the USB flash drive and CD-R images available from the <a href="http://www.rodsbooks.com/refind/getting.html">rEFInd downloads page.</a> On these images, the SIP control features are enabled, and can toggle between the two main modes you can set via <tt class="userinput">csrutil enable</tt> and <tt class="userinput">csrutil disable</tt> in the Recovery HD system. Thus, to disable SIP to install rEFInd, you can:</p>
+<p>As described later on this page, rEFInd 0.10.0 and later provide SIP control features, but they're disabled by default&mdash;except on the USB flash drive and CD-R images available from the <a href="http://www.rodsbooks.com/refind/getting.html">rEFInd downloads page.</a> On these images, the SIP control features are enabled, and can toggle between the two main modes you can set via <tt class="userinput">csrutil enable</tt> and <tt class="userinput">csrutil disable</tt> in the Recovery HD system. Thus, to disable SIP to install rEFInd, you can:</p>
 
 <ol>
 
 <li>Download the USB flash drive or CD-R version of rEFInd, as suitable for your computer.</li>
 
-<li>Prepare a boot medium. With the CD-R image, you can use your favorite disc-burning software. With the USB flash drive image, you can use <tt>dd</tt> to copy the image to a blank disk, as in <tt class="userinput">dd if=refind-flashdrive-0.10.0.img of=/dev/disk3</tt> to write the image to <tt>/dev/disk3</tt>. <b>Any existing data on the target disk will be destroyed!</b> For this reason, it's <b><i>imperative</i></b> that you specify the correct target (<tt>of=</tt>) disk; if you accidentally point this command to your regular hard disk, recovery will be difficult!</li>
+<li>Prepare a boot medium. With the CD-R image, you can use your favorite disc-burning software. With the USB flash drive image, you can use <tt>dd</tt> to copy the image to a blank disk, as in <tt class="userinput">dd if=refind-flashdrive-0.10.2.img of=/dev/disk3</tt> to write the image to <tt>/dev/disk3</tt>. <b>Any existing data on the target disk will be destroyed!</b> For this reason, it's <b><i>imperative</i></b> that you specify the correct target (<tt>of=</tt>) disk; if you accidentally point this command to your regular hard disk, recovery will be difficult!</li>
 
 <li>Reboot and hold down the Option (or Alt) key to see the Mac's built-in boot manager.</li>
 
@@ -283,7 +283,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Once rEFInd is installed, you can use it to manage SIP features; however, the rEFInd features needed to do this are disabled by default. You must uncomment or add two lines to your <tt>refind.conf</tt> file:</p>
 
-<p class="sidebar"><b>Note:</b> Apple code samples and technical discussions are filled with the acronym "CSR." I don't know for what this acronym stands, but as it appears to be used in preference to "SIP" or "rootless" when referring to specific values, I used it in the <tt>refind.conf</tt> files token names.</p>
+<p class="sidebar"><b>Note:</b> Apple code samples and technical discussions are filled with the acronym "CSR." I don't know what this acronym means, but as it appears to be used in preference to "SIP" or "rootless" when referring to specific values, I used it in the <tt>refind.conf</tt> files token names.</p>
 
 <ul>
 
@@ -293,7 +293,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </ul>
 
-<p>Note that <i><b>both</b></i> of these options must be set appropriately. If either of them is missing or misconfigured, rEFInd will not display the new SIP tool. A typical configuration using these features might look like this:</p>
+<p>Note that <i><b>both</b></i> of these options must be set appropriately. If either of them is missing or misconfigured, rEFInd will not display the SIP tool. A typical configuration using these features might look like this:</p>
 
 <pre class="listing">showtools shell,memtest,gdisk,csr_rotate,apple_recovery,windows_recovery,about,shutdown,reboot
 csr_values 10,77</pre>
@@ -324,7 +324,7 @@ csr_values 10,77</pre>
 
 <hr />
 
-<p>copyright &copy; 2015 by Roderick W. Smith</p>
+<p>copyright &copy; 2015-2016 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 
