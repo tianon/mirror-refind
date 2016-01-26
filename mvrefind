@@ -20,6 +20,7 @@
 #
 # Revision history:
 #
+# 0.10.2  -- Fixed bug in moving bootmgfw.efi in some situations
 # 0.10.1  -- Generalized to support ARM64 (aka AARCH64, aa64)
 # 0.10.0  -- Renamed from mvrefind.sh to mvrefind
 # 0.6.3   -- Initial release
@@ -189,7 +190,7 @@ MoveFiles() {
    fi
 
    if [[ $EspTargetDir == "/efi/microsoft/boot" && -d $TargetDir ]] ; then
-      mv -n $EspTargetDir/bootmgfw.efi $InstallDir/EFI/Microsoft/
+      mv -n $TargetDir/bootmgfw.efi $InstallDir/EFI/Microsoft/
    fi
 
    mkdir -p $TargetDir

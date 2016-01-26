@@ -1,6 +1,13 @@
 0.10.2 (?/??/2016):
 -------------------
 
+- Fixed bug in refind-install that caused mountesp to be installed as a FILE
+  called /usr/local/bin on OS X if the /usr/local/bin directory did not
+  already exist.
+
+- Fixed bug in mvrefind that caused it to fail to move bootmgfw.efi in
+  some situations.
+
 - Worked around bug/quirk in some EFIs (in HP ProBook 6470b laptop, at
   least) that prevented EFI filesystem drivers from working. (Drivers would
   load but not provide access to filesystems.)
