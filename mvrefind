@@ -243,7 +243,7 @@ AddNvramEntry() {
    fi
 
    if [[ $InstallIt == "1" ]] ; then
-      if [[ $EfiTargetDir == "/efi/microsoft/boot" ]] ; then
+      if [[ $EspTargetDir == "/efi/microsoft/boot" ]] ; then
          # Name it the way some firmware expects -- see http://mjg59.dreamwidth.org/20187.html
          $Efibootmgr -c -l $EfiEntryFilename -L "Windows Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
       else
