@@ -1,8 +1,8 @@
-refind (0.10.1.1-0ppa1) wily; urgency=medium
+refind (0.10.2-0ppa1) wily; urgency=medium
 
-  * Test version
+  * Version bump
 
- -- Roderick Smith <rodsmith@rodsbooks.com>  Thu, 17 Dec 2015 13:09:44 -0500
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Tue, 26 Jan 2016 21:21:44 -0500
 
 refind (0.10.1-0ppa1) wily; urgency=medium
 

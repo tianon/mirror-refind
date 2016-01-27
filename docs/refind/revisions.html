@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 12/12/2015</p>
+<p>Last Web page update: 1/26/2016</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,28 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.10.2 (1/26/2016)</b>&mdash;Changes to this version are relatively modest and focus on bug fixes:
+
+  <ul>
+
+  <li>A bug in <tt>refind-install</tt> under OS X could cause the <tt>mountesp</tt> script to be installed as a <i>file</i> called <tt>/usr/local/bin</tt> if that directory was absent. This bug has been fixed.</li>
+
+  <li>Another OS X <tt>refind-install</tt> bug caused the <tt>--usedefault</tt> option to not work properly. This has been fixed.</li>
+
+  <li>A Linux <tt>refind-install</tt> bug caused Secure Boot detection to fail in some cases. This has also been fixed.</li>
+
+  <li>The <tt>mvrefind</tt> script could fail to move the Windows boot loader file (<tt>bootmgfw.efi</tt>) under some circumstances. Another bug in the same script caused <tt>mvrefind</tt> to register rEFInd using its default filename (<tt>rEFInd Boot Manager</tt>) rather than the name <tt>Windows Boot Manager</tt> when moving rEFInd to the Windows boot manager's location. Both of these bugs have been squashed.</li>
+
+  <li>A long-standing but obscure bug/quirk affects some EFIs, such as that in the HP ProBook 6470b: These EFIs connect useless drivers to partitions with no known filesystems, <i>before</i> rEFInd can load filesystem drivers. The result is that drivers loaded by rEFInd could not read the partitions in question. This version of rEFInd works around this problem.</li>
+
+  <li>A bug introduced in rEFInd 0.10.1 caused custom volume badge icons (read from an icon directory specified by <tt>icons_dir</tt> in <tt>refind.conf</tt>) to be ignored. I've fixed this bug.</li>
+
+  <li>Finally, a small non-bug improvement: I've added <tt>centos.crt</tt> and <tt>centos.cer</tt> public-key files for CentOS to the <tt>keys</tt> directory.</li>
+
+  </ul>
+
+</li>
 
 <li><b>0.10.1 (12/12/2015)</b>&mdash;This version of the program features one big change that will affect very few people, another big behind-the-scenes change, and a number of small changes that will affect more people:
 
@@ -366,7 +388,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2015 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2016 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

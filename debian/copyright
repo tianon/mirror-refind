@@ -405,7 +405,7 @@ Comment: PNG bitmap derived from TrueType font
 
 Files: docs/*
        */README*
-Copyright: 2012-2015 Roderick W. Smith
+Copyright: 2012-2016 Roderick W. Smith
 License: GFDL-1.3
 
 License: BSD-2-clause

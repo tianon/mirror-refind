@@ -442,7 +442,8 @@ EFI_STATUS ConnectAllDriversToAllControllers(VOID) {
  * To fix it: we will disconnect drivers that connected to DiskIo BY_DRIVER
  * if this is partition volume and if those drivers did not produce file system,
  * then try to connect every unconnected device to the driver whose handle is
- * passed to us.
+ * passed to us. This should have no effect on systems unaffected by this EFI
+ * bug/quirk.
  */
 VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
     EFI_STATUS                            Status;
