@@ -1,3 +1,11 @@
+0.10.3 (?/??/2016):
+-------------------
+
+- Added refind-mkdefault script to simplify resetting rEFInd as the default
+  boot program in Linux. The intent is to run this after GRUB, Windows, OS
+  X, or some other tool takes over as the primary boot manager. It can be
+  called from a startup script to handle this task automatically.
+
 0.10.2 (1/26/2016):
 -------------------
 
