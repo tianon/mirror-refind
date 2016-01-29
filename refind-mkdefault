@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import shlex
 import shutil
 import sys
 
@@ -37,7 +38,7 @@ def discover_data():
         boot_entries, boot_order
     """
     command = "efibootmgr -v"
-    bootinfo_bytes = (Popen(command, stdout=PIPE, shell=True)
+    bootinfo_bytes = (Popen(shlex.split(command), stdout=PIPE)
                       .communicate()[0])
     bootinfo = (bootinfo_bytes.decode(encoding="utf-8", errors="ignore")
                 .splitlines())
@@ -142,6 +143,8 @@ def set_refind_first(boot_entries, boot_order, label):
 def save_changes(boot_order):
     """Save an altered boot_order.
 
+    :param boot_order:
+        List of boot numbers as strings, in boot order
     :returns:
         True if there were no problems, False otherwise
     """
@@ -149,7 +152,7 @@ def save_changes(boot_order):
     command = "efibootmgr -o {}".format(order_string)
     print("Setting a boot order of {}".format(order_string))
     try:
-        Popen(command, stdout=PIPE, shell=True).communicate()[0]
+        Popen(shlex.split(command), stdout=PIPE).communicate()[0]
     except:
         print("An error occurred setting the new boot order!")
 
@@ -160,7 +163,7 @@ def main():
     parser = ArgumentParser(description=description)
     parser.add_argument("-L", "--label",
                         default="rEFInd",
-                        help=("The label used to identify rEFInd"))
+                        help=("The label used to identify rEFInd (default=rEFInd)"))
     args = parser.parse_args()
 
     if sys.platform != "linux":
@@ -170,7 +173,7 @@ def main():
         print("The efibootmgr utility is not installed; exiting!")
         return(1)
     if not os.geteuid() == 0:
-        print("You must be root to run this program")
+        print("This program must be run as root (or via sudo); exiting!")
         return(1)
 
     problems = False
@@ -178,12 +181,12 @@ def main():
     boot_entries, boot_order = discover_data()
     if boot_entries == {}:
         problems = True
-        print("No EFI boot entries available. This may indicate a firmware problem.")
+        print("No EFI boot entries are available. This may indicate a firmware problem.")
     if boot_order == []:
         problems = True
         print("The EFI BootOrder variable is not available. This may indicate a firmware")
         print("problem.")
-    if (boot_entries != {} and boot_order != [] and
+    if (not problems and
             set_refind_first(boot_entries, boot_order, args.label)):
         save_changes(boot_order)
     else:

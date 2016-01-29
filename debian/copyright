@@ -31,6 +31,10 @@ Files: mkrlconf
 Copyright: 2012-2015 Roderick W. Smith
 License: GPL-3+
 
+Files: refind-mkdefault
+Copyright: 2016 Roderick W. Smith
+License: GPL-3+
+
 Files: mountesp
 Copyright: 2015 Roderick W. Smith
 License: GPL-3+

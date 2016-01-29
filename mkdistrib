@@ -70,8 +70,8 @@ MakeTarball() {
     cp --preserve=timestamps -r icons/licenses/* $TargetDir/refind-$Version/icons/licenses/
     cp --preserve=timestamps -r icons/svg/* $TargetDir/refind-$Version/icons/svg/
     cp -a debian docs images keys fonts banners include EfiLib libeg mok net refind filesystems \
-        gptsync refind.spec refind-install mkrlconf mvrefind mountesp CREDITS.txt NEWS.txt BUILDING.txt \
-        COPYING.txt LICENSE.txt README.txt refind.inf Make.common Makefile \
+        gptsync refind.spec refind-install refind-mkdefault mkrlconf mvrefind mountesp CREDITS.txt \
+        NEWS.txt BUILDING.txt COPYING.txt LICENSE.txt README.txt refind.inf Make.common Makefile \
         refind.conf-sample $TargetDir/refind-$Version
 
     # Go there and prepare a souce code tarball....
@@ -143,7 +143,7 @@ MakeZipBinary() {
         cp --preserve=timestamps gptsync/gptsync_x64.efi refind-bin-$Version/refind/tools_x64/
     fi
     cp refind-bin-$Version/refind/refind_x64.efi $StartDir
-    cp -a docs keys banners fonts COPYING.txt LICENSE.txt README.txt CREDITS.txt NEWS.txt refind-install mkrlconf mvrefind mountesp refind-bin-$Version
+    cp -a docs keys banners fonts COPYING.txt LICENSE.txt README.txt CREDITS.txt NEWS.txt refind-install refind-mkdefault mkrlconf mvrefind mountesp refind-bin-$Version
 
     # Prepare the final .zip file
     zip -9r ../refind-bin-$Version.zip refind-bin-$Version
@@ -223,6 +223,7 @@ rm -rf debian/refind debian/*.log
 # Convert man pages to HTML form
 man2html docs/man/mkrlconf.8 > docs/refind/mkrlconf.html
 man2html docs/man/mvrefind.8 > docs/refind/mvrefind.html
+man2html docs/man/refind-mkdefault.8 > docs/refind/refind-mkdefault.html
 man2html docs/man/refind-install.8 > docs/refind/refind-install.html
 
 mkdir -p ../snapshots/$Version
