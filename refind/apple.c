@@ -30,7 +30,9 @@
 CHAR16 gCsrStatus[256];
 
 // Get CSR (Apple's System Integrity Protection [SIP], or "rootless") status
-// information.
+// information. If the variable is not present and the firmware is Apple, fake
+// it and claim it's enabled, since that's how OS X 10.11 treats a system with
+// the variable absent.
 EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
     UINT32     *ReturnValue = NULL;
     UINTN      CsrLength;
@@ -47,6 +49,9 @@ EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
                 SPrint(gCsrStatus, 255, L" Unknown System Integrity Protection version");
             }
             MyFreePool(ReturnValue);
+        } else if ((Status == EFI_NOT_FOUND) && (StriSubCmp(L"Apple", ST->FirmwareVendor))) {
+            *CsrStatus = SIP_ENABLED;
+            Status = EFI_SUCCESS;
         } // if (Status == EFI_SUCCESS)
     } // if (CsrStatus)
     return Status;
@@ -77,7 +82,7 @@ VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
         egDisplayMessage(gCsrStatus, &BGColor);
         PauseSeconds(3);
     } // if
-} // VOID RecordgCsrStatus
+} // VOID RecordgCsrStatus()
 
 // Find the current CSR status and reset it to the next one in the
 // GlobalConfig.CsrValues list, or to the first value if the current

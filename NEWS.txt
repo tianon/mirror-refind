@@ -1,6 +1,21 @@
 0.10.3 (?/??/2016):
 -------------------
 
+- Modified SIP/CSR rotation code: If the csr-active-config EFI variable is
+  missing AND the firmware is Apple (as identified by the string "Apple"
+  being present in the ST->FirmwareVendor string), rEFInd treats the
+  computer as one on which SIP is available and set to the "enabled" state
+  (0x10). The upshot is that the SIP/CSR tool will appear if the showtools
+  and csr_values options are set appropriately in refind.conf, even if the
+  csr-active-config variable is missing from the NVRAM. The point of this
+  change is that I've received reports of some Macs that run OS X 10.11 but
+  that lack this variable. OS X acts as if SIP were enabled, but rEFInd is
+  then unable to disable SIP. This change gives rEFInd the ability to
+  disable SIP on such systems. The drawback is that the variable might be
+  set on some systems that don't run OS X 10.11. This should be harmless
+  from a technical point of view, but the presence of SIP indicators in
+  rEFInd could be confusing.
+
 - Added refind-mkdefault script to simplify resetting rEFInd as the default
   boot program in Linux. The intent is to run this after GRUB, Windows, OS
   X, or some other tool takes over as the primary boot manager. It can be
