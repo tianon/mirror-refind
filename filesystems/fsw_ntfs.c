@@ -371,6 +371,7 @@ static inline fsw_u64 attribute_last_vcn(fsw_u8 *ptr, int len)
 
 static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *ptr, int len, fsw_u8 **optrp, int *olenp)
 {
+    fsw_status_t err;
     int olen;
 
     if(attribute_ondisk(ptr, len) == 0) {
@@ -378,7 +379,8 @@ static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *p
 	attribute_get_embeded(ptr, len, &ptr, &len);
 	*olenp = len;
 	if(optrp) {
-	    *optrp = AllocatePool(len);
+	    if((err = fsw_alloc(len, (void **)optrp)) != FSW_SUCCESS)
+		return err;
 	    fsw_memcpy(*optrp, ptr, len);
 	}
 	return FSW_SUCCESS;
@@ -389,9 +391,9 @@ static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *p
     if(!optrp)
 	return FSW_SUCCESS;
 
-    fsw_u8 *buf = AllocatePool(olen);
-    fsw_memzero(buf, olen);
-    *optrp = buf;
+    if((err = fsw_alloc_zero(olen, (void **)optrp)) != FSW_SUCCESS)
+	return err;
+    fsw_u8 *buf = *optrp;
 
     attribute_get_rle(ptr, len, &ptr, &len);
 
@@ -405,7 +407,7 @@ static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *p
 		fsw_u8 *block;
 		if (fsw_block_get(&vol->g, lcn, 0, (void **)&block) != FSW_SUCCESS)
 		{
-		    FreePool(*optrp);
+		    fsw_free(*optrp);
 		    *optrp = NULL;
 		    *olenp = 0;
 		    return FSW_VOLUME_CORRUPTED;
@@ -427,15 +429,15 @@ static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *p
 static void init_mft(struct fsw_ntfs_volume *vol, struct ntfs_mft *mft, fsw_u64 mftno)
 {
     mft->mftno = mftno;
-    mft->buf = AllocatePool(1<<vol->mftbits);
     mft->atlst = NULL;
+    mft->atlen = fsw_alloc(1<<vol->mftbits, &mft->buf);
     mft->atlen = 0;
 }
 
 static void free_mft(struct ntfs_mft *mft)
 {
-    if(mft->buf) FreePool(mft->buf);
-    if(mft->atlst) FreePool(mft->atlst);
+    if(mft->buf) fsw_free(mft->buf);
+    if(mft->atlst) fsw_free(mft->atlst);
 }
 
 static fsw_status_t load_atlist(struct fsw_ntfs_volume *vol, struct ntfs_mft *mft)
@@ -521,7 +523,7 @@ static void init_attr(struct fsw_ntfs_volume *vol, struct ntfs_attr *attr, int t
 
 static void free_attr(struct ntfs_attr *attr)
 {
-    if(attr->emft) FreePool(attr->emft);
+    if(attr->emft) fsw_free(attr->emft);
 }
 
 static fsw_status_t find_attribute(struct fsw_ntfs_volume *vol, struct ntfs_mft *mft, struct ntfs_attr *attr, fsw_u64 vcn)
@@ -542,6 +544,9 @@ static fsw_status_t find_attribute(struct fsw_ntfs_volume *vol, struct ntfs_mft 
 	    buf = attr->emft;
 	} else {
 	    attr->emftno = BADMFT;
+	    err = fsw_alloc(1<<vol->mftbits, &attr->emft);
+	    if(err != FSW_SUCCESS)
+		return err;
 	    err = read_mft(vol, attr->emft, mftno);
 	    if(err != FSW_SUCCESS)
 		return err;
@@ -589,10 +594,12 @@ static void add_single_mft_map(struct fsw_ntfs_volume *vol, fsw_u8 *mft)
 	    int u = vol->extmap.used;
 	    if(u >= vol->extmap.total) {
 		vol->extmap.total = vol->extmap.extent ? u*2 : 16;
-		struct extent_slot *e = AllocatePool(vol->extmap.total * sizeof(struct extent_slot));
+		struct extent_slot *e;
+		if(fsw_alloc(vol->extmap.total * sizeof(struct extent_slot), &e)!=FSW_SUCCESS)
+		    break;
 		if(vol->extmap.extent) {
 		    fsw_memcpy(e, vol->extmap.extent, u*sizeof(struct extent_slot));
-		    FreePool(vol->extmap.extent);
+		    fsw_free(vol->extmap.extent);
 		}
 		vol->extmap.extent = e;
 	    }
@@ -614,13 +621,14 @@ static void add_mft_map(struct fsw_ntfs_volume *vol, struct ntfs_mft *mft)
     fsw_u64 mftno;
     int pos = 0;
 
-    fsw_u8 *emft = AllocatePool(1<<vol->mftbits);
+    fsw_u8 *emft;
+    if(fsw_alloc(1<<vol->mftbits, &emft) != FSW_SUCCESS) return;
     while(find_attrlist_direct(mft->atlst, mft->atlen, AT_DATA, 0, &mftno, &pos) == FSW_SUCCESS) {
 	if(mftno == 0) continue;
 	if(read_mft(vol, emft, mftno)==FSW_SUCCESS)
 	    add_single_mft_map(vol, emft);
     }
-    FreePool(emft);
+    fsw_free(emft);
 }
 
 static int tobits(fsw_u32 val)
@@ -639,7 +647,6 @@ static fsw_status_t fsw_ntfs_volume_mount(struct fsw_volume *volg)
     fsw_u64 mft_start[2];
     struct ntfs_mft mft0;
 
-    fsw_memzero((char *)vol+sizeof(*volg), sizeof(*vol)-sizeof(*volg));
     fsw_set_blocksize(volg, 512, 512);
     if ((err = fsw_block_get(volg, 0, 0, (void **)&buffer)) != FSW_SUCCESS)
 	return FSW_UNSUPPORTED;
@@ -751,9 +758,9 @@ static void fsw_ntfs_volume_free(struct fsw_volume *volg)
 {
     struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *)volg;
     if(vol->extmap.extent)
-	FreePool(vol->extmap.extent);
+	fsw_free(vol->extmap.extent);
     if(vol->upcase && vol->upcase != upcase)
-	FreePool((void *)vol->upcase);
+	fsw_free((void *)vol->upcase);
 }
 
 static fsw_status_t fsw_ntfs_volume_stat(struct fsw_volume *volg, struct fsw_volume_stat *sb)
@@ -765,6 +772,19 @@ static fsw_status_t fsw_ntfs_volume_stat(struct fsw_volume *volg, struct fsw_vol
     return FSW_SUCCESS;
 }
 
+static void fsw_ntfs_dnode_free(struct fsw_volume *vol, struct fsw_dnode *dnog)
+{
+    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *)dnog;
+    free_mft(&dno->mft);
+    free_attr(&dno->attr);
+    if(dno->idxroot)
+	fsw_free(dno->idxroot);
+    if(dno->idxbmp)
+	fsw_free(dno->idxbmp);
+    if(dno->cbuf)
+	fsw_free(dno->cbuf);
+}
+
 static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnode *dnog)
 {
     struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *)volg;
@@ -772,15 +792,19 @@ static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnod
     fsw_status_t err;
     int len;
 
-    fsw_memzero((char *)dno+sizeof(*dnog), sizeof(*dno)-sizeof(*dnog));
+    if(dno->mft.buf != NULL)
+	    return FSW_SUCCESS;
+
     init_mft(vol, &dno->mft, dno->g.dnode_id);
     err = read_mft(vol, dno->mft.buf, dno->g.dnode_id);
     if(err != FSW_SUCCESS)
-	return err;
+	goto error_out;
 
     len = GETU8(dno->mft.buf, 22);
-    if( (len & 1) == 0 )
-	return FSW_NOT_FOUND;
+    if( (len & 1) == 0 ) {
+	err = FSW_NOT_FOUND;
+	goto error_out;
+    }
 
     load_atlist(vol, &dno->mft);
 
@@ -794,7 +818,7 @@ static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnod
 		dno->fsize = len;
 		return FSW_SUCCESS;
 	    default:
-		FreePool(dno->cbuf);
+		fsw_free(dno->cbuf);
 		dno->cbuf = NULL;
 	};
     }
@@ -806,7 +830,7 @@ static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnod
 	if(err != FSW_SUCCESS)
 	{
 	    Print(L"dno_fill INDEX_ROOT:$I30 error %d\n", err);
-	    return err;
+	    goto error_out;
 	}
 
 	dno->idxsz = GETU32(dno->idxroot, 8);
@@ -818,7 +842,7 @@ static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnod
 	if(err != FSW_SUCCESS && err != FSW_NOT_FOUND)
 	{
 	    Print(L"dno_fill $Bitmap:$I30 error %d\n", err);
-	    return err;
+	    goto error_out;
 	}
 
 	/* $INDEX_ALLOCATION:$I30 is optional */
@@ -830,7 +854,7 @@ static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnod
 	    dno->finited = dno->fsize;
 	} else if(err != FSW_NOT_FOUND) {
 	    Print(L"dno_fill $INDEX_ALLOCATION:$I30 error %d\n", err);
-	    return err;
+	    goto error_out;
 	}
 
     } else {
@@ -840,7 +864,7 @@ static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnod
 	if(err != FSW_SUCCESS)
 	{
 	    Print(L"dno_fill AT_DATA error %d\n", err);
-	    return err;
+	    goto error_out;
 	}
 	dno->embeded = !attribute_ondisk(dno->attr.ptr, dno->attr.len);
 	dno->fsize = attribute_size(dno->attr.ptr, dno->attr.len);
@@ -855,19 +879,11 @@ static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnod
 	dno->g.size = dno->fsize;
     }
     return FSW_SUCCESS;
-}
-
-static void fsw_ntfs_dnode_free(struct fsw_volume *vol, struct fsw_dnode *dnog)
-{
-    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *)dnog;
-    free_mft(&dno->mft);
-    free_attr(&dno->attr);
-    if(dno->idxroot)
-	FreePool(dno->idxroot);
-    if(dno->idxbmp)
-	FreePool(dno->idxbmp);
-    if(dno->cbuf)
-	FreePool(dno->cbuf);
+error_out:
+    fsw_ntfs_dnode_free(volg, dnog);
+    // clear tag for good dnode
+    dno->mft.buf = NULL;
+    return err;
 }
 
 static fsw_u32 get_ntfs_time(fsw_u8 *buf, int pos)
@@ -894,6 +910,13 @@ static fsw_status_t fsw_ntfs_dnode_stat(struct fsw_volume *volg, struct fsw_dnod
 
     ptr += GETU16(ptr, 0x14);
     attr = GETU8(ptr, 0x20); /* only lower 8 of 32 bit is used */
+#ifndef EFI_FILE_READ_ONLY
+#define EFI_FILE_READ_ONLY 1
+#define EFI_FILE_HIDDEN 2
+#define EFI_FILE_SYSTEM 4
+#define EFI_FILE_DIRECTORY 0x10
+#define EFI_FILE_ARCHIVE 0x20
+#endif
     attr &= EFI_FILE_READ_ONLY | EFI_FILE_HIDDEN | EFI_FILE_SYSTEM | EFI_FILE_ARCHIVE;
     /* add DIR again if symlink */
     if(GETU8(dno->mft.buf, 22) & 2)
@@ -954,6 +977,10 @@ static int fsw_ntfs_read_buffer(struct fsw_ntfs_volume *vol, struct fsw_ntfs_dno
 	fsw_u8 *ptr;
 	int len;
 	attribute_get_embeded(dno->attr.ptr, dno->attr.len, &ptr, &len);
+	if(offset >= len)
+	    return 0;
+	ptr += offset;
+	len -= offset;
 	if(size > len)
 	    size = len;
 	fsw_memcpy(buf, ptr, size);
@@ -1009,6 +1036,7 @@ static int fsw_ntfs_read_buffer(struct fsw_ntfs_volume *vol, struct fsw_ntfs_dno
 	buf += bsz;
 	size -= bsz;
 	boff = 0;
+	vcn++;
     }
     if(size==0 && zsize > 0) {
 	fsw_memzero(buf, zsize);
@@ -1019,10 +1047,12 @@ static int fsw_ntfs_read_buffer(struct fsw_ntfs_volume *vol, struct fsw_ntfs_dno
 
 static fsw_status_t fsw_ntfs_get_extent_embeded(struct fsw_ntfs_volume *vol, struct fsw_ntfs_dnode *dno, struct fsw_extent *extent)
 {
+    fsw_status_t err;
     if(extent->log_start > 0)
 	return FSW_NOT_FOUND;
     extent->log_count = 1;
-    extent->buffer = AllocatePool(1<<vol->clbits);
+    err = fsw_alloc(1<<vol->clbits, &extent->buffer);
+    if(err != FSW_SUCCESS) return err;
     fsw_u8 *ptr;
     int len;
     attribute_get_embeded(dno->attr.ptr, dno->attr.len, &ptr, &len);
@@ -1133,9 +1163,20 @@ static fsw_status_t fsw_ntfs_get_extent_compressed(struct fsw_ntfs_volume *vol, 
     else if(i==16)
 	dno->cpfull = 1;
     else {
-	if(dno->cbuf == NULL)
-	    dno->cbuf = AllocatePool(16<<vol->clbits);
-	fsw_u8 *src = AllocatePool(i << vol->clbits);
+	fsw_status_t err;
+	if(dno->cbuf == NULL) {
+	    err = fsw_alloc(16<<vol->clbits, &dno->cbuf);
+	    if(err != FSW_SUCCESS) {
+		dno->cvcn = BADVCN;
+		return err;
+	    }
+	}
+	fsw_u8 *src;
+	err = fsw_alloc(i << vol->clbits, &src);
+	if(err != FSW_SUCCESS) {
+	    dno->cvcn = BADVCN;
+	    return err;
+	}
 	int b;
 	for(b=0; b<i; b++) {
 	    char *block;
@@ -1154,7 +1195,7 @@ static fsw_status_t fsw_ntfs_get_extent_compressed(struct fsw_ntfs_volume *vol, 
 	    b = (dno->fsize - (vcn << vol->clbits) + 0xfff)>>12;
 	if(!dno->cperror && ntfs_decomp(src, i<<vol->clbits, dno->cbuf, b) < 0)
 	    dno->cperror = 1;
-	FreePool(src);
+	fsw_free(src);
     }
 hit:
     if(dno->cperror)
@@ -1173,7 +1214,8 @@ hit:
 	extent->type = FSW_EXTENT_TYPE_SPARSE;
     } else {
 	extent->log_count = 1;
-	extent->buffer = AllocatePool(1<<vol->clbits);
+	fsw_status_t err = fsw_alloc(1<<vol->clbits, &extent->buffer);
+	if(err != FSW_SUCCESS) return err;
 	fsw_memcpy(extent->buffer, dno->cbuf + (i<<vol->clbits), 1<<vol->clbits);
 	extent->type = FSW_EXTENT_TYPE_BUFFER;
     }
@@ -1303,12 +1345,13 @@ static fsw_status_t fsw_ntfs_create_subnode(struct fsw_ntfs_dnode *dno, fsw_u8 *
 
 static fsw_u8 *fsw_ntfs_read_index_block(struct fsw_ntfs_volume *vol, struct fsw_ntfs_dnode *dno, fsw_u64 block)
 {
-    if(dno->cbuf==NULL)
-	dno->cbuf = AllocatePool(dno->idxsz);
-    else if(block == dno->cvcn)
+    if(dno->cbuf==NULL) {
+	if(fsw_alloc(dno->idxsz, &dno->cbuf) != FSW_SUCCESS)
+	    return NULL;
+    } else if(block == dno->cvcn)
 	return dno->cbuf;
 
-    dno->cvcn = 0;
+    dno->cvcn = BADVCN;
     if(fsw_ntfs_read_buffer(vol, dno, dno->cbuf, (block-1)*dno->idxsz, dno->idxsz) != dno->idxsz)
 	return NULL;
     if(fixup(dno->cbuf, "INDX", 1<<vol->sctbits, dno->idxsz) != FSW_SUCCESS)

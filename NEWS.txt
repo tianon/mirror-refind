@@ -1,6 +1,11 @@
 0.10.3 (?/??/2016):
 -------------------
 
+- Fixed bug in NTFS driver that caused it to hang (and thus hang the
+  computer) in some situations, particularly when a file on an NTFS volume
+  had many fragments and when the computer's CSM was activated. (Fix
+  courtesy of "S L.")
+
 - Modified SIP/CSR rotation code: If the csr-active-config EFI variable is
   missing AND the firmware is Apple (as identified by the string "Apple"
   being present in the ST->FirmwareVendor string), rEFInd treats the
