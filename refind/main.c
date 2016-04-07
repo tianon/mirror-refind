@@ -1406,11 +1406,12 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
               MyStriCmp(Extension, L".icns") ||
               MyStriCmp(Extension, L".png") ||
               (MyStriCmp(DirEntry->FileName, FALLBACK_BASENAME) && (MyStriCmp(Path, L"EFI\\BOOT"))) ||
-              StriSubCmp(L"shell", DirEntry->FileName) ||
+              FilenameIn(Volume, Path, DirEntry->FileName, SHELL_NAMES) ||
               IsSymbolicLink(Volume, Path, DirEntry) || /* is symbolic link */
               HasSignedCounterpart(Volume, Path, DirEntry->FileName) || /* a file with same name plus ".efi.signed" is present */
-              FilenameIn(Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles))
+              FilenameIn(Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles)) {
                 continue;   // skip this
+          }
 
           if (Path)
              SPrint(FileName, 255, L"\\%s\\%s", Path, DirEntry->FileName);

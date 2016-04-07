@@ -75,6 +75,30 @@ low in risk.
 Instead of searching for the string \fBrefind\fR in \fIefibootmgr\fR output
 as a way to identify rEFInd, search for the string \fBname\fR.
 
+.SH "RETURN VALUES"
+
+\fIrefind-mkdefault\fR returns the following values:
+
+.TP
+.B 0
+The script completed successfully, which can mean either that no change was
+necessary or that the call to \fIefibootmgr\fR returned a success code.
+
+.TP
+.B 1
+EFI boot order variables are available, and a rEFInd entry was found, but
+the call to \fIefibootmgr\fR returned a failure code.
+
+.TP
+.B 2
+EFI boot entries are not available. This condition is often an indication of
+a buggy EFI or badly damaged NVRAM contents.
+
+.TP
+.B 3
+No rEFInd entry could be found in the list of boot options, and so
+no changes were made to the boot order list.
+
 .SH "LIMITATIONS"
 
 .TP

@@ -1,6 +1,14 @@
 0.10.3 (?/??/2016):
 -------------------
 
+- Tightened exclusion of shell binary filenames from boot loader scan.
+  Previously, any filename containing the substring "shell" was excluded
+  from scans. Now it's tighter; only files matching one of the filenames in
+  the constant SHELL_NAMES in main.c are excluded. This change will enable
+  programs with names that include "shell", but that aren't in rEFInd's
+  SHELL_NAMES list, such as "shelly.efi", to be shown in the rEFInd main
+  menu.
+
 - Fixed bug in NTFS driver that caused it to hang (and thus hang the
   computer) in some situations, particularly when a file on an NTFS volume
   had many fragments and when the computer's CSM was activated. (Fix

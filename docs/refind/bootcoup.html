@@ -195,7 +195,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Most EFIs provide their own build-in boot managers. These tools are primitive, and in some cases they can be difficult to reach, but they can be useful if you need to bypass a new system default in order to boot an OS that has the tools you need to control the boot process.</p>
 
-<p>On Macs, holding the Option key (or Alt with a PC keyboard) brings up the Mac's boot manager. Typically, the Esc key, Enter key, or a function key (usually F8 or above) does the job on UEFI-based PCs. Some computers provide a prompt for what key to use to access the boot menu, but this isn't always true. Sometimes the keyboard is disabled in the early stages of the boot process by default&mdash;part of a strategy to speed up system boots. Disabling a "fast start" feature in the firmware may work around this problem. Getting into the firmware can be a challenge on such computers, though. Microsoft provides a way to do this in Windows 8 and later; see <a href="https://support.lenovo.com/us/en/documents/ht081446">this Lenovo page</a> for documentation on how to use this feature. (The same procedure works on any brand of computer.)</p>
+<p>On Macs, holding the Option key (or Alt with a PC keyboard) brings up the Mac's boot manager. Typically, the Esc key, Enter key, or a function key (usually F8 or above) does the job on UEFI-based PCs. Some computers provide a prompt for what key to use to access the boot menu, but this isn't always true. Sometimes the keyboard is disabled in the early stages of the boot process by default&mdash;part of a strategy to speed up system boots. Disabling a "fast start" feature in the firmware may work around this problem. Getting into the firmware can be a challenge on such computers, though. Microsoft provides a way to do this in Windows 8 and later; see <a href="http://www.howtogeek.com/126016/three-ways-to-access-the-windows-8-boot-options-menu/">this How-To Geek article</a> for documentation on how to use this feature.</p>
 
 <p>Once you've found the built-in boot manager, you'll see its display, which is typically a text-mode listing of boot options. On UEFI-based PCs, the user interface is typically similar to the one used in years past on BIOS-based computers to select the boot device; it's simply been upgraded to include the descriptions held in NVRAM for specific boot loaders. (In fact, prompts are often outdated and misleading; as in the below example, they may refer to "boot devices," when in fact most of the options are EFI boot loader programs, not hardware devices.) As an example, an ASUS P8 H77-I's boot manager looks like this:</p>
 
@@ -272,7 +272,7 @@ Boot0003* Windows Boot Manager	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f
 Boot0081* Mac OS X	Vendor(99e275e7-75a0-4b37-a2e6-c5385e6c00cb,)-.o. .-.e.e. .-.f. .e.f.i.-.a.p.p.l.e.-.p.a.y.l.o.a.d.0.-.d.a.t.a...
 Boot0085* ubuntu	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(EFI\Ubuntu\grubx64.efi)</pre>
 
-<p>Much of this output looks like gibberish, and is useful only for very advanced diagnostics. Note, however, the part of each line that specifies a filename, in parentheses after <tt>File</tt>&mdash;this information can help disambiguate a misleading or redundant name.</p>
+<p>Much of this output looks like gibberish, and is useful only for very advanced diagnostics. Note, however, the part of most lines that specifies a filename, in parentheses after <tt>File</tt>&mdash;this information can help disambiguate a misleading or redundant name.</p>
 
 <p>To adjust the boot order, you must identify the rEFInd entry and then use the <tt>-o</tt> option to <tt>efibootmgr</tt> to adjust the order:</p>
 
@@ -526,7 +526,7 @@ Boot0085* ubuntu</pre>
 
 </ol>
 
-<p class="sidebar"><b>Tip:</b> If you install the EFI shell in the <tt>EFI/tools/shell.efi</tt> or <tt>EFI/tools/shellx64.efi</tt> (on x86-64 systems; <tt>EFI/TOOLS/shellia32.efi</tt> on IA-32 systems) on your hard disk's ESP, rEFInd will detect it and enable you to boot it from rEFInd. If you also register the shell with the firmware's boot manager, you'll be able to launch it that way without using the USB flash drive.</p>
+<p class="sidebar"><b>Tip:</b> If you install the EFI shell as <tt>EFI/tools/shell.efi</tt> or <tt>EFI/tools/shellx64.efi</tt> (on x86-64 systems; <tt>EFI/TOOLS/shellia32.efi</tt> on IA-32 systems) on your hard disk's ESP, rEFInd will detect it and enable you to boot it from rEFInd. If you register the shell with the firmware's boot manager, you'll be able to launch it that way without using a USB flash drive.</p>
 
 <p>With any luck, rEFInd will be restored as the default boot manager at this point. As with most of the methods described on this page, this procedure will do nothing to prevent future boot coups, so you may need to repeat the process in the future.</p>
 
