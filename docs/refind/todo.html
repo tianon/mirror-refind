@@ -238,6 +238,19 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	removing rEFInd's drivers has caused the problem to go into
 	remission.</li>
 
+    <li>Another Mac-specific display problem relates to "retina" displays:
+	Some users report that rEFInd comes up in a lower resolution than
+	the screen supports, and that this setting persists into the running
+	OS X instance, and can't be adjusted using the usual OS X means.
+	Unfortunately, I lack the hardware necessary to experiment and find
+	a solution to this problem within rEFInd. Thus, a fix will have to
+	wait for me to get my hands on such hardware (which is not on my
+	immediate purchase list) or until somebody with such hardware and
+	the necessary skills submits a fix. (Note that a fix could
+	conceivably involve passing options to the OS X boot loader or
+	something else that would require trivial or no changes to
+	rEFInd.)</li>
+
     <li>Some EFIs have bugs that cause the allegedly case-insensitive
 	<tt>StriCmp()</tt> function to perform a case-sensitive comparison.
 	This causes any number of bugs in file matching. For instance:
