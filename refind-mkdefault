@@ -172,13 +172,13 @@ def main():
 
     if sys.platform != "linux":
         print("This program is useful only under Linux; exiting!")
-        return(1)
+        return(4)
     if shutil.which("efibootmgr") is None:
         print("The efibootmgr utility is not installed; exiting!")
-        return(1)
+        return(4)
     if not os.geteuid() == 0:
         print("This program must be run as root (or via sudo); exiting!")
-        return(1)
+        return(4)
 
     retval = 0
     boot_entries, boot_order = discover_data()
