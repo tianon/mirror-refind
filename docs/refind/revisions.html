@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 1/26/2016</p>
+<p>Last Web page update: 4/24/2016</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,26 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.10.3 (4/24/2016)</b>&mdash;This version features mostly modest changes and additions:
+
+  <ul>
+
+  <li>A new Linux script, <tt>refind-mkdefault</tt>, simplifies the task of resetting rEFInd as the default boot program. It's documented <a href="refind-mkdefault.html">here.</a> I've also written a new <a href="bootcoup.html">documentation page on the problem generally,</a> which covers how to handle the problem in multiple OSes.</li>
+
+  <li>I've modified the SIP/CSR rotation code so that the SIP/CSR rotation tool will appear more reliably on Apple computers.</li>
+
+  <li>The NTFS driver has been improved to reduce the chances of it hanging randomly.</li>
+
+  <li>The code that excludes shell binaries from appearing in the main boot list has been altered to reduce the odds of an incorrect exclusion from occurring.</li>
+
+  <li>rEFInd now recognizes the <tt>fwupx64.efi</tt> program as a special case: If detected, this program is presented as a second-row option rather than as a regular boot loader. (This tool is used to update firmware on some computers.)</li>
+
+  <li>BIOS/CSM/legacy-mode OSes all now include the string <tt>Legacy</tt> in their descriptions on Macs.</li>
+
+  </ul>
+
+</li>
 
 <li><b>0.10.2 (1/26/2016)</b>&mdash;Changes to this version are relatively modest and focus on bug fixes:
 

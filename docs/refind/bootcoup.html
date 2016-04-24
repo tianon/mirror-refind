@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Originally written: 1/28/2016, referencing rEFInd 0.10.2</p>
+<p>Originally written: 4/24/2016, referencing rEFInd 0.10.3</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -229,7 +229,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <pre class="listing">$ <tt class="userinput">sudo refind-mkdefault</tt>
 rEFInd is not the first boot entry; adjusting....
-Setting a boot order of 0000,0002,0085,0003,0081</pre>
+Setting a boot order of 0000,0002,0085,0003</pre>
 
 <p>The exact output of the script depends on the current state of the system; it might also respond that rEFInd is already the default boot entry or that it could not identify a rEFInd entry, for instance. The boot order shown in this example is meaningless by itself; it's the boot order as identified by <tt>efibootmgr</tt>; for details, see <a href="#efibootmgr">the next section.</a></p>
 
@@ -251,11 +251,10 @@ Setting a boot order of 0000,0002,0085,0003,0081</pre>
 $ <tt class="userinput">sudo efibootmgr</tt>
 BootCurrent: 0000
 Timeout: 0 seconds
-BootOrder: 0002,0000,0085,0003,0081
+BootOrder: 0002,0000,0085,0003
 Boot0000* rEFInd Boot Manager
 Boot0002* Windows Boot Manager
 Boot0003* Windows Boot Manager
-Boot0081* Mac OS X
 Boot0085* ubuntu
 </pre>
 
@@ -265,25 +264,23 @@ Boot0085* ubuntu
 $ <tt class="userinput">sudo efibootmgr -v</tt>
 BootCurrent: 0000
 Timeout: 0 seconds
-BootOrder: 0002,0000,0085,0003,0081
+BootOrder: 0002,0000,0085,0003
 Boot0000* rEFInd Boot Manager	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(\EFI\refind\shimx64.efi)
 Boot0002* Windows Boot Manager	HD(2,113800,113000,8b0b6d94-06af-4894-b9de-13ca354714a5)File(\EFI\Microsoft\Boot\bootmgfw.efi)WINDOWS.........x...B.C.D.O.B.J.E.C.T.=.{.9.d.e.a.8.6.2.c.-.5.c.d.d.-.4.e.7.0.-.a.c.c.1.-.f.3.2.b.3.4.4.d.4.7.9.5.}....................
 Boot0003* Windows Boot Manager	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(\EFI\Microsoft\Boot\bootmgfw.efi)WINDOWS.........x...B.C.D.O.B.J.E.C.T.=.{.9.d.e.a.8.6.2.c.-.5.c.d.d.-.4.e.7.0.-.a.c.c.1.-.f.3.2.b.3.4.4.d.4.7.9.5.}....................
-Boot0081* Mac OS X	Vendor(99e275e7-75a0-4b37-a2e6-c5385e6c00cb,)-.o. .-.e.e. .-.f. .e.f.i.-.a.p.p.l.e.-.p.a.y.l.o.a.d.0.-.d.a.t.a...
 Boot0085* ubuntu	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(EFI\Ubuntu\grubx64.efi)</pre>
 
 <p>Much of this output looks like gibberish, and is useful only for very advanced diagnostics. Note, however, the part of most lines that specifies a filename, in parentheses after <tt>File</tt>&mdash;this information can help disambiguate a misleading or redundant name.</p>
 
 <p>To adjust the boot order, you must identify the rEFInd entry and then use the <tt>-o</tt> option to <tt>efibootmgr</tt> to adjust the order:</p>
 
-<pre class="listing">$ <tt class="userinput">sudo efibootmgr -o 0000,0085,0002,0003,0081</tt>
+<pre class="listing">$ <tt class="userinput">sudo efibootmgr -o 0000,0085,0002,0003</tt>
 BootCurrent: 0000
 Timeout: 0 seconds
-BootOrder: 0000,0085,0002,0003,0081
+BootOrder: 0000,0085,0002,0003
 Boot0000* rEFInd Boot Manager
 Boot0002* Windows Boot Manager
 Boot0003* Windows Boot Manager
-Boot0081* Mac OS X
 Boot0085* ubuntu</pre>
 
 <p>In this example, I moved rEFInd to the top of the list, followed by <tt>ubuntu</tt> (GRUB), Windows, and OS X. You can adjust the order in any way you want. You can also omit items you don't want to include&mdash;but be aware that if you omit Windows entirely from the boot list, it's likely to add itself back (at the top of the list) the next time you boot it.</p>
@@ -305,7 +302,7 @@ Boot0085* ubuntu</pre>
 <pre class="listing"># <tt class="userinput">dpkg -P grub-efi-amd64 grub-efi-amd64-signed grub-common grub-efi-amd64-bin \
   grub-common grub2-common shim-signed</tt></pre>
 
-<p>The details of what packages you must remove vary from one distribution to another, though. (The preceding examples are from Fedora and Ubuntu installations.) If you're unsure what packages to remove, you may need to use a your package management tools to track down all GRUB-related packages. GUI tools, such as Yumex for Fedora and Synaptic for Debian-based systems, can be very helpful in this task. Unfortunately, you must sometimes remove packages that you might not want to remove&mdash;for instance, the preceding example removes <tt>shim-signed</tt> from Ubuntu because <tt>shim-signed</tt> contains a dependency on GRUB, but rEFInd can use Shim for its Secure Boot support. Fortunately, if rEFInd is already booting via Shim, removing the <tt>shim-signed</tt> package will <i>not</i> remove the <tt>shimx64.efi</tt> binary from rEFInd's directory, so the system will continue to boot&mdash;but you also won't receive any Shim updates that might roll along.</p>
+<p>The details of what packages you must remove vary from one distribution to another, though. (The preceding examples are from Fedora and Ubuntu installations.) If you're unsure what packages to remove, you may need to use your package management tools to track down all GRUB-related packages. GUI tools, such as Yumex for Fedora and Synaptic for Debian-based systems, can be very helpful in this task. Unfortunately, you must sometimes remove packages that you might not want to remove&mdash;for instance, the preceding example removes <tt>shim-signed</tt> from Ubuntu because <tt>shim-signed</tt> contains a dependency on GRUB, but rEFInd can use Shim for its Secure Boot support. Fortunately, if rEFInd is already booting via Shim, removing the <tt>shim-signed</tt> package will <i>not</i> remove the <tt>shimx64.efi</tt> binary from rEFInd's directory, so the system will continue to boot&mdash;but you also won't receive any Shim updates that might roll along.</p>
 
 <p>Note also that removing the GRUB packages will <i>not</i> remove the files installed to the EFI System Partition (ESP), so rEFInd will continue to show a GRUB option, normally with an icon for your distribution, in its main menu. If you want to remove that menu entry, you can delete the relevant files, normally from <tt>/boot/efi/EFI/<tt class="variable">distribution_name</tt></tt>.</p>
 
@@ -330,7 +327,7 @@ Boot0085* ubuntu</pre>
 <h3>Using Startup Disk to Adjust Your Boot Priority</h3>
 </a>
 
-<p>The Startup Disk utility appears in the System Preferences tool. Unfortunately, it will likely be useless if you installed rEFInd using <tt>refind-install</tt> and its default options, since this tool is designed to switch between OS X installations; it's not smart enough to detect a rEFInd installation and re-activate it.</p>
+<p>The Startup Disk utility appears in the System Preferences tool. Unfortunately, it will likely be useless if you installed rEFInd using <tt>refind-install</tt> and its default options, since Startup Disk is designed to switch between OS X installations; it's not smart enough to detect a rEFInd installation and re-activate it.</p>
 
 <p>If, however, you installed rEFInd by using the <tt>--ownhfs</tt> option to <tt>refind-install</tt>, your rEFInd installation volume should show up as an option in the Startup Disk utility. You should be able to click on it and then click Restart. Note that the name of the rEFInd volume may not be rEFInd, as it is in this screen shot; the name will match whatever volume holds rEFInd on your computer.</p>
 
@@ -475,7 +472,7 @@ Boot0085* ubuntu</pre>
 
 <p>Version 2 of the EFI shell provides a command, <tt>bcfg</tt>, which can adjust the EFI boot order. Unfortunately, this tool is not present in version 1 of the EFI shell, and version 2 is reliable only with EFI version 2.3 and later. To date (early 2016), all Intel-based Macs use EFI 1.1, and many PCs sold prior to Windows 8's release use UEFI (EFI 2.x) versions prior to 2.3. Thus, this approach may not work for you.</p>
 
-<p>Even if your computer works with a version 2 shell, it may not have one built in. In fact, most EFIs I've seen lack a built-in shell. If a shell is available, it should appear on the EFI's built-in boot manager, as described earlier, in <a href="#evade_guards">Evading the Guards: Performing a One-Time Boot to Your Desired OS.</p> If a shell is not built into your firmware, you can add one; here are a few links that may be helpful:</p>
+<p>Even if your computer works with a version 2 shell, it may not have one built in. In fact, most EFIs I've seen lack a built-in shell. If a shell is available, it should appear on the EFI's built-in boot manager, as described earlier, in <a href="#evade_guards">Evading the Guards: Performing a One-Time Boot to Your Desired OS.</a> If a shell is not built into your firmware, you can add one; here are a few links that may be helpful:</p>
 
 <ul>
 
@@ -505,7 +502,7 @@ Boot0085* ubuntu</pre>
 
 </ol>
 
-<p>At this point, you should have a working USB flash drive with an EFI shell. It should show up in your computer's built-in boot manager, as described earlier, in <a href="#evade_guards">Evading the Guards: Performing a One-Time Boot to Your Desired OS.</a> It will probably appear there under the brand name of the USB drive, perhaps with "UEFI" in the description. (If the boot medium shows up twice, select the option that includes "UEFI" in the description.)</p>
+<p>At this point, you should have a working USB flash drive with an EFI shell. It should show up in your computer's built-in boot manager, as described earlier, in <a href="#evade_guards">Evading the Guards: Performing a One-Time Boot to Your Desired OS.</a> It will probably appear there under the brand name of the USB drive, perhaps with "UEFI" in the description. (If the boot medium shows up twice, select the option that includes "UEFI" in the description.) One major caveat is that the EFI shell is not signed with a Secure Boot key, so to use it on a computer with Secure Boot active, you must disable Secure Boot.</p>
 
 <p>Once you've booted the EFI shell, you can follow a subset of the <a href="installing.html#efishell">EFI shell rEFInd installation instructions</a> to repair the boot coup:</p>
 

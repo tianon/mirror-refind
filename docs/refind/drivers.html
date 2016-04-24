@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-1/26/2016, referencing rEFInd 0.10.2</p>
+4/24/2016, referencing rEFInd 0.10.3</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -334,6 +334,20 @@ computer, that combination takes 3 minutes to load a Linux kernel and
 initial RAM disk file! Most real computers don't suffer nearly so badly,
 but some can take an extra five seconds or so to boot a kernel. I've fixed
 the speed problems in rEFInd's drivers as of version 0.7.0.</p>
+
+<p>Although I know of no readily-available hardware drivers, I do know of a couple of non-hardware non-filesystem drivers:</p>
+
+<ul>
+
+<li><a href="https://github.com/NikolajSchlej/CrScreenshotDxe"><b>CrScreenshot</b></a>&mdash;This driver adds a screenshot capability to any EFI. Note that it's available only as source code that requires the Tianocore EDK2 to build. I have not tested it. (Note also that rEFInd provides its own screen shot capability; pressing F10 takes a screen shot within rEFInd.)</li>
+
+<li><a href="https://github.com/rcpao-enmotus/RamDiskPkg"><b>RamDiskPkg</a></b>&mdash;This is a rudimentary RAM disk driver. It must be compiled with a RAM disk image; the resulting binary is hard-coded with a fixed RAM disk image. It's therefore useful mostly for developers.</li>
+
+</ul>
+
+<p>Both of these drivers are useful mainly for developers.</p>
+
+</ul>
 
 <p>Driver availability could increase in the future. If you know of
 additional EFI drivers, please <a href="mailto:rodsmith@rodsbooks.com">tell

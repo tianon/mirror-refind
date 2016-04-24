@@ -47,11 +47,7 @@ install_to_esp() {
             ./refind-install --shim $ShimFile --yes > /dev/null
         fi
     else
-        if [[ -n $SBSign && -n $OpenSSL ]] ; then
-            ./refind-install --localkeys --yes > /dev/null
-        else
-            ./refind-install --yes > /dev/null
-        fi
+        ./refind-install --yes > /dev/null
     fi
 } # install_to_esp()
 
