@@ -166,7 +166,7 @@ REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, TRUE, 0, 0, 0, DONT_CHA
                               BANNER_NOSCALE, NULL, NULL, NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL,
                               NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY,
-                                TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE,
+                                TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, TAG_FWUPDATE_TOOL,
                                 0, 0, 0, 0, 0, 0, 0, 0 }
                             };
 
@@ -1919,6 +1919,10 @@ static VOID ScanForTools(VOID) {
 
             case TAG_MOK_TOOL:
                 FindTool(MokLocations, MOK_NAMES, L"MOK utility", BUILTIN_ICON_TOOL_MOK_TOOL);
+                break;
+
+            case TAG_FWUPDATE_TOOL:
+                FindTool(MokLocations, FWUPDATE_NAMES, L"firmware update utility", BUILTIN_ICON_TOOL_FWUPDATE);
                 break;
 
             case TAG_CSR_ROTATE:

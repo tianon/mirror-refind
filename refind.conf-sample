@@ -180,10 +180,12 @@ timeout 20
 #  reboot           - a tag to reboot the computer
 #  firmware         - a tag to reboot the computer into the firmware's
 #                     user interface (ignored on older computers)
+#  fwupdate         - a tag to update the firmware; launches the fwupx64.efi
+#                     (or similar) program
 #  netboot          - launch the ipxe.efi tool for network (PXE) booting
-# Default is shell,memtest,gdisk,apple_recovery,windows_recovery,mok_tool,about,shutdown,reboot,firmware
+# Default is shell,memtest,gdisk,apple_recovery,windows_recovery,mok_tool,about,shutdown,reboot,firmware,fwupdate
 #
-#showtools shell, gdisk, memtest, mok_tool, apple_recovery, windows_recovery, about, reboot, exit, firmware
+#showtools shell, gdisk, memtest, mok_tool, apple_recovery, windows_recovery, about, reboot, exit, firmware, fwupdate
 
 # Boot loaders that can launch a Windows restore or emergency system.
 # These tend to be OEM-specific.

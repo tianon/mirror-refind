@@ -64,6 +64,7 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"tool_apple_rescue", ICON_SIZE_SMALL },
    { NULL, L"tool_windows_rescue", ICON_SIZE_SMALL },
    { NULL, L"tool_mok_tool", ICON_SIZE_SMALL },
+   { NULL, L"tool_fwupdate", ICON_SIZE_SMALL },
    { NULL, L"tool_memtest", ICON_SIZE_SMALL },
    { NULL, L"tool_netboot", ICON_SIZE_SMALL },
    { NULL, L"vol_internal", ICON_SIZE_BADGE },

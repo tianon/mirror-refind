@@ -1,5 +1,17 @@
-0.10.3 (?/??/2016):
+0.10.3 (4/24/2016):
 -------------------
+
+- Changed description of BIOS/CSM/legacy OS loaders on Macs to include the
+  string "(Legacy)", so as to more easily identify BIOS/CSM/legacy-mode OSes
+  in the rEFInd main menu.
+
+- Added recognition of the fwupx64.efi file as a firmware update tool.
+  This filename is excluded from the first-row launchers, and is instead
+  presented on the second row, controlled by the "fwupdate" item on the
+  "showtools" option line. It's enabled by default. Note that it's still a
+  bit unclear to me how this tool is supposed to be used. rEFInd launches it
+  with no options, but if it should take options, this will have to be
+  changed in the future.
 
 - Tightened exclusion of shell binary filenames from boot loader scan.
   Previously, any filename containing the substring "shell" was excluded

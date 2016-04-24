@@ -1,6 +1,6 @@
 Summary: EFI boot manager software
 Name: refind
-Version: 0.10.2
+Version: 0.10.3
 Release: 1%{?dist}
 Summary: EFI boot manager software
 License: GPLv3
@@ -181,6 +181,8 @@ fi
 # thus wiping out the just-updated files.
 
 %changelog
+* Sun Apr 24 2016 R Smith <rodsmith@rodsbooks.com> - 0.10.3
+- Updated spec file for 0.10.3
 * Tue Jan 26 2016 R Smith <rodsmith@rodsbooks.com> - 0.10.2
 - Updated spec file for 0.10.2
 * Sat Dec 12 2015 R Smith <rodsmith@rodsbooks.com> - 0.10.1

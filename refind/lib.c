@@ -607,12 +607,12 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
             FindMem(Buffer, SECTOR_SIZE, "ISOLINUX", 8) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"linux";
-            Volume->OSName = L"Linux";
+            Volume->OSName = L"Linux (Legacy)";
 
         } else if (FindMem(Buffer, 512, "Geom\0Hard Disk\0Read\0 Error", 26) >= 0) {   // GRUB
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"grub,linux";
-            Volume->OSName = L"Linux";
+            Volume->OSName = L"Linux (Legacy)";
 
         } else if ((*((UINT32 *)(Buffer + 502)) == 0 &&
                     *((UINT32 *)(Buffer + 506)) == 50000 &&
@@ -620,7 +620,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
                     FindMem(Buffer, SECTOR_SIZE, "Starting the BTX loader", 23) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"freebsd";
-            Volume->OSName = L"FreeBSD";
+            Volume->OSName = L"FreeBSD (Legacy)";
 
         // If more differentiation needed, also search for
         // "Invalid partition table" &/or "Missing boot loader".
@@ -629,59 +629,59 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
                    (FindMem(Buffer, SECTOR_SIZE, "I/O error loading boot loader", 29) >= 0))  {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"freebsd";
-            Volume->OSName = L"FreeBSD";
+            Volume->OSName = L"FreeBSD (Legacy)";
 
         } else if (FindMem(Buffer, 512, "!Loading", 8) >= 0 ||
                    FindMem(Buffer, SECTOR_SIZE, "/cdboot\0/CDBOOT\0", 16) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"openbsd";
-            Volume->OSName = L"OpenBSD";
+            Volume->OSName = L"OpenBSD (Legacy)";
 
         } else if (FindMem(Buffer, 512, "Not a bootxx image", 18) >= 0 ||
                    *((UINT32 *)(Buffer + 1028)) == 0x7886b6d1) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"netbsd";
-            Volume->OSName = L"NetBSD";
+            Volume->OSName = L"NetBSD (Legacy)";
 
         // Windows NT/200x/XP
         } else if (FindMem(Buffer, SECTOR_SIZE, "NTLDR", 5) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"win";
-            Volume->OSName = L"Windows";
+            Volume->OSName = L"Windows (Legacy)";
 
         // Windows Vista/7/8
         } else if (FindMem(Buffer, SECTOR_SIZE, "BOOTMGR", 7) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"win8,win";
-            Volume->OSName = L"Windows";
+            Volume->OSName = L"Windows (Legacy)";
 
         } else if (FindMem(Buffer, 512, "CPUBOOT SYS", 11) >= 0 ||
                    FindMem(Buffer, 512, "KERNEL  SYS", 11) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"freedos";
-            Volume->OSName = L"FreeDOS";
+            Volume->OSName = L"FreeDOS (Legacy)";
 
         } else if (FindMem(Buffer, 512, "OS2LDR", 6) >= 0 ||
                    FindMem(Buffer, 512, "OS2BOOT", 7) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"ecomstation";
-            Volume->OSName = L"eComStation";
+            Volume->OSName = L"eComStation (Legacy)";
 
         } else if (FindMem(Buffer, 512, "Be Boot Loader", 14) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"beos";
-            Volume->OSName = L"BeOS";
+            Volume->OSName = L"BeOS (Legacy)";
 
         } else if (FindMem(Buffer, 512, "yT Boot Loader", 14) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"zeta,beos";
-            Volume->OSName = L"ZETA";
+            Volume->OSName = L"ZETA (Legacy)";
 
         } else if (FindMem(Buffer, 512, "\x04" "beos\x06" "system\x05" "zbeos", 18) >= 0 ||
                    FindMem(Buffer, 512, "\x06" "system\x0c" "haiku_loader", 20) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"haiku,beos";
-            Volume->OSName = L"Haiku";
+            Volume->OSName = L"Haiku (Legacy)";
 
         }
 

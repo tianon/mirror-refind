@@ -524,6 +524,7 @@ VOID ReadConfig(CHAR16 *FileName)
        MyFreePool(GlobalConfig.DontScanFiles);
        GlobalConfig.DontScanFiles = StrDuplicate(DONT_SCAN_FILES);
        MergeStrings(&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
+       MergeStrings(&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
        MyFreePool(GlobalConfig.DontScanVolumes);
        GlobalConfig.DontScanVolumes = StrDuplicate(DONT_SCAN_VOLUMES);
        GlobalConfig.WindowsRecoveryFiles = StrDuplicate(WINDOWS_RECOVERY_FILES);
@@ -649,6 +650,8 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.ShowTools[i - 1] = TAG_WINDOWS_RECOVERY;
                 } else if (MyStriCmp(FlagName, L"mok_tool")) {
                    GlobalConfig.ShowTools[i - 1] = TAG_MOK_TOOL;
+                } else if (MyStriCmp(FlagName, L"fwupdate")) {
+                   GlobalConfig.ShowTools[i - 1] = TAG_FWUPDATE_TOOL;
                 } else if (MyStriCmp(FlagName, L"csr_rotate")) {
                    GlobalConfig.ShowTools[i - 1] = TAG_CSR_ROTATE;
                 } else if (MyStriCmp(FlagName, L"firmware")) {

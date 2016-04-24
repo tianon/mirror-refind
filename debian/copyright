@@ -339,6 +339,7 @@ Files: icons/boot_win.png
        icons/os_refit.png
        icons/os_win.png
        icons/tool_apple_rescue.png
+       icons/tool_fwupdate.png
        icons/tool_memtest.png
        icons/tool_rescue.png
        icons/transparent.png
