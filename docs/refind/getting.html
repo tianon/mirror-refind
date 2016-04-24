@@ -235,6 +235,8 @@ BIOS-booted computer.</p>
 
 <p>I know of a small number of pre-packaged versions of rEFInd, either in official OS repositories or in ancillary repositories:</p>
 
+<p class="sidebar"><b>Warning:</b> Ubuntu 16.04's <tt>sbsigntool</tt> package has a bug that causes the <tt>sbsign</tt> utility to crash randomly. (See <a href="https://bugs.launchpad.net/ubuntu/+source/sbsigntool/+bug/1574372">this bug report</a> for details.) When installing Ubuntu with Secure Boot active from the PPA, this bug will be triggered and is likely to prevent successful installation. Therefore, I recommend you disable Secure Boot or install from the Debian package (with the <tt>sbsigntool</tt> package <i>uninstalled</i>) to avoid this problem. This bug does not exist in Ubuntu 15.10 and earlier.</p>
+
 <ul>
 
 <li><a name="ppa"><b>Ubuntu</b></a>&mdash;Although an official Ubuntu package

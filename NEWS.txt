@@ -1,6 +1,13 @@
 0.10.3 (4/24/2016):
 -------------------
 
+- Altered RPM & Debian installation scripts so as to NOT call sbsign if
+  Secure Boot is disabled. This is a response to Ubuntu bug #1574372
+  (https://bugs.launchpad.net/ubuntu/+source/sbsigntool/+bug/1574372): In
+  Ubuntu 16.04, the sbsign program is segfaulting randomly, which prevents
+  proper installation of the program. This change at least permits proper
+  installation IF Secure Boot is disabled.
+
 - Changed description of BIOS/CSM/legacy OS loaders on Macs to include the
   string "(Legacy)", so as to more easily identify BIOS/CSM/legacy-mode OSes
   in the rEFInd main menu.
