@@ -761,6 +761,9 @@ VOID ReadConfig(CHAR16 *FileName)
               ReadConfig(TokenList[1]);
            }
 
+        } else if (MyStriCmp(TokenList[0], L"enable_touch")) {
+           GlobalConfig.EnableTouch = HandleBoolean(TokenList, TokenCount);
+		   
         }
 
         FreeTokenLine(&TokenList, &TokenCount);
