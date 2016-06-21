@@ -39,6 +39,7 @@
 
 # Revision history:
 #
+# 0.10.4  -- Improved handling of disks (other than /dev/[sh]d? disks).
 # 0.10.2  -- Improved Secure Boot detection in Linux, fixed --usedefault in OS X,
 #            and fixed bug that could cause mountesp to be installed as a FILE
 #            called /usr/local/bin in OS X.
@@ -1052,13 +1053,15 @@ ReSignBinaries() {
 # and EspFilesystem the filesystem (always "vfat")
 FindLinuxESP() {
    echo "The ESP doesn't seem to be mounted! Trying to find it...."
+   local Name
    local Drive
    local PartNum
    local TableType
    local DmStatus
    local SkipIt
    local Dmraid
-   for Drive in `ls /dev/[sh]d?` ; do
+   for Name in `lsblk -r | grep disk | cut -f 1 -d " "` ; do
+      Drive="/dev/$Name"
       SkipIt=0
       Dmraid=`which dmraid 2> /dev/null`
       if [ -x "$Dmraid" ] ; then
@@ -1109,7 +1112,13 @@ FindMountedESP() {
    if [[ $EspFilesystem != 'vfat' ]] ; then
       echo "$RootDir/$InstallDir doesn't seem to be on a VFAT filesystem. The ESP must be"
       echo "mounted at $RootDir/boot or $RootDir/boot/efi and it must be VFAT! Aborting!"
-      exit 1
+      if [[ -d /sys/firmware/efi ]] ; then
+         exit 1
+      else
+         echo "The computer appears to be running in BIOS mode and has no ESP. You should"
+         echo "create an ESP, and ideally boot in EFI mode, before installing rEFInd."
+         exit 0
+      fi
    fi
    echo "ESP was found at $InstallDir using $EspFilesystem"
 } # FindMountedESP

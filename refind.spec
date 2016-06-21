@@ -37,7 +37,7 @@ A graphical boot manager for EFI- and UEFI-based computers, such as all
 Intel-based Macs and recent (most 2011 and later) PCs. rEFInd presents a
 boot menu showing all the EFI boot loaders on the EFI-accessible
 partitions, and optionally BIOS-bootable partitions on Macs and BIOS boot
-entries on UEFI PCs with CSMs. EFI-compatbile OSes, including Linux,
+entries on UEFI PCs with CSMs. EFI-compatible OSes, including Linux,
 provide boot loaders that rEFInd can detect and launch. rEFInd can launch
 Linux EFI boot loaders such as ELILO, GRUB Legacy, GRUB 2, and 3.3.0 and
 later kernels with EFI stub support. EFI filesystem drivers for ext2/3/4fs,

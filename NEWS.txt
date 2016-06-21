@@ -1,3 +1,9 @@
+0.10.4 (?/??/2016):
+-------------------
+
+- Tweaked refind-install to do a better job of detecting disks other
+  than /dev/sd? and /dev/hd? devices.
+
 0.10.3 (4/24/2016):
 -------------------
 
