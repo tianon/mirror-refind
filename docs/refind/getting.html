@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-4/24/2016, referencing rEFInd 0.10.3</p>
+6/24/2016, referencing rEFInd 0.10.3</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -235,25 +235,50 @@ BIOS-booted computer.</p>
 
 <p>I know of a small number of pre-packaged versions of rEFInd, either in official OS repositories or in ancillary repositories:</p>
 
-<p class="sidebar"><b>Warning:</b> Ubuntu 16.04's <tt>sbsigntool</tt> package has a bug that causes the <tt>sbsign</tt> utility to crash randomly. (See <a href="https://bugs.launchpad.net/ubuntu/+source/sbsigntool/+bug/1574372">this bug report</a> for details.) When installing Ubuntu with Secure Boot active from the PPA, this bug will be triggered and is likely to prevent successful installation. Therefore, I recommend you disable Secure Boot or install from the Debian package (with the <tt>sbsigntool</tt> package <i>uninstalled</i>) to avoid this problem. This bug does not exist in Ubuntu 15.10 and earlier.</p>
-
 <ul>
 
-<li><a name="ppa"><b>Ubuntu</b></a>&mdash;Although an official Ubuntu package
-    isn't available, I've created a <a
-    href="https://launchpad.net/~rodsmith/+archive/refind">rEFInd PPA</a> for
-    Ubuntu. To use it, open a Terminal window and type <tt
-    class="userinput">sudo apt-add-repository ppa:rodsmith/refind</tt>, then <tt
-    class="userinput">sudo apt-get update</tt>. You can then type <tt
-    class="userinput">sudo apt-get install refind</tt> to install the package.
-    You'll be asked to decide whether to install rEFInd to the ESP when you
-    first install it. Thereafter, the rEFInd version will update along with your
-    other software. This package is built with GNU-EFI and is not signed with a
-    Secure Boot key; however, the install script should sign the binary with a
-    locally-generated key if it detects that your system uses Secure Boot. Thus,
-    if you've previously installed one of my binaries on a Secure Boot system
-    and added its key as a MOK, you'll have to add your local key when you
-    reboot.</li>
+<li><b>Debian</b>&mdash;Debian added rEFInd 0.10.3 to its "sid" (unstable")
+    repository in June of 2016. Because most people don't use this
+    "bleeding-edge" version of the distribution, it is not yet a practical
+    option for most users; but it is on the way. You can download and
+    install it as a separate package <a
+    href="https://packages.debian.org/unstable/admin/refind">here.</a>
+    Debian's inclusion of rEFInd means that derivative distributions, such
+    as Ubuntu and Mint, will eventually receive rEFInd packages, too. Be
+    aware that Debian's package is not signed with a Secure Boot key,
+    although if the <tt>sbsigntool</tt> package is installed, the
+    installation scripts will generate and use their own Secure Boot
+    keys and sign the binary with them.</li>
+
+<li><b>Ubuntu</b>&mdash;Two Ubuntu-specific methods of installing rEFInd in
+    this distribution exist:
+
+    <ul>
+
+    <li>Ubuntu 16.10 ("Yakkety Yak") has synced the Debian package. As I
+	write (in late June, 2016), it's not yet available in the
+	repositories, but it should appear there eventually. Note that, like
+	the Debian package, this one is not signed for use with Secure Boot,
+	but if your system includes the <tt>sbsigntool</tt> package, the
+	installer will generate a local key for this purpose.</li>
+
+    <li>I've created a <a
+	href="https://launchpad.net/~rodsmith/+archive/refind">rEFInd
+	PPA</a> for Ubuntu. To use it, open a Terminal window and type <tt
+	class="userinput">sudo apt-add-repository ppa:rodsmith/refind</tt>,
+	then <tt class="userinput">sudo apt-get update</tt>. You can then
+	type <tt class="userinput">sudo apt-get install refind</tt> to
+	install the package. You'll be asked to decide whether to install
+	rEFInd to the ESP when you first install it. Thereafter, the rEFInd
+	version will update along with your other software. This package is
+	built with GNU-EFI and is not signed with a Secure Boot key;
+	however, the install script should sign the binary with a
+	locally-generated key if it detects that your system uses Secure
+	Boot. Thus, if you've previously installed one of my binaries on a
+	Secure Boot system and added its key as a MOK, you'll have to add
+	your local key when you reboot.</li>
+
+    </ul></li>
 
 <li><b>Arch Linux</b>&mdash;You can obtain rEFInd from the Arch
     repositories, in both a stable version (the <tt>refind-efi</tt> package
