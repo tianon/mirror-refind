@@ -366,7 +366,7 @@ static VOID SaveScreen(VOID) {
    
    egClearScreen(&Black);
    if(TouchEnabled) {
-	  WaitList[1] = TouchProtocol->WaitForInput;
+      WaitList[1] = TouchProtocol->WaitForInput;
       refit_call3_wrapper(BS->WaitForEvent, 2, WaitList, &index);
    } else {
       refit_call3_wrapper(BS->WaitForEvent, 1, WaitList, &index);
@@ -468,26 +468,26 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
         }
 
         // read key press or touch event (and wait for them if applicable)
-		if(TouchEnabled) {
-			TouchStatus = refit_call2_wrapper(TouchProtocol->GetState, TouchProtocol, TouchState);
-		}
-		Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
-		
-		if(Status == EFI_SUCCESS) {
-			TouchActive = FALSE;
-			TimeSinceKeystroke = 0;
-		} else if(TouchStatus == EFI_SUCCESS) {
-			if(StyleFunc != MainMenuStyle) {
-				// prevent user from getting stuck on submenus
-				// (the only one currently reachable without a keyboard is the about screen)
-				MenuExit = MENU_EXIT_ENTER;
-				break;
-			}
-			
-			TouchActive = TRUE;
-			TimeSinceKeystroke = 0;
-		} else {
-			EFI_EVENT WaitList[3] = { ST->ConIn->WaitForKey, NULL, NULL };
+        if(TouchEnabled) {
+             TouchStatus = refit_call2_wrapper(TouchProtocol->GetState, TouchProtocol, TouchState);
+        }
+        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+
+        if(Status == EFI_SUCCESS) {
+            TouchActive = FALSE;
+            TimeSinceKeystroke = 0;
+        } else if (TouchStatus == EFI_SUCCESS) {
+            if (StyleFunc != MainMenuStyle) {
+                // prevent user from getting stuck on submenus
+                // (the only one currently reachable without a keyboard is the about screen)
+                MenuExit = MENU_EXIT_ENTER;
+                break;
+            }
+
+            TouchActive = TRUE;
+            TimeSinceKeystroke = 0;
+        } else {
+            EFI_EVENT WaitList[3] = { ST->ConIn->WaitForKey, NULL, NULL };
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
                 MenuExit = MENU_EXIT_TIMEOUT;
@@ -503,16 +503,16 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                     UINTN               Index;
 
                     refit_call3_wrapper(BS->SetTimer, TimerEvent, TimerRelative, 10000000); // 1s Timeout
-					
-					if(TouchEnabled) {	
-						WaitList[1] = TouchProtocol->WaitForInput;
-						WaitList[2] = TimerEvent;
-						Status = refit_call3_wrapper(BS->WaitForEvent, 3, WaitList, &Index);
-					} else {
-						WaitList[1] = TimerEvent;
-						Status = refit_call3_wrapper(BS->WaitForEvent, 2, WaitList, &Index);
-					}
-					
+
+                    if (TouchEnabled) {
+                        WaitList[1] = TouchProtocol->WaitForInput;
+                        WaitList[2] = TimerEvent;
+                        Status = refit_call3_wrapper(BS->WaitForEvent, 3, WaitList, &Index);
+                    } else {
+                        WaitList[1] = TimerEvent;
+                        Status = refit_call3_wrapper(BS->WaitForEvent, 2, WaitList, &Index);
+                    }
+
                     refit_call1_wrapper(BS->CloseEvent, TimerEvent);
                     if (EFI_ERROR(Status))
                         refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
@@ -532,12 +532,12 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                         TimeSinceKeystroke = 0;
                 } // if
             } else {
-				if(TouchEnabled) {
-					WaitList[1] = TouchProtocol->WaitForInput;
-					refit_call3_wrapper(BS->WaitForEvent, 2, WaitList, &index);
-				} else {
-					refit_call3_wrapper(BS->WaitForEvent, 1, WaitList, &index);
-				}
+                if (TouchEnabled) {
+                    WaitList[1] = TouchProtocol->WaitForInput;
+                    refit_call3_wrapper(BS->WaitForEvent, 2, WaitList, &index);
+                } else {
+                    refit_call3_wrapper(BS->WaitForEvent, 1, WaitList, &index);
+                }
             }
             continue;
         } // if/else !read keystroke
@@ -553,85 +553,84 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             }
         }
 
-		if(!TouchActive) { // react to key press
-			switch (key.ScanCode) {
-				case SCAN_UP:
-					UpdateScroll(&State, SCROLL_LINE_UP);
-					break;
-				case SCAN_LEFT:
-					UpdateScroll(&State, SCROLL_LINE_LEFT);
-					break;
-				case SCAN_DOWN:
-					UpdateScroll(&State, SCROLL_LINE_DOWN);
-					break;
-				case SCAN_RIGHT:
-					UpdateScroll(&State, SCROLL_LINE_RIGHT);
-					break;
-				case SCAN_HOME:
-					UpdateScroll(&State, SCROLL_FIRST);
-					break;
-				case SCAN_END:
-					UpdateScroll(&State, SCROLL_LAST);
-					break;
-				case SCAN_PAGE_UP:
-					UpdateScroll(&State, SCROLL_PAGE_UP);
-					break;
-				case SCAN_PAGE_DOWN:
-					UpdateScroll(&State, SCROLL_PAGE_DOWN);
-					break;
-				case SCAN_ESC:
-					MenuExit = MENU_EXIT_ESCAPE;
-					break;
-				case SCAN_INSERT:
-				case SCAN_F2:
-					MenuExit = MENU_EXIT_DETAILS;
-					break;
-				case SCAN_F10:
-					egScreenShot();
-					break;
-				case 0x0016: // F12
-				   if (EjectMedia())
-					  MenuExit = MENU_EXIT_ESCAPE;
-				   break;
-			}
-			switch (key.UnicodeChar) {
-				case CHAR_LINEFEED:
-				case CHAR_CARRIAGE_RETURN:
-				case ' ':
-					MenuExit = MENU_EXIT_ENTER;
-					break;
-				case '+':
-					MenuExit = MENU_EXIT_DETAILS;
-					break;
-				default:
-					KeyAsString[0] = key.UnicodeChar;
-					KeyAsString[1] = 0;
-					ShortcutEntry = FindMenuShortcutEntry(Screen, KeyAsString);
-					if (ShortcutEntry >= 0) {
-						State.CurrentSelection = ShortcutEntry;
-						MenuExit = MENU_EXIT_ENTER;
-					}
-					break;
-			}
-		} else { //react to touch event
-			UINTN Item = FindMainMenuItem(Screen, &State, TouchState->CurrentX, TouchState->CurrentY);
-			
-			switch(Item) {
-				case TOUCH_NO_ITEM:
-					//do nothing
-					break;
-				case TOUCH_LEFT_ARROW:
-					UpdateScroll(&State, SCROLL_PAGE_UP);
-					break;
-				case TOUCH_RIGHT_ARROW:
-					UpdateScroll(&State, SCROLL_PAGE_DOWN);
-					break;
-				default:
-					State.CurrentSelection = Item;
-					MenuExit = MENU_EXIT_ENTER;
-					break;
-			}
-		}
+        if(!TouchActive) { // react to key press
+            switch (key.ScanCode) {
+                case SCAN_UP:
+                    UpdateScroll(&State, SCROLL_LINE_UP);
+                    break;
+                case SCAN_LEFT:
+                    UpdateScroll(&State, SCROLL_LINE_LEFT);
+                    break;
+                case SCAN_DOWN:
+                    UpdateScroll(&State, SCROLL_LINE_DOWN);
+                    break;
+                case SCAN_RIGHT:
+                    UpdateScroll(&State, SCROLL_LINE_RIGHT);
+                    break;
+                case SCAN_HOME:
+                    UpdateScroll(&State, SCROLL_FIRST);
+                    break;
+                case SCAN_END:
+                    UpdateScroll(&State, SCROLL_LAST);
+                    break;
+                case SCAN_PAGE_UP:
+                    UpdateScroll(&State, SCROLL_PAGE_UP);
+                    break;
+                case SCAN_PAGE_DOWN:
+                    UpdateScroll(&State, SCROLL_PAGE_DOWN);
+                    break;
+                case SCAN_ESC:
+                    MenuExit = MENU_EXIT_ESCAPE;
+                    break;
+                case SCAN_INSERT:
+                case SCAN_F2:
+                    MenuExit = MENU_EXIT_DETAILS;
+                    break;
+                case SCAN_F10:
+                    egScreenShot();
+                    break;
+                case 0x0016: // F12
+                    if (EjectMedia())
+                        MenuExit = MENU_EXIT_ESCAPE;
+                    break;
+            }
+            switch (key.UnicodeChar) {
+                case CHAR_LINEFEED:
+                case CHAR_CARRIAGE_RETURN:
+                case ' ':
+                    MenuExit = MENU_EXIT_ENTER;
+                    break;
+                case '+':
+                    MenuExit = MENU_EXIT_DETAILS;
+                    break;
+                default:
+                    KeyAsString[0] = key.UnicodeChar;
+                    KeyAsString[1] = 0;
+                    ShortcutEntry = FindMenuShortcutEntry(Screen, KeyAsString);
+                    if (ShortcutEntry >= 0) {
+                        State.CurrentSelection = ShortcutEntry;
+                        MenuExit = MENU_EXIT_ENTER;
+                    }
+                    break;
+            }
+        } else { //react to touch event
+            UINTN Item = FindMainMenuItem(Screen, &State, TouchState->CurrentX, TouchState->CurrentY);
+            switch (Item) {
+                case TOUCH_NO_ITEM:
+                    //do nothing
+                    break;
+                case TOUCH_LEFT_ARROW:
+                    UpdateScroll(&State, SCROLL_PAGE_UP);
+                    break;
+                case TOUCH_RIGHT_ARROW:
+                    UpdateScroll(&State, SCROLL_PAGE_DOWN);
+                    break;
+                default:
+                    State.CurrentSelection = Item;
+                    MenuExit = MENU_EXIT_ENTER;
+                    break;
+            }
+        }
     }
 
     StyleFunc(Screen, &State, MENU_FUNCTION_CLEANUP, NULL);
@@ -1383,14 +1382,13 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
     if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
         MainStyle = MainMenuStyle;
-		
-		if(GlobalConfig.EnableTouch) {
-			// Check for touch availability 
-			EFI_STATUS status = refit_call3_wrapper(BS->LocateProtocol, &TouchGuid, NULL, (VOID **) &TouchProtocol);
-			if(status == EFI_SUCCESS) {
-				TouchEnabled = TouchActive = TRUE;
-			}
-		}
+        if (GlobalConfig.EnableTouch) {
+            // Check for touch availability 
+            EFI_STATUS status = refit_call3_wrapper(BS->LocateProtocol, &TouchGuid, NULL, (VOID **) &TouchProtocol);
+            if (status == EFI_SUCCESS) {
+                TouchEnabled = TouchActive = TRUE;
+            }
+        }
     }
 
     while (!MenuExit) {

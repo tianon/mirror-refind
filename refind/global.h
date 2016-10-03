@@ -301,6 +301,7 @@ typedef struct {
    BOOLEAN          DeepLegacyScan;
    BOOLEAN          EnableAndLockVMX;
    BOOLEAN          FoldLinuxKernels;
+   BOOLEAN          EnableTouch;
    UINTN            RequestedScreenWidth;
    UINTN            RequestedScreenHeight;
    UINTN            BannerBottomEdge;
@@ -333,7 +334,6 @@ typedef struct {
    UINT32_LIST      *CsrValues;
    UINTN            ShowTools[NUM_TOOLS];
    CHAR8            ScanFor[NUM_SCAN_OPTIONS]; // codes of types of loaders for which to scan
-   BOOLEAN			EnableTouch;
 } REFIT_CONFIG;
 
 // Global variables

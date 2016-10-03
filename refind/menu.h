@@ -48,6 +48,7 @@
 #ifdef __MAKEWITH_GNUEFI
 #include "efi.h"
 #include "efilib.h"
+#include "../EfiLib/AbsolutePointer.h"
 #else
 #include "../include/tiano_includes.h"
 #endif
