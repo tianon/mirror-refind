@@ -139,6 +139,16 @@ timeout 20
 #resolution 1440 900
 #resolution 3
 
+# Enable touch screen support. If active, this feature enables use of
+# touch screen controls (as on tablets). Note, however, that not all
+# tablets' EFIs provide the necessary underlying support, so this
+# feature may not work for you. If it does work, you should be able
+# to launch an OS or tool by touching it. In a submenu, touching
+# anywhere launches the currently-selection item; there is, at present,
+# no way to select a specific submenu item.
+#
+#enable_touch
+
 # Launch specified OSes in graphics mode. By default, rEFInd switches
 # to text mode and displays basic pre-launch information when launching
 # all OSes except OS X. Using graphics mode can produce a more seamless

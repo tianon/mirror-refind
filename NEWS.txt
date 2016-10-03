@@ -1,6 +1,15 @@
 0.10.4 (?/??/2016):
 -------------------
 
+- An anonymous contributor has provided support for touch screens. This
+  support requires that the "enable_touch" token be used in refind.conf.
+  Note, however, that not all tablet computers have EFIs that provide the
+  necessary support in the firmware.
+
+- Martin Whitaker contributed 64-bit support to the ext4fs driver, which
+  makes it compatible with ext4fs as written by some recent Linux
+  distributions.
+
 - Tweaked refind-install to do a better job of detecting disks other
   than /dev/sd? and /dev/hd? devices.
 
