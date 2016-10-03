@@ -47,6 +47,9 @@ Program (C source code) files:
   contributed them to this project, along with several miscellaneous
   improvements.
 
+* Martin Whitaker (other@martin-whitaker.me.uk) added 64-bit support
+  to the ext4fs driver.
+
 * Emerson Barcelos (emerson_freitas@yahoo.com.br) wrote the code for
   enabling Intel VMX support (the enable_and_lock_vmx token in
   refind.conf).
