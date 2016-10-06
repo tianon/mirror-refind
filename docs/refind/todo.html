@@ -165,14 +165,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	0.8. Developing a better solution to that problem is a high
 	priority.</li>
 
-    <li>The support for booting legacy (BIOS) OSes on UEFI-based PCs
-	currently has a number of limitations. Most importantly, it works
-	off of the list of boot devices stored in the computer's NVRAM. I'd
-	prefer to have it scan disks and partitions, as the Mac's legacy
-	boot support does. Also, the UEFI legacy boot code presents empty
-	optical drives and uses generic icons rather than OS-specific
-	icons.</li>
-
     <li>rEFInd's <tt>Makefile</tt>s and, to a lesser extent, C code,
 	support <i>x</i>86, <i>x</i>86-64, and ARM64 CPUs. EFI is also
 	available for Itanium (IA-64) and ARM32 CPUs, so I'd like to add
@@ -223,6 +215,16 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	booting, and nothing finer-grained is attempted. Improvements will
 	probably require identifying unique features of each version's boot
 	loader files or boot sector code.</li>
+
+    <li>The support for booting legacy (BIOS) OSes on UEFI-based PCs
+	currently has a number of limitations. Most importantly, it works
+	off of the list of boot devices stored in the computer's NVRAM. I'd
+	prefer to have it scan disks and partitions, as the Mac's legacy
+	boot support does. Also, the UEFI legacy boot code presents empty
+	optical drives and uses generic icons rather than OS-specific icons.
+	This said, BIOS support is becoming increasingly unimportant as the
+	transition from BIOS to EFI continues, so I'm unlikely to put effort
+	into this issue myself.</li>
 
 </ul></li> <!-- Improvements -->
 
@@ -349,10 +351,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	debugging, especially when dealing with problem reports from
 	users.</li>
 
-    <li>There's currently no way to create a manual boot stanza for a
-	BIOS-booted OS. This isn't a big priority for me personally, but I
-	can see how it could be for some people.</li>
-
     <li>I'd like to find a way to enable users to enter customizations for
 	boot options and then save them to the <tt>refind.conf</tt> file.
 	One possible way to implement this would be to have manual boot
@@ -403,6 +401,10 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     <li>The ability to produce audio output (at least a simple "beep") to signal
         to visually impaired users when rEFInd is ready to accept input would be
         helpful.</li>
+
+    <li>There's currently no way to create a manual boot stanza for a
+	BIOS-booted OS. This isn't a big priority for me personally, but I
+	can see how it could be for some people.</li>
 
     </ul></li> <!-- New features -->
 
