@@ -43,6 +43,8 @@
 #ifdef __MAKEWITH_GNUEFI
 #include "edk2/DriverBinding.h"
 #include "edk2/ComponentName.h"
+#else
+#define REFIND_EFI_COMPONENT_NAME_PROTOCOL EFI_COMPONENT_NAME_PROTOCOL
 #endif
 #include "../include/refit_call_wrapper.h"
 
@@ -66,7 +68,7 @@
   }
 
 EFI_GUID gEfiDriverBindingProtocolGuid = EFI_DRIVER_BINDING_PROTOCOL_GUID;
-EFI_GUID gEfiComponentNameProtocolGuid = EFI_COMPONENT_NAME_PROTOCOL_GUID;
+EFI_GUID gEfiComponentNameProtocolGuid = REFIND_EFI_COMPONENT_NAME_PROTOCOL_GUID;
 EFI_GUID gEfiDiskIoProtocolGuid = EFI_DISK_IO_PROTOCOL_GUID;
 EFI_GUID gEfiBlockIoProtocolGuid = EFI_BLOCK_IO_PROTOCOL_GUID;
 EFI_GUID gEfiFileInfoGuid = EFI_FILE_INFO_ID;
@@ -93,10 +95,10 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN  EFI_DRIVER_BINDING_PROTOCOL  *T
                                              IN  UINTN                        NumberOfChildren,
                                              IN  EFI_HANDLE                   *ChildHandleBuffer);
 
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  EFI_COMPONENT_NAME_PROTOCOL  *This,
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  REFIND_EFI_COMPONENT_NAME_PROTOCOL  *This,
                                                       IN  CHAR8                        *Language,
                                                       OUT CHAR16                       **DriverName);
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  EFI_COMPONENT_NAME_PROTOCOL    *This,
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  REFIND_EFI_COMPONENT_NAME_PROTOCOL    *This,
                                                           IN  EFI_HANDLE                     ControllerHandle,
                                                           IN  EFI_HANDLE                     ChildHandle  OPTIONAL,
                                                           IN  CHAR8                          *Language,
@@ -175,7 +177,7 @@ EFI_DRIVER_BINDING_PROTOCOL fsw_efi_DriverBinding_table = {
  * Interface structure for the EFI Component Name protocol.
  */
 
-EFI_COMPONENT_NAME_PROTOCOL fsw_efi_ComponentName_table = {
+REFIND_EFI_COMPONENT_NAME_PROTOCOL fsw_efi_ComponentName_table = {
     fsw_efi_ComponentName_GetDriverName,
     fsw_efi_ComponentName_GetControllerName,
     (CHAR8*) "eng"
@@ -465,7 +467,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN  EFI_DRIVER_BINDING_PROTOCOL  *T
  * based on the file system type actually used in compilation.
  */
 
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  EFI_COMPONENT_NAME_PROTOCOL  *This,
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  REFIND_EFI_COMPONENT_NAME_PROTOCOL  *This,
                                                       IN  CHAR8                        *Language,
                                                       OUT CHAR16                       **DriverName)
 {
@@ -484,7 +486,7 @@ EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  EFI_COMPONENT_NAME_PRO
  * because this is not a "bus" driver in the sense of the EFI Driver Model.
  */
 
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  EFI_COMPONENT_NAME_PROTOCOL    *This,
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  REFIND_EFI_COMPONENT_NAME_PROTOCOL    *This,
                                                           IN  EFI_HANDLE                     ControllerHandle,
                                                           IN  EFI_HANDLE                     ChildHandle  OPTIONAL,
                                                           IN  CHAR8                          *Language,
