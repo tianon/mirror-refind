@@ -270,7 +270,7 @@ Boot0002* Windows Boot Manager	HD(2,113800,113000,8b0b6d94-06af-4894-b9de-13ca35
 Boot0003* Windows Boot Manager	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(\EFI\Microsoft\Boot\bootmgfw.efi)WINDOWS.........x...B.C.D.O.B.J.E.C.T.=.{.9.d.e.a.8.6.2.c.-.5.c.d.d.-.4.e.7.0.-.a.c.c.1.-.f.3.2.b.3.4.4.d.4.7.9.5.}....................
 Boot0085* ubuntu	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(EFI\Ubuntu\grubx64.efi)</pre>
 
-<p>Much of this output looks like gibberish, and is useful only for very advanced diagnostics. Note, however, the part of most lines that specifies a filename, in parentheses after <tt>File</tt>&mdash;this information can help disambiguate a misleading or redundant name.</p>
+<p>Much of this output looks like gibberish, and is useful only for very advanced diagnostics. Note, however, the part of most lines that specifies a filename, in parentheses after <tt>File</tt>&mdash;this information can help disambiguate a misleading or redundant name. In this example, for instance, there are two <tt>Windows Boot Manager</tt> entries on two different partitions; each boots a different version of Windows.</p>
 
 <p>To adjust the boot order, you must identify the rEFInd entry and then use the <tt>-o</tt> option to <tt>efibootmgr</tt> to adjust the order:</p>
 
@@ -283,7 +283,7 @@ Boot0002* Windows Boot Manager
 Boot0003* Windows Boot Manager
 Boot0085* ubuntu</pre>
 
-<p>In this example, I moved rEFInd to the top of the list, followed by <tt>ubuntu</tt> (GRUB), Windows, and OS X. You can adjust the order in any way you want. You can also omit items you don't want to include&mdash;but be aware that if you omit Windows entirely from the boot list, it's likely to add itself back (at the top of the list) the next time you boot it.</p>
+<p>In this example, I moved rEFInd to the top of the list, followed by <tt>ubuntu</tt> (GRUB) and then the two Windows installations. You can adjust the order in any way you want. You can also omit items you don't want to include&mdash;but be aware that if you omit Windows entirely from the boot list, it's likely to add itself back (at the top of the list) the next time you boot it.</p>
 
 <a name="disabling_grub">
 <h3>Preventing a Linux Coup by Disabling GRUB Updates</h3>

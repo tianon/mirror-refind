@@ -1,6 +1,9 @@
 0.10.4 (?/??/2016):
 -------------------
 
+- Fixed bug that could cause program crash on startup. (In practice, it
+  manifested with GNU-EFI starting with version 3.0.3 or 3.0.4.)
+
 - An anonymous contributor has provided support for touch screens. This
   support requires that the "enable_touch" token be used in refind.conf.
   Note, however, that not all tablet computers have EFIs that provide the
