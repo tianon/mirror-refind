@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 4/24/2016</p>
+<p>Last Web page update: 10/9/2016</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,41 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.10.4 (10/9/2016)</b>&mdash;The number of changes in this
+    version is modest, but some features are important to some people:
+
+    <ul>
+
+    <li>Thanks to code submitted by an anonymous contributor, rEFInd now
+	supports <i>some</i> touch screens. This feature relies on support
+	in the firmware itself, though, and even some tablets lack this
+	support, so this feature does not work on all tablets.</li>
+
+    <li>Martin Whitaker has contributed updates to the ext4fs driver to make
+	it compatible with filesystems created with 64-bit pointers. As a
+	practical matter, this is important because 64-bit pointers are now
+	being used by default in some distributions. In theory, this feature
+	may enable use on over-16TiB filesystems, but this is untested at
+	the moment.</li>
+
+    <li>GNU-EFI version 3.0.3 or 3.0.4 has made changes that caused rEFInd's
+	drivers to fail to compile. This version addresses those compilation
+	problems.</li>
+
+    <li>A rEFInd coding error manifested with previous versions of rEFInd
+	when compiled with GNU-EFI starting at version 3.0.3 or 3.0.4,
+	causing the main rEFInd binary to crash. This problem has been
+	fixed. To the best of my knowledge, this bug has never manifested
+	with earlier versions of GNU-EFI or Tianocore builds.</li>
+
+    <li>The <tt>refind-install</tt> script now does a better job of
+	detecting disks that have exotic names&mdash;those other than
+	<tt>/dev/sd?</tt> or <tt>/dev/hd?</tt>.</li>
+
+    </ul>
+
+</li>
 
 <li><b>0.10.3 (4/24/2016)</b>&mdash;This version features mostly modest changes and additions:
 

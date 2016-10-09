@@ -795,7 +795,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.10.3</string>
+        <string>0.10.4</string>
 </dict>
 </plist>
 ENDOFHERE

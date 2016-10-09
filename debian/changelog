@@ -1,3 +1,9 @@
+refind (0.10.4-0ppa1) xenial; urgency=medium
+
+  * Version bump
+
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Sun, 09 Oct 2016 19:10:59 -0400
+
 refind (0.10.3-0ppa1) wily; urgency=medium
 
   * Version bump

@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 11/8/2015; last Web page update:
-4/24/2016, referencing rEFInd 0.10.3</p>
+10/9/2016, referencing rEFInd 0.10.4</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -126,7 +126,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <div style="float:right; width:55%">
 
-<p>Apple's OS X 10.11 (aka <i>El Capitan</i>) includes a new feature, known as System Integrity Protection (SIP), aka "rootless" mode. This feature is causing some consternation for advanced users, because it restricts what you can do with your computer, even as <tt>root</tt>. This page is dedicated to this new feature, including basic information on why SIP exists, how to install rEFInd on a computer with SIP enabled, and how to use rEFInd to manage SIP. Note that if you've come here for help installing rEFInd on a Mac with SIP enabled, you can click to one of the methods in the "Contents" box to the left of this paragraph. I recommend trying Recovery mode first; but if you have reason to try another method, you can do so.</p>
+<p>Apple's OS X 10.11 (aka <i>El Capitan</i>) added a new feature, known as System Integrity Protection (SIP), aka "rootless" mode. This feature causes some consternation for advanced users, because it restricts what you can do with your computer, even as <tt>root</tt>. This page is dedicated to this new feature, including basic information on why SIP exists, how to install rEFInd on a computer with SIP enabled, and how to use rEFInd to manage SIP. Note that if you've come here for help installing rEFInd on a Mac with SIP enabled, you can click to one of the methods in the "Contents" box to the left of this paragraph. I recommend trying Recovery mode first; but if you have reason to try another method, you can do so.</p>
 
 </div>
 
@@ -171,19 +171,19 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>To understand SIP, you should first know that Unix-like systems, including OS X, have traditionally provided a model of security in which ordinary users can read and write their own files (word processor documents, their own digital photos, etc.), but cannot write to system files (programs, system configuration files, etc.)&mdash;and users cannot even read some system files. This system security model has worked well for decades on traditional Unix systems, which have been administered by computer professionals and used by individuals with less experience. For administrative tasks, the <tt>root</tt> account is used. On Macs, this access is generally granted by the <tt>sudo</tt> command or by various GUI tools. Most Macs, in contrast to traditional Unix mainframes and minicomputers from the 20th century, are single-user computers that are administered by their users. Such people often lack the knowledge of the professional system administrators who have traditionally managed Unix systems; but they must still perform system administration tasks such as installing new software and configuring network settings. OS X has always provided some measure of security by requiring users to enter their passwords before performing these dangerous tasks, and by providing GUI tools to help guide users through these tasks in a way that minimizes the risk of damage.</p>
 
-<p>Apple has apparently decided that these safeguards are no longer sufficient, at least for certain tasks, such as writing files to certain system directories and installing boot loaders. I won't try to speak for Apple or explain their motivations, but the result of Apple's decisions is SIP. With SIP active, as is the default, OS X 10.11 limits your ability to perform some of these administrative tasks. You can still install and remove most third-party programs, configure your network, and so on; but some critical directories can no longer be written, even as <tt>root</tt>, and some utilities cannot be used in certain ways, even as <tt>root</tt>. These restrictions impact rEFInd because one of the affected tools, a command called <tt>bless</tt>, is required to tell the Mac to boot rEFInd rather than to boot OS X directly.</p>
+<p>Apple has apparently decided that these safeguards are no longer sufficient, at least for certain tasks, such as writing files to certain system directories and installing boot loaders. I won't try to speak for Apple or explain their motivations, but the result of Apple's decisions is SIP. With SIP active, as is the default, OS X 10.11 and later limits your ability to perform some of these administrative tasks. You can still install and remove most third-party programs, configure your network, and so on; but some critical directories can no longer be written, even as <tt>root</tt>, and some utilities cannot be used in certain ways, even as <tt>root</tt>. These restrictions impact rEFInd because one of the affected tools, a command called <tt>bless</tt>, is required to tell the Mac to boot rEFInd rather than to boot OS X directly.</p>
 
 <a name="sip_enabled">
 <h2>Installing rEFInd with SIP Enabled</h2>
 </a>
 
-<p>The end result of SIP is that rEFInd cannot be installed under OS X 10.11 in the way described on the <a href="installing.html">Installing rEFInd</a> page&mdash;at least, not without first booting into <a href="#recovery">Recovery mode,</a> in which SIP restrictions are ignored; or <a href="#disable">disabling SIP</a> (either temporarily or permanently). This page covers these two options in more detail, as well as a third: <a href="#another">Using another OS</a> to install rEFInd.</p>
+<p>The end result of SIP is that rEFInd cannot be installed under OS X 10.11 and later in the way described on the <a href="installing.html">Installing rEFInd</a> page&mdash;at least, not without first booting into <a href="#recovery">Recovery mode,</a> in which SIP restrictions are ignored; or <a href="#disable">disabling SIP</a> (either temporarily or permanently). This page covers these two options in more detail, as well as a third: <a href="#another">Using another OS</a> to install rEFInd.</p>
 
 <a name="recovery">
 <h3>Using Recovery Mode</h3>
 </a>
 
-<p>Unless you've deleted it, the Recovery HD partition should be present on your Mac as a way to perform emergency recovery operations. The nature of this tool means that SIP cannot be enabled when using it, so you can install rEFInd from a boot to this partition. The trouble is that this installation is not a full-fledged OS X system, so you may have trouble using it if you're not comfortable with such a bare-bones environment. Nontheless, it is arguably the best way to install rEFInd on a Mac that runs OS X 10.11. To do so, follow these steps:</p>
+<p>Unless you've deleted it, the Recovery HD partition should be present on your Mac as a way to perform emergency recovery operations. The nature of this tool means that SIP cannot be enabled when using it, so you can install rEFInd from a boot to this partition. The trouble is that this installation is not a full-fledged OS X system, so you may have trouble using it if you're not comfortable with such a bare-bones environment. Nontheless, it is arguably the best way to install rEFInd on a Mac that runs OS X 10.11 or later. To do so, follow these steps:</p>
 
 <ol>
 
@@ -229,7 +229,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>This command will disable SIP for all OSes that honor this setting. (In theory, multiple versions of OS X might be installed on a single computer, and all of them that support SIP should honor the SIP settings. To the best of my knowledge, no non-Apple OS honors SIP settings, although that could change.)</p>
 
-<p>Once you've typed this command, you can reboot the computer. When you return to your regular OS X installation, SIP should be disabled and rEFInd should install normally, as described on the <a href="installing.html">Installing rEFInd</a> page. You will also be able to use disk partitioning tools like my <a href="http://www.rodsbooks.com/gdisk/">GPT fdisk,</a> write to directories that are normally off-limits, and so on. Note that disabling SIP does <i>not</i> disable normal Unix-style protections&mdash;you'll still need to use <tt>sudo</tt> (or enter your password in a GUI dialog box) to acquire <tt>root</tt> privileges to perform these system-administration tasks. You'll be no less safe with SIP disabled under OS X 10.11 than you would be with OS X 10.10 or earlier; you simply won't have its added protections against user error or malicious software.</p>
+<p>Once you've typed this command, you can reboot the computer. When you return to your regular OS X installation, SIP should be disabled and rEFInd should install normally, as described on the <a href="installing.html">Installing rEFInd</a> page. You will also be able to use disk partitioning tools like my <a href="http://www.rodsbooks.com/gdisk/">GPT fdisk,</a> write to directories that are normally off-limits, and so on. Note that disabling SIP does <i>not</i> disable normal Unix-style protections&mdash;you'll still need to use <tt>sudo</tt> (or enter your password in a GUI dialog box) to acquire <tt>root</tt> privileges to perform these system-administration tasks. You'll be no less safe with SIP disabled under OS X 10.11 or later than you would be with OS X 10.10 or earlier; you simply won't have its added protections against user error or malicious software.</p>
 
 <p>If you want to re-enable SIP, you can do so in exactly the way you disabled it, except that you should type <tt class="userinput">csrutil enable</tt> rather than <tt class="userinput">csrutil disable</tt> in the Recovery environment.</p>
 
@@ -267,7 +267,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <ul>
 
-<li>If you've already installed another OS but can't boot it because of an upgrade to OS X 10.11, you can use rEFInd on CD-R or USB flash drive to boot to your other OS. You can download images for both media from the <a href="getting.html">rEFInd downloads page.</a> Prepare a boot medium, insert it in your computer, reboot, and hold down the Option (or Alt) key. The Mac's built-in boot menu should appear, enabling you to boot rEFInd from the removable disk. It should then let you boot your already-installed OS, whereupon you can follow the <a href="installing.html">regular rEFInd installation instructions</a> for that OS.</li>
+<li>If you've already installed another OS but can't boot it because of an upgrade to OS X 10.11 or later, you can use rEFInd on CD-R or USB flash drive to boot to your other OS. You can download images for both media from the <a href="getting.html">rEFInd downloads page.</a> Prepare a boot medium, insert it in your computer, reboot, and hold down the Option (or Alt) key. The Mac's built-in boot menu should appear, enabling you to boot rEFInd from the removable disk. It should then let you boot your already-installed OS, whereupon you can follow the <a href="installing.html">regular rEFInd installation instructions</a> for that OS.</li>
 
 <li>It's imperative that your rEFInd installation occur in an <i>EFI-mode boot!</i> Many Windows installations on Macs, in particular, are done in BIOS/CSM/legacy mode, and so cannot be used for installing rEFInd. rEFInd can boot most Linux installations in EFI mode (as above), but if a BIOS-mode GRUB is installed, you might accidentally boot it. See the <a href="bootmode.html">What's Your Boot Mode?</a> page for information on how to determine your boot mode.</li>
 
@@ -320,7 +320,7 @@ csr_values 10,77</pre>
 <h2>Conclusion</h2>
 </a>
 
-<p>Although the goal of increased security is a good one, SIP is causing problems for intermediate and advanced users. The good news is that the process to install rEFInd on a system that runs OS X 10.11, although more complex than it used to be, is not an impossible one. Furthermore, once you've done it, you shouldn't have to do it again for a while. (An update to OS X's boot loader is entirely possible, though. If nothing else, the next major OS X update may require re-installing rEFInd.) For advanced users, rEFInd can adjust SIP settings, which can be helpful if you occasionally want to do something that require greater-than-typical privileges.</p>
+<p>Although the goal of increased security is a good one, SIP is causing problems for intermediate and advanced users. The good news is that the process to install rEFInd on a system that runs OS X 10.11 or later, although more complex than it used to be, is not an impossible one. Furthermore, once you've done it, you shouldn't have to do it again for a while. (An update to OS X's boot loader is entirely possible, though. If nothing else, the next major OS X update may require re-installing rEFInd.) For advanced users, rEFInd can adjust SIP settings, which can be helpful if you occasionally want to do something that require greater-than-typical privileges.</p>
 
 <hr />
 

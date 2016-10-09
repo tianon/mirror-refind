@@ -1,5 +1,8 @@
-0.10.4 (?/??/2016):
+0.10.4 (10/9/2016):
 -------------------
+
+- Fixed compile problem for drivers with recent versions of GNU-EFI
+  (3.0.4, maybe 3.0.3).
 
 - Fixed bug that could cause program crash on startup. (In practice, it
   manifested with GNU-EFI starting with version 3.0.3 or 3.0.4.)
