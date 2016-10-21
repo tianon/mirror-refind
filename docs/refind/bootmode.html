@@ -140,7 +140,15 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="#linux">Identifying Your Linux Boot Mode</a></li>
 
-<li class="tight"><a href="#windows">Identifying Your Windows Boot Mode</a></li>
+<li class="tight"><a href="#windows">Identifying Your Windows Boot Mode</a>
+
+  <ul>
+
+  <li class="tight"><a href="#msinfo32">Using System Information</a></li>
+
+  <li class="tight"><a href="#parttable">Using Your Partition Table Type</a></li>
+
+  </ul></li>
 
 </ul>
 
@@ -214,27 +222,35 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Identifying Your Windows Boot Mode</h2>
 </a>
 
-<!-- NOTE: I have serious doubts about this method's reliability, so I'm commenting it out for now....
+<p>Depending on your Windows version, at least two ways of identifying your boot mode exist. The first method, <a href="#msinfo32">using the Windows <tt>msinfo32</tt> tool,</a> works in Windows 8 and later, and is likely to be more reliable. The second method, <a href="#parttable">checking your partition table,</a> works in any version of Windows but can be tricky or misleading, particularly if your computer has multiple hard disks.</p>
 
-<p>The easiest way to determine your boot mode in Windows is probably to use the <tt>bcdedit</tt> program to examine your boot loader configuration. To do so, launch an administrative Command Prompt (by right-clicking a Command Prompt icon and selecting Run As Administrator from the context menu) and then type <tt class="userinput">bcdedit</tt> in the window. The result will include two blocks of information, on the boot manager and the boot loader. The latter is more diagnostic. On an EFI-booted system, it will resemble the following:</p>
+<a name="msinfo32"><h3>Using System Information</h3></a>
 
-<pre class="listing">Windows Boot Loader
--------------------
-identifier              {current}
-device                  partition=C:
-path                    \Windows\system32\winload.efi
-description             Windows 7 Home Premium (recovered)
-locale                  en-US
-recoverysequence        {2844aaae-9978-11e0-a381-afc0564c0e08}
-recoveryenabled         Yes
-osdevice                partition=C:
-systemroot              \Windows
-resumeobject            {3aa4c728-9935-11e0-9f12-806e6f6e6963}</pre>
+<p>To use System Information to identify your boot mode, follow these steps:</p>
 
-<p>The important part is the value of the <tt>path</tt> line. Note that it identifies an EFI executable&mdash;<tt>\Windows\system32\winload.efi</tt>. On a BIOS-based computer, by contrast, this line refers to <tt>\Windows\system32\winload.exe</tt>&mdash;a standard Windows <tt>.exe</tt> file, not an EFI <tt>.efi</tt> file.</p>
--->
+<ol>
 
-<p>The most reliable way I know of to identify your boot mode is to examine your partitions. Microsoft has tied use of the GUID Partition Table (GPT) to EFI booting. If you've booted from a GPT disk, then you <i>must</i> be using EFI, and if you've booted from a Master Boot Record (MBR) disk, you <i>must</i> have booted in BIOS mode. Therefore, you can check your partition table type as a proxy for your boot mode. To do this in Windows 7, follow these steps:</p>
+<li>Press Win+R to open the Run dialog box.</li>
+
+<li>Type <tt class="userinput">msinfo32</tt> into the Open field in this box and click OK. The System Information dialog box appears, as shown here:</li>
+
+    <br /><img src="msinfo32.png" align="center" width="761" height="511"
+    alt="The msinfo32 program provides information about your computer,
+    including its boot mode." border=2> <br />
+
+<li>Locate the OS Mode line in the list of information. (This line is highlighted in the above figure.)</li>
+
+<li>If the OS Mode is identified as UEFI, you've booted in EFI mode; if it reads Legacy, you've booted in BIOS/CSM/legacy mode.</li>
+
+<li>Close the System Information dialog box.</li>
+
+</ol>
+
+<p>Note that there are other ways to launch the System Information tool, so feel free to use one of them if you prefer it. Unfortunately, although Windows 7 provides the System Information utility, that version of the tool does not provide the boot mode information, so if you're using Windows 7, you must use another method to determine your boot mode.</p>
+
+<a name="parttable"><h3>Using Your Partition Table Type</h3></a>
+
+<p>If you can't use System Information to determine your boot mode, you can examine your partitions to identify your boot mode. Microsoft has tied use of the GUID Partition Table (GPT) to EFI booting. If you've booted from a GPT disk, then you must be using EFI, and if you've booted from a Master Boot Record (MBR) disk, you have almost certainly booted in BIOS mode. (I've heard of some exceptions to this rule, but they're exceedingly rare.) Therefore, you can check your partition table type as a proxy for your boot mode. To do this in Windows 7, follow these steps:</p>
 
 <ol>
 
@@ -257,6 +273,8 @@ resumeobject            {3aa4c728-9935-11e0-9f12-806e6f6e6963}</pre>
     type to determine your boot mode." border=2> <br />
 
 <p>An important caveat with this method is that you must examine your boot disk. It's possible to use GPT on a data disk even on a BIOS-based computer, or to use an MBR data disk even on an EFI-based computer. Thus, if you examine the wrong disk, you can be led to an incorrect conclusion about your computer's boot mode.</p>
+
+<p>Another caveat relates to the use of a <a href="http://www.rodsbooks.com/gdisk/hybrid.html">hybrid MBR,</a> which is a variant on a GPT disk that's most often used on Macs to permit booting Windows in BIOS mode and OS X in EFI mode. Most Windows tools will identify a hybrid MBR disk as an MBR disk, but most non-Windows tools will identify it as a GPT disk. Of course, as hybrid MBRs are generally used to enable dual-booting Windows and OS X, and as OS X boots in EFI mode, you should be able to install rEFInd from OS X to help manage such a dual-boot configuration.</p>
 
 <hr />
 
