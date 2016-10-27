@@ -614,7 +614,11 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                     break;
             }
         } else { //react to touch event
-            UINTN Item = FindMainMenuItem(Screen, &State, TouchState.CurrentX, TouchState.CurrentY);
+            //the TouchProtocol min/max may not match the screen size
+            UINT32 TouchScreenPosX = (TouchState.CurrentX * UGAWidth) / TouchProtocol->Mode->AbsoluteMaxX;
+            UINT32 TouchScreenPosY = (TouchState.CurrentY * UGAHeight) / TouchProtocol->Mode->AbsoluteMaxY;
+
+            UINTN Item = FindMainMenuItem(Screen, &State, TouchScreenPosX, TouchScreenPosY);
             switch (Item) {
                 case TOUCH_NO_ITEM:
                     //do nothing
