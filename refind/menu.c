@@ -396,7 +396,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
     UINTN MenuExit;
 	
 	EFI_STATUS TouchStatus = EFI_NOT_READY;
-	EFI_ABSOLUTE_POINTER_STATE *TouchState = NULL;
+	EFI_ABSOLUTE_POINTER_STATE TouchState;
 
     if (Screen->TimeoutSeconds > 0) {
         HaveTimeout = TRUE;
@@ -469,7 +469,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
 
         // read key press or touch event (and wait for them if applicable)
         if(TouchEnabled) {
-             TouchStatus = refit_call2_wrapper(TouchProtocol->GetState, TouchProtocol, TouchState);
+             TouchStatus = refit_call2_wrapper(TouchProtocol->GetState, TouchProtocol, &TouchState);
         }
         Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
 
@@ -614,7 +614,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                     break;
             }
         } else { //react to touch event
-            UINTN Item = FindMainMenuItem(Screen, &State, TouchState->CurrentX, TouchState->CurrentY);
+            UINTN Item = FindMainMenuItem(Screen, &State, TouchState.CurrentX, TouchState.CurrentY);
             switch (Item) {
                 case TOUCH_NO_ITEM:
                     //do nothing
