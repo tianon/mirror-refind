@@ -211,7 +211,7 @@ BOOLEAN line_edit(CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
    }
 
    refit_call2_wrapper(ST->ConOut->EnableCursor, ST->ConOut, FALSE);
-   FreePool(print);
-   FreePool(line);
+   MyFreePool(print);
+   MyFreePool(line);
    return enter;
 } /* BOOLEAN line_edit() */
