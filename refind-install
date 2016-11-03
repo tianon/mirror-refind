@@ -39,6 +39,7 @@
 
 # Revision history:
 #
+# 0.10.5  -- More improvement to handling of disks (other than /dev/[sh]d? disks).
 # 0.10.4  -- Improved handling of disks (other than /dev/[sh]d? disks).
 # 0.10.2  -- Improved Secure Boot detection in Linux, fixed --usedefault in OS X,
 #            and fixed bug that could cause mountesp to be installed as a FILE
@@ -1127,10 +1128,24 @@ FindMountedESP() {
 # If this fails, sets Problems=1
 AddBootEntry() {
    local PartNum
+   local InstallDisk
+   local InstallPart
+   local Name
    Efibootmgr=`which efibootmgr 2> /dev/null`
    if [[ "$Efibootmgr" ]] ; then
-      InstallDisk=`grep "$InstallDir" /etc/mtab | cut -d " " -f 1 | cut -c 1-8`
-      PartNum=`grep "$InstallDir" /etc/mtab | cut -d " " -f 1 | cut -c 9-10`
+      InstallPart=`grep "$InstallDir" /etc/mtab | cut -d " " -f 1`
+      for Name in `lsblk -r | grep disk | cut -f 1 -d " "` ; do
+         if [[ $InstallPart == *"$Name"* ]] ; then
+            InstallDisk="/dev/"$Name
+            PartNum=${InstallPart#$InstallDisk}
+            break
+         fi
+      done
+      if [[ -z $InstallDisk || -z $PartNum ]] ; then
+         echo "Could not identify ESP in AddBootEntry()!"
+         Problems=1
+         return 1
+      fi
       EntryFilename="$TargetDir/$Refind"
       EfiEntryFilename=`echo ${EntryFilename//\//\\\}`
       EfiEntryFilename2=`echo ${EfiEntryFilename} | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g`
