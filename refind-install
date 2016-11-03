@@ -1137,7 +1137,8 @@ AddBootEntry() {
       for Name in `lsblk -r | grep disk | cut -f 1 -d " "` ; do
          if [[ $InstallPart == *"$Name"* ]] ; then
             InstallDisk="/dev/"$Name
-            PartNum=`echo "${InstallPart#$InstallDisk}"`
+            PartNum=${InstallPart#$InstallDisk}
+            PartNum=`echo "${PartNum//[!0-9]/}"`
             break
          fi
       done
