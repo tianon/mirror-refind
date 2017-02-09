@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2016 Roderick W. Smith
+ * Modifications copyright (c) 2012-2017 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -157,7 +157,7 @@ static REFIT_MENU_ENTRY MenuEntryRotateCsr = { L"Change SIP Policy", TAG_CSR_ROT
 
 REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL, 0, L"Automatic boot",
                                      L"Use arrow keys to move cursor; Enter to boot;",
-                                     L"Insert or F2 for more options; Esc to refresh" };
+                                     L"Insert, Tab, or F2 for more options; Esc or Backspace to refresh" };
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
 REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE,

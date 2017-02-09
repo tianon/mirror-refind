@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2015 Roderick W. Smith
+ * Modifications copyright (c) 2012-2017 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -600,7 +600,11 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                 case ' ':
                     MenuExit = MENU_EXIT_ENTER;
                     break;
+                case CHAR_BACKSPACE:
+                    MenuExit = MENU_EXIT_ESCAPE;
+                    break;
                 case '+':
+                case CHAR_TAB:
                     MenuExit = MENU_EXIT_DETAILS;
                     break;
                 default:
@@ -617,6 +621,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             //the TouchProtocol min/max may not match the screen size
             UINT32 TouchScreenPosX = (TouchState.CurrentX * UGAWidth) / TouchProtocol->Mode->AbsoluteMaxX;
             UINT32 TouchScreenPosY = (TouchState.CurrentY * UGAHeight) / TouchProtocol->Mode->AbsoluteMaxY;
+
 
             UINTN Item = FindMainMenuItem(Screen, &State, TouchScreenPosX, TouchScreenPosY);
             switch (Item) {

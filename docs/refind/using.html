@@ -196,7 +196,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p class="sidebar"><b>Note:</b>On UEFI-based PCs, rEFInd defaults to scanning for EFI, but <i>not</i> for BIOS, boot loaders. If you want to launch BIOS-mode OSes from rEFInd, you must edit the <tt>scanfor</tt> line in <tt>refind.conf</tt>, as described on the <a href="configfile.html">Configuring the Boot Manager</a> page. On Macs, rEFInd scans for BIOS-based OSes by default, since such configurations are a common way to launch Windows on Macs.</p>
 
-<p>Ordinarily, rEFInd displays tags for OSes it finds on internal hard disks, external hard disks (including USB flash drives, CF disks, and so on), and optical discs. Sometimes, though, the firmware hasn't had time to fully examine these devices by the time rEFInd starts; or you might only insert or plug in the media after rEFInd appears. In these cases, you can press the Esc key to have rEFInd re-read its configuration file and re-scan your media for boot loaders. This action can take a few seconds to complete, so be patient. You can also use this feature to detect OSes if you launch a shell and use it to load a driver or edit the <tt>refind.conf</tt> file. If you regularly need to press Esc, you might look into the <tt>scan_delay</tt> configuration file option, described on the <a href="configfile.html">Configuring the Boot Manager</a> page.</p>
+<p>Ordinarily, rEFInd displays tags for OSes it finds on internal hard disks, external hard disks (including USB flash drives, CF disks, and so on), and optical discs. Sometimes, though, the firmware hasn't had time to fully examine these devices by the time rEFInd starts; or you might only insert or plug in the media after rEFInd appears. In these cases, you can press the Esc or Backspace (Delete on Macs) key to have rEFInd re-read its configuration file and re-scan your media for boot loaders. This action can take a few seconds to complete, so be patient. You can also use this feature to detect OSes if you launch a shell and use it to load a driver or edit the <tt>refind.conf</tt> file. If you regularly need to press Esc/Backspace, you might look into the <tt>scan_delay</tt> configuration file option, described on the <a href="configfile.html">Configuring the Boot Manager</a> page.</p>
 
 <p>On some computers, the firmware doesn't mount external USB media unless you adjust a firmware option or use the EFI's own boot manager prior to launching rEFInd. If you don't see external media appear in rEFInd's list, consult your computer's manual or examine its firmware to locate a relevant option. This option is often called <i>fast boot</i> or something similar; when enabled, the computer doesn't activate most USB devices because doing so takes a second or two.</p>
 
@@ -204,13 +204,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Adjusting Boot Options</h2>
 </a>
 
-<p>If you press the Insert, F2, or + key, rEFInd will show a menu that may hold additional options, depending on the OS type. (OS X and Linux are most likely to hold interesting options on their submenus.) The following figure shows the submenu for Mac OS X. You can use this menu much like the main menu; move the cursor to select the option you want to use, then press the Enter key to launch the boot loader with the selected options. Press the Esc key or select <tt>Return to Main Menu</tt> to return to the main menu. (See the <a href="linux.html">Methods of Booting Linux</a> page for information on what you might see on a Linux submenu page.)</p>
+<p>If you press the Insert, F2, Tab, or + key, rEFInd will show a menu that may hold additional options, depending on the OS type. (OS X and Linux are most likely to hold interesting options on their submenus.) The following figure shows the submenu for Mac OS X. You can use this menu much like the main menu; move the cursor to select the option you want to use, then press the Enter key to launch the boot loader with the selected options. Press the Esc or Backspace (Delete on Macs) key or select <tt>Return to Main Menu</tt> to return to the main menu. (See the <a href="linux.html">Methods of Booting Linux</a> page for information on what you might see on a Linux submenu page.)</p>
 
     <br /><center><img src="submenu.png" align="center" width="499"
     height="228" alt="rEFInd submenus enable you to set session-specific
     options." border=2></center> <br />
 
-<p>From the options submenu, you can press the Insert, F2, or + key again to edit your boot loader options. You're most likely to want to do this when booting Linux via its EFI stub loader, since you can then enter arbitrary kernel options. A simple text-mode line editor opens (shown below), enabling you to move a cursor back and forth in the line with your arrow keys, delete text, and type in new text. If you want to boot with your edited options, press the Enter key. If you decide you picked the wrong entry, press the Esc key. Note that long option lists, as shown in the figure, scroll off the edge of the screen. Moving the cursor past the screen edge scrolls the entire line of text.</p>
+<p>From the options submenu, you can press the Insert, F2, Tab, or + key again to edit your boot loader options. You're most likely to want to do this when booting Linux via its EFI stub loader, since you can then enter arbitrary kernel options. A simple text-mode line editor opens (shown below), enabling you to move a cursor back and forth in the line with your arrow keys, delete text, and type in new text. If you want to boot with your edited options, press the Enter key. If you decide you picked the wrong entry, press the Esc or Backspace key. Note that long option lists, as shown in the figure, scroll off the edge of the screen. Moving the cursor past the screen edge scrolls the entire line of text.</p>
 
     <br /><center><img src="editor.png" align="center" width="646"
     height="486" alt="You can edit options passed to the boot loader on a
@@ -263,11 +263,11 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
    <td>Moves the selection to the last item on the utilities row</td>
 </tr>
 <tr>
-   <td><i>Esc</i></td>
+   <td><i>Esc</i> or <i>Backspace</i> (<i>Delete</i> on Mac keyboards)</td>
    <td>Returns from a sub-menu; on the main screen, re-reads the configuration file and re-scans for boot loaders</td>
 </tr>
 <tr>
-   <td><i>Insert</i>, <i>F2</i>, or <i>+</i></td>
+   <td><i>Insert</i>, <i>F2</i>, <i>Tab</i>, or <i>+</i></td>
    <td>From the main menu, opens the selection's submenu, which is most useful with Mac OS X, ELILO, and Linux kernels with EFI stub loader support; in a submenu, opens a line editor enabling editing of boot options</td>
 </tr>
 <tr>
