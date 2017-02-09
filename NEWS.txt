@@ -1,5 +1,9 @@
-0.10.5 (??/??/201?):
+0.10.5 (??/??/2017):
 --------------------
+
+- Add new key mappings: Backspace (Delete on Mac keyboards) works the same
+  as Esc, and Tab works the same as F2/Insert/+. This is done for the
+  benefit of new Apple laptops that lack physical Esc and function keys.
 
 - Fix to refind-install to work better with disks other than /dev/sd? and
   /dev/hd? devices.

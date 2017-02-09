@@ -394,9 +394,11 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
     CHAR16 TimeoutMessage[256];
     CHAR16 KeyAsString[2];
     UINTN MenuExit;
-	
-	EFI_STATUS TouchStatus = EFI_NOT_READY;
-	EFI_ABSOLUTE_POINTER_STATE TouchState;
+    EFI_STATUS TouchStatus = EFI_NOT_READY;
+    EFI_ABSOLUTE_POINTER_STATE TouchState;
+    UINT32 TouchScreenPosX;
+    UINT32 TouchScreenPosY;
+    UINTN Item;
 
     if (Screen->TimeoutSeconds > 0) {
         HaveTimeout = TRUE;
@@ -619,11 +621,9 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             }
         } else { //react to touch event
             //the TouchProtocol min/max may not match the screen size
-            UINT32 TouchScreenPosX = (TouchState.CurrentX * UGAWidth) / TouchProtocol->Mode->AbsoluteMaxX;
-            UINT32 TouchScreenPosY = (TouchState.CurrentY * UGAHeight) / TouchProtocol->Mode->AbsoluteMaxY;
-
-
-            UINTN Item = FindMainMenuItem(Screen, &State, TouchScreenPosX, TouchScreenPosY);
+            TouchScreenPosX = ((UINT32) TouchState.CurrentX * UGAWidth) / (UINT32) TouchProtocol->Mode->AbsoluteMaxX;
+            TouchScreenPosY = ((UINT32) TouchState.CurrentY * UGAHeight) / (UINT32) TouchProtocol->Mode->AbsoluteMaxY;
+            Item = FindMainMenuItem(Screen, &State, TouchScreenPosX, TouchScreenPosY);
             switch (Item) {
                 case TOUCH_NO_ITEM:
                     //do nothing
