@@ -1300,9 +1300,7 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
         return FALSE;
     }
 
-    if (FallbackSize != FileSize) { // not same size, so can't be identical
-        AreIdentical = FALSE;
-    } else { // could be identical; do full check....
+    if (FallbackSize == FileSize) { // could be identical; do full check....
         FileContents = AllocatePool(FileSize);
         FallbackContents = AllocatePool(FallbackSize);
         if (FileContents && FallbackContents) {
@@ -1333,25 +1331,20 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
 // file to fail to open, which would return a false positive -- but as I use
 // this function to exclude symbolic links from the list of boot loaders,
 // that would be fine, since such boot loaders wouldn't work.)
-static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *Path, EFI_FILE_INFO *DirEntry) {
+// CAUTION: *FullName MUST be properly cleaned up (via CleanUpPathNameSlashes())
+static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *FullName, EFI_FILE_INFO *DirEntry) {
     EFI_FILE_HANDLE FileHandle;
     EFI_FILE_INFO   *FileInfo = NULL;
     EFI_STATUS      Status;
     UINTN           FileSize2 = 0;
-    CHAR16          *FileName;
 
-    FileName = StrDuplicate(Path);
-    MergeStrings(&FileName, DirEntry->FileName, L'\\');
-    CleanUpPathNameSlashes(FileName);
-
-    Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
+    Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle, FullName, EFI_FILE_MODE_READ, 0);
     if (Status == EFI_SUCCESS) {
         FileInfo = LibFileInfo(FileHandle);
         if (FileInfo != NULL)
             FileSize2 = FileInfo->FileSize;
     }
 
-    MyFreePool(FileName);
     MyFreePool(FileInfo);
 
     return (DirEntry->FileSize != FileSize2);
@@ -1363,15 +1356,14 @@ static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *Path, EFI_FILE_INFO 
 // there's no point in cluttering the display with two kernels that will
 // behave identically on non-SB systems, or when one will fail when SB
 // is active.
-static BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16 *Filename) {
+// CAUTION: *FullName MUST be properly cleaned up (via CleanUpPathNameSlashes())
+static BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *FullName) {
     CHAR16 *NewFile = NULL;
     BOOLEAN retval = FALSE;
 
-    MergeStrings(&NewFile, Path, 0);
-    MergeStrings(&NewFile, Filename, L'\\');
+    MergeStrings(&NewFile, FullName, 0);
     MergeStrings(&NewFile, L".efi.signed", 0);
     if (NewFile != NULL) {
-        CleanUpPathNameSlashes(NewFile);
         if (FileExists(Volume->RootDir, NewFile))
             retval = TRUE;
         MyFreePool(NewFile);
@@ -1390,7 +1382,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
     EFI_STATUS              Status;
     REFIT_DIR_ITER          DirIter;
     EFI_FILE_INFO           *DirEntry;
-    CHAR16                  FileName[256], *Extension;
+    CHAR16                  Message[256], *Extension, *FullName;
     struct LOADER_LIST      *LoaderList = NULL, *NewLoader;
     LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
     BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE, InSelfPath;
@@ -1402,35 +1394,31 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
        DirIterOpen(Volume->RootDir, Path, &DirIter);
        while (DirIterNext(&DirIter, 2, Pattern, &DirEntry)) {
           Extension = FindExtension(DirEntry->FileName);
+          FullName = StrDuplicate(Path);
+          MergeStrings(&FullName, DirEntry->FileName, L'\\');
+          CleanUpPathNameSlashes(FullName);
           if (DirEntry->FileName[0] == '.' ||
               MyStriCmp(Extension, L".icns") ||
               MyStriCmp(Extension, L".png") ||
               (MyStriCmp(DirEntry->FileName, FALLBACK_BASENAME) && (MyStriCmp(Path, L"EFI\\BOOT"))) ||
               FilenameIn(Volume, Path, DirEntry->FileName, SHELL_NAMES) ||
-              IsSymbolicLink(Volume, Path, DirEntry) || /* is symbolic link */
-              HasSignedCounterpart(Volume, Path, DirEntry->FileName) || /* a file with same name plus ".efi.signed" is present */
-              FilenameIn(Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles)) {
+              IsSymbolicLink(Volume, FullName, DirEntry) || /* is symbolic link */
+              HasSignedCounterpart(Volume, FullName) || /* a file with same name plus ".efi.signed" is present */
+              FilenameIn(Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
+              !IsValidLoader(Volume->RootDir, FullName)) {
                 continue;   // skip this
           }
 
-          if (Path)
-             SPrint(FileName, 255, L"\\%s\\%s", Path, DirEntry->FileName);
-          else
-             SPrint(FileName, 255, L"\\%s", DirEntry->FileName);
-          CleanUpPathNameSlashes(FileName);
-
-          if(!IsValidLoader(Volume->RootDir, FileName))
-             continue;
-
           NewLoader = AllocateZeroPool(sizeof(struct LOADER_LIST));
           if (NewLoader != NULL) {
-             NewLoader->FileName = StrDuplicate(FileName);
+             NewLoader->FileName = StrDuplicate(FullName);
              NewLoader->TimeStamp = DirEntry->ModificationTime;
              LoaderList = AddLoaderListEntry(LoaderList, NewLoader);
-             if (DuplicatesFallback(Volume, FileName))
+             if (DuplicatesFallback(Volume, FullName))
                 FoundFallbackDuplicate = TRUE;
           } // if
           MyFreePool(Extension);
+          MyFreePool(FullName);
        } // while
 
        NewLoader = LoaderList;
@@ -1458,10 +1446,10 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
        // it down to buggy EFI implementations and ignoring that particular error....
        if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
           if (Path)
-             SPrint(FileName, 255, L"while scanning the %s directory", Path);
+             SPrint(Message, 255, L"while scanning the %s directory", Path);
           else
-             StrCpy(FileName, L"while scanning the root directory");
-          CheckError(Status, FileName);
+             StrCpy(Message, L"while scanning the root directory");
+          CheckError(Status, Message);
        } // if (Status != EFI_NOT_FOUND)
     } // if not scanning a blacklisted directory
 
