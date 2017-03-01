@@ -1,6 +1,8 @@
 0.10.5 (??/??/2017):
 --------------------
 
+- Minor code optimization.
+
 - Add new key mappings: Backspace (Delete on Mac keyboards) works the same
   as Esc, and Tab works the same as F2/Insert/+. This is done for the
   benefit of new Apple laptops that lack physical Esc and function keys.
