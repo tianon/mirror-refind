@@ -1139,14 +1139,9 @@ static REFIT_FILE * GenerateOptionsFromPartTypes(VOID) {
 // you pass this function the filename of the Linux kernel, initial RAM disk, or other
 // file in the target directory, and this function finds the file with a name in the
 // comma-delimited list of names specified by LINUX_OPTIONS_FILENAMES within that
-// directory and loads it. This function tries multiple files because I originally
-// used the filename linux.conf, but close on the heels of that decision, the Linux
-// kernel developers decided to use that name for a similar purpose, but with a
-// different file format. Thus, I'm migrating rEFInd to use the name refind_linux.conf,
-// but I want a migration period in which both names are used.
-// If a rEFInd options file can't be found, try to generate minimal options from
-// /etc/fstab on the same volume as the kernel. This typically works only if the
-// kernel is being read from the Linux root filesystem.
+// directory and loads it. If a rEFInd options file can't be found, try to generate
+// minimal options from /etc/fstab on the same volume as the kernel. This typically
+// works only if the kernel is being read from the Linux root filesystem.
 //
 // The return value is a pointer to the REFIT_FILE handle for the file, or NULL if
 // it wasn't found.

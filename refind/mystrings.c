@@ -267,6 +267,19 @@ CHAR16 *FindNumbers(IN CHAR16 *InString) {
     return (Found);
 } // CHAR16 *FindNumbers()
 
+// Returns the number of characters that are in common between
+// String1 and String2 before they diverge. For instance, if
+// String1 is "FooBar" and String2 is "FoodiesBar", this function
+// will return "3", since they both start with "Foo".
+UINTN NumCharsInCommon(IN CHAR16* String1, IN CHAR16* String2) {
+    UINTN Count = 0;
+    if ((String1 == NULL) || (String2 == NULL))
+        return 0;
+    while ((String1[Count] != L'\0') && (String2[Count] != L'\0') && (String1[Count] == String2[Count]))
+        Count++;
+    return Count;
+} // UINTN NumCharsInCommon()
+
 // Find the #Index element (numbered from 0) in a comma-delimited string
 // of elements.
 // Returns the found element, or NULL if Index is out of range or InString
@@ -456,3 +469,15 @@ EFI_GUID StringAsGuid(CHAR16 * InString) {
 
     return Guid;
 } // EFI_GUID StringAsGuid()
+
+// Delete the STRING_LIST pointed to by *StringList.
+VOID DeleteStringList(STRING_LIST *StringList) {
+    STRING_LIST *Current = StringList, *Previous;
+
+    while (Current != NULL) {
+        MyFreePool(Current->Value);
+        Previous = Current;
+        Current = Current->Next;
+        MyFreePool(Previous);
+    }
+} // VOID DeleteStringList()

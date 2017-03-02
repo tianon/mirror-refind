@@ -34,6 +34,11 @@
 #endif
 #include "../EfiLib/GenericBdsLib.h"
 
+typedef struct _string_list {
+    CHAR16               *Value;
+    struct _string_list  *Next;
+} STRING_LIST;
+
 BOOLEAN StriSubCmp(IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
 BOOLEAN MyStriCmp(IN CONST CHAR16 *String1, IN CONST CHAR16 *String2);
 CHAR16* MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet);
@@ -42,6 +47,7 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
 VOID MergeWords(CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit);
 CHAR16 *FindNumbers(IN CHAR16 *InString);
+UINTN NumCharsInCommon(IN CHAR16* String1, IN CHAR16* String2);
 CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index);
 BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List);
 BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List);
@@ -52,5 +58,6 @@ BOOLEAN IsGuid(CHAR16 *UnknownString);
 CHAR16 * GuidAsString(EFI_GUID *GuidData);
 EFI_GUID StringAsGuid(CHAR16 * InString);
 
+VOID DeleteStringList(STRING_LIST *StringList);
 
 #endif

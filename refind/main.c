@@ -530,13 +530,16 @@ static VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName)
 // For instance, if LoaderPath is \EFI\kernels\bzImage-3.3.0.efi, and if \EFI\kernels
 // has a file called initramfs-3.3.0.img, this function will return the string
 // '\EFI\kernels\initramfs-3.3.0.img'. If the directory ALSO contains the file
-// initramfs-3.3.0-rc7.img or initramfs-13.3.0.img, those files will NOT match;
-// however, initmine-3.3.0.img might match. (FindInitrd() returns the first match it
-// finds.) Thus, care should be taken to avoid placing duplicate matching files in
-// the kernel's directory.
+// initramfs-3.3.0-rc7.img or initramfs-13.3.0.img, those files will NOT match.
+// If more than one initrd file matches the extracted version string, the one
+// that matches more characters AFTER (actually, from the start of) the version
+// string is used.
 // If no matching init file can be found, returns NULL.
 static CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     CHAR16              *InitrdName = NULL, *FileName, *KernelVersion, *InitrdVersion, *Path;
+    CHAR16              *KernelPostNum, *InitrdPostNum;
+    UINTN               MaxSharedChars, SharedChars;
+    STRING_LIST         *InitrdNames = NULL, *FinalInitrdName = NULL, *CurrentInitrdName = NULL, *MaxSharedInitrd;
     REFIT_DIR_ITER      DirIter;
     EFI_FILE_INFO       *DirEntry;
 
@@ -555,20 +558,44 @@ static CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     // building the InitrdName later....
     if ((StrLen(Path) > 0) && (Path[StrLen(Path) - 1] != L'\\'))
         MergeStrings(&Path, L"\\", 0);
-    while ((DirIterNext(&DirIter, 2, L"init*", &DirEntry)) && (InitrdName == NULL)) {
+    while (DirIterNext(&DirIter, 2, L"init*", &DirEntry)) {
         InitrdVersion = FindNumbers(DirEntry->FileName);
-        if (KernelVersion != NULL) {
-            if (MyStriCmp(InitrdVersion, KernelVersion)) {
-                InitrdName = PoolPrint(L"%s%s", Path, DirEntry->FileName);
-            } // if
-        } else {
-            if (InitrdVersion == NULL) {
-                InitrdName = PoolPrint(L"%s%s", Path, DirEntry->FileName);
-            } // if
-        } // if/else
-        MyFreePool(InitrdVersion);
+        if (((KernelVersion != NULL) && (MyStriCmp(InitrdVersion, KernelVersion))) ||
+            ((KernelVersion == NULL) && (InitrdVersion == NULL))) {
+                CurrentInitrdName = AllocateZeroPool(sizeof(STRING_LIST));
+                if (InitrdNames == NULL)
+                    InitrdNames = FinalInitrdName = CurrentInitrdName;
+                if (CurrentInitrdName) {
+                    CurrentInitrdName->Value = PoolPrint(L"%s%s", Path, DirEntry->FileName);
+                    if (CurrentInitrdName != FinalInitrdName) {
+                        FinalInitrdName->Next = CurrentInitrdName;
+                        FinalInitrdName = CurrentInitrdName;
+                    } // if
+                } // if
+        } // if
     } // while
-    DirIterClose(&DirIter);
+    if (InitrdNames) {
+        if (InitrdNames->Next == NULL) {
+            InitrdName = StrDuplicate(InitrdNames -> Value);
+        } else {
+            MaxSharedInitrd = CurrentInitrdName = InitrdNames;
+            MaxSharedChars = 0;
+            while (CurrentInitrdName != NULL) {
+                KernelPostNum = MyStrStr(LoaderPath, KernelVersion);
+                InitrdPostNum = MyStrStr(CurrentInitrdName->Value, KernelVersion);
+                SharedChars = NumCharsInCommon(KernelPostNum, InitrdPostNum);
+                if (SharedChars > MaxSharedChars) {
+                    MaxSharedChars = SharedChars;
+                    MaxSharedInitrd = CurrentInitrdName;
+                } // if
+                // TODO: Compute number of shared characters & compare with max.
+                CurrentInitrdName = CurrentInitrdName->Next;
+            }
+            if (MaxSharedInitrd)
+                InitrdName = StrDuplicate(MaxSharedInitrd->Value);
+        } // if/else
+    } // if
+    DeleteStringList(InitrdNames);
 
     // Note: Don't FreePool(FileName), since Basename returns a pointer WITHIN the string it's passed.
     MyFreePool(KernelVersion);
