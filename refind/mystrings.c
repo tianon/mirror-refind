@@ -348,6 +348,29 @@ BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
    return Found;
 } // BOOLEAN IsSubstringIn()
 
+// Replace *SearchString in **MainString with *ReplString.
+// Returns TRUE if replacement was done, FALSE otherwise.
+BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN CHAR16 *ReplString) {
+    BOOLEAN WasReplaced = FALSE;
+    CHAR16 *FoundSearchString, *NewString, *EndString;
+
+    FoundSearchString = MyStrStr(*MainString, SearchString);
+    if (FoundSearchString) {
+        NewString = AllocateZeroPool(sizeof(CHAR16) * StrLen(*MainString));
+        if (NewString) {
+            EndString = &(FoundSearchString[StrLen(SearchString)]);
+            FoundSearchString[0] = L'\0';
+            StrCpy(NewString, *MainString);
+            MergeStrings(&NewString, ReplString, L'\0');
+            MergeStrings(&NewString, EndString, L'\0');
+            MyFreePool(MainString);
+            *MainString = NewString;
+            WasReplaced = TRUE;
+        } // if
+    } // if
+    return WasReplaced;
+} // BOOLEAN ReplaceSubstring()
+
 // Returns TRUE if *Input contains nothing but valid hexadecimal characters,
 // FALSE otherwise. Note that a leading "0x" is NOT acceptable in the input!
 BOOLEAN IsValidHex(CHAR16 *Input) {

@@ -757,7 +757,7 @@ REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry) {
 VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN GenerateReturn) {
     REFIT_MENU_SCREEN  *SubScreen;
     LOADER_ENTRY       *SubEntry;
-    CHAR16             *InitrdName;
+    CHAR16             *InitrdName, *KernelVersion = NULL;
     CHAR16             DiagsFileName[256];
     REFIT_FILE         *File;
     UINTN              TokenCount;
@@ -855,6 +855,8 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
         if (File != NULL) {
             InitrdName =  FindInitrd(Entry->LoaderPath, Volume);
             TokenCount = ReadTokenLine(File, &TokenList);
+            KernelVersion = FindNumbers(Entry->LoaderPath);
+            ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
             // first entry requires special processing, since it was initially set
             // up with a default title but correct options by InitializeSubScreen(),
             // earlier....
@@ -864,6 +866,7 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
             } // if
             FreeTokenLine(&TokenList, &TokenCount);
             while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
+                ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
                 SubEntry = InitializeLoaderEntry(Entry);
                 SubEntry->me.Title = TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux");
                 MyFreePool(SubEntry->LoadOptions);
@@ -943,20 +946,24 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
     if (GenerateReturn)
         AddMenuEntry(SubScreen, &MenuEntryReturn);
     Entry->me.SubScreen = SubScreen;
+    MyFreePool(KernelVersion);
 } // VOID GenerateSubScreen()
 
 // Returns options for a Linux kernel. Reads them from an options file in the
 // kernel's directory; and if present, adds an initrd= option for an initial
 // RAM disk file with the same version number as the kernel file.
 static CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
-    CHAR16 *Options = NULL, *InitrdName, *FullOptions = NULL;
+    CHAR16 *Options = NULL, *InitrdName, *FullOptions = NULL, *KernelVersion;
 
     Options = GetFirstOptionsFromFile(LoaderPath, Volume);
     InitrdName = FindInitrd(LoaderPath, Volume);
+    KernelVersion = FindNumbers(InitrdName);
+    ReplaceSubstring(&Options, KERNEL_VERSION, KernelVersion);
     FullOptions = AddInitrdToOptions(Options, InitrdName);
 
     MyFreePool(Options);
     MyFreePool(InitrdName);
+    MyFreePool(KernelVersion);
     return (FullOptions);
 } // static CHAR16 * GetMainLinuxOptions()
 
@@ -1143,16 +1150,19 @@ static LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTit
 // Add a Linux kernel as a submenu entry for another (pre-existing) Linux kernel entry.
 static VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOLUME *Volume) {
     REFIT_FILE          *File;
-    CHAR16              **TokenList = NULL, *InitrdName, *SubmenuName = NULL, *VolName = NULL, *Path = NULL, *Title;
+    CHAR16              **TokenList = NULL, *InitrdName, *SubmenuName = NULL, *VolName = NULL;
+    CHAR16              *Path = NULL, *Title, *KernelVersion;
     REFIT_MENU_SCREEN   *SubScreen;
     LOADER_ENTRY        *SubEntry;
     UINTN               TokenCount;
 
+    KernelVersion = FindNumbers(FileName);
     File = ReadLinuxOptionsFile(TargetLoader->LoaderPath, Volume);
     if (File != NULL) {
         SubScreen = TargetLoader->me.SubScreen;
         InitrdName = FindInitrd(FileName, Volume);
         while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
+            ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
             SubEntry = InitializeLoaderEntry(TargetLoader);
             SplitPathName(FileName, &VolName, &Path, &SubmenuName);
             MergeStrings(&SubmenuName, L": ", '\0');
@@ -1176,6 +1186,7 @@ static VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, RE
         MyFreePool(InitrdName);
         MyFreePool(File);
     } // if
+    MyFreePool(KernelVersion);
 } // static VOID AddKernelToSubmenu()
 
 // Returns -1 if (Time1 < Time2), +1 if (Time1 > Time2), or 0 if

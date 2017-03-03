@@ -51,6 +51,7 @@ UINTN NumCharsInCommon(IN CHAR16* String1, IN CHAR16* String2);
 CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index);
 BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List);
 BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List);
+BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN CHAR16 *ReplString);
 
 BOOLEAN IsValidHex(CHAR16 *Input);
 UINT64 StrToHex(CHAR16 *Input, UINTN Position, UINTN NumChars);

@@ -1,6 +1,18 @@
 0.10.5 (??/??/2017):
 --------------------
 
+- Two improvements to initrd detection for Linux kernels:
+  - If multiple initrd files match the kernel's version number, the file
+    with more matching characters after the version number is used, rather
+    than the first initrd file found.
+  - The "%v" string, if present in the refind_linux.conf file's second
+    field, will be replaced by the kernel version number. Thus, you can
+    specify options like:
+    "Boot with standard initrd" "ro root=/dev/sda2 initrd=initrd-%v-std"
+    "Boot with debug initrd"    "ro root=/dev/sda2 initrd=initrd-%v-debug"
+    This enables using multiple initrd files per kernel, to be used for
+    different purposes.
+
 - Minor code optimization.
 
 - Add new key mappings: Backspace (Delete on Mac keyboards) works the same
