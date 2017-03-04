@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/19/2012; last Web page update:
-10/9/2016, referencing rEFInd 0.10.4</p>
+3/4/2017, referencing rEFInd 0.10.5</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -366,30 +366,60 @@ extends it as follows:</p>
 
 <p class="sidebar">A kernel whose filename lacks a version string matches an initial RAM disk that also lacks a version string in its filename. Note that you can reliably use only <i>one</i> kernel and initial RAM disk per directory that lack version numbers in their filenames.</p>
 
-<li>rEFInd looks for an initial RAM disk in the same directory as the
-    kernel file. A matching initial RAM disk has a name that begins with
+<li>rEFInd looks for an initial RAM disk in the same directory as the kernel
+    file. A matching initial RAM disk has a name that begins with
     <tt>init</tt> and that includes the same version string as the kernel.
-    The version string is defined as the part of the filename from the
-    first digit to the last digit, inclusive. Note that the version string
-    can include non-digits. For instance, the version string for
+    The version string is defined as the part of the filename from the first
+    digit to the last digit, inclusive. Note that the version string can
+    include non-digits. For instance, the version string for
     <tt>bzImage-3.19.0.efi</tt> is <tt>3.19.0</tt>, which matches
     <tt>initramfs-3.19.0.bz</tt>; and
     <tt>vmlinuz-4.2.5-300.fc23.x86_64</tt>'s version string is
     <tt>4.2.5-300.fc23.x86_64</tt>, which matches
     <tt>initrd-4.2.5-300.fc23.x86_64.img</tt>. Many other matches are
-    possible. If an initial RAM disk is identified, rEFInd passes a
-    suitable <tt>initrd=</tt> option to the kernel when it boots.</li>
+    possible. If an initial RAM disk is identified, rEFInd passes a suitable
+    <tt>initrd=</tt> option to the kernel when it boots. There are two
+    variants on this rule:
+
+    <ul>
+
+    <li>As an extension to the preceding point, if multiple initial RAM disk
+	files match one kernel, the one whose filename matches the most
+	characters after the version string is used. For instance, suppose
+	the kernel filename is <tt>vmlinuz-4.8.0-32-standard</tt>, and two
+	initial RAM disk files are <tt>initrd-4.8.0-32-standard</tt> and
+	<tt>initrd-4.8.0-32-debug</tt>. The first of those files has nine
+	matching characters after the version string (<tt>-standard</tt>),
+	vs. just one matching character (<tt>-</tt>) for the second. Thus,
+	the first file will be used.</li>
+
+    <li>If the <tt>refind_linux.conf</tt> file (described next) is present,
+	and if an <tt>initrd=</tt> specification is present for the option
+	you're using, rEFInd will <i>not</i> add a pointer to the initial
+	RAM disk file that it discovers. This feature enables you to
+	override rEFInd's initial RAM disk discovery. This is most useful in
+	Arch Linux, which can be configured with two different initial RAM
+	disk files, one to be used for normal booting and one for recovery
+	situations. You can specify each initial RAM disk file on its own
+	line, which gives you the ability to control which to use at boot
+	time.</li></ul>
 
 <li>rEFInd looks for a file called <tt>refind_linux.conf</tt> in the same
-    directory as the kernel file. It consists of a series of lines,
-    each of which consists of a label followed by a series of kernel
-    options. The first line sets default options, and subsequent lines set
-    options that are accessible from the main menu tag's submenu screen. If
-    you installed rEFInd with the <tt>refind-install</tt>
-    script, that script created a sample <tt>refind_linux.conf</tt> file,
-    customized for your computer, in <tt>/boot</tt>. This file will work
-    without changes on many installations, but you may need to tweak it for
-    some.</li>
+    directory as the kernel file. It consists of a series of lines, each of
+    which consists of a label followed by a series of kernel options. The
+    first line sets default options, and subsequent lines set options that
+    are accessible from the main menu tag's submenu screen. If you installed
+    rEFInd with the <tt>refind-install</tt> script, that script created a
+    sample <tt>refind_linux.conf</tt> file, customized for your computer, in
+    <tt>/boot</tt>. This file will work without changes on many
+    installations, but you may need to tweak it for some. If the kernel
+    options string includes the substring <tt>%v</tt>, rEFInd substitutes
+    the kernel version number for that string. (If you need the actual
+    string <tt>%v</tt> in your kernel options, use <tt>%%v</tt> instead;
+    rEFInd will change this to <tt>%v</tt>.) This feature can be used to
+    match an initial RAM disk file that requires special treatment, such as
+    if you have multiple numbered kernels, each of which has two initial RAM
+    disk files.</li>
 
 <li>If rEFInd can't find a <tt>refind_linux.conf</tt> file in the directory
     that holds the kernel, the program looks for a file called
@@ -408,7 +438,7 @@ extends it as follows:</p>
 
 <li>If rEFInd can't find a <tt>refind_linux.conf</tt> file or an
     <tt>/etc/fstab</tt> file, it tries to identify the Linux root
-    (<tt>/</tt> filesystem by looking for a partition with a GUID type code
+    (<tt>/</tt>) filesystem by looking for a partition with a GUID type code
     matching that specified for the root (<tt>/</tt>) filesystem in the <a
     href="http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/">Freedesktop.org
     Discoverable Partitions Specification.</a> These type codes are as yet
@@ -469,7 +499,8 @@ total 17943
 <li>All the kernels in a given directory use the same
     <tt>refind_linux.conf</tt> file. If you need to set different options
     for different kernels, you'll need to place those kernels in different
-    directories.</li>
+    directories. (A partial exception is the kernel version string, which
+    can be passed via the <tt>%v</tt> variable, as noted earlier.)</li>
 
 <li>You must place your kernels in a directory other than the one that
     holds the main rEFInd <tt>.efi</tt> file. This is because rEFInd does
@@ -489,7 +520,7 @@ total 17943
 
 <hr/>
 
-<p>copyright &copy; 2012&ndash;2016 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2017 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

@@ -177,7 +177,7 @@ fi
 # thus wiping out the just-updated files.
 
 %changelog
-* Wed Mar 1 2017 R Smith <rodsmith@rodsbooks.com> - 0.10.5
+* Sat Mar 4 2017 R Smith <rodsmith@rodsbooks.com> - 0.10.5
 - Updated spec file for 0.10.5
 * Sun Oct 9 2016 R Smith <rodsmith@rodsbooks.com> - 0.10.4
 - Updated spec file for 0.10.4

@@ -348,7 +348,8 @@ BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
    return Found;
 } // BOOLEAN IsSubstringIn()
 
-// Replace *SearchString in **MainString with *ReplString.
+// Replace *SearchString in **MainString with *ReplString -- but if *SearchString
+// is preceded by "%", instead remove that character.
 // Returns TRUE if replacement was done, FALSE otherwise.
 BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN CHAR16 *ReplString) {
     BOOLEAN WasReplaced = FALSE;
@@ -360,6 +361,10 @@ BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN
         if (NewString) {
             EndString = &(FoundSearchString[StrLen(SearchString)]);
             FoundSearchString[0] = L'\0';
+            if ((FoundSearchString > *MainString) && (FoundSearchString[-1] == L'%')) {
+                FoundSearchString[-1] = L'\0';
+                ReplString = SearchString;
+            } // if
             StrCpy(NewString, *MainString);
             MergeStrings(&NewString, ReplString, L'\0');
             MergeStrings(&NewString, EndString, L'\0');
