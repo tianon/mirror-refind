@@ -221,7 +221,7 @@ BOOLEAN egSetScreenSize(IN OUT UINTN *ScreenWidth, IN OUT UINTN *ScreenHeight) {
             Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, ModeNum, &Size, &Info);
             if ((Status == EFI_SUCCESS) && (Info != NULL)) {
                Print(L"Mode %d: %d x %d\n", ModeNum, Info->HorizontalResolution, Info->VerticalResolution);
-               if (ModeNum == CurrentMode) {
+               if (ModeNum == CurrentModeNum) {
                    egScreenWidth = Info->HorizontalResolution;
                    egScreenHeight = Info->VerticalResolution;
                } // if
