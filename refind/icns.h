@@ -74,7 +74,8 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id);
 #define BUILTIN_ICON_VOL_EXTERNAL          (16)
 #define BUILTIN_ICON_VOL_OPTICAL           (17)
 #define BUILTIN_ICON_VOL_NET               (18)
-#define BUILTIN_ICON_COUNT                 (19)
+#define BUILTIN_ICON_MOUSE                 (19)
+#define BUILTIN_ICON_COUNT                 (20)
 
 #endif
 

@@ -53,11 +53,9 @@
 #endif
 #include "global.h"
 
-#ifndef _EFI_POINT_H
-#include "../EfiLib/AbsolutePointer.h"
-#endif
-
 #include "libeg.h"
+
+#include "pointer.h"
 
 //
 // menu module
@@ -94,9 +92,14 @@ typedef struct {
 #define SCROLL_MODE_TEXT  (0) /* Used in text mode & for GUI submenus */
 #define SCROLL_MODE_ICONS (1) /* Used for main GUI menu */
 
-#define TOUCH_NO_ITEM     (-1)
-#define TOUCH_LEFT_ARROW  (-2)
-#define TOUCH_RIGHT_ARROW (-3)
+#define POINTER_NO_ITEM     (-1)
+#define POINTER_LEFT_ARROW  (-2)
+#define POINTER_RIGHT_ARROW (-3)
+
+#define INPUT_KEY         (0)
+#define INPUT_POINTER     (1)
+#define INPUT_TIMEOUT     (2)
+#define INPUT_TIMER_ERROR (3)
 
 struct _refit_menu_screen;
 
@@ -106,7 +109,9 @@ UINTN ComputeRow0PosY(VOID);
 VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);
 UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry);
 UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN CHAR16** DefaultSelection, OUT REFIT_MENU_ENTRY **ChosenEntry);
-UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINT64 PosX, IN UINT64 PosY);
+UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN PosX, IN UINTN PosY);
+VOID GenerateWaitList();
+UINTN WaitForInput(IN UINTN Timeout);
 
 #endif
 

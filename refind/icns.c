@@ -71,6 +71,7 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"vol_external", ICON_SIZE_BADGE },
    { NULL, L"vol_optical", ICON_SIZE_BADGE },
    { NULL, L"vol_net", ICON_SIZE_BADGE },
+   { NULL, L"mouse", ICON_SIZE_MOUSE }
 };
 
 EG_IMAGE * BuiltinIcon(IN UINTN Id)
