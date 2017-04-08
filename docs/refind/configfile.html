@@ -375,6 +375,11 @@ timeout 20
    <td>When uncommented or set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, causes rEFInd to "fold" all Linux kernels in a given directory into a single main-menu icon. Selecting that icon launches the most recent kernel. To launch an older kernel, you must press F2 or Insert; older kernels appear on the resulting submenu display. (You can type, as <tt>root</tt>, <tt class="userinput">touch /boot/vmlinuz-{whatever}</tt>, to make <tt>/boot/vmlinuz-{whatever}</tt> your default kernel in a directory.) If you prefer to see all your kernels in the main menu, set this option to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>. Note that this option is new with version 0.9.0, which changes the default behavior; earlier versions of rEFInd behaved as if <tt>fold_linux_kernels false</tt> was set.</td>
 </tr>
 <tr>
+   <td><tt>extra_kernel_version_strings</tt></td>
+   <td>comma-delimited list of strings</td>
+   <td>For the benefit of Linux distributions, such as Arch, that lack version numbers in their kernel filenames but that can provide multiple kernels, you can specify strings that can treated like version numbers. For instance, for Arch you might set this to <tt>linux-lts,linux</tt>; thereafter, the <tt>vmlinuz-linux-lts</tt> kernel will match to an initrd file containing the string <tt>linux-lts</tt> and <tt>vmlinuz-linux</tt> will match an initrd file with a filename that includes <tt>linux</tt>, but not <tt>linux-lts</tt>. Note that, if one specified string is a subset of the other (as in this example), the longer substring <i>must</i> appear first in the list. Also, if a filename includes both a specified string and one or more digits, the match covers both; for instance, <tt>vmlinuz-linux-4.8</tt> would match an initrd file with a name that includes <tt>linux-4.8</tt>. The default is to do no extra matching.</td>
+</tr>
+<tr>
    <td><tt>max_tags</tt></td>
    <td>numeric (integer) value</td>
    <td>Limits the number of tags that rEFInd will display at one time. If rEFInd discovers more loaders than this value, they're shown in a scrolling list. The default value is <tt>0</tt>, which imposes no limit.</td>

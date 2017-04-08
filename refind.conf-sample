@@ -335,6 +335,25 @@ timeout 20
 #
 #fold_linux_kernels false
 
+# Comma-delimited list of strings to treat as if they were numbers for the
+# purpose of kernel version number detection. These strings are matched on a
+# first-found basis; that is, if you want to treat both "linux-lts" and
+# "linux" as version strings, they MUST be specified as "linux-lts,linux",
+# since if you specify it the other way, both vmlinuz-linux and
+# vmlinuz-linux-lts will return with "linux" as the "version string," which
+# is not what you'd want. Also, if the kernel or initrd file includes both a
+# specified string and digits, the "version string" includes both. For
+# instance, "vmlinuz-linux-4.8" would yield a version string of "linux-4.8".
+# This option is intended for Arch and other distributions that don't include
+# version numbers in their kernel filenames, but may provide other uniquely
+# identifying strings for multiple kernels. If this feature causes problems
+# (say, if your kernel filename includes "linux" but the initrd filename
+# doesn't), be sure this is set to an empty string
+# (extra_kernel_version_strings "") or comment out the option to disable it.
+# Default is no extra version strings
+#
+#extra_kernel_version_strings linux-lts,linux
+
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, rEFInd shows
 # a subset in a scrolling list. If this value is set too high for the

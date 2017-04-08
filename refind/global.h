@@ -333,6 +333,7 @@ typedef struct {
    CHAR16           *WindowsRecoveryFiles;
    CHAR16           *DriverDirs;
    CHAR16           *IconsDir;
+   CHAR16           *ExtraKernelVersionStrings;
    CHAR16           *SpoofOSXVersion;
    UINT32_LIST      *CsrValues;
    UINTN            ShowTools[NUM_TOOLS];

@@ -744,6 +744,9 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (MyStriCmp(TokenList[0], L"fold_linux_kernels")) {
             GlobalConfig.FoldLinuxKernels = HandleBoolean(TokenList, TokenCount);
 
+        } else if (MyStriCmp(TokenList[0], L"extra_kernel_version_strings")) {
+            HandleStrings(TokenList, TokenCount, &(GlobalConfig.ExtraKernelVersionStrings));
+
         } else if (MyStriCmp(TokenList[0], L"max_tags")) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.MaxTags));
 

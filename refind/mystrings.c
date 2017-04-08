@@ -236,16 +236,27 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
 
 // Returns all the digits in the input string, including intervening
 // non-digit characters. For instance, if InString is "foo-3.3.4-7.img",
-// this function returns "3.3.4-7". If InString contains no digits,
-// the return value is NULL.
+// this function returns "3.3.4-7". The GlobalConfig.ExtraKernelVersionStrings
+// variable specifies extra strings that may be treated as numbers. If
+// InString contains no digits or ExtraKernelVersionStrings, the return value
+// is NULL.
 CHAR16 *FindNumbers(IN CHAR16 *InString) {
-    UINTN i, StartOfElement, EndOfElement = 0, CopyLength;
-    CHAR16 *Found = NULL;
+    UINTN i = 0, StartOfElement, EndOfElement = 0, CopyLength;
+    CHAR16 *Found = NULL, *ExtraFound = NULL, *LookFor;
 
     if (InString == NULL)
         return NULL;
 
     StartOfElement = StrLen(InString);
+
+    // Find "linux-lts" or "linux"
+    while ((ExtraFound == NULL) && (LookFor = FindCommaDelimited(GlobalConfig.ExtraKernelVersionStrings, i++))) {
+        if ((ExtraFound = MyStrStr(InString, LookFor))) {
+            StartOfElement = ExtraFound - InString;
+            EndOfElement = StartOfElement + StrLen(LookFor) - 1;
+        } // if
+    } // while
+
     // Find start & end of target element
     for (i = 0; InString[i] != L'\0'; i++) {
         if ((InString[i] >= L'0') && (InString[i] <= L'9')) {

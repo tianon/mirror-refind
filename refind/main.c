@@ -164,7 +164,7 @@ REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, 0, 0, 0, D
                               20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC,
                               0, 0, { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE },
                               BANNER_NOSCALE, NULL, NULL, NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL,
-                              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                               { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY,
                                 TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, TAG_FWUPDATE_TOOL,
                                 0, 0, 0, 0, 0, 0, 0, 0 }
@@ -573,6 +573,7 @@ static CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
                     } // if
                 } // if
         } // if
+        MyFreePool(InitrdVersion);
     } // while
     if (InitrdNames) {
         if (InitrdNames->Next == NULL) {
@@ -875,6 +876,7 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
                 AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // while
+            MyFreePool(KernelVersion);
             MyFreePool(InitrdName);
             MyFreePool(File);
         } // if
@@ -1156,11 +1158,11 @@ static VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, RE
     LOADER_ENTRY        *SubEntry;
     UINTN               TokenCount;
 
-    KernelVersion = FindNumbers(FileName);
     File = ReadLinuxOptionsFile(TargetLoader->LoaderPath, Volume);
     if (File != NULL) {
         SubScreen = TargetLoader->me.SubScreen;
         InitrdName = FindInitrd(FileName, Volume);
+        KernelVersion = FindNumbers(FileName);
         while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
             ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
             SubEntry = InitializeLoaderEntry(TargetLoader);
@@ -1185,8 +1187,8 @@ static VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, RE
         MyFreePool(SubmenuName);
         MyFreePool(InitrdName);
         MyFreePool(File);
+        MyFreePool(KernelVersion);
     } // if
-    MyFreePool(KernelVersion);
 } // static VOID AddKernelToSubmenu()
 
 // Returns -1 if (Time1 < Time2), +1 if (Time1 > Time2), or 0 if
