@@ -39,6 +39,7 @@
 
 # Revision history:
 #
+# 0.10.6  -- Improved identification of the root device under macOS.
 # 0.10.5  -- More improvement to handling of disks (other than /dev/[sh]d? disks).
 # 0.10.4  -- Improved handling of disks (other than /dev/[sh]d? disks).
 # 0.10.2  -- Improved Secure Boot detection in Linux, fixed --usedefault in OS X,
@@ -733,11 +734,11 @@ MountDefaultTarget() {
 MountOSXESP() {
    # Identify the ESP. Note: This returns the FIRST ESP found;
    # if the system has multiple disks, this could be wrong!
-   Temp=$(mount | sed -n -E "/^(\/dev\/disk[0-9]+s[0-9]+) on \/ \(.*$/s//\1/p")
+   Temp=$(mount | sed -n -E "/^(\/dev\/disk.*) on \/ \(.*$/s//\1/p")
    if [ $Temp ]; then
       Temp=$(diskutil list | grep " EFI " | grep -o 'disk.*' | head -n 1)
       if [ -z $Temp ]; then
-         echo "Warning: root device doesn't have an EFI partition"
+         echo "Warning: root device doesn't have an EFI System Partition"
       fi
    else
       echo "Warning: root device could not be found"
@@ -748,7 +749,7 @@ MountOSXESP() {
          }' )
 
       if [ -z $Temp ]; then
-         echo "Could not find an EFI partition. Aborting!"
+         echo "Could not find an EFI System Partition. Aborting!"
          exit 1
       fi
    fi
