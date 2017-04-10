@@ -1,6 +1,22 @@
 0.10.6 (?/??/2017):
 -------------------
 
+- Fixed bug in mvrefind that could cause it to fail to move the rEFInd
+  installation because it incorrectly converted the target directory to an
+  empty string if the target directory did not (yet) exist.
+
+- Added mm{arch}.efi as MokManager filename, and fb{arch}.efi to list
+  of boot loaders to be ignored.
+
+- New refind.conf token: extra_kernel_version_strings, which sets strings
+  that are treated something like digits for purposes of matching Linux
+  kernel and initrd filenames.
+
+- Don't set the video mode if the computer is already running in the
+  requested mode. This is a shot-in-the-dark attempt to fix problems with
+  Mac "retina" displays, which tend to get bumped down to a lower resolution
+  by rEFInd.
+
 0.10.5 (3/4/2017):
 ------------------
 
