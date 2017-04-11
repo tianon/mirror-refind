@@ -169,7 +169,11 @@ if [[ $IsSecureBoot == "1" && -n $ShimFile ]] ; then
       ./refind-install --shim $ShimFile --yes
    fi
 else
-   ./refind-install --yes
+   if [[ -n $SBSign && -n $OpenSSL ]] ; then
+      ./refind-install --localkeys --yes
+   else
+      ./refind-install --yes
+   fi
 fi
 
 # CAUTION: Don't create a %preun or a %postun script that deletes the files
