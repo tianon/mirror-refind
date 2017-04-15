@@ -115,7 +115,7 @@ UINTN fsw_efi_strsize(struct fsw_string *s)
 
 VOID fsw_efi_strcpy(CHAR16 *Dest, struct fsw_string *src)
 {
-    if (src->type == FSW_STRING_TYPE_EMPTY | src->size == 0) {
+    if ((src->type == FSW_STRING_TYPE_EMPTY) | (src->size == 0)) {
         Dest[0] = 0;
     } else if (src->type == FSW_STRING_TYPE_UTF16) {
         CopyMem(Dest, src->data, src->size);

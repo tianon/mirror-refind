@@ -38,6 +38,7 @@
  */
 
 #include "fsw_core.h"
+#include "fsw_efi.h"
 
 
 // functions
@@ -45,7 +46,6 @@
 static void fsw_blockcache_free(struct fsw_volume *vol);
 
 #define MAX_CACHE_LEVEL (5)
-
 
 /**
  * Mount a volume with a given file system driver. This function is called by the
@@ -314,6 +314,7 @@ static void fsw_blockcache_free(struct fsw_volume *vol)
         vol->bcache = NULL;
     }
     vol->bcache_size = 0;
+    fsw_efi_clear_cache();
 }
 
 /**

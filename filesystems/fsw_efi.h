@@ -100,6 +100,6 @@ VOID fsw_efi_decode_time(OUT EFI_TIME *EfiTime, IN UINT32 UnixTime);
 
 UINTN fsw_efi_strsize(struct fsw_string *s);
 VOID fsw_efi_strcpy(CHAR16 *Dest, struct fsw_string *src);
-
+VOID EFIAPI fsw_efi_clear_cache(VOID);
 
 #endif

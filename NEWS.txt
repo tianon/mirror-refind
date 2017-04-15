@@ -1,6 +1,11 @@
 0.10.6 (?/??/2017):
 -------------------
 
+- Fixed bug in drivers that could cause filesystems to not be registered,
+  and perhaps other unknown problems. This manifested on 32-bit GNU-EFI
+  compiles, but in principle it could cause problems on 64-bit or TianoCore
+  builds, too.
+
 - Fixed bug in mvrefind that could cause it to fail to move the rEFInd
   installation because it incorrectly converted the target directory to an
   empty string if the target directory did not (yet) exist.
