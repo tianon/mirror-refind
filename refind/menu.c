@@ -470,12 +470,12 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
         }
 
         // read key press or touch event (and wait for them if applicable)
-        if(TouchEnabled) {
+        if (TouchEnabled) {
              TouchStatus = refit_call2_wrapper(TouchProtocol->GetState, TouchProtocol, &TouchState);
         }
         Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
 
-        if(Status == EFI_SUCCESS) {
+        if (Status == EFI_SUCCESS) {
             TouchActive = FALSE;
             TimeSinceKeystroke = 0;
         } else if (TouchStatus == EFI_SUCCESS) {

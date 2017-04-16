@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 3/4/2017</p>
+<p>Last Web page update: 4/16/2017</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,42 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.10.6 (4/16/2017)</b>&mdash;This version includes a few small
+    bug fixes and one new feature:
+    <ul>
+
+    <li>The new feature is the <tt>extra_kernel_version_strings</tt> token
+	in <tt>refind.conf</tt>. This token accepts a comma-delimited list
+	of strings that will be treated similarly to digits for purposes of
+	matching Linux initrd files to Linux kernels. See the description on
+	the <a href="configfile.html">Configuring the Boot Manager</a> page
+	for details.</li>
+
+    <li>Some distributions have renamed <tt>MokManager.efi</tt> to
+	<tt>mm<i>arch</i>.efi</tt> (where <tt><i>arch</i></tt> is an
+	architecture code, such as <tt>x64</tt>). I've adjusted rEFInd to
+	recognize MokManager under this new name. I've also added
+	<tt>fb<i>arch</i>.efi</tt> to the list of loaders that are not
+	scanned by default. This loader restores a machine's NVRAM-based EFI
+	boot manager entries from a backup file and then launches the
+	default boot loader.</li>
+
+    <li>I've squashed a bug that could cause filesystems managed by rEFInd's
+	filesystem drivers to not be mounted.</li>
+
+    <li>I've fixed a bug in <tt>mvrefind</tt> that would cause it to fail to
+	move a rEFInd installation if the target directory did not exist.
+	The script now creates the specified target, if necessary.</li>
+
+    <li>Previously, rEFInd would explicitly set the video mode when it
+	started, even when the display was already running in that mode.
+	This version no longer does so. This is a shot-in-the-dark attempt
+	to work around problems on Macs with "retina" displays, which tend
+	to boot up in suboptimal resolutions when rEFInd is used.</li>
+
+    </ul>
+</li> 
 
 <li><b>0.10.5 (3/4/2017)</b>&mdash;This version includes a number of
     modest changes, most of which will be of interest to relatively few

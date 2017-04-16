@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/19/2012; last Web page update:
-3/4/2017, referencing rEFInd 0.10.5</p>
+4/16/2017, referencing rEFInd 0.10.6</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -126,7 +126,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <div style="float:right; width:55%">
 
-<p>Windows and Mac OS X both provide relatively simple EFI boot loader programs. Launch them, and if they're launched from the correct locations and have the correct files in place, they'll boot their respective OSes. This makes rEFInd's job easy; it just locates the boot loader program files and runs them.</p>
+<p>Windows and Mac OS X both provide relatively simple EFI boot loader programs. Launch them, and they'll boot their respective OSes. This makes rEFInd's job easy; it just locates the boot loader program files and runs them.</p>
+
+<p>Under Linux, by contrast, things can get complicated. As detailed on my <a href="http://www.rodsbooks.com/efi-bootloaders/index.html">Managing EFI Boot Loaders for Linux</a> page, several different EFI boot loaders for Linux exist, and all of them require configuration. If you're lucky, your distribution will have set up a Linux boot loader in a sensible way, in which case rEFInd should detect it and it will work as easily as a Windows or Mac OS X boot loader. If you're not lucky, though, you may need to configure it further. rEFInd offers options to help out with this task. Naturally, rEFInd supports <a href="#traditional">traditional Linux boot loaders.</a> It works even better with the Linux EFI stub loader, so I provide <a href="#quickstart">instructions on starting with it.</a> For those interested in manual configuration, I also provide <a href="#efistub">detailed instructions</a> on how the EFI stub support works and how to configure it.</p>
 
 </div>
 
@@ -156,8 +158,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </div>
 
-<p>Under Linux, by contrast, things can get complicated. As detailed on my <a href="http://www.rodsbooks.com/efi-bootloaders/index.html">Managing EFI Boot Loaders for Linux</a> page, several different EFI boot loaders for Linux exist, and all of them require configuration. If you're lucky, your distribution will have set up a Linux boot loader in a sensible way, in which case rEFInd should detect it and it will work as easily as a Windows or Mac OS X boot loader. If you're not lucky, though, you may need to configure it further. rEFInd offers options to help out with this task. Naturally, rEFInd supports <a href="#traditional">traditional Linux boot loaders.</a> It works even better with the Linux EFI stub loader, so I provide <a href="#quickstart">instructions on starting with it.</a> For those interested in manual configuration, I also provide <a href="#efistub">detailed instructions</a> on how the EFI stub support works and how to configure it.</p>
-
 <a name="traditional">
 <h2>Using a Traditional Linux Boot Loader</h2>
 </a>
@@ -172,7 +172,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Using the EFI Stub Loader: Three Configuration Options</h2>
 </a>
 
-<p>The EFI stub loader is basic and reliable, but it requires some setup to use it on some computers. It also requires that you run a kernel with the same bit width as your EFI. In most cases, this means running a 64-bit kernel, since 32-bit EFI-based computers are so rare. I describe three methods of using the EFI stub loader: an <a href="#easiest">easiest method</a> for those with compatible partition and filesystem layouts, a <a href="#testing">quick test configuration</a> for those without such a layout, and <a href="#reconfigure">a long-term setup</a> for those without the ideal setup.</p>
+<p>The EFI stub loader is basic and reliable, but it requires some setup to use it on some computers. It also requires that you run a kernel with the same bit width as your EFI. In most cases, this means running a 64-bit kernel, since 32-bit EFI-based computers are so rare. I describe three methods of using the EFI stub loader: an <a href="#easiest">easiest method</a> for those with compatible partition and filesystem layouts, a <a href="#testing">quick test configuration</a> for those without such a layout, and <a href="#reconfigure">a long-term setup</a> for those without the ideal setup. In most cases, the first (easiest) method works fine, thanks to rEFInd's filesystem drivers and rEFInd features intended to help launch a kernel with minimal user configuration.</p>
 
 <a name="easiest">
 <h3>For Those With Foresight or Luck: The Easiest Method</h3>
@@ -210,7 +210,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h3>Preparing a Test Configuration</h3>
 </a>
 
-<p>If you're not sure you want to use the EFI stub loader in the long term, you can perform a fairly quick initial test of it. This procedure assumes that you have access to a 3.3.0 or later Linux kernel with EFI stub support compiled into it. (Fedora since version 17, Ubuntu since 12.10, and most other distributions ship with such kernels.) Creating this configuration poses no risk to your current boot options, provided you don't accidentally delete existing files. The procedure for a quick test is:</p>
+<p>If you're not sure you want to use the EFI stub loader in the long term, you can perform a fairly quick initial test of it. This procedure assumes that you have access to a 3.3.0 or later Linux kernel with EFI stub support compiled into it. (Most distributions ship with such kernels.) Creating this configuration poses no risk to your current boot options, provided you don't accidentally delete existing files. The procedure for a quick test is:</p>
 
 <ol>
 
@@ -243,7 +243,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </ol>
 
-<p>You can continue to boot your computer with this type of configuration; however, the drawback is that you'll need to copy your kernel whenever it's updated. This can be a hassle. A better way is to configure you system so that the EFI, and therefore rEFInd, can read your Linux <tt>/boot</tt> directory, where most Linux distributions place their kernels.</p>
+<p>You can continue to boot your computer with this type of configuration; however, the drawback is that you'll need to copy your kernel whenever it's updated. This can be a hassle. A better way is to configure you system so that the EFI, and therefore rEFInd, can read your Linux <tt>/boot</tt> directory, where most Linux distributions place their kernels. You do this by installing the appropriate <a href="drivers.html">EFI filesystem driver</a> for the <tt>/boot</tt> (or root, <tt>/</tt>) filesystem.</p>
 
 <a name="reconfigure">
 <h3>If You Need to Reconfigure Your Partitions....</h3>

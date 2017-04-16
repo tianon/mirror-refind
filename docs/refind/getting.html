@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-3/4/2017, referencing rEFInd 0.10.5</p>
+4/16/2017, referencing rEFInd 0.10.6</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -132,7 +132,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <ul>
 
 <li><b><a
-    href="http://sourceforge.net/projects/refind/files/0.10.5/refind-bin-0.10.5.zip/download">A
+    href="http://sourceforge.net/projects/refind/files/0.10.6/refind-bin-0.10.6.zip/download">A
     binary zip file</a></b>&mdash;Download this if you want to install rEFInd
     and/or its filesystem drivers on an <i>x</i>86, <i>x</i>86-64, or ARM64
     computer and have no need to test rEFInd first by booting it on an optical
@@ -142,13 +142,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     the <a href="installing.html">Installing rEFInd</a> page. Some users of Arch
     Linux have reported problems booting some specific Arch Linux kernels with
     rEFInd and some other tools. For them, a <a
-    href="http://sourceforge.net/projects/refind/files/0.10.5/refind-bin-gnuefi-0.10.5.zip/download">variant
+    href="http://sourceforge.net/projects/refind/files/0.10.6/refind-bin-gnuefi-0.10.6.zip/download">variant
     package</a> exists in which the <i>x</i>86-64 binary was compiled with
     GNU-EFI rather than the usual TianoCore EDK2. This change helps some users
     with this problem.</li>
 
 <li><b><a
-    href="http://sourceforge.net/projects/refind/files/0.10.5/refind-0.10.5-1.x86_64.rpm/download">A
+    href="http://sourceforge.net/projects/refind/files/0.10.6/refind-0.10.6-1.x86_64.rpm/download">A
     binary RPM file</a></b>&mdash;If you use an RPM-based <i>x</i>86-64
     Linux system such as Fedora or openSUSE, you can install the binary RPM
     package rather than use the binary zip file. (I don't provide
@@ -158,13 +158,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     installation process. Distribution maintainers can examine the
     <tt>refind.spec</tt> file in the source package and tweak it to their
     needs. The <a
-    href="http://sourceforge.net/projects/refind/files/0.10.5/refind-0.10.5-1.src.rpm/download">source
+    href="http://sourceforge.net/projects/refind/files/0.10.6/refind-0.10.6-1.src.rpm/download">source
     RPM file</a> might or might not build on your system as-is; it relies
     on assumptions about the locations of the GNU-EFI development
     files.</li>
 
 <li><b><a
-    href="http://sourceforge.net/projects/refind/files/0.10.5/refind_0.10.5-1_amd64.deb/download">A
+    href="http://sourceforge.net/projects/refind/files/0.10.6/refind_0.10.6-1_amd64.deb/download">A
     binary Debian package</a></b>&mdash;If you use an <i>x</i>86-64 version
     of Debian, Ubuntu, Mint, or another Debian-based distribution, you can
     install from this package, which was converted from the binary RPM
@@ -175,7 +175,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p class="sidebar"><b>Note:</b> At the moment, neither the bootable CD-R image file nor the bootable USB flash drive image file supports booting with Secure Boot active. The x86-64 version of the <a href="http://en.altlinux.org/Rescue">ALT Linux Rescue disc</a> uses a Secure Boot-enabled rEFInd, though, so you may find that useful in some situations.</p>
 
 <li><b><a
-    href="http://sourceforge.net/projects/refind/files/0.10.5/refind-cd-0.10.5.zip/download">A
+    href="http://sourceforge.net/projects/refind/files/0.10.6/refind-cd-0.10.6.zip/download">A
     CD-R image file</a></b>&mdash;This download contains the same files as
     the binary zip file, but you can burn it to a CD-R to test rEFInd
     (and its filesystem drivers) without installing it first. (It boots on
@@ -199,14 +199,14 @@ first partition on <tt>/dev/sdd</tt>. This procedure should work even on a
 BIOS-booted computer.</p>
 
 <li><b><a
-    href="http://sourceforge.net/projects/refind/files/0.10.5/refind-flashdrive-0.10.5.zip/download">A
+    href="http://sourceforge.net/projects/refind/files/0.10.6/refind-flashdrive-0.10.6.zip/download">A
     USB flash drive image file</a></b>&mdash;Although you     can create
     your own rEFInd USB flash drive, you may find it easier to download
     this version and copy it to your USB drive with <tt>dd</tt> or some
     other low-level disk copying utility.</li>
 
 <li><b><a
-    href="http://sourceforge.net/projects/refind/files/0.10.5/refind-src-0.10.5.tar.gz/download">A
+    href="http://sourceforge.net/projects/refind/files/0.10.6/refind-src-0.10.6.tar.gz/download">A
     source code tarball</a></b>&mdash;This is useful if you want to compile
     the software locally. Note that I use Linux with the <a
     href="https://sourceforge.net/projects/tianocore/">TianoCore EFI
@@ -305,7 +305,7 @@ BIOS-booted computer.</p>
 
 <li><b>Slackware</b>&mdash;As far as I know, an official rEFInd package is
     not available as part of Slackware; however, a <a
-    href="http://slackbuilds.org/repository/14.1/system/refind/?search=refind">Slackware
+    href="https://www.slackbuilds.org/result/?search=refind&sv=">Slackware
     package from SlackBuilds</a> is available.</li>
 
 <li><b><a href="http://distro.ibiblio.org/fatdog/web/">Fat
