@@ -330,7 +330,10 @@ CheckForFiles() {
          if [[ $ShimType == "shimx64.efi" || $ShimType == "shim.efi" ]] ; then
             TargetX64="grubx64.efi"
             TargetAARCH64="grubaa64.efi"
-            MokManagerSource=`dirname "$ShimSource"`/MokManager.efi
+            MokManagerSource=`dirname "$ShimSource"`/mm$Platform.efi
+            if [[ -f "$MokManagerSource" ]] ; then
+                MokManagerSource=`dirname "$ShimSource"`/MokManager.efi
+            fi
          elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
             TargetX64="loader.efi"
             MokManagerSource=`dirname "$ShimSource"`/HashTool.efi

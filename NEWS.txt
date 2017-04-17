@@ -1,6 +1,9 @@
 0.10.7 (?/??/2017):
 -------------------
 
+- Update refind-install to recognize and copy mmx64.efi as alternative
+  name for MokManager.
+
 - Hide volume name "Recovery HD," if that's what it is, from loader
   description. This is done because some OS X users are getting confused and
   even upset over this detail, even though it's accurate, at least from an
