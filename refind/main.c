@@ -948,7 +948,6 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
     if (GenerateReturn)
         AddMenuEntry(SubScreen, &MenuEntryReturn);
     Entry->me.SubScreen = SubScreen;
-    MyFreePool(KernelVersion);
 } // VOID GenerateSubScreen()
 
 // Returns options for a Linux kernel. Reads them from an options file in the

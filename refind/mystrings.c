@@ -249,7 +249,7 @@ CHAR16 *FindNumbers(IN CHAR16 *InString) {
 
     StartOfElement = StrLen(InString);
 
-    // Find "linux-lts" or "linux"
+    // Find extra_kernel_version_strings
     while ((ExtraFound == NULL) && (LookFor = FindCommaDelimited(GlobalConfig.ExtraKernelVersionStrings, i++))) {
         if ((ExtraFound = MyStrStr(InString, LookFor))) {
             StartOfElement = ExtraFound - InString;
