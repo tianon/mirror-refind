@@ -1,6 +1,11 @@
 0.10.7 (?/??/2017):
 -------------------
 
+- Hide volume name "Recovery HD," if that's what it is, from loader
+  description. This is done because some OS X users are getting confused and
+  even upset over this detail, even though it's accurate, at least from an
+  EFI/rEFInd point of view.
+
 - Fixed memory management bug (introduced in 0.10.6) that caused error
   messages to be displayed on some systems.
 
