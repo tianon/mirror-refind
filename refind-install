@@ -39,6 +39,7 @@
 
 # Revision history:
 #
+# 0.10.7  -- Added mm{arch}.efi as equivalent of MokManager.efi
 # 0.10.6  -- Improved identification of the root device under macOS.
 # 0.10.5  -- More improvement to handling of disks (other than /dev/[sh]d? disks).
 # 0.10.4  -- Improved handling of disks (other than /dev/[sh]d? disks).
@@ -800,7 +801,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.10.6</string>
+        <string>0.10.7</string>
 </dict>
 </plist>
 ENDOFHERE

@@ -1,4 +1,4 @@
-0.10.7 (?/??/2017):
+0.10.7 (4/17/2017):
 -------------------
 
 - Update refind-install to recognize and copy mmx64.efi as alternative

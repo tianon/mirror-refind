@@ -12,7 +12,7 @@ MOK_DIR=mok
 GPTSYNC_DIR=gptsync
 EFILIB_DIR=EfiLib
 export EDK2BASE=/usr/local/UDK2014/MyWorkSpace
-export REFIND_VERSION='L"0.10.6.2"'
+export REFIND_VERSION='L"0.10.7"'
 
 # The "all" target builds with the TianoCore library if possible, but falls
 # back on the more easily-installed GNU-EFI library if TianoCore isn't

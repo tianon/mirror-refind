@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 4/16/2017</p>
+<p>Last Web page update: 4/17/2017</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,30 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.10.7 (4/17/2017)</b>&mdash;Soon after releasing version
+    0.10.6, I discovered a potentially serious bug it introduced, and
+    so I've made this new release, with the following new features:
+    <ul>
+
+    <li>Although the memory management bug introduced with version 0.10.6
+	seems to be harmless on most systems, it caused hangs on one
+	computer (using UEFI DUET), hence my rushing out this update.</li>
+
+    <li>I've answered too many queries from people who are confused by the
+	fact that many OS X installations are identified as <tt>Boot OS X
+	from Recovery HD</tt> on the rEFInd menu. Apple puts the boot loader
+	for its regular installation on the <tt>Recovery HD</tt> volume if
+	you use LVM or encrypt your root (<tt>/</tt>) partition, so rEFInd's
+	identification is correct, but it confuses people. I've therefore
+	adjusted rEFInd to omit the <tt>from Recovery HD</tt> part of that
+	message.</li>
+
+    <li>I've updated <tt>refind-install</tt> to recognize <tt>mmx64.efi</tt>
+	(or the equivalent for other architectures) as an alternative name
+	for <tt>MokManager.efi</tt>.</li>
+    </ul>
+</li>
 
 <li><b>0.10.6 (4/16/2017)</b>&mdash;This version includes a few small
     bug fixes and one new feature:
