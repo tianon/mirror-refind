@@ -31,7 +31,7 @@ EFICRT0         = /usr/lib
 HOSTARCH        = $(shell uname -m | sed s,i[3456789]86,ia32,)
 ARCH            ?= $(HOSTARCH)
 
-# Note: EDK2BASE is definted in master Makefile and exported
+# Note: EDK2BASE is defined in master Makefile and exported
 #EDK2BASE        = /usr/local/UDK2014/MyWorkSpace
 GENFW           = $(EDK2BASE)/BaseTools/Source/C/bin/GenFw
 prefix          = /usr/bin/
