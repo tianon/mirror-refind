@@ -267,10 +267,13 @@ timeout 20
 #also_scan_dirs boot,ESP2:EFI/linux/kernels
 
 # Partitions (or whole disks, for legacy-mode boots) to omit from scans.
-# For EFI-mode scans, you must specify a volume by its label, which you
+# For EFI-mode scans, you normally specify a volume by its label, which you
 # can obtain in an EFI shell by typing "vol", from Linux by typing
 # "blkid /dev/{devicename}", or by examining the disk's label in various
-# OSes' file browsers.
+# OSes' file browsers. It's also possible to identify a partition by its
+# unique GUID (aka its "PARTUUID" in Linux parlance). (Note that this is
+# NOT the partition TYPE CODE GUID.) This identifier can be obtained via
+# "blkid" in Linux or "diskutil info {partition-id}" in macOS.
 # For legacy-mode scans, you can specify any subset of the boot loader
 # description shown when you highlight the option in rEFInd.
 # The default is "LRS_ESP".

@@ -1258,12 +1258,18 @@ static VOID CleanUpLoaderList(struct LOADER_LIST *LoaderList) {
 // Returns TRUE if none of these conditions is met -- that is, if the path is
 // eligible for scanning.
 static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
-    CHAR16   *VolName = NULL, *DontScanDir, *PathCopy = NULL;
+    CHAR16   *VolName = NULL, *DontScanDir, *PathCopy = NULL, *VolGuid = NULL;
     UINTN    i = 0;
     BOOLEAN  ScanIt = TRUE;
 
-    if ((IsIn(Volume->VolName, GlobalConfig.DontScanVolumes)) || (IsIn(Volume->PartName, GlobalConfig.DontScanVolumes)))
+    VolGuid = GuidAsString(&(Volume->PartGuid));
+    if ((IsIn(Volume->VolName, GlobalConfig.DontScanVolumes)) || (IsIn(Volume->PartName, GlobalConfig.DontScanVolumes)) ||
+        (IsIn(VolGuid, GlobalConfig.DontScanVolumes))) {
+        MyFreePool(VolGuid);
         return FALSE;
+    } else {
+        MyFreePool(VolGuid);
+    } // if/else
 
     if (MyStriCmp(Path, SelfDirPath) && (Volume->DeviceHandle == SelfVolume->DeviceHandle))
         return FALSE;
