@@ -1,6 +1,11 @@
 0.10.8 (?/??/2017):
 -------------------
 
+- Minor code efficiency improvements.
+
+- Added ability to specify volumes by partition unique GUIDs in
+  dont_scan_volumes.
+
 - Renamed "Mac OS X" to "macOS" in assorted messages, per Apple's
   re-branding with version 10.12 (Sierra). Unfortunately, I don't know of an
   easy way to tell which macOS version a given macOS boot loader will load,

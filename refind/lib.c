@@ -120,37 +120,38 @@ extern GPT_DATA *gPartitions;
 // in pathnames, because some user inputs can produce duplicate directory
 // separators, and because we want consistent start and end slashes for
 // directory comparisons. A special case: If the PathName refers to root,
-// return "/", since some firmware implementations flake out if this
-// isn't present.
+// but is non-empty, return "\", since some firmware implementations flake
+// out if this isn't present.
 VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName) {
-    CHAR16   *NewName;
-    UINTN    i, Length, FinalChar = 0;
-    BOOLEAN  LastWasSlash = FALSE;
+    UINTN Source = 0, Dest = 0;
 
-    Length = StrLen(PathName);
-    NewName = AllocateZeroPool(sizeof(CHAR16) * (Length + 2));
-    if (NewName != NULL) {
-        for (i = 0; i < Length; i++) {
-            if ((PathName[i] == L'/') || (PathName[i] == L'\\')) {
-                if ((!LastWasSlash) && (FinalChar != 0))
-                    NewName[FinalChar++] = L'\\';
-                LastWasSlash = TRUE;
+    if ((PathName == NULL) || (PathName[0] == '\0'))
+        return;
+
+    while (PathName[Source] != '\0') {
+        if ((PathName[Source] == L'/') || (PathName[Source] == L'\\')) {
+            if (Dest == 0) { // Skip slash if to first position
+                Source++;
             } else {
-                NewName[FinalChar++] = PathName[i];
-                LastWasSlash = FALSE;
+                PathName[Dest] = L'\\';
+                do { // Skip subsequent slashes
+                    Source++;
+                } while ((PathName[Source] == L'/') || (PathName[Source] == L'\\'));
+                Dest++;
             } // if/else
-        } // for
-        NewName[FinalChar] = 0;
-        if ((FinalChar > 0) && (NewName[FinalChar - 1] == L'\\'))
-            NewName[--FinalChar] = 0;
-        if (FinalChar == 0) {
-            NewName[0] = L'\\';
-            NewName[1] = 0;
-        }
-        // Copy the transformed name back....
-        StrCpy(PathName, NewName);
-        FreePool(NewName);
-    } // if allocation OK
+        } else { // Regular character; copy it straight....
+            PathName[Dest] = PathName[Source];
+            Source++;
+            Dest++;
+        } // if/else
+    } // while()
+    if ((Dest > 0) && (PathName[Dest - 1] == L'\\'))
+        Dest--;
+    PathName[Dest] = L'\0';
+    if (PathName[0] == L'\0') {
+        PathName[0] = L'\\';
+        PathName[1] = L'\0';
+    }
 } // CleanUpPathNameSlashes()
 
 // Splits an EFI device path into device and filename components. For instance, if InString is
