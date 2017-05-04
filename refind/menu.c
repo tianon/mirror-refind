@@ -305,54 +305,54 @@ VOID AddMenuEntry(IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry)
 }
 
 
-static INTN FindMenuShortcutEntry(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *Defaults)
-{
-    UINTN i, j = 0;
+static INTN FindMenuShortcutEntry(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *Defaults) {
+    UINTN i, j = 0, ShortcutLength;
     CHAR16 *Shortcut;
 
     while ((Shortcut = FindCommaDelimited(Defaults, j)) != NULL) {
-       if (StrLen(Shortcut) == 1) {
-         if (Shortcut[0] >= 'a' && Shortcut[0] <= 'z')
-            Shortcut[0] -= ('a' - 'A');
-         if (Shortcut[0]) {
+        ShortcutLength = StrLen(Shortcut);
+        if (ShortcutLength == 1) {
+            if (Shortcut[0] >= 'a' && Shortcut[0] <= 'z')
+                Shortcut[0] -= ('a' - 'A');
+            if (Shortcut[0]) {
+                for (i = 0; i < Screen->EntryCount; i++) {
+                    if (Screen->Entries[i]->ShortcutDigit == Shortcut[0] || Screen->Entries[i]->ShortcutLetter == Shortcut[0]) {
+                        MyFreePool(Shortcut);
+                        return i;
+                    } // if
+                } // for
+            } // if
+        } else if (ShortcutLength > 1) {
             for (i = 0; i < Screen->EntryCount; i++) {
-                  if (Screen->Entries[i]->ShortcutDigit == Shortcut[0] || Screen->Entries[i]->ShortcutLetter == Shortcut[0]) {
-                     MyFreePool(Shortcut);
-                     return i;
-                  } // if
+                if (StriSubCmp(Shortcut, Screen->Entries[i]->Title)) {
+                    MyFreePool(Shortcut);
+                    return i;
+                } // if
             } // for
-         } // if
-       } else if (StrLen(Shortcut) > 1) {
-          for (i = 0; i < Screen->EntryCount; i++) {
-             if (StriSubCmp(Shortcut, Screen->Entries[i]->Title)) {
-                MyFreePool(Shortcut);
-                return i;
-             } // if
-          } // for
-       }
-       MyFreePool(Shortcut);
-       j++;
+        }
+        MyFreePool(Shortcut);
+        j++;
     } // while()
     return -1;
-}
+} // static INTN FindMenuShortcutEntry()
 
 // Identify the end of row 0 and the beginning of row 1; store the results in the
 // appropriate fields in State. Also reduce MaxVisible if that value is greater
 // than the total number of row-0 tags and if we're in an icon-based screen
 static VOID IdentifyRows(IN SCROLL_STATE *State, IN REFIT_MENU_SCREEN *Screen) {
-   UINTN i;
+    UINTN i;
 
-   State->FinalRow0 = 0;
-   State->InitialRow1 = State->MaxIndex;
-   for (i = 0; i <= State->MaxIndex; i++) {
-      if (Screen->Entries[i]->Row == 0) {
-         State->FinalRow0 = i;
-      } else if ((Screen->Entries[i]->Row == 1) && (State->InitialRow1 > i)) {
-         State->InitialRow1 = i;
-      } // if/else
-   } // for
-   if ((State->ScrollMode == SCROLL_MODE_ICONS) && (State->MaxVisible > (State->FinalRow0 + 1)))
-      State->MaxVisible = State->FinalRow0 + 1;
+    State->FinalRow0 = 0;
+    State->InitialRow1 = State->MaxIndex;
+    for (i = 0; i <= State->MaxIndex; i++) {
+        if (Screen->Entries[i]->Row == 0) {
+            State->FinalRow0 = i;
+        } else if ((Screen->Entries[i]->Row == 1) && (State->InitialRow1 > i)) {
+            State->InitialRow1 = i;
+        } // if/else
+    } // for
+    if ((State->ScrollMode == SCROLL_MODE_ICONS) && (State->MaxVisible > (State->FinalRow0 + 1)))
+        State->MaxVisible = State->FinalRow0 + 1;
 } // static VOID IdentifyRows()
 
 // Blank the screen, wait for a keypress or touch event, and restore banner/background.
