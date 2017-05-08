@@ -351,6 +351,10 @@ Files: icons/os_debian.png
 Copyright: 1999 by Debian Project
 License: LGPL-3+ or CC-BY-SA-3.0
 
+Files: icons/os_devuan.png
+Copyright: 2017 by Dyne.org foundation
+License: CC-BY-SA-4.0
+
 Files: icons/os_elementary.png
 Copyright: 2008 Dan Rabbit
 License: GPL-2
@@ -362,6 +366,10 @@ License: LGPL-3+ or CC-BY-SA-3.0
 Files: icons/svg/os_debian.svg
 Copyright: 1999 by Debian Project
 License: LGPL-3+ or CC-BY-SA-3.0
+
+Files: icons/svg/os_devuan.svg
+Copyright: 2017 by Dyne.org foundation
+License: CC-BY-SA-4.0
 
 Files: icons/svg/os_elementary.svg
 Copyright: 2008 Dan Rabbit

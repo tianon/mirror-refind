@@ -1,6 +1,9 @@
 0.10.8 (?/??/2017):
 -------------------
 
+- Added icon for Devuan GNU+Linux, based on the icon in the Devuan press kit
+  (https://devuan.org/os/press/).
+
 - Minor code efficiency improvements.
 
 - Added ability to specify volumes by partition unique GUIDs in
