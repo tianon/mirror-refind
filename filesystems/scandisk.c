@@ -24,8 +24,11 @@
 #ifdef __MAKEWITH_GNUEFI
 #include "edk2/DriverBinding.h"
 #include "edk2/ComponentName.h"
-extern EFI_GUID gEfiDiskIoProtocolGuid;
-extern EFI_GUID gEfiBlockIoProtocolGuid;
+extern EFI_GUID gMyEfiDiskIoProtocolGuid;
+extern EFI_GUID gMyEfiBlockIoProtocolGuid;
+#else
+#define gMyEfiBlockIoProtocolGuid gEfiBlockIoProtocolGuid
+#define gMyEfiDiskIoProtocolGuid gEfiDiskIoProtocolGuid
 #endif
 #include "../include/refit_call_wrapper.h"
 
@@ -99,16 +102,16 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
     Print(L" ");
 #endif
     DPRINT(L"Scanning disks\n");
-    Status = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &gEfiDiskIoProtocolGuid, NULL, &HandleCount, &Handles);
+    Status = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &gMyEfiDiskIoProtocolGuid, NULL, &HandleCount, &Handles);
     if (Status == EFI_NOT_FOUND)
         return -1;  // no filesystems. strange, but true...
     for (i = 0; i < HandleCount; i++) {
         EFI_DISK_IO *diskio;
         EFI_BLOCK_IO *blockio;
-        Status = refit_call3_wrapper(BS->HandleProtocol, Handles[i], &gEfiDiskIoProtocolGuid, (VOID **) &diskio);
+        Status = refit_call3_wrapper(BS->HandleProtocol, Handles[i], &gMyEfiDiskIoProtocolGuid, (VOID **) &diskio);
         if (Status != 0)
             continue;
-        Status = refit_call3_wrapper(BS->HandleProtocol, Handles[i], &gEfiBlockIoProtocolGuid, (VOID **) &blockio);
+        Status = refit_call3_wrapper(BS->HandleProtocol, Handles[i], &gMyEfiBlockIoProtocolGuid, (VOID **) &blockio);
         if (Status != 0)
             continue;
         struct fsw_volume *vol = create_dummy_volume(diskio, blockio->Media->MediaId);

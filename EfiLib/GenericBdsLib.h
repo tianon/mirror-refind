@@ -872,11 +872,6 @@ BdsLibSaveMemoryTypeInformation (
   @retval EFI_ACCESS_DENIED   The user was not successfully identified.
 
 **/
-// EFI_STATUS
-// EFIAPI
-// BdsLibUserIdentify (
-//   OUT EFI_USER_PROFILE_HANDLE         *User
-//   );  
 
 /**
   This function checks if a Fv file device path is valid, according to a file GUID. If it is invalid,
@@ -961,7 +956,7 @@ DevPathVendor (
 
 CHAR16 *
 EFIAPI
-CatPrint (
+MyCatPrint (
   IN OUT POOL_PRINT   *Str,
   IN CHAR16           *Fmt,
   ...

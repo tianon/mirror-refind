@@ -21,30 +21,32 @@ Revision History
 
 --*/
 
+/*
+ * rEFInd NOTE: This file is included only when compiling with GNU-EFI,
+ * which has not traditionally provided the definitions supplied here.
+ * Unfortunately, recent (ca. 3.0.5) versions of GNU-EFI have added
+ * SOME of these functions to an existing header file, creating problems
+ * when trying to maintain compatibility with multiple GNU-EFI versions.
+ * I've therefore renamed the relevant defines, types, and functions,
+ * both here and in fsw_efi.c; and included a define to match the only
+ * used name (REFIND_EFI_DRIVER_BINDING_PROTOCOL) to the traditional
+ * name (EFI_DRIVER_BINDING_PROTOCOL) in fsw_efi.c for compiling with
+ * TianoCore.
+ */
+
 #ifndef _EFI_DRIVER_BINDING_H_
 #define _EFI_DRIVER_BINDING_H_
 
 #include <efidevp.h>
 
-//
-// Global ID for the ControllerHandle Driver Protocol
-//
-#define EFI_DRIVER_BINDING_PROTOCOL_GUID \
+#define REFIND_EFI_DRIVER_BINDING_PROTOCOL_GUID \
   { \
     0x18a031ab, 0xb443, 0x4d1a, {0xa5, 0xc0, 0xc, 0x9, 0x26, 0x1e, 0x9f, 0x71} \
   }
 
 #define EFI_FORWARD_DECLARATION(x) typedef struct _##x x
 
-EFI_FORWARD_DECLARATION (EFI_DRIVER_BINDING_PROTOCOL);
-
-///
-/// Device Path protocol.
-///
-#define EFI_DEVICE_PATH_PROTOCOL_GUID \
-  { \
-    0x9576e91, 0x6d3f, 0x11d2, {0x8e, 0x39, 0x0, 0xa0, 0xc9, 0x69, 0x72, 0x3b } \
-  }
+EFI_FORWARD_DECLARATION (REFIND_EFI_DRIVER_BINDING_PROTOCOL);
 
 // Begin included from DevicePath.h....
 
@@ -79,18 +81,19 @@ typedef struct {
   UINT8 Length[2];  ///< Specific Device Path data. Type and Sub-Type define
                     ///< type of data. Size of data is included in Length.
 
-} EFI_DEVICE_PATH_PROTOCOL;
+} REFIND_EFI_DEVICE_PATH_PROTOCOL;
 
 #pragma pack()
+
 
 // End included from DevicePath.h
 
 typedef
 EFI_STATUS
 (EFI_FUNCTION EFIAPI *EFI_DRIVER_BINDING_SUPPORTED) (
-  IN EFI_DRIVER_BINDING_PROTOCOL            * This,
+  IN REFIND_EFI_DRIVER_BINDING_PROTOCOL            * This,
   IN EFI_HANDLE                             ControllerHandle,
-  IN EFI_DEVICE_PATH_PROTOCOL               * RemainingDevicePath OPTIONAL
+  IN REFIND_EFI_DEVICE_PATH_PROTOCOL               * RemainingDevicePath OPTIONAL
   )
 /*++
 
@@ -114,9 +117,9 @@ EFI_STATUS
 typedef
 EFI_STATUS
 (EFI_FUNCTION EFIAPI *EFI_DRIVER_BINDING_START) (
-  IN EFI_DRIVER_BINDING_PROTOCOL            * This,
+  IN REFIND_EFI_DRIVER_BINDING_PROTOCOL            * This,
   IN EFI_HANDLE                             ControllerHandle,
-  IN EFI_DEVICE_PATH_PROTOCOL               * RemainingDevicePath OPTIONAL
+  IN REFIND_EFI_DEVICE_PATH_PROTOCOL               * RemainingDevicePath OPTIONAL
   )
 /*++
 
@@ -140,7 +143,7 @@ EFI_STATUS
 typedef
 EFI_STATUS
 (EFI_FUNCTION EFIAPI *EFI_DRIVER_BINDING_STOP) (
-  IN EFI_DRIVER_BINDING_PROTOCOL            * This,
+  IN REFIND_EFI_DRIVER_BINDING_PROTOCOL            * This,
   IN  EFI_HANDLE                            ControllerHandle,
   IN  UINTN                                 NumberOfChildren,
   IN  EFI_HANDLE                            * ChildHandleBuffer
@@ -167,7 +170,7 @@ EFI_STATUS
 //
 // Interface structure for the ControllerHandle Driver Protocol
 //
-struct _EFI_DRIVER_BINDING_PROTOCOL {
+struct _REFIND_EFI_DRIVER_BINDING_PROTOCOL {
   EFI_DRIVER_BINDING_SUPPORTED  Supported;
   EFI_DRIVER_BINDING_START      Start;
   EFI_DRIVER_BINDING_STOP       Stop;

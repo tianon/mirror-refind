@@ -85,37 +85,34 @@
 #define DRIVER_DIRS             L"drivers"
 #endif
 
-#ifdef __MAKEWITH_GNUEFI
 // Following "global" constants are from EDK2's AutoGen.c....
-EFI_GUID gEfiLoadedImageProtocolGuid = { 0x5B1B31A1, 0x9562, 0x11D2, { 0x8E, 0x3F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
-EFI_GUID gEfiDriverBindingProtocolGuid = { 0x18A031AB, 0xB443, 0x4D1A, { 0xA5, 0xC0, 0x0C, 0x09, 0x26, 0x1E, 0x9F, 0x71 }};
-EFI_GUID gEfiDriverConfiguration2ProtocolGuid = { 0xBFD7DC1D, 0x24F1, 0x40D9, { 0x82, 0xE7, 0x2E, 0x09, 0xBB, 0x6B, 0x4E, 0xBE }};
-EFI_GUID gEfiDriverConfigurationProtocolGuid = { 0x107A772B, 0xD5E1, 0x11D4, { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }};
-EFI_GUID gEfiDriverDiagnosticsProtocolGuid = { 0x0784924F, 0xE296, 0x11D4, { 0x9A, 0x49, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }};
-EFI_GUID gEfiDriverDiagnostics2ProtocolGuid = { 0x4D330321, 0x025F, 0x4AAC, { 0x90, 0xD8, 0x5E, 0xD9, 0x00, 0x17, 0x3B, 0x63 }};
-EFI_GUID gEfiComponentNameProtocolGuid = { 0x107A772C, 0xD5E1, 0x11D4, { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }};
-EFI_GUID gEfiComponentName2ProtocolGuid = { 0x6A7A5CFF, 0xE8D9, 0x4F70, { 0xBA, 0xDA, 0x75, 0xAB, 0x30, 0x25, 0xCE, 0x14 }};
-EFI_GUID gEfiDevicePathProtocolGuid = { 0x09576E91, 0x6D3F, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
-EFI_GUID gEfiDiskIoProtocolGuid = { 0xCE345171, 0xBA0B, 0x11D2, { 0x8E, 0x4F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
-EFI_GUID gEfiBlockIoProtocolGuid = { 0x964E5B21, 0x6459, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
-EFI_GUID gEfiSimpleFileSystemProtocolGuid = { 0x964E5B22, 0x6459, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
+EFI_GUID gMyEfiLoadedImageProtocolGuid = { 0x5B1B31A1, 0x9562, 0x11D2, { 0x8E, 0x3F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
+EFI_GUID gMyEfiDriverBindingProtocolGuid = { 0x18A031AB, 0xB443, 0x4D1A, { 0xA5, 0xC0, 0x0C, 0x09, 0x26, 0x1E, 0x9F, 0x71 }};
+EFI_GUID gMyEfiDriverConfigurationProtocolGuid = { 0x107A772B, 0xD5E1, 0x11D4, { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }};
+EFI_GUID gMyEfiDriverDiagnosticsProtocolGuid = { 0x0784924F, 0xE296, 0x11D4, { 0x9A, 0x49, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }};
+EFI_GUID gMyEfiComponentNameProtocolGuid = { 0x107A772C, 0xD5E1, 0x11D4, { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }};
+EFI_GUID gMyEfiDevicePathProtocolGuid = { 0x09576E91, 0x6D3F, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
+EFI_GUID gMyEfiDiskIoProtocolGuid = { 0xCE345171, 0xBA0B, 0x11D2, { 0x8E, 0x4F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
+EFI_GUID gMyEfiBlockIoProtocolGuid = { 0x964E5B21, 0x6459, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
+EFI_GUID gMyEfiSimpleFileSystemProtocolGuid = { 0x964E5B22, 0x6459, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
 
-struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
-struct EFI_FILE_PROTOCOL;
+#ifdef __MAKEWITH_GNUEFI
+struct MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
+struct MY_EFI_FILE_PROTOCOL;
 
 typedef
 EFI_STATUS
-(EFIAPI *EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME)(
-  IN struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL    *This,
-  OUT struct EFI_FILE_PROTOCOL                 **Root
+(EFIAPI *MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME)(
+  IN struct MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL    *This,
+  OUT struct MY_EFI_FILE_PROTOCOL                 **Root
   );
 
-typedef struct _EFI_SIMPLE_FILE_SYSTEM_PROTOCOL {
+typedef struct _MY_MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL {
   UINT64                                      Revision;
-  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME OpenVolume;
-} EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
+  MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME OpenVolume;
+} MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
 
-typedef struct _EFI_FILE_PROTOCOL {
+typedef struct _MY_EFI_FILE_PROTOCOL {
   UINT64                Revision;
   EFI_FILE_OPEN         Open;
   EFI_FILE_CLOSE        Close;
@@ -127,16 +124,20 @@ typedef struct _EFI_FILE_PROTOCOL {
   EFI_FILE_GET_INFO     GetInfo;
   EFI_FILE_SET_INFO     SetInfo;
   EFI_FILE_FLUSH        Flush;
-} EFI_FILE_PROTOCOL;
+} MY_EFI_FILE_PROTOCOL;
 
-typedef struct _EFI_BLOCK_IO_PROTOCOL {
+typedef struct _MY_EFI_BLOCK_IO_PROTOCOL {
   UINT64             Revision;
   EFI_BLOCK_IO_MEDIA *Media;
   EFI_BLOCK_RESET    Reset;
   EFI_BLOCK_READ     ReadBlocks;
   EFI_BLOCK_WRITE    WriteBlocks;
   EFI_BLOCK_FLUSH    FlushBlocks;
-} EFI_BLOCK_IO_PROTOCOL;
+} MY_EFI_BLOCK_IO_PROTOCOL;
+#else /* Make with Tianocore */
+#define MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL EFI_SIMPLE_FILE_SYSTEM_PROTOCOL
+#define MY_EFI_FILE_PROTOCOL EFI_FILE_PROTOCOL
+#define MY_EFI_BLOCK_IO_PROTOCOL EFI_BLOCK_IO_PROTOCOL
 #endif
 
 /* LibScanHandleDatabase() is used by rEFInd's driver-loading code (inherited
@@ -232,27 +233,27 @@ LibScanHandleDatabase (EFI_HANDLE  DriverBindingHandle, OPTIONAL
 
       for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
 
-        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiLoadedImageProtocolGuid) == 0) {
+        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiLoadedImageProtocolGuid) == 0) {
           (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_IMAGE_HANDLE;
         }
 
-        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverBindingProtocolGuid) == 0) {
+        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverBindingProtocolGuid) == 0) {
           (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE;
         }
 
-        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverConfigurationProtocolGuid) == 0) {
+        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverConfigurationProtocolGuid) == 0) {
           (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DRIVER_CONFIGURATION_HANDLE;
         }
 
-        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverDiagnosticsProtocolGuid) == 0) {
+        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverDiagnosticsProtocolGuid) == 0) {
           (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DRIVER_DIAGNOSTICS_HANDLE;
         }
 
-        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentNameProtocolGuid) == 0) {
+        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiComponentNameProtocolGuid) == 0) {
           (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
         }
 
-        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDevicePathProtocolGuid) == 0) {
+        if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiDevicePathProtocolGuid) == 0) {
           (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DEVICE_HANDLE;
         }
         //
@@ -453,8 +454,8 @@ VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
     UINTN                                 Index;
     UINTN                                 OpenInfoIndex;
     EFI_HANDLE                            *Handles = NULL;
-    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL       *Fs;
-    EFI_BLOCK_IO_PROTOCOL                 *BlockIo;
+    MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL       *Fs;
+    MY_EFI_BLOCK_IO_PROTOCOL                 *BlockIo;
     EFI_OPEN_PROTOCOL_INFORMATION_ENTRY   *OpenInfo;
     UINTN                                 OpenInfoCount;
     EFI_HANDLE                            DriverHandleList[2];
@@ -464,7 +465,7 @@ VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
     //
     Status = refit_call5_wrapper(gBS->LocateHandleBuffer,
                                  ByProtocol,
-                                 &gEfiDiskIoProtocolGuid,
+                                 &gMyEfiDiskIoProtocolGuid,
                                  NULL,
                                  &HandleCount,
                                  &Handles);
@@ -483,7 +484,7 @@ VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
         //
         Status = refit_call3_wrapper(gBS->HandleProtocol,
                                      Handles[Index],
-                                     &gEfiBlockIoProtocolGuid,
+                                     &gMyEfiBlockIoProtocolGuid,
                                      (VOID **) &BlockIo);
         if (EFI_ERROR (Status))
             continue;
@@ -494,9 +495,9 @@ VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
         // If SimpleFileSystem is already produced - skip it, this is ok
         //
         Status = refit_call3_wrapper(gBS->HandleProtocol,
-                                    Handles[Index],
-                                    &gEfiSimpleFileSystemProtocolGuid,
-                                    (VOID **) &Fs);
+                                     Handles[Index],
+                                     &gMyEfiSimpleFileSystemProtocolGuid,
+                                     (VOID **) &Fs);
         if (Status == EFI_SUCCESS)
             continue;
 
@@ -506,7 +507,7 @@ VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
         //
         Status = refit_call4_wrapper(gBS->OpenProtocolInformation,
                                      Handles[Index],
-                                     &gEfiDiskIoProtocolGuid,
+                                     &gMyEfiDiskIoProtocolGuid,
                                      &OpenInfo,
                                      &OpenInfoCount);
         if (EFI_ERROR (Status))

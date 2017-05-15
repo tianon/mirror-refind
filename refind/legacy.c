@@ -76,6 +76,8 @@ extern REFIT_MENU_SCREEN MainMenu;
 #define DevicePathProtocol gEfiDevicePathProtocolGuid
 #endif
 
+EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
+
 static EFI_STATUS ActivateMbrPartition(IN EFI_BLOCK_IO *BlockIO, IN UINTN PartitionIndex)
 {
     EFI_STATUS          Status;
@@ -538,7 +540,7 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
     } // if
 
     // Grab the boot order
-    BootOrder = BdsLibGetVariableAndSize(L"BootOrder", &gEfiGlobalVariableGuid, &BootOrderSize);
+    BootOrder = BdsLibGetVariableAndSize(L"BootOrder", &EfiGlobalVariableGuid, &BootOrderSize);
     if (BootOrder == NULL) {
         BootOrderSize = 0;
     }
