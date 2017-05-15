@@ -37,6 +37,7 @@
 
 # Revision history:
 #
+# 0.10.8  -- Enabled use of shimx64.efi.signed as Shim source file
 # 0.10.7  -- Added mm{arch}.efi as equivalent of MokManager.efi
 # 0.10.6  -- Improved identification of the root device under macOS.
 # 0.10.5  -- More improvement to handling of disks (other than /dev/[sh]d? disks).
@@ -326,11 +327,14 @@ CheckForFiles() {
    echo "ShimSource is $ShimSource"
    if [[ "$ShimSource" != "none" ]] ; then
       if [[ -f "$ShimSource" ]] ; then
-         if [[ $ShimType == "shimx64.efi" || $ShimType == "shim.efi" ]] ; then
+         if [[ $ShimType == "shimx64.efi" || $ShimType == "shim.efi" || $ShimType == "shimx64.efi.signed" ]] ; then
             TargetX64="grubx64.efi"
             TargetAARCH64="grubaa64.efi"
-            MokManagerSource=`dirname "$ShimSource"`/mm$Platform.efi
-            if [[ -f "$MokManagerSource" ]] ; then
+            MokManagerSource=`dirname "$ShimSource"`/mm$Platform.efi.signed
+            if [[ ! -f "$MokManagerSource" ]] ; then
+                MokManagerSource=`dirname "$ShimSource"`/mm$Platform.efi
+            fi
+            if [[ ! -f "$MokManagerSource" ]] ; then
                 MokManagerSource=`dirname "$ShimSource"`/MokManager.efi
             fi
          elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
@@ -362,10 +366,13 @@ CopyShimFiles() {
    fi
    inode1=`ls -i "$MokManagerSource" 2> /dev/null | cut -f 1 -d " "`
    local TargetMMName=`basename $MokManagerSource`
+   if [[ $TargetMMName == "mm$Platform.efi.signed" ]] ; then
+       TargetMMName="mm$Platform.efi"
+   fi
    inode2=`ls -i "$InstallDir/$TargetDir/$TargetMMName" 2> /dev/null | cut -f 1 -d " "`
    if [[ $inode1 != $inode2 ]] ; then
       if [[ -f "$MokManagerSource" ]] ; then
-         cp -fb "$MokManagerSource" "$InstallDir/$TargetDir/"
+         cp -fb "$MokManagerSource" "$InstallDir/$TargetDir/$TargetMMName"
       fi
       if [[ $? != 0 ]] ; then
          Problems=1
@@ -390,7 +397,7 @@ SetVarsForBoot() {
       TargetIA32="bootia32.efi"
       TargetAARCH64="bootaa64.efi"
    else
-      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" || $ShimType = "shimaa64.efi" ]] ; then
+      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" || $ShimType == "shimx64.efi.signed" || $ShimType = "shimaa64.efi" ]] ; then
          TargetX64="grubx64.efi"
          TargetAARCH64="grubaa64.efi"
       elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
