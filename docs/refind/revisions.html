@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 4/17/2017</p>
+<p>Last Web page update: 5/21/2017</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,38 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.10.8 (5/21/2017)</b>&mdash;This version's changes are modest,
+    although a couple will be important to a few users....
+    <ul>
+
+    <li>I've added <tt>shimx64.efi.signed</tt> as a valid Shim filename, and
+	<tt>mmx64.efi.signed</tt> as a valid MokManager filename, to
+	<tt>refind-install</tt>, so that Ubuntu users can point to the
+	signed Shim binaries on their root (<tt>/</tt>) partition, rather
+	than a copy on their ESP.</li>
+
+    <li>I've made changes to enable compilation with GNU-EFI 3.0.5, which
+        was failing with the previous version.</li>
+
+    <li>I've added an icon for Devuan GNU+Linux (a Debian spinoff that does
+        not use <tt>systemd</tt>).</li>
+
+    <li>I've made some minor code efficiency improvements. These are
+	unlikely to have a noticeable impact on performance by
+	themselves.</li>
+
+    <li>I've enabled the use of partition unique GUID values with
+	<tt>dont_scan_volumes</tt>. This should help users keep duplicate
+	boot loaders from showing up on RAID 1 arrays.</li>
+
+    <li>I've changed "OS X" to "macOS" in assorted on-screen messages, to
+	conform with Apple's name change as of macOS 10.12 (Sierra). Note
+	that <b>this change may require updating <tt>default_selection</tt>
+	options that rely on the string <tt>OS X</tt>!</b></li>
+
+    </ul>
+</li>
 
 <li><b>0.10.7 (4/17/2017)</b>&mdash;Soon after releasing version
     0.10.6, I discovered a potentially serious bug it introduced, and
