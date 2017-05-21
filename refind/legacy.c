@@ -60,13 +60,13 @@
 #include "legacy.h"
 #include "lib.h"
 #include "menu.h"
-#include "refit_call_wrapper.h"
+#include "../include/refit_call_wrapper.h"
 #include "screen.h"
-#include "syslinux_mbr.h"
+#include "../include/syslinux_mbr.h"
 #include "mystrings.h"
 #include "../EfiLib/BdsHelper.h"
 #include "../EfiLib/legacy.h"
-#include "Handle.h"
+#include "../include/Handle.h"
 
 extern REFIT_MENU_ENTRY MenuEntryReturn;
 extern REFIT_MENU_SCREEN MainMenu;

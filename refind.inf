@@ -3,7 +3,7 @@
 # refind.inf file to build rEFInd using the EDK2/UDK2010/UDK2014 development
 # kit.
 #
-# Copyright (c) 2012-2015 by Roderick W. Smith
+# Copyright (c) 2012-2017 by Roderick W. Smith
 # Released under the terms of the GPLv3 (or, at your discretion, any later
 # version), a copy of which should come with this file.
 #
@@ -158,8 +158,8 @@
 
 [BuildOptions.IA32]
   XCODE:*_*_*_CC_FLAGS = -Os 
-  GCC:*_*_*_CC_FLAGS = -Os -DEFI32 -D__MAKEWITH_TIANO
+  GCC:*_*_*_CC_FLAGS = -Os -DEFI32 -D__MAKEWITH_TIANO -DREFIND_VERSION='L"0.10.7.3"'
 
 [BuildOptions.X64]
   XCODE:*_*_*_CC_FLAGS = -Os 
-  GCC:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO
+  GCC:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO -DREFIND_VERSION='L"0.10.7.3"'

@@ -93,8 +93,9 @@ GNUEFI_LIBS       = -lefi -lgnuefi $(shell $(CC) -print-libgcc-file-name)
 
 # ...and for TianoCore....
 ENTRYPOINT=efi_main
-TIANO_LDSCRIPT   = $(EDK2BASE)/BaseTools/Scripts/gcc4.4-ld-script
-TIANO_LDFLAGS   = -nostdlib -n -q --gc-sections --script=$(EDK2BASE)/BaseTools/Scripts/gcc4.4-ld-script \
+TIANO_LDSCRIPT   = $(EDK2BASE)/BaseTools/Scripts/gcc4.9-ld-script
+#TIANO_LDSCRIPT  = /usr/local/UDK2014/MyWorkSpace/BaseTools/Scripts/gcc4.9-ld-script
+TIANO_LDFLAGS   = -nostdlib -n -q --gc-sections --script=$(TIANO_LDSCRIPT) \
                   --entry $(ENTRYPOINT) -u $(ENTRYPOINT) -m $(LD_CODE)
 
 #

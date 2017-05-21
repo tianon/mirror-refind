@@ -77,6 +77,10 @@ Program (C source code) files:
   Vandevenne. (The libeg/lodepng_xtra.c file provides some necessary
   ancillary and interface functions written by me.)
 
+* The RefindPkg.dec and RefindPkg.dsc files, used to enable compiling
+  rEFInd in the traditional TianoCore way, come from
+  https://github.com/snarez/refind-edk2.
+
 Icons and graphics:
 -------------------
 

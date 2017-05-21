@@ -9,7 +9,7 @@ To compile rEFInd, you'll need the following:
   use a cross-compiler, it must use the same CPU type and bit depth as your
   EFI implementation. (Normally that means 64-bit X64.) If you don't
   normally run Linux, you can run it in a VirtualBox or similar virtual
-  machine. (I describe some unsupported non-Linux build options shortly.)
+  machine. (I describe some unsupported non-Linux build options later.)
 
 * A standard set of Linux development tools, based on GCC. (I've tried
   using clang 3.4 under Ubuntu, with partial success. The main rEFInd
@@ -46,23 +46,6 @@ prefer to use GNU-EFI unless you have a specific need for the TianoCore
 toolkit. Automated build tools like the OpenSUSE Build Service (OBS) and
 the Ubuntu Personal Package Archive (PPA) mechanism don't yet support
 TianoCore.
-
-It's possible to use a non-Linux platform to compile rEFInd. To the best of
-my knowledge, the rEFInd code doesn't rely on anything Linux-specific in
-its build requirements, and GNU-EFI's Sourceforge page indicates that it
-works under Windows and OS X, too; however, my one attempt to compile
-GNU-EFI under OS X failed. I've received one report that rEFInd compiles
-successfully with Clang and the TianoCore toolkit under OS X by adding the
-refind.inf file to a .dsc file that you use for your own projects. You can
-find brief instructions here (note that this is not my documentation):
-
-https://github.com/snarez/refind-edk2
-
-Under Windows, you would need to either create a project or Makefile for
-your non-GCC compiler or use a GCC port, such as MinGW
-(http://www.mingw.org). You'd probably need to adjust the Makefiles in the
-latter case. A procedure similar to that used under OS X might work using
-GCC or Microsoft's C compiler, but I haven't tested this.
 
 
 Preparing Your Development Kit
@@ -165,8 +148,8 @@ package. Once the toolkit is installed, you can build the filesystem
 drivers or rEFInd, as described below.
 
 
-Compiling rEFInd
-================
+Compiling rEFInd the Unix/Linux Way
+===================================
 
 With your development system set up, you can compile rEFInd as follows:
 
@@ -233,17 +216,64 @@ recently, most distributions provided out-of-date versions of this package.
 If you're using TianoCore's EDK2, as noted earlier, you may need to adjust
 the EDK2BASE variable in Makefile.
 
-When I tried to compile rEFInd under Ubuntu 12.04 (i386) using GNU-EFI,
-even with a locally-compiled GNU-EFI 3.0p or 3.0q, I got errors like this:
 
-main.o: In function `StartLegacy.isra.0':
-main.c:(.text+0x8b1): undefined reference to `__stack_chk_fail_local'
-lib.o: In function `ScanVolumeBootcode.part.3':
-lib.c:(.text+0xf2f): undefined reference to `__stack_chk_fail_local'
-lib.o: In function `ScanExtendedPartition.isra.4':
+Compiling rEFInd the "TianoCore Way"
+====================================
 
-The solution was to recompile GNU-EFI with the -fno-stack-protector GCC
-flag. In GNU-EFI, this can be added to the CFLAGS line in Make.defaults.
+If you use TianoCore, you may know that the standard way to build
+applications under that environment does not follow the typical Unix/Linux
+development model described above. Instead, the application to be compiled
+is dropped into the main TianoCore source tree and compiled there using the
+"build" command. rEFInd can be compiled in this way, but I do not officially
+support or encourage this method. Nonetheless, I am providing instructions
+on doing it because it may work better than rEFInd's Makefiles in some
+cases, especially if you're using a non-Linux platform for development. I've
+received one report of an early version of rEFInd (from 2012) compiling
+properly with a method similar to this one. The procedure is:
+
+1. Download and prepare the TianoCore toolkit, as described earlier,
+   under "Preparing Your Development Kit." Note that you will have to adjust
+   this procedure if you're using a non-Linux OS.
+
+2. Change to the directory that holds the BaseTools, MdePkg, ShellPkg, and
+   other directories and files. If you use the UDK2014.SR1.UP1.P1 package
+   noted earlier, this would be the MyWorkSpace directory.
+
+3. Unpack the rEFInd source tarball in the current directory.
+
+4. Rename the rEFInd directory (refind-{version}, where {version} is the
+   version number) to RefindPkg. Alternatively, create a symbolic link
+   called RefindPkg that points to the real directory.
+
+5. Type "source edksetup.sh BaseTools". (You can skip this step if you're
+   using the same login session you used to build the TianoCore toolkit; you
+   need to type this command only if you've logged out and back in again,
+   are using a different window from the one you used to build TianoCore, or
+   have otherwise modified the environment variables set in edksetup.sh.)
+
+6. Type "build -p RefindPkg/RefindPkg.dsc"
+
+The rEFInd package should build, leaving binaries buried ridiculously deep
+within the directory tree. For instance, on my test build, the rEFInd binary
+was at:
+
+./Build/Refind/RELEASE_GCC49/X64/RefindPkg/refind/OUTPUT/REFIND.efi
+
+I've tested this procedure under Ubuntu 16.04. I've received one report that
+something similar to this procedure worked under OS X using CLang in 2012,
+but I've not tested it under OS X myself. In theory, it might work under
+Windows, but if you use anything but a GCC- or LLVM-derived compiler,
+there's a good chance you'll run into a compiler-specific code
+incompatibility. This procedure is not officially supported or recommended,
+since I'm testing and updating the procedure only sporadically and it
+compiles only the main rEFInd binary, not the filesystem drivers, gptsync,
+or iPXE module.
+
+Note that if you want to use macOS or Windows to compile rEFInd, you might
+be able to create a project or Makefile for your non-GCC compiler or use a
+GCC port, such as MinGW (http://www.mingw.org), along with the procedure
+described earlier, under "Compiling rEFInd the Unix/Linux Way." You'd
+probably need to adjust the Makefiles in the latter case.
 
 
 Installing rEFInd
@@ -296,12 +326,11 @@ fs_gnuefi" from the main directory, which builds the drivers and places
 copies in both the filesystems and drivers_{arch} subdirectories.
 
 To install drivers, you can type "make install" in the "filesystems"
-directory. This copies all the drivers to the
-"/boot/efi/EFI/refind/drivers" directory. Alternatively, you can copy the
-files you want manually. The refind-install script includes an optional
-"--drivers" option that will install the drivers along with the main rEFInd
-program, but to the drivers_{arch} subdirectory of the main rEFInd
-installation directory.
+directory. This copies all the drivers to the "/boot/efi/EFI/refind/drivers"
+directory. Alternatively, you can copy the files you want manually. The
+refind-install script includes an optional "--alldrivers" option that will
+install all the drivers along with the main rEFInd program, but to the
+drivers_{arch} subdirectory of the main rEFInd installation directory.
 
 *CAUTION:* Install drivers for your system's architecture *ONLY*.
 Installing drivers for the wrong architecture causes some systems to hang
@@ -313,6 +342,7 @@ Christoph Pfisterer. Most of the drivers seem to have passed through
 Oracle's VirtualBox project (https://www.virtualbox.org) and the Clover
 boot loader project (https://sourceforge.net/projects/cloverefiboot/),
 which I used as the source for this build.
+
 
 Adding Support for Network Boot
 ===============================
