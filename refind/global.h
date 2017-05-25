@@ -53,7 +53,7 @@
 #endif
 #include "../EfiLib/GenericBdsLib.h"
 
-#include "libeg.h"
+#include "../libeg/libeg.h"
 
 #define REFIT_DEBUG (0)
 

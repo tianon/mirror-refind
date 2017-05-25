@@ -37,7 +37,7 @@
 
 #include "gptsync.h"
 
-#include "syslinux_mbr.h"
+#include "../include/syslinux_mbr.h"
 #define memcpy(a, b, c) CopyMem(a, b, c)
 
 //

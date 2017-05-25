@@ -55,8 +55,8 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Protocol/Variable.h>
 
 #include "../include/Bmp.h"
-#include "efiConsoleControl.h"
-#include "EfiLib/GenericBdsLib.h"
+#include "../libeg/efiConsoleControl.h"
+#include "../EfiLib/GenericBdsLib.h"
 
 #include "../refind/global.h"
 

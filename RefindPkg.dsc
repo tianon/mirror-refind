@@ -73,4 +73,5 @@
 
 [Components]
   RefindPkg/refind.inf
+#  RefindPkg/gptsync/gptsync.inf
 
