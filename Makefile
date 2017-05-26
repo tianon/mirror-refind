@@ -5,6 +5,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+include Make.common
+
 LOADER_DIR=refind
 FS_DIR=filesystems
 LIBEG_DIR=libeg
@@ -13,6 +15,11 @@ GPTSYNC_DIR=gptsync
 EFILIB_DIR=EfiLib
 export EDK2BASE=/usr/local/UDK2014/MyWorkSpace
 #export EDK2BASE=/home/rodsmith/programming/edk2-UDK2017
+-include $(EDK2BASE)/Conf/target.txt
+THISDIR=$(shell pwd)
+EDK2_BUILDLOC=$(EDK2BASE)/Build/Refind/$(TARGET)_$(TOOL_CHAIN_TAG)/$(UC_ARCH)
+EDK2_FILES=REFIND GPTSYNC BTRFS EXT4 EXT2 HFS ISO9660 NTFS REISERFS
+EDK2_PROGS=$(EDK2_FILES:=.efi)
 
 # The "all" target builds with the TianoCore library if possible, but falls
 # back on the more easily-installed GNU-EFI library if TianoCore isn't
@@ -47,8 +54,8 @@ else
 	+make gptsync_gnuefi
 endif
 
-# Don't build gptsync under TianoCore by default because it errors out when
-# using a cross-compiler on an x86-64 system. Because gptsync is pretty
+# Don't build gptsync under TianoCore/AARCH64 by default because it errors out
+# when using a cross-compiler on an x86-64 system. Because gptsync is pretty
 # useless on ARM64, skipping it is no big deal....
 tiano:
 	+make MAKEWITH=TIANO AR_TARGET=EfiLib -C $(EFILIB_DIR) -f Make.tiano
@@ -67,6 +74,30 @@ gnuefi:
 	+make MAKEWITH=GNUEFI -C $(LOADER_DIR)
 	+make MAKEWITH=GNUEFI -C $(GPTSYNC_DIR) gnuefi
 #	+make MAKEWITH=GNUEFI -C $(FS_DIR) all_gnuefi
+
+# Build process for TianoCore using TianoCore-standard build process rather
+# than my own custom Makefiles (except this top-level one)
+edk2: $(EDK2_BUILDLOC)/$(EDK2_PROGS)
+
+$(EDK2_BUILDLOC)/$(EDK2_PROGS): $(EDK2BASE)/RefindPkg
+	$(info $$THISDIR is [${THISDIR}])
+	cd $(EDK2BASE) && \
+	. ./edksetup.sh BaseTools && \
+	build -a $(UC_ARCH) -p RefindPkg/RefindPkg.dsc
+	cp $(EDK2_BUILDLOC)/REFIND.efi ./refind/refind_$(FILENAME_CODE).efi
+	cp $(EDK2_BUILDLOC)/GPTSYNC.efi ./gptsync/refind_$(FILENAME_CODE).efi
+	cp $(EDK2_BUILDLOC)/EXT2.efi ./drivers_$(FILENAME_CODE)/ext2_$(FILENAME_CODE).efi
+	cp $(EDK2_BUILDLOC)/EXT4.efi ./drivers_$(FILENAME_CODE)/ext4_$(FILENAME_CODE).efi
+	cp $(EDK2_BUILDLOC)/BTRFS.efi ./drivers_$(FILENAME_CODE)/btrfs_$(FILENAME_CODE).efi
+	cp $(EDK2_BUILDLOC)/REISERFS.efi ./drivers_$(FILENAME_CODE)/reiserfs_$(FILENAME_CODE).efi
+	cp $(EDK2_BUILDLOC)/NTFS.efi ./drivers_$(FILENAME_CODE)/ntfs_$(FILENAME_CODE).efi
+	cp $(EDK2_BUILDLOC)/HFS.efi ./drivers_$(FILENAME_CODE)/hfs_$(FILENAME_CODE).efi
+	cp $(EDK2_BUILDLOC)/ISO9660.efi ./drivers_$(FILENAME_CODE)/iso9660_$(FILENAME_CODE).efi
+
+$(EDK2BASE)/RefindPkg:
+	ln -s $(THISDIR) $(EDK2BASE)/RefindPkg
+
+# Filesystem and gptsync build rules....
 
 fs_tiano:
 	+make MAKEWITH=TIANO -C $(FS_DIR)
@@ -88,6 +119,7 @@ clean:
 	make -C $(FS_DIR) clean
 	make -C $(GPTSYNC_DIR) clean
 	rm -f include/*~
+	rm -rf $(EDK2BASE)/Build/Refind
 
 # NOTE TO DISTRIBUTION MAINTAINERS:
 # The "install" target installs the program directly to the ESP

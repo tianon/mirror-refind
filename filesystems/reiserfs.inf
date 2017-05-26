@@ -1,6 +1,6 @@
 ## @file
 #
-# ext4.inf file to build rEFInd's Reiserfs driver using the EDK2/UDK201#
+# reiserfs.inf file to build rEFInd's Reiserfs driver using the EDK2/UDK201#
 # development kit.
 #
 # Copyright (c) 2012-2017 by Roderick W. Smith
@@ -51,8 +51,6 @@
 [Ppis]
 
 [Protocols]
-  gEfiDiskIoProtocolGuid
-  gEfiBlockIoProtocolGuid
 
 [FeaturePcd]
 

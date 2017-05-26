@@ -251,7 +251,11 @@ properly with a method similar to this one. The procedure is:
    are using a different window from the one you used to build TianoCore, or
    have otherwise modified the environment variables set in edksetup.sh.)
 
-6. Type "build -p RefindPkg/RefindPkg.dsc"
+6. Type "build -p RefindPkg/RefindPkg.dsc" to build rEFInd. If you've
+   properly configured your TianoCore installation for cross-compiling, you
+   may add "-a {ARCH}", where {ARCH} is an architecture code, to compile for
+   that platform. For instance, "build -a IA32 -p RefindPkg/RefindPkg.dsc"
+   builds for IA32 (32-bit x86), even on another type of computer.
 
 The rEFInd package should build, leaving binaries buried ridiculously deep
 within the directory tree. For instance, on my test build, the rEFInd
@@ -281,6 +285,52 @@ be able to create a project or Makefile for your non-GCC compiler or use a
 GCC port, such as MinGW (http://www.mingw.org), along with the procedure
 described earlier, under "Compiling rEFInd the Unix/Linux Way." You'd
 probably need to adjust the Makefiles in the latter case.
+
+
+Compiling rEFInd the Hybrid Way
+===============================
+
+A final method of compiling rEFInd exists that layers a Unix/Linux-style
+Makefile atop the TianoCore build tools. To use this method, proceed as
+follows:
+
+1. Unpack and build the TianoCore toolkit, as described earlier, in
+   "Preparing Your Development Kit." Note that this directory tree must be
+   both readable AND WRITEABLE to the user that will ultimately build
+   rEFInd.
+
+2. Unpack the rEFInd source tarball (as you've presumably already done
+   if you're reading this file). You can put it wherever you want.
+
+3. Adjust the EDK2BASE variable near the top of the Makefile so that it
+   points to the location of the TianoCore toolkit -- that is, the directory
+   that holds the BaseTools, Conf, MdePkg, and various other subdirectories.
+
+3. Change into the rEFInd source directory and type "make edk2". If
+   you want to build for something other than the current machine's
+   architecture, type "ARCH={ARCH} make edk2", where {ARCH} is the target
+   architecture code, such as "ia32" or "aarch64".
+
+The result should be a compiled set of binaries in the same locations as the
+other methods produce -- refind/refind_{arch}.efi,
+gptsync/gptsync_{arch}.efi, and drivers in the drivers_{arch} directory.
+
+This method has several advantages and disadvantages compared to other
+methods, and particularly to the standard Makefile with a target of "tiano."
+The advantage of this method is that, because it uses the standard TianoCore
+build system, it's more likely to work with more versions of the TianoCore
+toolkit. (As of rEFInd 0.10.9, no TianoCore toolkit later than UDK2014 works
+with the "tiano" target, but the "edk2" target works with the latest EDK2
+branch, as of May 2017.)
+
+Drawbacks of this method include:
+
+* It is, as of yet, poorly tested.
+* It takes a bit longer to compile than the "tiano" target does.
+* This method compiles the main rEFInd binary, gptsync, and all drivers;
+  there's currently no way to specify compilation of just one component when
+  using this method.
+* This method does not yet work with an ARCH of aarch64 (ARM64).
 
 
 Installing rEFInd

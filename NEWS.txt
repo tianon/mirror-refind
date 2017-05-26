@@ -1,6 +1,11 @@
 0.10.9 (?/??/2017):
 -------------------
 
+- A new "edk2" target to "make" is available, which builds in the standard
+  TianoCore way. This has the advantage over the "tiano" target of working
+  with newer versions of the EDK2. (The "tiano" target maxes out at
+  UDK2014.)
+
 - Improved compatibility with standard TianoCore-style build process;
   can now build drivers and gptsync in the "TianoCore" way, in addition to
   by using Linux Makefiles.
