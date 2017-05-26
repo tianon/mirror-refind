@@ -70,6 +70,7 @@
 #include "driver_support.h"
 #include "../include/Handle.h"
 #include "../include/refit_call_wrapper.h"
+#include "../include/version.h"
 #include "../EfiLib/BdsHelper.h"
 #include "../EfiLib/legacy.h"
 

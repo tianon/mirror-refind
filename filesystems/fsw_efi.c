@@ -56,6 +56,7 @@
 #endif
 
 #include "../include/refit_call_wrapper.h"
+#include "../include/version.h"
 
 #define DEBUG_LEVEL 0
 

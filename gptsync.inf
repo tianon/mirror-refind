@@ -1,6 +1,6 @@
 ## @file
 #
-# refind.inf file to build rEFInd using the EDK2/UDK201# development
+# gptsync.inf file to build gptsync using the EDK2/UDK201# development
 # kit.
 #
 # Copyright (c) 2012-2017 by Roderick W. Smith
@@ -11,8 +11,8 @@
 
 [Defines]
   INF_VERSION                   = 0x00010005
-  BASE_NAME                     = REFIND
-  FILE_GUID                     = B8448DD1-B146-41B7-9D66-98B3A0A404D3
+  BASE_NAME                     = GPTSYNC
+  FILE_GUID                     = 2767A966-477A-4EC0-8E95-EFFC2C29583D
   MODULE_TYPE                   = UEFI_APPLICATION
   EDK_RELEASE_VERSION			= 0x00020000
   EFI_SPECIFICATION_VERSION		= 0x00010000
@@ -26,37 +26,10 @@
 #
 
 [Sources]
-  EfiLib/GenericBdsLib.h
-  EfiLib/BmLib.c
-  EfiLib/DevicePath.c #included into GenericBdsLib
-  EfiLib/BdsConnect.c #included into GenericBdsLib
-  EfiLib/BdsHelper.c
-  EfiLib/BdsTianoCore.c
-  EfiLib/legacy.c
-  mok/mok.c
-  mok/guid.c
-  mok/security_policy.c
-  mok/simple_file.c
-  refind/apple.c
-  refind/main.c
-  refind/config.c
-  refind/icns.c
-  refind/legacy.c
-  refind/lib.c
-  refind/line_edit.c
-  refind/menu.c
-  refind/mystrings.c
-  refind/screen.c
-  refind/driver_support.c
-  refind/gpt.c
-  refind/crc32.c
-  libeg/image.c
-  libeg/load_bmp.c
-  libeg/load_icns.c
-  libeg/lodepng.c
-  libeg/lodepng_xtra.c
-  libeg/screen.c
-  libeg/text.c
+  gptsync/lib.c
+  gptsync/gptsync.c
+  gptsync/os_efi.c
+  gptsync/showpart.c
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -65,20 +38,13 @@
   IntelFrameworkModulePkg/IntelFrameworkModulePkg.dec
 
 [LibraryClasses]
-  UefiApplicationEntryPoint
+  BaseLib
+  BaseMemoryLib
   UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
   UefiLib
-   MemoryAllocationLib
-   BaseMemoryLib
-   BaseLib
-  DevicePathLib
-  DebugLib
-  DxeServicesLib
-  DxeServicesTableLib
-  HobLib
-  MemoryAllocationLib
-  IoLib
-  PerformanceLib
+  UefiApplicationEntryPoint
+
 
 [Guids]
   gEfiAcpiTableGuid
@@ -157,9 +123,9 @@
 
 
 [BuildOptions.IA32]
-  XCODE:*_*_*_CC_FLAGS = -Os  -DEFI32 -D__MAKEWITH_TIANO
+  XCODE:*_*_*_CC_FLAGS = -Os -DEFI32 -D__MAKEWITH_TIANO
   GCC:*_*_*_CC_FLAGS = -Os -DEFI32 -D__MAKEWITH_TIANO
 
 [BuildOptions.X64]
-  XCODE:*_*_*_CC_FLAGS = -Os  -DEFIX64 -D__MAKEWITH_TIANO
+  XCODE:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO
   GCC:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO

@@ -1,3 +1,8 @@
+0.10.9 (?/??/2017):
+-------------------
+
+- Improved compatibility with standard TianoCore-style build process.
+
 0.10.8 (5/21/2017):
 -------------------
 

@@ -12,6 +12,7 @@
   # Entry point
   #
   UefiApplicationEntryPoint|MdePkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
+  UefiDriverEntryPoint|MdePkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
   BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
   SynchronizationLib|MdePkg/Library/BaseSynchronizationLib/BaseSynchronizationLib.inf
@@ -73,5 +74,5 @@
 
 [Components]
   RefindPkg/refind.inf
-#  RefindPkg/gptsync/gptsync.inf
-
+  RefindPkg/gptsync.inf
+  RefindPkg/ext4.inf

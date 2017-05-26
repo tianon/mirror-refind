@@ -254,10 +254,12 @@ properly with a method similar to this one. The procedure is:
 6. Type "build -p RefindPkg/RefindPkg.dsc"
 
 The rEFInd package should build, leaving binaries buried ridiculously deep
-within the directory tree. For instance, on my test build, the rEFInd binary
-was at:
+within the directory tree. For instance, on my test build, the rEFInd
+binaries were at:
 
-./Build/Refind/RELEASE_GCC49/X64/RefindPkg/refind/OUTPUT/REFIND.efi
+./Build/Refind/RELEASE_GCC49/X64/EXT4.efi
+./Build/Refind/RELEASE_GCC49/X64/REFIND.efi
+./Build/Refind/RELEASE_GCC49/X64/GPTSYNC.efi
 
 I've tested this procedure under Ubuntu 16.04. I've received one report that
 something similar to this procedure worked under OS X using CLang in 2012,
@@ -266,8 +268,8 @@ Windows, but if you use anything but a GCC- or LLVM-derived compiler,
 there's a good chance you'll run into a compiler-specific code
 incompatibility. This procedure is not officially supported or recommended,
 since I'm testing and updating the procedure only sporadically and it
-compiles only the main rEFInd binary, not the filesystem drivers, gptsync,
-or iPXE module.
+compiles only the main rEFInd binary, gptsync, and the ext4fs driver,
+but not other drivers or the iPXE module.
 
 Note that if you want to use macOS or Windows to compile rEFInd, you might
 be able to create a project or Makefile for your non-GCC compiler or use a

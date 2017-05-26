@@ -36,6 +36,7 @@
 /* Changes copyright (c) 2013 Roderick W. Smith */
 
 #include "gptsync.h"
+#include "../include/version.h"
 
 #include "../include/syslinux_mbr.h"
 #define memcpy(a, b, c) CopyMem(a, b, c)

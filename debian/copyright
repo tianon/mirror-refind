@@ -131,6 +131,7 @@ Copyright: 2006 Christoph Pfisterer
 License: BSD-3-clause
 
 Files: include/tiano_includes.h
+       include/version.h
 Copyright: 2012 Roderick W. Smith
 License: GPL-3+
 

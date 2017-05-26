@@ -1,5 +1,5 @@
 #
-# filesystems/Make.common
+# filesystems/Make.tiano
 # Build control file for rEFInd's EFI filesystem drivers
 #
 

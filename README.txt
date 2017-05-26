@@ -14,6 +14,7 @@ following files and subdirectories:
    refind/drivers_x64/              Subdirectory containing x86-64 drivers
    keys/                            Subdirectory containing MOKs
    refind-install                   Linux/MacOS installation script
+   refind-mkdefault                 Script to make rEFInd the default
    mkrlconf                         A script to create refind_linux.conf
    mvrefind                         A script to move a rEFInd installation
    README.txt                       This file
