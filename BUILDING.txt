@@ -185,37 +185,89 @@ With your development system set up, you can compile rEFInd as follows:
    including this BUILDING.txt file and several subdirectories such as
    "refind", "libeg", "mok", "filesystems", and "include".
 
-4. Type "make" to build rEFInd. The Makefile checks for the TianoCore
-   toolkit and tries to use it if it's present. If both toolkits are
-   installed, you can specify the toolkit name -- "make gnuefi" to build
-   with GNU-EFI, or "make tiano" to build with TianoCore. (Typing "make
-   edk2" will compile with TianoCore in a more roundabout way, as described
-   later, in "Compiling rEFInd the Hybrid Way.") With any luck, rEFInd will
-   compile without error, leaving the "refind_ia32.efi", "refind_x64.efi",
-   or "refind_aa64.efi" file, depending on your platform, in the "refind"
-   subdirectory. This same step builds the "gptsync_ia32.efi",
-   "gptsync_x64.efi", or "gptsync_aa64.efi" program file, in the "gptsync"
-   subdirectory. (When cross-compiling with TianoCore, "gptsync_aa64.efi" is
-   not built because the cross-compiler failed for me. Since gptsync is
-   likely to be useless on ARM64, this is no great loss.) If you want to
-   build IA32 binaries on an x86-64 (X64) system, type "ARCH=ia32 make".
-   Similarly, you can specify "ARCH=aarch64" to cross-compile for ARM64.
-   This works only if you're using the TianoCore build kit, and only if you
-   set TARGET_ARCH to the appropriate value in target.txt when you set up
-   the TianoCore toolkit. If you plan to build multiple architectures, be
-   sure to copy the .efi file for the first build out of the refind
-   subdirectory and type "make clean" before building the second
-   architecture.
+4. Type "make" to build rEFInd and gptsync, or "make fs" to build the
+   filesystem drivers. The Makefile checks for the TianoCore toolkit and
+   tries to use it if it's present. Additional "make" targets enable you to
+   fine-tune how rEFInd is built and what components are built, as described
+   shortly. With any luck, rEFInd will compile without error, leaving the
+   "refind_ia32.efi", "refind_x64.efi", or "refind_aa64.efi" file, depending
+   on your platform, in the "refind" subdirectory. This same step builds the
+   "gptsync_ia32.efi", "gptsync_x64.efi", or "gptsync_aa64.efi" program
+   file, in the "gptsync" subdirectory. If you want to build IA32 binaries
+   on an x86-64 (X64) system, type "ARCH=ia32 make". Similarly, you can
+   specify "ARCH=aarch64" to cross-compile for ARM64, but this works only if
+   you're using the TianoCore build kit, and only if you set up TianoCore
+   for cross-compiling. If you plan to build multiple architectures, be sure
+   to copy the .efi file for the first build out of the refind subdirectory
+   and type "make clean" before building the second architecture.
 
-5. The default build process does NOT build the filesystem drivers. If you
-   want to build them, you must type "make fs" in the main rEFInd source
-   directory. This command builds with the TianoCore toolkit if it's
-   available and with GNU-EFI if it's not. Alternatively, you can type
-   "make fs_gnuefi" to build with GNU-EFI or "make fs_tiano" to build with
-   TianoCore. (You can prepend "ARCH=ia32" or "ARCH=aarch64" to
-   cross-compile for those architectures, as when building the main rEFInd
-   binary.) The result is filesystem drivers in the filesystems
-   subdirectory, and also copies placed in the drivers_{arch} subdirectory.
+The top-level rEFInd Makefile supports three toolchains, each of which
+provides several options to compile a subset of rEFInd's programs. (Note
+that I specify AMD64/x86-64/X64 filenames in the below for simplicity.) The
+"make" targets are:
+
+* gnuefi -- This target builds refind_x64.efi and gptsync_x64.efi with
+  the GNU-EFI toolkit.
+* gptsync_gnuefi -- This target builds just the gptsync.efi program
+  with the GNU-EFI toolkit.
+* fs_gnuefi -- This target builds all the filesystem drivers with the
+  GNU-EFI toolkit.
+* all_gnuefi -- This target builds everything (refind_x64.efi,
+  gptsync_x64.efi, and the filesystem drivers) with the GNU-EFI toolkit.
+* tiano -- This target builds refind_x64.efi and gptsync_x64.efi with the
+  TianoCore toolkit by using custom Makefile rules, bypassing the TianoCore
+  toolkit's "build" command. The result is slightly faster compilation in a
+  more traditional Unix/Linux way; but the compilation rules are fragile and
+  work only with the UDK2014 toolkit. Also, the gptsync_x64.efi program
+  is not built on ARM64/AARCH64 because the build process fails. (As
+  hybrid MBRs are likely to be useless on this platform, the inability
+  to build gptsync_aa64.efi is no great loss.)
+* gptsync_tiano -- This target works like the preceding one, but builds
+  only gptsync_x64.efi.
+* fs_tiano -- This target works like the preceding two, but builds the
+  filesystem drivers.
+* all_tiano -- This target builds refind_x64.efi, gptsync_x64.efi, and
+  the filesystem drivers using custom Makefile rules.
+
+* edk2 -- Like the "tiano" target, this one builds with the TianoCore
+  toolkit; but it employs a build method more like that favored by
+  TianoCore. It relies on .dsc, .dec, and .inf files as well as the "build"
+  program that comes with TianoCore. This method works with both UDK2014 and
+  the latest (as of May, 2017) EDK2 snapshot. It also works under OS X, if
+  TianoCore is properly prepared. One limitation is that building with
+  UDK2014 for ARM64/AARCH64 requires modifying the .inf files to remove the
+  reference to CompilerIntrinsicsLib. This build method is also a little bit
+  slower than the preceding ones, in part because EVERYTHING is built;
+  narrower targets simply copy fewer of the resulting files from within the
+  TianoCore directory tree. Note that this method, unlike the preceding
+  ones, requires WRITE access to the TianoCore build tree, or at least to
+  the Build and Conf subdirectories of that tree, as well as to the root of
+  the tree. (This method creates a symbolic link of the main rEFInd
+  directory into the root of the TianoCore tree, and the build process
+  creates a subdirectory called Build/Refind to hold temporary files and the
+  final .efi files. The "make" utility then copies these files to the same
+  locations used by the tiano and gnuefi targets.)
+
+* gptsync_edk2 -- This target copies just the gptsync_x64.efi binary to its
+  final destination.
+* fs_edk2 -- This target works like the "edk2" target, but copies only
+  the filesystem drivers to their destination.
+* all_edk2 -- This target builds and copies everything using the
+  TianoCore-style build process.
+* all -- This is the default target. It runs either the edk2 target if
+  the TianoCore toolkit is installed, and the gnuefi target if the
+  TianoCore toolkit can't be found.
+* gptsync -- This target builds the gptsync_x64.efi program using the
+  gptsync_edk2 target if TianoCore is found or using gptsync_gnuefi if
+  TianoCore can't be found.
+* fs -- This target builds the filesystem drivers using the fs_edk2 target
+  if the TianoCore toolkit is installed or by using the fs_gnuefi target if
+  TianoCore can't be found.
+* clean -- This target deletes intermediate build files. Note that it
+  deletes intermediate files generated by ALL the build methods (gnuefi,
+  tiano, and edk2).
+* install -- This target runs the refind-install script with no
+  arguments.
 
 If rEFInd doesn't compile correctly, you'll need to track down the source
 of the problem. Double-check that you've got all the necessary development
@@ -235,9 +287,9 @@ EFICRT0         = /usr/lib
 If you've installed GNU-EFI from source code, you may need to add "local" to
 those paths, as in "/usr/local/include/efi". You might need to change
 references to "lib" to "lib32" or "lib64" on some systems. Recall that you
-need at least GNU-EFI version 3.0l (that's a lowercase letter "L") to build
-rEFInd, and some older or behind-the-times distributions might provide
-out-of-date versions of this package.
+need at least GNU-EFI version 3.0u to build rEFInd, and some older or
+behind-the-times distributions might provide out-of-date versions of this
+package.
 
 If you're using TianoCore's EDK2, as noted earlier, you may need to adjust
 the EDK2BASE variable in Makefile.
@@ -250,12 +302,13 @@ If you use TianoCore, you may know that the standard way to build
 applications under that environment does not follow the typical Unix/Linux
 development model described above. Instead, the application to be compiled
 is dropped into the main TianoCore source tree and compiled there using the
-"build" command. rEFInd can be compiled in this way, but I do not officially
-support or encourage this method. Nonetheless, I am providing instructions
-on doing it because it may work better than rEFInd's Makefiles in some
-cases, especially if you're using a non-Linux platform for development. I've
-successfully compiled rEFInd 0.10.8 under OS X in this way. (I present
-details and caveats shortly.) The procedure is:
+"build" command. rEFInd can be compiled in this way. I am providing
+instructions on compiling in this way because it may work better than
+rEFInd's Makefiles in some cases, especially if you're using a non-Linux
+platform for development. I've successfully compiled rEFInd 0.10.8 under OS
+X in this way. (I present details and caveats shortly.) Note that the "edk2"
+and related Makefile targets use this method behind the scenes. The
+procedure is:
 
 1. Download and prepare the TianoCore toolkit, as described earlier,
    under "Preparing Your Development Kit." Note that you will have to adjust
@@ -293,23 +346,21 @@ The rEFInd package should build, leaving binaries buried ridiculously deep
 within the directory tree. For instance, on my test build, the rEFInd
 binaries were at:
 
-Build/Refind/RELEASE_GCC49/X64/BTRFS.efi
-Build/Refind/RELEASE_GCC49/X64/EXT2.efi
-Build/Refind/RELEASE_GCC49/X64/EXT4.efi
-Build/Refind/RELEASE_GCC49/X64/GPTSYNC.efi
-Build/Refind/RELEASE_GCC49/X64/HFS.efi
-Build/Refind/RELEASE_GCC49/X64/ISO9660.efi
-Build/Refind/RELEASE_GCC49/X64/NTFS.efi
-Build/Refind/RELEASE_GCC49/X64/REFIND.efi
-Build/Refind/RELEASE_GCC49/X64/REISERFS.efi
+Build/Refind/RELEASE_GCC49/X64/btrfs.efi
+Build/Refind/RELEASE_GCC49/X64/ext2.efi
+Build/Refind/RELEASE_GCC49/X64/ext4.efi
+Build/Refind/RELEASE_GCC49/X64/gptsync.efi
+Build/Refind/RELEASE_GCC49/X64/hfs.efi
+Build/Refind/RELEASE_GCC49/X64/iso9660.efi
+Build/Refind/RELEASE_GCC49/X64/ntfs.efi
+Build/Refind/RELEASE_GCC49/X64/refind.efi
+Build/Refind/RELEASE_GCC49/X64/reiserfs.efi
 
 I've tested this procedure under Ubuntu 16.04 with GCC 5.4.0 and under OS X
 10.11 with both Clang 7.0.0/XCode 7.1.1 and Clang 8.0.0/XCode 8.1.1. (See
 below for Mac caveats.) In theory, it might work under Windows, but if you
 use anything but a GCC- or Clang-derived compiler, there's a good chance
-you'll run into a compiler-specific code incompatibility. This procedure is
-not officially supported or recommended, since I'm testing and updating the
-procedure only sporadically and it does not compile the iPXE module.
+you'll run into a compiler-specific code incompatibility.
 
 My build under OS X required several changes for compilation to succeed:
 
@@ -343,62 +394,6 @@ be able to create a project or Makefile for your non-GCC compiler or use a
 GCC port, such as MinGW (http://www.mingw.org), along with the procedure
 described earlier, under "Compiling rEFInd the Unix/Linux Way." You'd
 probably need to adjust the Makefiles in the latter case.
-
-
-Compiling rEFInd the Hybrid Way
-===============================
-
-A final method of compiling rEFInd exists that layers a Unix/Linux-style
-Makefile atop the TianoCore build tools. To use this method, proceed as
-follows:
-
-1. Unpack and build the TianoCore toolkit, as described earlier, in
-   "Preparing Your Development Kit." Note that this directory tree must be
-   readable to the user that will ultimately build rEFInd; and the
-   Build and Conf subdirectories MUST BE WRITEABLE to this user.
-
-2. Unpack the rEFInd source tarball (as you've presumably already done
-   if you're reading this file). You can put it wherever you want.
-
-3. Adjust the EDK2BASE variable near the top of the Makefile so that it
-   points to the location of the TianoCore toolkit -- that is, the directory
-   that holds the BaseTools, Conf, MdePkg, and various other subdirectories.
-
-3. Change into the rEFInd source directory and type "make edk2". If
-   you want to build for something other than the current machine's
-   architecture, type "ARCH={ARCH} make edk2", where {ARCH} is the target
-   architecture code, such as "ia32" or "aarch64".
-
-4. If you want to compile the filesystem drivers, type "make fs_edk2".
-   (You can add an architecture code, if you like).
-
-The result should be a compiled set of binaries in the same locations as the
-other methods produce -- refind/refind_{arch}.efi,
-gptsync/gptsync_{arch}.efi, and drivers in the drivers_{arch} directory.
-Binaries (with slightly different names) and intermediate files will also
-appear buried in the Build/Refind subdirectory tree of the TianoCore
-toolkit.
-
-This method has several advantages and disadvantages compared to other
-methods, and particularly to the standard Makefile with a target of "tiano."
-The advantages of this method include:
-
-* Because it uses the standard TianoCore build system, it's more likely to
-  work with more versions of the TianoCore toolkit. (As of rEFInd 0.10.9, no
-  TianoCore toolkit later than UDK2014 works with the "tiano" target, but
-  the "edk2" target works with the latest EDK2 branch, as of May 2017.)
-* This method is more likely to work with future versions of the
-  TianoCore toolkit without major overhauls.
-* The Makefile entries for this method are much simpler than are the
-  "tiano" target's Makefile entries.
-
-Drawbacks of this method include:
-
-* It is, as of yet, poorly tested.
-* It takes a bit longer to compile than the "tiano" target does.
-* This method does not work for AARCH64 with UDK2014 without modifying the
-  project's .inf files to remove references to CompilerIntrinsicsLib, as
-  described earlier, under "Compiling rEFInd the TianoCore Way."
 
 
 Installing rEFInd
@@ -444,32 +439,6 @@ assumes that the ESP is mounted at /boot/efi. Also, Debian packages try to
 create symbolic links when updating packages, which won't work on an ESP,
 which should use FAT. For packaging examples, see the refind.spec file and
 debian subdirectory of the rEFInd source tarball.
-
-
-Compiling the EFI Filesystem Drivers
-====================================
-
-To build all the drivers, you can type "make fs", "make fs_tiano", or "make
-fs_gnuefi" from the main directory, which builds the drivers and places
-copies in both the filesystems and drivers_{arch} subdirectories.
-
-To install drivers, you can type "make install" in the "filesystems"
-directory. This copies all the drivers to the "/boot/efi/EFI/refind/drivers"
-directory. Alternatively, you can copy the files you want manually. The
-refind-install script includes an optional "--alldrivers" option that will
-install all the drivers along with the main rEFInd program, but to the
-drivers_{arch} subdirectory of the main rEFInd installation directory.
-
-*CAUTION:* Install drivers for your system's architecture *ONLY*.
-Installing drivers for the wrong architecture causes some systems to hang
-at boot time. This risk can be minimized by including the architecture code
-in the drivers subdirectory name (drivers_x64 or drivers_ia32).
-
-The drivers all rely on filesystem wrapper code created by rEFIt's author,
-Christoph Pfisterer. Most of the drivers seem to have passed through
-Oracle's VirtualBox project (https://www.virtualbox.org) and the Clover
-boot loader project (https://sourceforge.net/projects/cloverefiboot/),
-which I used as the source for this build.
 
 
 Adding Support for Network Boot
