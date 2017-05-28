@@ -228,7 +228,6 @@ that I specify AMD64/x86-64/X64 filenames in the below for simplicity.) The
   filesystem drivers.
 * all_tiano -- This target builds refind_x64.efi, gptsync_x64.efi, and
   the filesystem drivers using custom Makefile rules.
-
 * edk2 -- Like the "tiano" target, this one builds with the TianoCore
   toolkit; but it employs a build method more like that favored by
   TianoCore. It relies on .dsc, .dec, and .inf files as well as the "build"
@@ -247,7 +246,6 @@ that I specify AMD64/x86-64/X64 filenames in the below for simplicity.) The
   creates a subdirectory called Build/Refind to hold temporary files and the
   final .efi files. The "make" utility then copies these files to the same
   locations used by the tiano and gnuefi targets.)
-
 * gptsync_edk2 -- This target copies just the gptsync_x64.efi binary to its
   final destination.
 * fs_edk2 -- This target works like the "edk2" target, but copies only
@@ -361,6 +359,10 @@ I've tested this procedure under Ubuntu 16.04 with GCC 5.4.0 and under OS X
 below for Mac caveats.) In theory, it might work under Windows, but if you
 use anything but a GCC- or Clang-derived compiler, there's a good chance
 you'll run into a compiler-specific code incompatibility.
+
+
+Compiling rEFInd Under OS X
+===========================
 
 My build under OS X required several changes for compilation to succeed:
 
