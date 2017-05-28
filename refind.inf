@@ -11,7 +11,7 @@
 
 [Defines]
   INF_VERSION                   = 0x00010005
-  BASE_NAME                     = REFIND
+  BASE_NAME                     = refind
   FILE_GUID                     = B8448DD1-B146-41B7-9D66-98B3A0A404D3
   MODULE_TYPE                   = UEFI_APPLICATION
   EDK_RELEASE_VERSION			= 0x00020000
@@ -63,6 +63,11 @@
   MdeModulePkg/MdeModulePkg.dec
   IntelFrameworkPkg/IntelFrameworkPkg.dec
   IntelFrameworkModulePkg/IntelFrameworkModulePkg.dec
+# Uncomment the below when compiling with OS X
+#  StdLib/StdLib.dec
+
+[Packages.XCODE]
+  StdLib/StdLib.dec
 
 [LibraryClasses]
   UefiApplicationEntryPoint
@@ -80,6 +85,11 @@
   IoLib
   PerformanceLib
 
+[LibraryClasses.AARCH64]
+  BaseStackCheckLib
+# Comment out CompilerIntrinsicsLib when compiling for AARCH64 using UDK2014
+  CompilerIntrinsicsLib
+
 [Guids]
   gEfiAcpiTableGuid
   gEfiAcpi10TableGuid
@@ -96,8 +106,6 @@
   gEfiPartTypeSystemPartGuid
   gEfiSmbiosTableGuid
   gEfiSasDevicePathGuid
-  
-	
 
 [Ppis]
 
@@ -163,3 +171,7 @@
 [BuildOptions.X64]
   XCODE:*_*_*_CC_FLAGS = -Os  -DEFIX64 -D__MAKEWITH_TIANO
   GCC:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO
+
+[BuildOptions.AARCH64]
+  XCODE:*_*_*_CC_FLAGS = -Os  -DEFIAARCH64 -D__MAKEWITH_TIANO
+  GCC:*_*_*_CC_FLAGS = -Os -DEFIAARCH64 -D__MAKEWITH_TIANO

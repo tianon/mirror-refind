@@ -71,6 +71,10 @@
 
   MemoryAllocationLib|MdePkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
   HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  BaseStackCheckLib|MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib.inf
+
+[LibraryClasses.AARCH64]
+  CompilerIntrinsicsLib|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
 
 [Components]
   RefindPkg/refind.inf

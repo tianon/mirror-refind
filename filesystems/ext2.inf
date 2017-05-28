@@ -11,7 +11,7 @@
 
 [Defines]
   INF_VERSION                   = 0x00010005
-  BASE_NAME                     = EXT2
+  BASE_NAME                     = ext2
   FILE_GUID                     = c1ad9a39-9e9c-4c5f-ac48-ddeb05408ad2
   MODULE_TYPE                   = UEFI_DRIVER
   EDK_RELEASE_VERSION		= 0x00020000
@@ -45,6 +45,11 @@
   DxeServicesTableLib
   MemoryAllocationLib
 
+[LibraryClasses.AARCH64]
+  BaseStackCheckLib
+# Comment out CompilerIntrinsicsLib when compiling for AARCH64 using UDK2014
+  CompilerIntrinsicsLib
+
 [Guids]
 
 [Ppis]
@@ -55,7 +60,6 @@
 
 [Pcd]
 
-
 [BuildOptions.IA32]
   XCODE:*_*_*_CC_FLAGS = -Os  -DEFI32 -D__MAKEWITH_TIANO -DFSTYPE=ext2
   GCC:*_*_*_CC_FLAGS = -Os -DEFI32 -D__MAKEWITH_TIANO -DFSTYPE=ext2
@@ -63,3 +67,7 @@
 [BuildOptions.X64]
   XCODE:*_*_*_CC_FLAGS = -Os  -DEFIX64 -D__MAKEWITH_TIANO -DFSTYPE=ext2
   GCC:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO -DFSTYPE=ext2
+
+[BuildOptions.AARCH64]
+  XCODE:*_*_*_CC_FLAGS = -Os  -DEFIAARCH64 -D__MAKEWITH_TIANO -DFSTYPE=ext2
+  GCC:*_*_*_CC_FLAGS = -Os -DEFIAARCH64 -D__MAKEWITH_TIANO -DFSTYPE=ext2

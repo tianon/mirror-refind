@@ -215,10 +215,10 @@ BIOS-booted computer.</p>
     href="http://sourceforge.net/projects/gnu-efi">GNU-EFI</a> development
     tools are also supported, and are used in building the Ubuntu PPA.</li>
 
-<li><b><a href="https://sourceforge.net/p/refind/code">Source code via
+<li><b><a href="https://github.com/tianocore/edk2">Source code via
     git</a></b>&mdash;If you want to peruse the source code in your Web
     browser or get the very latest version (including pre-release bug fixes
-    and updates), you can use the Sourceforge git repository. This access
+    and updates), you can use the GitHub git repository. This access
     method is most useful to programmers, or at least to those who are
     familiar with programming tools. If you need to ask "what's git?", this
     is probably not the best way for you to obtain rEFInd.</li>
@@ -227,7 +227,7 @@ BIOS-booted computer.</p>
 
 <p>If you're using a platform other than <i>x</i>86 or <i>x</i>86-64, you can give rEFInd a try; however, you'll need to build it from source code yourself or track down a binary from another source. (Perhaps by the time you read this it will be included in Linux distributions built for unusual CPUs.)</p>
 
-<p>To extract the files from the zip file images I've provided, you'll need a tool such as <tt>unzip</tt>, which is included with Linux and Mac OS X. Numerous Windows utilities also support this format, such as <a href="http://www.pkware.com/software/pkzip/">PKZIP</a> and <a href="http://www.7-zip.org/">7-Zip.</a></p>
+<p>To extract the files from the zip file images I've provided, you'll need a tool such as <tt>unzip</tt>, which is included with Linux and Mac OS X. Numerous Windows utilities also support this format, such as <a href="http://www.pkware.com/software/pkzip/">PKZIP</a> and <a href="http://www.7-zip.org/">7-Zip.</a> The source files come in tarball format, for which a tool such as the Unix/Linux <tt>tar</tt> utility is appropriate.</p>
 
 <p>You should be able to create a bootable USB flash drive from either the binary zip file or the CD-R image file; just treat the flash drive as if it were a hard disk and install rEFInd as described on the <a href="installing.html">installation page.</a> Using the fallback boot loader name of <tt>EFI/boot/bootx64.efi</tt> is likely to be the most useful way to install rEFInd to a removable medium.</p>
 
@@ -255,20 +255,24 @@ BIOS-booted computer.</p>
 
     <ul>
 
-    <li>Ubuntu 16.10 ("Yakkety Yak") has synced the Debian package. As I
-	write (in late June, 2016), it's not yet available in the
-	repositories, but it should appear there eventually. Note that, like
+    <a name="ubuntu">
+    <li>Ubuntu 17.04 ("Zesty Zapus") includes rEFInd 0.10.4. Note that, like
 	the Debian package, this one is not signed for use with Secure Boot,
 	but if your system includes the <tt>sbsigntool</tt> package, the
-	installer will generate a local key for this purpose.</li>
+	installer will generate a local key for this purpose. If you want a
+	more recent version, you can use my PPA or install my Debian
+	package.</li></a>
 
+    <a name="ppa">
     <li>I've created a <a
 	href="https://launchpad.net/~rodsmith/+archive/refind">rEFInd
-	PPA</a> for Ubuntu. To use it, open a Terminal window and type <tt
-	class="userinput">sudo apt-add-repository ppa:rodsmith/refind</tt>,
-	then <tt class="userinput">sudo apt-get update</tt>. You can then
-	type <tt class="userinput">sudo apt-get install refind</tt> to
-	install the package. You'll be asked to decide whether to install
+	PPA</a> for Ubuntu. To use it, open a Terminal window and type the following commands:</a>
+
+<pre class="listing">$ <b>sudo apt-add-repository ppa:rodsmith/refind</b>
+$ <b>sudo apt-get update</b>
+$ <b>sudo apt-get install refind</b></pre>
+
+	You'll be asked whether to install
 	rEFInd to the ESP when you first install it. Thereafter, the rEFInd
 	version will update along with your other software. This package is
 	built with GNU-EFI and is not signed with a Secure Boot key;
@@ -288,20 +292,21 @@ BIOS-booted computer.</p>
     pre-release bug fixes and new features, but those features may be
     poorly tested or undocumented.</li>
 
-<li><b>ALT Linux</b>&mdash;This RPM-based distribution is experimenting
-    with using rEFInd on EFI-based computers. As I write, the ALT
-    developers haven't yet nailed down booting from an optical disc (it's a
-    tricky and delicate task, especially when preparing a "hybrid" image),
-    but they're working on the problem. They have an RPM of rEFInd; see <a
+<li><b>ALT Linux</b>&mdash;This RPM-based distribution uses
+    rEFInd by default on EFI-based computers. If I understand correctly,
+    ALT's optical disc installer boots with a combination of rEFInd and
+    ELILO. The distribution provides an RPM of rEFInd; see <a
     href="http://packages.altlinux.org/en/Sisyphus/srpms/refind">this
     page</a> for details.</li>
 
-<li><b>Gentoo Linux</b>&mdash;An official ebuild of rEFInd is available; see <a
-    href="https://packages.gentoo.org/packages/sys-boot/refind">here</a> for
-    details and <a href="https://wiki.gentoo.org/wiki/Refind">here</a> for
-    Gentoo's official rEFInd documentation.</a> A separately-maintained overlay
-    exists (see <a href="https://github.com/sveyret/sveyret-overlay">here</a>),
-    which can be compiled with TianoCore and may be more up-to-date.</li>
+<li><b>Gentoo Linux</b>&mdash;An official ebuild of rEFInd is available; see
+    <a href="https://packages.gentoo.org/packages/sys-boot/refind">here</a>
+    for details and <a href="https://wiki.gentoo.org/wiki/Refind">here</a>
+    for Gentoo's official rEFInd documentation.</a> Because Gentoo packages
+    are compiled locally, there is no version that's pre-signed with Secure
+    Boot keys; but as with any rEFInd binary, you can sign it yourself, and
+    the installer script should do so automatically if <tt>sbsign</tt> is
+    available.</li>
 
 <li><b>Slackware</b>&mdash;As far as I know, an official rEFInd package is
     not available as part of Slackware; however, a <a
@@ -319,7 +324,7 @@ BIOS-booted computer.</p>
 
 </ul>
 
-<p>To the best of my knowledge, no other Linux distribution yet includes rEFInd in its repositories. That's likely to change in time. If you hear of rEFInd being included in an OS's official package set, feel free to <a href="mailto:rodsmith@rodsbooks.com">drop me a line.</a></p>
+<p>If you hear of rEFInd being included in another OS's official package set, feel free to <a href="mailto:rodsmith@rodsbooks.com">drop me a line.</a></p>
 
 <hr />
 

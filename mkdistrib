@@ -71,8 +71,8 @@ MakeTarball() {
     cp --preserve=timestamps -r icons/svg/* $TargetDir/refind-$Version/icons/svg/
     cp -a debian docs images keys fonts banners include EfiLib libeg mok net refind filesystems \
         gptsync refind.spec refind-install refind-mkdefault mkrlconf mvrefind mountesp CREDITS.txt \
-        NEWS.txt BUILDING.txt COPYING.txt LICENSE.txt README.txt refind.inf Make.common Makefile \
-        refind.conf-sample RefindPkg.d?? $TargetDir/refind-$Version
+        NEWS.txt BUILDING.txt COPYING.txt LICENSE.txt README.txt refind.inf gptsync.inf \
+        Make.common Makefile refind.conf-sample RefindPkg.d?? $TargetDir/refind-$Version
 
     # Go there and prepare a souce code tarball....
     cd $TargetDir
