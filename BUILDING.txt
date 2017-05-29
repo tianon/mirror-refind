@@ -364,7 +364,9 @@ you'll run into a compiler-specific code incompatibility.
 Compiling rEFInd Under OS X
 ===========================
 
-My build under OS X required several changes for compilation to succeed:
+Building under OS X is *NOT SUPPORTED.* I've tested this procedure and it
+seems to work in minimal testing. My build under OS X required several
+changes for compilation to succeed:
 
 * A relatively recent TianoCore EDK2 from the TianoCore git repository
   is required; the stable UDK2014 and UDK2015 DO NOT work. Presumably
@@ -382,7 +384,13 @@ My build under OS X required several changes for compilation to succeed:
 
 * I had to edit Conf/tools_def.txt and edit the RELEASE_XCODE5_X64_CC_FLAGS
   line to remove the "-Werror" option. With this option set, the main rEFInd
-  binary and several drivers failed to build.
+  binary and several drivers failed to build. **CAUTION:** The warnings that
+  prevented the rEFInd binary from compiling with "-Werror" intact related
+  to ((sysv_abi)) declarations in mok/mok.h. This makes me think that the
+  resulting binary may be incompatible with Shim, although I've not tested
+  this; my only testing of the binary built under OS X were on systems with
+  Secure Boot disabled or with the Secure Boot system under my complete
+  control and without Shim installed.
 
 * I had to edit refind.inf and uncomment the line in the Packages section
   that reads "StdLib/StdLib.dec".

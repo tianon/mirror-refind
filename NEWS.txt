@@ -1,14 +1,17 @@
 0.10.9 (?/??/2017):
 -------------------
 
+- Updated LodePNG, which is used to load PNG images, to the latest version
+  (20161127).
+
 - A new "edk2" target to "make" is available, which builds in the standard
   TianoCore way. This has the advantage over the "tiano" target of working
   with newer versions of the EDK2. (The "tiano" target maxes out at
   UDK2014.)
 
-- Improved compatibility with standard TianoCore-style build process;
-  can now build drivers and gptsync in the "TianoCore" way, in addition to
-  by using Linux Makefiles.
+- Improved compatibility with standard TianoCore-style build process; can
+  now build rEFInd binary, gptsync, and drivers in the "TianoCore" way, in
+  addition to by using Linux Makefiles.
 
 0.10.8 (5/21/2017):
 -------------------

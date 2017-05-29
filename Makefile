@@ -17,6 +17,7 @@ EFILIB_DIR=EfiLib
 #export EDK2BASE=/usr/local/UDK2014/MyWorkSpace
 export EDK2BASE=/usr/local/edk2
 #export EDK2BASE=/other/nessus/programming/edk2-master
+#export EDK2BASE=/Users/rodsmith/Desktop/edk2-master
 -include $(EDK2BASE)/Conf/target.txt
 THISDIR=$(shell pwd)
 EDK2_BUILDLOC=$(EDK2BASE)/Build/Refind/$(TARGET)_$(TOOL_CHAIN_TAG)/$(UC_ARCH)
@@ -54,7 +55,7 @@ endif
 gptsync:
 ifneq ($(wildcard $(EDK2BASE)/*),)
 	@echo "Found $(EDK2BASE); building with TianoCore"
-	+make gptsync_tiano
+	+make gptsync_edk2
 else
 	@echo "Did not find $(EDK2BASE); building with GNU-EFI"
 	+make gptsync_gnuefi
