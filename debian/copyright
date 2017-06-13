@@ -348,6 +348,14 @@ Files: icons/boot_win.png
 Copyright: 2015 by Roderick W. Smith
 License: LGPL-3+ or CC-BY-SA-3.0
 
+Files: icons/os_trusty.png
+       icons/os_xenial.png
+       icons/os_zesty.png
+       icons/svg/os_xenial.png
+       icons/svg/os_zesty.png
+Copyright: 2014-2017 by Canonical Ltd.
+License: CC-BY-SA-3.0
+
 Files: icons/os_debian.png
 Copyright: 1999 by Debian Project
 License: LGPL-3+ or CC-BY-SA-3.0

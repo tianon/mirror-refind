@@ -1,6 +1,9 @@
 0.10.9 (?/??/2017):
 -------------------
 
+- Added os_trusty.png, os_xenial.png and os_zesty.png icons, for those who
+  have multiple Ubuntu versions and want to distinguish them visually.
+
 - Updated LodePNG, which is used to load PNG images, to the latest version
   (20161127).
 
