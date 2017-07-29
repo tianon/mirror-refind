@@ -76,6 +76,7 @@ CHAR16 *BlankLine = NULL;
 UINTN UGAWidth;
 UINTN UGAHeight;
 BOOLEAN AllowGraphicsMode;
+BOOLEAN HaveResized = FALSE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
@@ -178,6 +179,11 @@ VOID SetupScreen(VOID)
     } else if (AllowGraphicsMode) {
         // clear screen and show banner
         // (now we know we'll stay in graphics mode)
+        if ((UGAWidth >= HIDPI_MIN) && !HaveResized) {
+            GlobalConfig.IconSizes[0] *= 2;
+            GlobalConfig.IconSizes[1] *= 2;
+            GlobalConfig.IconSizes[2] *= 2;
+        } // if
         SwitchToGraphics();
         if (GlobalConfig.ScreensaverTime != -1) {
            BltClearScreen(TRUE);

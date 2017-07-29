@@ -149,6 +149,9 @@
 #define ICON_SIZE_SMALL 1
 #define ICON_SIZE_BIG   2
 
+// Minimum horizontal resolution for a screen to be consider high-DPI
+#define HIDPI_MIN 1921
+
 // Names of binaries that can manage MOKs....
 #if defined (EFIX64)
 #define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
@@ -175,7 +178,7 @@
 // Directories to search for memtest86....
 #define MEMTEST_LOCATIONS       L"EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
 // Files that may be Windows recovery files
-#define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi"
+#define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 
 // Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
 // L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive
@@ -364,6 +367,8 @@ extern REFIT_CONFIG     GlobalConfig;
 
 extern EFI_GUID gEfiLegacyBootProtocolGuid;
 extern EFI_GUID gEfiGlobalVariableGuid;
+
+extern BOOLEAN HaveResized;
 
 EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
                              IN CHAR16 *LoadOptions, IN UINTN LoaderType,

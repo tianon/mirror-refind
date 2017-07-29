@@ -38,6 +38,7 @@
 #include "../refind/global.h"
 
 #include "egemb_font.h"
+#include "egemb_font_large.h"
 #define FONT_NUM_CHARS 96
 
 static EG_IMAGE *BaseFontImage = NULL;
@@ -51,11 +52,17 @@ static UINTN FontCellWidth = 7;
 //
 
 static VOID egPrepareFont() {
-   if (BaseFontImage == NULL) {
-      BaseFontImage = egPrepareEmbeddedImage(&egemb_font, TRUE);
-   }
-   if (BaseFontImage != NULL)
-      FontCellWidth = BaseFontImage->Width / FONT_NUM_CHARS;
+    UINTN UGAWidth, UGAHeight;
+
+    egGetScreenSize(&UGAWidth, &UGAHeight);
+    if (BaseFontImage == NULL) {
+        if (UGAWidth >= HIDPI_MIN)
+            BaseFontImage = egPrepareEmbeddedImage(&egemb_font_large, TRUE);
+        else
+            BaseFontImage = egPrepareEmbeddedImage(&egemb_font, TRUE);
+    }
+    if (BaseFontImage != NULL)
+        FontCellWidth = BaseFontImage->Width / FONT_NUM_CHARS;
 } // VOID egPrepareFont();
 
 UINTN egGetFontHeight(VOID) {
