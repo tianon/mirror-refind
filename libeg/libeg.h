@@ -53,6 +53,10 @@ typedef struct {
     UINT8 b, g, r, a;
 } EG_PIXEL;
 
+// Some colors for EG_IMAGE
+#define COLOR_LIGHTBLUE {255, 175, 100, 0}
+#define COLOR_RED {0, 0, 200, 0}
+
 typedef struct {
     UINTN       Width;
     UINTN       Height;
@@ -138,7 +142,7 @@ VOID egDrawImageArea(IN EG_IMAGE *Image,
                      IN UINTN AreaPosX, IN UINTN AreaPosY,
                      IN UINTN AreaWidth, IN UINTN AreaHeight,
                      IN UINTN ScreenPosX, IN UINTN ScreenPosY);
-VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor);
+VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor, UINTN Position);
 EG_IMAGE * egCopyScreen(VOID);
 VOID egScreenShot(VOID);
 BOOLEAN egSetTextMode(UINT32 RequestedMode);

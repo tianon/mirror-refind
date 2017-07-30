@@ -1,6 +1,14 @@
 0.10.9 (?/??/2017):
 -------------------
 
+- PauseForKey() now works on Macs in graphics mode, which can help when some
+  errors are encountered. (Most of the errors associated with this function
+  still rely on Print(), which still doesn't work on Macs; but at least
+  there will be a prompt to press a key.)
+
+- rEFInd now displays its background and banner before scanning for boot
+  loaders, and displays a message that it's performing this scan.
+
 - Added support for HiDPI/retina displays: rEFInd now automatically scales
   icons and text to twice the normal size when the screen's horizontal
   resolution is above 1920. This does not occur in text mode (you must still
@@ -8,7 +16,7 @@
   refind.conf), and it can be overridden by explicitly setting the
   "small_icon_size", "big_icon_size", and "font" options in refind.conf.
   Note that icons are resized from their originals and so may look a bit
-  chunky, by HiDPI standards; but rEFInd now embeds both 14- and 28-dpi
+  chunky, by HiDPI standards; but rEFInd now embeds both 14- and 28-point
   fonts, so the fonts will look better. If the screen is HiDPI but 1920
   pixels wide or less, the default icon and font sizes are used, so
   adjustment via refind.conf options may still be desirable.

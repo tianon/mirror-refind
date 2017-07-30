@@ -61,12 +61,7 @@ EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
 // on the Info page. If DisplayMessage is TRUE, displays the new value of
 // gCsrStatus on the screen for three seconds.
 VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
-    EG_PIXEL    BGColor;
-
-    BGColor.b = 255;
-    BGColor.g = 175;
-    BGColor.r = 100;
-    BGColor.a = 0;
+    EG_PIXEL    BGColor = COLOR_LIGHTBLUE;
 
     switch (CsrStatus) {
         case SIP_ENABLED:
@@ -79,7 +74,7 @@ VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
             SPrint(gCsrStatus, 255, L" System Integrity Protection status: 0x%02x", CsrStatus);
     } // switch
     if (DisplayMessage) {
-        egDisplayMessage(gCsrStatus, &BGColor);
+        egDisplayMessage(gCsrStatus, &BGColor, CENTER);
         PauseSeconds(3);
     } // if
 } // VOID RecordgCsrStatus()

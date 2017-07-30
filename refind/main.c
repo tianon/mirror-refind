@@ -161,14 +161,46 @@ REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL, 0, L"
                                      L"Insert, Tab, or F2 for more options; Esc or Backspace to refresh" };
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
-REFIT_CONFIG GlobalConfig = { FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, 0, 0, 0, DONT_CHANGE_TEXT_MODE,
-                              20, 0, 0, GRAPHICS_FOR_OSX, LEGACY_TYPE_MAC,
-                              0, 0, { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE },
-                              BANNER_NOSCALE, NULL, NULL, NULL, NULL, CONFIG_FILE_NAME, NULL, NULL, NULL, NULL,
-                              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                              { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY,
-                                TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE, TAG_FWUPDATE_TOOL,
-                                0, 0, 0, 0, 0, 0, 0, 0 }
+REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
+                              /* ScanAllLinux = */ TRUE,
+                              /* DeepLegacyScan = */ FALSE,
+                              /* EnableAndLockVMX = */ FALSE,
+                              /* FoldLinuxKernels = */ TRUE,
+                              /* EnableTouch = */ FALSE,
+                              /* RequestedScreenWidth = */ 0,
+                              /* RequestedScreenHeight = */ 0,
+                              /* BannerBottomEdge = */ 0,
+                              /* RequestedTextMode = */ DONT_CHANGE_TEXT_MODE,
+                              /* Timeout = */ 20,
+                              /* HideUIFlags = */ 0,
+                              /* MaxTags = */ 0,
+                              /* GraphicsFor = */ GRAPHICS_FOR_OSX,
+                              /* LegacyType = */ LEGACY_TYPE_MAC,
+                              /* ScanDelay = */ 0,
+                              /* ScreensaverTime = */ 0,
+                              /* IconSizes = */ { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE },
+                              /* BannerScale = */ BANNER_NOSCALE,
+                              /* *DiscoveredRoot = */ NULL,
+                              /* *SelfDevicePath = */ NULL,
+                              /* *BannerFileName = */ NULL,
+                              /* *ScreenBackground = */ NULL,
+                              /* *ConfigFilename = */ CONFIG_FILE_NAME,
+                              /* *SelectionSmallFileName = */ NULL,
+                              /* *SelectionBigFileName = */ NULL,
+                              /* *DefaultSelection = */ NULL,
+                              /* *AlsoScan = */ NULL,
+                              /* *DontScanVolumes = */ NULL,
+                              /* *DontScanDirs = */ NULL,
+                              /* *DontScanFiles = */ NULL,
+                              /* *WindowsRecoveryFiles = */ NULL,
+                              /* *DriverDirs = */ NULL,
+                              /* *IconsDir = */ NULL,
+                              /* *ExtraKernelVersionStrings = */ NULL,
+                              /* *SpoofOSXVersion = */ NULL,
+                              /* CsrValues = */ NULL,
+                              /* ShowTools = */ { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY,
+                                                  TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE,
+                                                  TAG_FWUPDATE_TOOL, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
                             };
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
@@ -1734,10 +1766,14 @@ static LOADER_ENTRY * AddToolEntry(EFI_HANDLE DeviceHandle, IN CHAR16 *LoaderPat
 } /* static LOADER_ENTRY * AddToolEntry() */
 
 // Locates boot loaders. NOTE: This assumes that GlobalConfig.LegacyType is set correctly.
-static VOID ScanForBootloaders(VOID) {
+static VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     UINTN    i;
     CHAR8    s;
     BOOLEAN  ScanForLegacy = FALSE;
+    EG_PIXEL BGColor = COLOR_LIGHTBLUE;
+
+    if (ShowMessage)
+        egDisplayMessage(L"Scanning for boot loaders; please wait....", &BGColor, CENTER);
 
     // Determine up-front if we'll be scanning for legacy loaders....
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
@@ -1977,14 +2013,6 @@ static VOID ScanForTools(VOID) {
 
 // Rescan for boot loaders
 static VOID RescanAll(BOOLEAN DisplayMessage) {
-    EG_PIXEL           BGColor;
-
-    BGColor.b = 255;
-    BGColor.g = 175;
-    BGColor.r = 100;
-    BGColor.a = 0;
-    if (DisplayMessage)
-        egDisplayMessage(L"Scanning for new boot loaders; please wait....", &BGColor);
     FreeList((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
     MainMenu.Entries = NULL;
     MainMenu.EntryCount = 0;
@@ -1992,9 +2020,9 @@ static VOID RescanAll(BOOLEAN DisplayMessage) {
     ScanVolumes();
     ReadConfig(GlobalConfig.ConfigFilename);
     SetVolumeIcons();
-    ScanForBootloaders();
+    ScanForBootloaders(TRUE);
     ScanForTools();
-    SetupScreen();
+    BltClearScreen(TRUE);
 } // VOID RescanAll()
 
 #ifdef __MAKEWITH_TIANO
@@ -2090,7 +2118,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     REFIT_MENU_ENTRY   *ChosenEntry;
     UINTN              MenuExit, i;
     CHAR16             *SelectionName = NULL;
-    EG_PIXEL           BGColor;
+    EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
 
     // bootstrap
     InitializeLib(ImageHandle, SystemTable);
@@ -2122,18 +2150,18 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     // further bootstrap (now with config available)
     SetupScreen();
-    ScanForBootloaders();
+    ScanForBootloaders(GlobalConfig.ScanDelay == 0);
     ScanForTools();
+    // SetupScreen() clears the screen; but ScanForBootloaders() may display a
+    // message that must be deleted, so do so
+    BltClearScreen(TRUE);
 
     if (GlobalConfig.ScanDelay > 0) {
-       BGColor.b = 255;
-       BGColor.g = 175;
-       BGColor.r = 100;
-       BGColor.a = 0;
        if (GlobalConfig.ScanDelay > 1)
-          egDisplayMessage(L"Pausing before disk scan; please wait....", &BGColor);
+          egDisplayMessage(L"Pausing before disk scan; please wait....", &BGColor, CENTER);
        for (i = 0; i < GlobalConfig.ScanDelay; i++)
           refit_call1_wrapper(BS->Stall, 1000000);
+       BltClearScreen(TRUE);
        RescanAll(GlobalConfig.ScanDelay > 1);
     } // if
 

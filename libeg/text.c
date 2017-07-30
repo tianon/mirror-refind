@@ -83,8 +83,7 @@ UINTN egComputeTextWidth(IN CHAR16 *Text) {
    return Width;
 } // UINTN egComputeTextWidth()
 
-VOID egMeasureText(IN CHAR16 *Text, OUT UINTN *Width, OUT UINTN *Height)
-{
+VOID egMeasureText(IN CHAR16 *Text, OUT UINTN *Width, OUT UINTN *Height) {
     egPrepareFont();
 
     if (Width != NULL)

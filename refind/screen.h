@@ -66,6 +66,10 @@
 //#define FONT_CELL_WIDTH (7)
 //#define FONT_CELL_HEIGHT (12)
 
+// Codes for text position, used by egDisplayMessage() and PrintUglyText()
+#define CENTER 0
+#define BOTTOM 1
+
 extern UINTN ConWidth;
 extern UINTN ConHeight;
 extern CHAR16 *BlankLine;
@@ -93,6 +97,7 @@ VOID DebugPause(VOID);
 #endif
 VOID EndlessIdleLoop(VOID);
 BOOLEAN ReadAllKeyStrokes(VOID);
+VOID PrintUglyText(IN CHAR16 *Text, UINTN Position);
 VOID PauseForKey(VOID);
 VOID PauseSeconds(UINTN Seconds);
 

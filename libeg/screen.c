@@ -449,7 +449,7 @@ VOID egDrawImageArea(IN EG_IMAGE *Image,
 // Display a message in the center of the screen, surrounded by a box of the
 // specified color. For the moment, uses graphics calls only. (It still works
 // in text mode on GOP/UEFI systems, but not on UGA/EFI 1.x systems.)
-VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor) {
+VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor, UINTN Position) {
    UINTN BoxWidth, BoxHeight;
    EG_IMAGE *Box;
 
@@ -461,7 +461,10 @@ VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor) {
          BoxWidth = egScreenWidth;
       Box = egCreateFilledImage(BoxWidth, BoxHeight, FALSE, BGColor);
       egRenderText(Text, Box, 7, BoxHeight / 4, (BGColor->r + BGColor->g + BGColor->b) / 3);
-      egDrawImage(Box, (egScreenWidth - BoxWidth) / 2, (egScreenHeight - BoxHeight) / 2);
+      if (Position == CENTER)
+          egDrawImage(Box, (egScreenWidth - BoxWidth) / 2, (egScreenHeight - BoxHeight) / 2);
+      else
+          egDrawImage(Box, (egScreenWidth - BoxWidth) / 2, egScreenHeight - (BoxHeight * 2));
    } // if non-NULL inputs
 } // VOID egDisplayMessage()
 

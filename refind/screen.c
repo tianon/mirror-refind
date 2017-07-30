@@ -61,6 +61,7 @@
 #include "libegint.h"
 #include "lib.h"
 #include "menu.h"
+#include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 
 #include "../include/egemb_refind_banner.h"
@@ -175,7 +176,6 @@ VOID SetupScreen(VOID)
         // switch to text mode if requested
         AllowGraphicsMode = FALSE;
         SwitchToText(FALSE);
-
     } else if (AllowGraphicsMode) {
         // clear screen and show banner
         // (now we know we'll stay in graphics mode)
@@ -183,6 +183,7 @@ VOID SetupScreen(VOID)
             GlobalConfig.IconSizes[0] *= 2;
             GlobalConfig.IconSizes[1] *= 2;
             GlobalConfig.IconSizes[2] *= 2;
+            HaveResized = TRUE;
         } // if
         SwitchToGraphics();
         if (GlobalConfig.ScreensaverTime != -1) {
@@ -330,11 +331,28 @@ BOOLEAN ReadAllKeyStrokes(VOID)
     return GotKeyStrokes;
 }
 
+// Displays *text without regard to appearances. Used mainly for debugging
+// and rare error messages.
+// Position code is used only in graphics mode.
+// TODO: Improve to handle multi-line text.
+VOID PrintUglyText(IN CHAR16 *Text, IN UINTN Position) {
+    EG_PIXEL BGColor = COLOR_RED;
+
+    if (Text) {
+        if (AllowGraphicsMode && MyStriCmp(L"Apple", ST->FirmwareVendor) && egIsGraphicsModeEnabled()) {
+            egDisplayMessage(Text, &BGColor, BOTTOM);
+            GraphicsScreenDirty = TRUE;
+        } else { // non-Mac or in text mode; a Print() statement will work
+            Print(Text);
+        } // if/else
+    } // if
+} // VOID PrintUglyText()
+
 VOID PauseForKey(VOID)
 {
     UINTN index;
 
-    Print(L"\n* Hit any key to continue *");
+    PrintUglyText(L"\n* Hit any key to continue *", BOTTOM);
 
     if (ReadAllKeyStrokes()) {  // remove buffered key strokes
         refit_call1_wrapper(BS->Stall, 5000000);     // 5 seconds delay
