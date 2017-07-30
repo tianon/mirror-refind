@@ -72,45 +72,58 @@ needed to develop standalone EFI applications. I don't know of any Linux
 distribution packages for it in RPM, Debian package file, or other formats;
 you MUST install the kit from source code using its own unusual compilation
 procedure. The installation documentation also omits at least one step and
-is a bit unclear about others. Here's how I installed the toolkit:
+is a bit unclear about others. Here's how to install the toolkit (note that
+you'll need to be root to do this in the specified location):
 
 1. Download UDK2014.SR1.UP1.P1 from
-   https://github.com/tianocore/tianocore.github.io/wiki/UDK2014-Releases.
-   Note that UDK2015 is now available, but it will soon be rendered obsolte
-   by UDK2017, which is due out in June of 2017. This document describes
+   https://github.com/tianocore/tianocore.github.io/wiki/UDK2014-Releases or
+   UDK2017 from
+   https://github.com/tianocore/tianocore.github.io/wiki/UDK2017. If you
+   want to live on the "bleeding edge," you can use an EDK2 daily release
+   version from https://github.com/tianocore/edk2. This document describes
    three distinct compilation methods for TianoCore, each of which has
    compatibility problems with some architectures. Specifically, the "make
-   tiano" target fails with EDK2 for all architectures; and the "make edk2"
-   and "build" procedures work with EDK2 for all architectures but require
-   modifications of project files to work with AARCH64. If you think UDK2014
-   is too old, you might as well use an EDK2 daily release version from
-   https://github.com/tianocore/edk2.
+   tiano" target fails with EDK2 and UDK2017 for all architectures; and the
+   "make edk2" and "build" procedures work with EDK2 and UDK2017 for all
+   architectures but require modifications of project files to work with
+   AARCH64.
 
-2. Type "mkdir /usr/local/UDK2014". You can use another directory, but the
-   rEFInd Makefile assumes this location. You'll need to edit the EDK2BASE
-   variable in the top-level Makefile if you install somewhere else.
+2. Preparation procedures deviate depending on which development kit you're
+   using. For UDK2014, follow these steps:
 
-3. Type "cd /usr/local/UDK2014".
+   A. Type "mkdir /usr/local/UDK2014". You can use another directory, but
+      the rEFInd Makefile assumes this location. You'll need to edit the
+      TIANOBASE variable in the top-level Makefile if you install somewhere
+      else.
 
-4. Unzip the downloaded file (UDK2014.SR1.UP1.P1.Complete.MyWorkSpace.zip)
-   in the current directory (/usr/local/UDK2014). This creates a handful of
-   files, including a tarball and a couple of .zip files. (If you use an
-   EDK2 daily release, you can skip ahead to step 8; EDK2 drops the
-   multi-layered zip-file/tarball approach. You'll need to drop the
-   "MyWorkSpace" directory component, though -- or create it yourself and
-   move all your files there.)
+   B. Type "cd /usr/local/UDK2014".
 
-5. Type "unzip UDK2014.SR1.UP1.MyWorkSpace.zip". This extracts the
-   platform-neutral portion of the development kit.
+   C. Unzip the downloaded file
+      (UDK2014.SR1.UP1.P1.Complete.MyWorkSpace.zip) in the current directory
+      (/usr/local/UDK2014). This creates a handful of files, including a
+      tarball and a couple of .zip files. (If you use an EDK2 daily release,
+      you can skip ahead to step 8; EDK2 drops the multi-layered
+      zip-file/tarball approach. You'll need to drop the "MyWorkSpace"
+      directory component, though -- or create it yourself and move all your
+      files there.)
 
-6. Type "cd MyWorkSpace".
+   D. Type "unzip UDK2014.SR1.UP1.MyWorkSpace.zip". This extracts the
+      platform-neutral portion of the development kit.
 
-7. Type "tar xvf ../BaseTools\(Unix\).tar". This extracts the
-   Linux/Unix-specific portions of the toolkit.
+   E. Type "cd MyWorkSpace".
 
-8. Follow the build instructions at
-   https://sourceforge.net/apps/mediawiki/tianocore/index.php?title=Using_EDK_II_with_Native_GCC_4.4;
-   however, a few changes are required, as detailed below....
+   F. Type "tar xvf ../BaseTools\(Unix\).tar". This extracts the
+      Linux/Unix-specific portions of the toolkit.
+
+3. If you're using UDK2017 or an EDK2 daily build, follow these steps:
+
+   A. Type "cd /usr/local/".
+
+   B. Unzip the downloaded file (edk2-vUDK2017.zip) in the current directory
+      (/usr/local), or use git to pull down the latest source code. This
+      creates a subdirectory tree called edk2-vUDK2017.
+
+   C. Type "cd edk2-vUDK2017" to change into the extracted directory.
 
 9. Type "source edksetup.sh BaseTools". This sets up some environment
    variables, so subsequent steps (NOT including compiling rEFInd or its
@@ -128,6 +141,11 @@ is a bit unclear about others. Here's how I installed the toolkit:
       TianoCore toolkit, so if you're using a very recent GCC, you may need
       to specify an earlier version and hope for the best or modify
       Conf/tools_def.txt, as described shortly.
+    - MAX_CONCURRENT_THREAD_NUMBER = {#CPUs + 1}; set this to one more
+      than the number of CPUs in your computer to optimize build time
+      when using the "edk2" targets with UDK2017 or an EDK2 daily build.
+      This setting has no effect when using the "tiano" targets with
+      UDK2014.
     The TianoCore Makefiles read some of these variables from this file
     and use them when accessing directories, so be sure to type these
     entries in the case specified.
@@ -155,10 +173,10 @@ is a bit unclear about others. Here's how I installed the toolkit:
         *_GCC49_AARCH64_CC_PATH          = /usr/bin/aarch64-linux-gnu-gcc
       Similar changes for other variables in the same block are necessary.
 
-12. Type "make -C /usr/local/UDK2014/MyWorkSpace/BaseTools/Source/C".
-    (This step is not documented on the EDK Web page.) Note that this
-    requires the g++ compiler and UUID development libraries.
-    
+12. Type "make -C BaseTools/Source/C". (This step is not documented on the
+    EDK Web page.) Note that this requires the g++ compiler and UUID
+    development libraries.
+
 13. Type "build" to build the main set of EDK2 files. This process is
     likely to take a few minutes. This step requires Python 2; if you have
     Python 3 installed, you may need to adjust the default python for this
@@ -166,7 +184,7 @@ is a bit unclear about others. Here's how I installed the toolkit:
     Gentoo).
 
 If you installed in a location other than the one I've specified, you must
-edit the EDK2BASE variable in the top-level Makefile in the rEFInd source
+edit the TIANOBASE variable in the top-level Makefile in the rEFInd source
 package. Once the toolkit is installed, you can build the filesystem
 drivers or rEFInd, as described below.
 
@@ -185,7 +203,16 @@ With your development system set up, you can compile rEFInd as follows:
    including this BUILDING.txt file and several subdirectories such as
    "refind", "libeg", "mok", "filesystems", and "include".
 
-4. Type "make" to build rEFInd and gptsync, or "make fs" to build the
+4. If you want to build with the TianoCore toolkit and you installed in
+   a location other than the one specified in "Preparing Your Development
+   Kit," you must edit Makefile in the main rEFInd directory: change the
+   TIANOBASE and/or EDK2BASE variables to point to your toolkit's location.
+   The TIANOBASE variable is used with the "tiano" target (which can be used
+   with UDK2014, but not later versions) and EDK2BASE is used with the
+   "edk2" target, which is useful with all versions of TianoCore, with some
+   caveats (described later).
+
+5. Type "make" to build rEFInd and gptsync, or "make fs" to build the
    filesystem drivers. The Makefile checks for the TianoCore toolkit and
    tries to use it if it's present. Additional "make" targets enable you to
    fine-tune how rEFInd is built and what components are built, as described
@@ -231,36 +258,36 @@ that I specify AMD64/x86-64/X64 filenames in the below for simplicity.) The
 * edk2 -- Like the "tiano" target, this one builds with the TianoCore
   toolkit; but it employs a build method more like that favored by
   TianoCore. It relies on .dsc, .dec, and .inf files as well as the "build"
-  program that comes with TianoCore. This method works with both UDK2014 and
-  the latest (as of May, 2017) EDK2 snapshot. It also works under OS X, if
-  TianoCore is properly prepared. One limitation is that building with
-  UDK2014 for ARM64/AARCH64 requires modifying the .inf files to remove the
-  reference to CompilerIntrinsicsLib. This build method is also a little bit
-  slower than the preceding ones, in part because EVERYTHING is built;
-  narrower targets simply copy fewer of the resulting files from within the
-  TianoCore directory tree. Note that this method, unlike the preceding
-  ones, requires WRITE access to the TianoCore build tree, or at least to
-  the Build and Conf subdirectories of that tree, as well as to the root of
-  the tree. (This method creates a symbolic link of the main rEFInd
-  directory into the root of the TianoCore tree, and the build process
-  creates a subdirectory called Build/Refind to hold temporary files and the
-  final .efi files. The "make" utility then copies these files to the same
-  locations used by the tiano and gnuefi targets.)
+  program that comes with TianoCore. This method works with UDK2014,
+  UDK2017, and the latest (as of July, 2017) EDK2 snapshot. It also works
+  under OS X, if TianoCore is properly prepared. One limitation is that
+  building with UDK2014 for ARM64/AARCH64 requires modifying the .inf files
+  to remove the reference to CompilerIntrinsicsLib. This build method is
+  also a little bit slower than the preceding ones, in part because
+  EVERYTHING is built; narrower targets simply copy fewer of the resulting
+  files from within the TianoCore directory tree. Note that this method,
+  unlike the preceding ones, requires WRITE access to the TianoCore build
+  tree, or at least to the Build and Conf subdirectories of that tree, as
+  well as to the root of the tree. (This method creates a symbolic link of
+  the main rEFInd directory into the root of the TianoCore tree, and the
+  build process creates a subdirectory called Build/Refind to hold temporary
+  files and the final .efi files. The "make" utility then copies these files
+  to the same locations used by the tiano and gnuefi targets.)
 * gptsync_edk2 -- This target copies just the gptsync_x64.efi binary to its
   final destination.
 * fs_edk2 -- This target works like the "edk2" target, but copies only
   the filesystem drivers to their destination.
 * all_edk2 -- This target builds and copies everything using the
   TianoCore-style build process.
-* all -- This is the default target. It runs either the edk2 target if
-  the TianoCore toolkit is installed, and the gnuefi target if the
-  TianoCore toolkit can't be found.
+* all -- This is the default target. It runs the "edk2" target if
+  the EDK2BASE variable points to a valid TianoCore toolkit. If not, it runs
+  the "tiano" target if the TIANOBASE variable points to a valid TianoCore
+  toolkit. If neither of these variables points to a valid TianoCore
+  toolkit, the "gnuefi" target is tried.
 * gptsync -- This target builds the gptsync_x64.efi program using the
-  gptsync_edk2 target if TianoCore is found or using gptsync_gnuefi if
-  TianoCore can't be found.
-* fs -- This target builds the filesystem drivers using the fs_edk2 target
-  if the TianoCore toolkit is installed or by using the fs_gnuefi target if
-  TianoCore can't be found.
+  same precedence for toolkits as the "all" target.
+* fs -- This target builds the filesystem drivers using the same precedence
+  for toolkits as the "all" target.
 * clean -- This target deletes intermediate build files. Note that it
   deletes intermediate files generated by ALL the build methods (gnuefi,
   tiano, and edk2).
@@ -290,7 +317,7 @@ behind-the-times distributions might provide out-of-date versions of this
 package.
 
 If you're using TianoCore's EDK2, as noted earlier, you may need to adjust
-the EDK2BASE variable in Makefile.
+the TIANOBASE or EDKBASE variable in Makefile.
 
 
 Compiling rEFInd the TianoCore Way
@@ -369,8 +396,8 @@ seems to work in minimal testing. My build under OS X required several
 changes for compilation to succeed:
 
 * A relatively recent TianoCore EDK2 from the TianoCore git repository
-  is required; the stable UDK2014 and UDK2015 DO NOT work. Presumably
-  UDK2017 will work once it's released.
+  is required; the stable UDK2014 and UDK2015 DO NOT work. I have yet to
+  test with the final release of UDK2017, but I expect it should work.
 
 * Setting up the Mac development environment required following instructions
   at https://github.com/tianocore/tianocore.github.io/wiki/Xcode, with the

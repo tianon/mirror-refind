@@ -29,8 +29,8 @@
 
 - A new "edk2" target to "make" is available, which builds in the standard
   TianoCore way. This has the advantage over the "tiano" target of working
-  with newer versions of the EDK2. (The "tiano" target maxes out at
-  UDK2014.)
+  with newer versions of EDK2, including the recently-released UDK2017. (The
+  "tiano" target maxes out at UDK2014.)
 
 - Improved compatibility with standard TianoCore-style build process; can
   now build rEFInd binary, gptsync, and drivers in the "TianoCore" way, in

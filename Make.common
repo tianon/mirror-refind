@@ -31,9 +31,8 @@ EFICRT0         = /usr/lib
 HOSTARCH        = $(shell uname -m | sed s,i[3456789]86,ia32,)
 ARCH            ?= $(HOSTARCH)
 
-# Note: EDK2BASE is defined in master Makefile and exported
-#EDK2BASE        = /usr/local/UDK2014/MyWorkSpace
-GENFW           = $(EDK2BASE)/BaseTools/Source/C/bin/GenFw
+# Note: TIANOBASE is defined in master Makefile and exported
+GENFW           = $(TIANOBASE)/BaseTools/Source/C/bin/GenFw
 prefix          = /usr/bin/
 ifeq ($(ARCH),aarch64)
   CC            = $(prefix)aarch64-linux-gnu-gcc
@@ -53,7 +52,7 @@ endif
 
 ifeq ($(MAKEWITH),TIANO)
 # Below file defines TARGET (RELEASE or DEBUG) and TOOL_CHAIN_TAG (GCC44, GCC45, GCC46, or GCC47)
-include $(EDK2BASE)/Conf/target.txt
+include $(TIANOBASE)/Conf/target.txt
 endif
 
 #
@@ -68,12 +67,12 @@ CFLAGS          = $(OPTIMFLAGS) -fno-stack-protector -fshort-wchar -Wall
 GNUEFI_CFLAGS   = -fpic -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -I../include -I../refind -I../libeg -I../mok
 
 # ...and for TianoCore....
-TIANO_INCLUDE_DIRS = -I $(EDK2BASE)/MdePkg \
-                     -I $(EDK2BASE)/MdePkg/Include \
-                     -I $(EDK2BASE)/MdeModulePkg/ \
-                     -I $(EDK2BASE)/MdeModulePkg/Include \
-                     -I $(EDK2BASE)/IntelFrameworkPkg/Include \
-                     -I $(EDK2BASE)/MdePkg/Include/$(ARCHDIR) \
+TIANO_INCLUDE_DIRS = -I $(TIANOBASE)/MdePkg \
+                     -I $(TIANOBASE)/MdePkg/Include \
+                     -I $(TIANOBASE)/MdeModulePkg/ \
+                     -I $(TIANOBASE)/MdeModulePkg/Include \
+                     -I $(TIANOBASE)/IntelFrameworkPkg/Include \
+                     -I $(TIANOBASE)/MdePkg/Include/$(ARCHDIR) \
                      -I .. \
                      -I ../refind \
                      -I ../libeg \
@@ -93,7 +92,7 @@ GNUEFI_LIBS       = -lefi -lgnuefi $(shell $(CC) -print-libgcc-file-name)
 
 # ...and for TianoCore....
 ENTRYPOINT=efi_main
-TIANO_LDSCRIPT   = $(EDK2BASE)/BaseTools/Scripts/gcc4.9-ld-script
+TIANO_LDSCRIPT   = $(TIANOBASE)/BaseTools/Scripts/gcc4.9-ld-script
 #TIANO_LDSCRIPT  = /usr/local/UDK2014/MyWorkSpace/BaseTools/Scripts/gcc4.9-ld-script
 TIANO_LDFLAGS   = -nostdlib -n -q --gc-sections --script=$(TIANO_LDSCRIPT) \
                   --entry $(ENTRYPOINT) -u $(ENTRYPOINT) -m $(LD_CODE)

@@ -11,9 +11,9 @@
 include ../Make.common
 
 # Below file defines TARGET (RELEASE or DEBUG) and TOOL_CHAIN_TAG (GCC44, GCC45, or GCC46)
-#include $(EDK2BASE)/Conf/target.txt
+#include $(TIANOBASE)/Conf/target.txt
 
-EFILIB          = $(EDK2BASE)/Build/Mde/$(TARGET)_$(TOOL_CHAIN_TAG)/$(UC_ARCH)/MdePkg/Library
+EFILIB          = $(TIANOBASE)/Build/Mde/$(TARGET)_$(TOOL_CHAIN_TAG)/$(UC_ARCH)/MdePkg/Library
 ALL_EFILIBS     = $(EFILIB)/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib/OUTPUT/BaseDebugPrintErrorLevelLib.lib \
 		  $(EFILIB)/BasePrintLib/BasePrintLib/OUTPUT/BasePrintLib.lib \
 		  $(EFILIB)/BasePcdLibNull/BasePcdLibNull/OUTPUT/BasePcdLibNull.lib \
@@ -31,11 +31,11 @@ ifeq ($(ARCH),aarch64)
   ALL_EFILIBS +=  $(EFILIB)/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckLib.lib
 endif
 
-TIANO_INCLUDE_DIRS = -I $(EDK2BASE)/MdePkg \
-                     -I $(EDK2BASE)/MdePkg/Include \
-                     -I $(EDK2BASE)/MdePkg/Include/$(ARCHDIR) \
-		     -I $(EDK2BASE)/EdkCompatibilityPkg/Foundation/Framework/Include \
-		     -I $(EDK2BASE)/EdkCompatibilityPkg/Foundation/Library/Dxe/Include
+TIANO_INCLUDE_DIRS = -I $(TIANOBASE)/MdePkg \
+                     -I $(TIANOBASE)/MdePkg/Include \
+                     -I $(TIANOBASE)/MdePkg/Include/$(ARCHDIR) \
+		     -I $(TIANOBASE)/EdkCompatibilityPkg/Foundation/Framework/Include \
+		     -I $(TIANOBASE)/EdkCompatibilityPkg/Foundation/Library/Dxe/Include
 
 FSW_NAMES       = fsw_efi fsw_core fsw_efi_lib fsw_lib AutoGen
 OBJS            = $(FSW_NAMES:=.obj)

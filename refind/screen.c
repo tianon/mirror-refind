@@ -340,7 +340,7 @@ VOID PrintUglyText(IN CHAR16 *Text, IN UINTN Position) {
 
     if (Text) {
         if (AllowGraphicsMode && MyStriCmp(L"Apple", ST->FirmwareVendor) && egIsGraphicsModeEnabled()) {
-            egDisplayMessage(Text, &BGColor, BOTTOM);
+            egDisplayMessage(Text, &BGColor, Position);
             GraphicsScreenDirty = TRUE;
         } else { // non-Mac or in text mode; a Print() statement will work
             Print(Text);
