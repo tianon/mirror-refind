@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-5/21/2017, referencing rEFInd 0.10.8</p>
+7/30/2017, referencing rEFInd 0.10.9</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -196,7 +196,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>In addition to the main OS tag icon, you can set the <i>badge</i> icon for a volume by creating a file called <tt>.VolumeBadge.icns</tt> or <tt>.VolumeBadge.png</tt> in the root directory of a partition. If present, it replaces the disk-type icons that are overlaid on the main OS icon. If you use this feature, the badge is applied to all the boot loaders read from the disk, not just those stored in the root directory or the Apple boot loader location. You could use this feature to set a custom badge for different specific disks or to help differentiate multiple OS X installations on one computer. If you don't want any badges, you can add the <tt>badges</tt> option to <tt>hideui</tt> in <tt>refind.conf</tt>. Alternatively, or to hide just certain types of badges, you can replace the four badge icons in the rEFInd <tt>icons</tt> subdirectory (<tt>vol_external.png</tt>, <tt>vol_internal.png</tt>, <tt>vol_optical.png</tt>, and <tt>vol_net.png</tt>) with a completely transparent badge. The <tt>transparent.png</tt> file in the rEFInd <tt>icons</tt> directory may be used for this purpose.</p>
 
-<p>The default icon sizes are 128x128 pixels for OS icons, 48x48 pixels for the second-row tools, and 32x32 pixels for badges. You can change the sizes of the big OS icons and the small tool icons with the <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens in <tt>refind.conf</tt>, as noted in <a href="#table1">Table 1.</a> The size of the disk-type badges is 1/4 the size of OS icons.</p>
+<p>The default icon sizes are 128x128 pixels for OS icons, 48x48 pixels for the second-row tools, and 32x32 pixels for badges. (These figures are all doubled on displays wider than 1920 pixels.) You can change the sizes of the big OS icons and the small tool icons with the <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens in <tt>refind.conf</tt>, as noted in <a href="#table1">Table 1.</a> The size of the disk-type badges is 1/4 the size of OS icons.</p>
 
 <a name="adjusting">
 <h2>Adjusting the Global Configuration</h2>
@@ -267,12 +267,12 @@ timeout 20
 <tr>
    <td><tt>big_icon_size</tt></td>
    <td>numeric value (at least <tt>32</tt>)</td>
-   <td>Sets the size of big icons (those used for OSes on the first row). All icons are square, so only one value is specified. If icon files don't contain images of the specified size, the available images are scaled to this size. The disk-type badge size is set indirectly by this token; badges are 1/4 the size of big icons. The default value is <tt>128<tt>.</td>
+   <td>Sets the size of big icons (those used for OSes on the first row). All icons are square, so only one value is specified. If icon files don't contain images of the specified size, the available images are scaled to this size. The disk-type badge size is set indirectly by this token; badges are 1/4 the size of big icons. The default value is <tt>128</tt> on most systems, or <tt>256</tt> when the screen is wider than 1920 pixels.</td>
 </tr>
 <tr>
    <td><tt>small_icon_size</tt></td>
    <td>numeric value (at least <tt>32</tt>)</td>
-   <td>Sets the size of small icons (those used for tools on the second row). All icons are square, so only one value is specified. If icon files don't contain images of the specified size, the available images are scaled to this size. The default value is <tt>128<tt>.</td>
+   <td>Sets the size of small icons (those used for tools on the second row). All icons are square, so only one value is specified. If icon files don't contain images of the specified size, the available images are scaled to this size. The default value is <tt>48</tt> on most systems, or <tt>96</tt> when the screen is wider than 1920 pixels.</td>
 </tr>
 <tr>
    <td><tt>selection_big</tt></td>

@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-5/21/2017, referencing rEFInd 0.10.8</p>
+7/30/2017, referencing rEFInd 0.10.9</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -228,7 +228,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>James Jesudason has a tutorial on installing Ubuntu 13.04 beta on a Macbook Retina Pro on <a href="http://randomtutor.blogspot.com/2013_02_01_archive.html">this blog page.</a> I'd recommend using a Linux filesystem driver to read the kernel directly from a Linux filesystem rather than copy the kernel to the OS X partition as in the tutorial, but either method will work.</li>
 
-<li><a href="http://sdnalloh.com/converting-win7-from-mbr-to-gpt/">This blog post</a> describes how to convert Windows from BIOS-mode to EFI-mode booting. This task is rarely necessary, but when you need it, you <i>really</i> need it.</li>
+<li>The Windows <a href="https://docs.microsoft.com/en-us/windows/deployment/mbr-to-gpt">MBR2GPT utility,</a> part of Windows 10 Creator's Update, can convert a Windows computer that boots in BIOS mode from an MBR disk to one that boots in EFI mode from a GPT disk. Note that I've never used this tool, and I have no idea how it would cope with a multi-boot configuration.</li>
+
+<!-- <li><a href="http://sdnalloh.com/converting-win7-from-mbr-to-gpt/">This blog post</a> describes how to convert Windows from BIOS-mode to EFI-mode booting. This task is rarely necessary, but when you need it, you <i>really</i> need it.</li> -->
 
 <li>If you're interested in developing EFI software yourself, my <a href="http://www.rodsbooks.com/efi-programming/">Programming for EFI</a> can help you get started.</li>
 

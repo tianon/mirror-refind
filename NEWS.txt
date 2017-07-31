@@ -1,10 +1,10 @@
-0.10.9 (?/??/2017):
+0.10.9 (7/30/2017):
 -------------------
 
-- PauseForKey() now works on Macs in graphics mode, which can help when some
-  errors are encountered. (Most of the errors associated with this function
-  still rely on Print(), which still doesn't work on Macs; but at least
-  there will be a prompt to press a key.)
+- The PauseForKey() function now works on Macs in graphics mode, which can
+  help when some errors are encountered. (Most of the errors associated with
+  this function still rely on Print(), which still doesn't work on Macs; but
+  at least there will be a prompt to press a key.)
 
 - rEFInd now displays its background and banner before scanning for boot
   loaders, and displays a message that it's performing this scan.
@@ -29,7 +29,8 @@
 
 - A new "edk2" target to "make" is available, which builds in the standard
   TianoCore way. This has the advantage over the "tiano" target of working
-  with newer versions of EDK2, including the recently-released UDK2017. (The
+  with newer versions of EDK2, including the recently-released UDK2017
+  . (The
   "tiano" target maxes out at UDK2014.)
 
 - Improved compatibility with standard TianoCore-style build process; can

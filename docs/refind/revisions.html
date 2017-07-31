@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 5/21/2017</p>
+<p>Last Web page update: 7/30/2017</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,59 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.10.9 (7/30/2017)</b>&mdash;This version sees changes in some
+    graphics features and in the build process....
+    <ul>
+
+    <li>To better support HiDPI/retina displays, rEFInd now automatically
+	scales its icons and text to twice the usual size on displays wider
+	than 1920 pixels. This change does <i>not</i> affect text mode (for
+	which setting the <tt>textmode</tt> option in <tt>refind.conf</tt>
+	is still necessary. Explicitly setting either
+	<tt>small_icon_size</tt> or <tt>big_icon_size</tt> in
+	<tt>refind.conf</tt> disables this feature, so you can explicitly
+	set any icon or font size you like in the usual way.</li>
+
+    <li>rEFInd now displays its background/banner image before scanning for
+	boot loaders, and displays a notice that it's scanning for boot
+	loaders at this time. This will barely be noticeable on most
+	systems, but if you have lots of OSes or kernels, you may notice the
+	change.</li>
+
+    <li>On rare occasion, when rEFInd runs into a problem, it displays a
+	text-mode error message and prompts the user to continue, even when
+	it's operating in text mode. On Macs, this has caused what looks
+	like a hang, since this text would not be displayed, but the pause
+	for user input would still occur. rEFInd now at least displays the
+	prompt to continue, although the error text may not appear. (This
+	feature still needs more work.)</li>
+
+    <li>I've added icons for the Trusty (14.04), Xenial (16.04), and Zesty
+	(17.04) versions of Ubuntu, for those who install multiple Ubuntu
+	versions and want to distinguish them by separate icons. Sooner or
+	later I'm likely to remove these icons as their versions reach
+	end-of-life status.</li>
+
+    <li>I've updated the LodePNG library, which rEFInd uses to load PNG
+	images. This is unlikely to have any obvious effects for users.</li>
+
+    <li>I've significantly reworked the build process when using the
+	TianoCore toolkit. In brief, in addition to the <tt>tiano</tt>
+	target for <tt>make</tt>, a new <tt>edk2</tt> target exists, which
+	works with newer versions of TianoCore. Behind the scenes, the new
+	version builds rEFInd in a way that's more akin to what most
+	TianoCore projects use. See the <tt>BUILDING.txt</tt> file for
+	details. I'm also building most of my own binary packages with
+	UDK2017 rather than UDK2014, which I'd been using for the past few
+	years. (My PPA packages still use GNU-EFI.)</li>
+
+    <li>My USB flash drive and CD-R images now include the <tt>gdisk</tt>
+	and <tt>gptsync</tt> binaries, although the latter is inactive by
+	default, even on Macs.</li>
+
+    </ul>
+</li>
 
 <li><b>0.10.8 (5/21/2017)</b>&mdash;This version's changes are modest,
     although a couple will be important to a few users....

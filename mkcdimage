@@ -29,7 +29,7 @@ cp $StartDir/SHELLS.txt ./refind-bin-$Version
 # files to it....
 mkdir -p refind-bin-$Version/EFI/boot
 cd refind-bin-$Version/EFI/boot
-cp $StartDir/shell*.efi ./
+#cp $StartDir/shell*.efi ./
 
 # Create hard links to the rEFInd files so that they'll be suitable for an
 # EFI-boot CD...
@@ -54,7 +54,20 @@ cd ..
 mkdir drivers_aa64
 cd drivers_aa64
 ln ../../../refind/drivers_aa64/* ./
-cd ../../..
+cd ../..
+
+# Copy stuff to the EFI/tools directory
+mkdir tools
+cd tools
+cp $StartDir/tools/*.efi ./
+# echo "---"
+# echo ""
+# ls ../../../../temp/refind-bin-$Version/refind/tools*/
+# echo "--"
+# ls ../../../../temp/refind-bin-$Version/refind/tools*/*.efi
+# exit
+cp ../../../../temp/refind-bin-$Version/refind/tools*/*.efi ./
+cd ../..
 
 # Get the size of the binaries to go in the El Torito image in kB
 ToritoSize=`du -s EFI | cut -f 1`
@@ -63,7 +76,7 @@ let ToritoSize=($ToritoSize)*32
 
 # Move the EFI shell files back to the root where they belong
 # (They were in EFI/boot just so they'd get counted in ToritoSize)
-mv EFI/boot/shell*.efi ./
+#mv EFI/boot/shell*.efi ./
 
 # Prepare a FAT filesystem image and populate it with the
 # EFI boot files....
