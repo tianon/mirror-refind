@@ -1259,7 +1259,8 @@ static struct LOADER_LIST * AddLoaderListEntry(struct LOADER_LIST *LoaderList, s
     } else {
         if (StriSubCmp(L"vmlinuz-0-rescue", NewEntry->FileName))
             LinuxRescue = TRUE;
-        while ((CurrentEntry != NULL) && (LinuxRescue || (TimeComp(&(NewEntry->TimeStamp), &(CurrentEntry->TimeStamp)) < 0))) {
+        while ((CurrentEntry != NULL) && !StriSubCmp(L"vmlinuz-0-rescue", CurrentEntry->FileName) &&
+               (LinuxRescue || (TimeComp(&(NewEntry->TimeStamp), &(CurrentEntry->TimeStamp)) < 0))) {
             PrevEntry = CurrentEntry;
             CurrentEntry = CurrentEntry->NextEntry;
         } // while
