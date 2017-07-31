@@ -1525,9 +1525,9 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
        // it down to buggy EFI implementations and ignoring that particular error....
        if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
           if (Path)
-             SPrint(Message, 255, L"while scanning the %s directory", Path);
+             SPrint(Message, 255, L"while scanning the %s directory on %s", Path, Volume->VolName);
           else
-             StrCpy(Message, L"while scanning the root directory");
+             SPrint(Message, 255, L"while scanning the root directory on %s", Path, Volume->VolName);
           CheckError(Status, Message);
        } // if (Status != EFI_NOT_FOUND)
     } // if not scanning a blacklisted directory
@@ -1585,7 +1585,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
     EFI_STATUS              Status;
     REFIT_DIR_ITER          EfiDirIter;
     EFI_FILE_INFO           *EfiDirEntry;
-    CHAR16                  FileName[256], *Directory = NULL, *MatchPatterns, *VolName = NULL, *SelfPath;
+    CHAR16                  FileName[256], *Directory = NULL, *MatchPatterns, *VolName = NULL, *SelfPath, *Temp;
     UINTN                   i, Length;
     BOOLEAN                 ScanFallbackLoader = TRUE;
     BOOLEAN                 FoundBRBackup = FALSE;
@@ -1649,8 +1649,11 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
                 ScanFallbackLoader = FALSE;
         } // while()
         Status = DirIterClose(&EfiDirIter);
-        if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER))
-            CheckError(Status, L"while scanning the EFI directory");
+        if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
+            Temp = PoolPrint(L"while scanning the EFI directory on %s", Volume->VolName);
+            CheckError(Status, Temp);
+            MyFreePool(Temp);
+        } // if
 
         // Scan user-specified (or additional default) directories....
         i = 0;

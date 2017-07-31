@@ -449,8 +449,9 @@ VOID egDrawImageArea(IN EG_IMAGE *Image,
 // Display a message in the center of the screen, surrounded by a box of the
 // specified color. For the moment, uses graphics calls only. (It still works
 // in text mode on GOP/UEFI systems, but not on UGA/EFI 1.x systems.)
-VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor, UINTN Position) {
+VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor, UINTN PositionCode) {
    UINTN BoxWidth, BoxHeight;
+   static UINTN Position = 1;
    EG_IMAGE *Box;
 
    if ((Text != NULL) && (BGColor != NULL)) {
@@ -461,10 +462,23 @@ VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor, UINTN Position) {
          BoxWidth = egScreenWidth;
       Box = egCreateFilledImage(BoxWidth, BoxHeight, FALSE, BGColor);
       egRenderText(Text, Box, 7, BoxHeight / 4, (BGColor->r + BGColor->g + BGColor->b) / 3);
-      if (Position == CENTER)
-          egDrawImage(Box, (egScreenWidth - BoxWidth) / 2, (egScreenHeight - BoxHeight) / 2);
-      else
-          egDrawImage(Box, (egScreenWidth - BoxWidth) / 2, egScreenHeight - (BoxHeight * 2));
+      switch (PositionCode) {
+          case CENTER:
+              Position = (egScreenHeight - BoxHeight) / 2;
+              break;
+          case BOTTOM:
+              Position = egScreenHeight - (BoxHeight * 2);
+              break;
+          case TOP:
+              Position = 1;
+              break;
+          default: // NEXTLINE
+              Position += BoxHeight + (BoxHeight / 10);
+              break;
+      } // switch()
+      egDrawImage(Box, (egScreenWidth - BoxWidth) / 2, Position);
+      if ((PositionCode == CENTER) || (Position >= egScreenHeight - (BoxHeight * 5)))
+          Position = 1;
    } // if non-NULL inputs
 } // VOID egDisplayMessage()
 

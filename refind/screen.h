@@ -69,6 +69,8 @@
 // Codes for text position, used by egDisplayMessage() and PrintUglyText()
 #define CENTER 0
 #define BOTTOM 1
+#define TOP 2
+#define NEXTLINE 3
 
 extern UINTN ConWidth;
 extern UINTN ConHeight;
@@ -97,7 +99,7 @@ VOID DebugPause(VOID);
 #endif
 VOID EndlessIdleLoop(VOID);
 BOOLEAN ReadAllKeyStrokes(VOID);
-VOID PrintUglyText(IN CHAR16 *Text, UINTN Position);
+VOID PrintUglyText(IN CHAR16 *Text, UINTN PositionCode);
 VOID PauseForKey(VOID);
 VOID PauseSeconds(UINTN Seconds);
 

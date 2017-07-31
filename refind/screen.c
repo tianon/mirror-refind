@@ -335,15 +335,16 @@ BOOLEAN ReadAllKeyStrokes(VOID)
 // and rare error messages.
 // Position code is used only in graphics mode.
 // TODO: Improve to handle multi-line text.
-VOID PrintUglyText(IN CHAR16 *Text, IN UINTN Position) {
+VOID PrintUglyText(IN CHAR16 *Text, IN UINTN PositionCode) {
     EG_PIXEL BGColor = COLOR_RED;
 
     if (Text) {
         if (AllowGraphicsMode && MyStriCmp(L"Apple", ST->FirmwareVendor) && egIsGraphicsModeEnabled()) {
-            egDisplayMessage(Text, &BGColor, Position);
+            egDisplayMessage(Text, &BGColor, PositionCode);
             GraphicsScreenDirty = TRUE;
         } else { // non-Mac or in text mode; a Print() statement will work
             Print(Text);
+            Print(L"\n");
         } // if/else
     } // if
 } // VOID PrintUglyText()
@@ -352,7 +353,8 @@ VOID PauseForKey(VOID)
 {
     UINTN index;
 
-    PrintUglyText(L"\n* Hit any key to continue *", BOTTOM);
+    Print(L"\n");
+    PrintUglyText(L"* Hit any key to continue *", BOTTOM);
 
     if (ReadAllKeyStrokes()) {  // remove buffered key strokes
         refit_call1_wrapper(BS->Stall, 5000000);     // 5 seconds delay
@@ -361,8 +363,6 @@ VOID PauseForKey(VOID)
 
     refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &index);
     ReadAllKeyStrokes();        // empty the buffer to protect the menu
-
-    Print(L"\n");
 }
 
 // Pause a specified number of seconds
@@ -396,71 +396,51 @@ VOID EndlessIdleLoop(VOID)
 // Error handling
 //
 
+BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where)
+{
+    CHAR16 *Temp = NULL;
+
+    if (!EFI_ERROR(Status))
+        return FALSE;
+
 #ifdef __MAKEWITH_GNUEFI
-BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where)
-{
     CHAR16 ErrorName[64];
-
-    if (!EFI_ERROR(Status))
-        return FALSE;
-
     StatusToString(ErrorName, Status);
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
-    Print(L"Fatal Error: %s %s\n", ErrorName, where);
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-    haveError = TRUE;
-
-    //BS->Exit(ImageHandle, ExitStatus, ExitDataSize, ExitData);
-
-    return TRUE;
-}
-
-BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
-{
-    CHAR16 ErrorName[64];
-
-    if (!EFI_ERROR(Status))
-        return FALSE;
-
-    StatusToString(ErrorName, Status);
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
-    Print(L"Error: %s %s\n", ErrorName, where);
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-    haveError = TRUE;
-
-    return TRUE;
-}
+    Temp = PoolPrint(L"Fatal Error: %s %s", ErrorName, where);
 #else
-BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where)
-{
-//    CHAR16 ErrorName[64];
-
-    if (!EFI_ERROR(Status))
-        return FALSE;
-
-    gST->ConOut->SetAttribute (gST->ConOut, ATTR_ERROR);
-    Print(L"Fatal Error: %r %s\n", Status, where);
-    gST->ConOut->SetAttribute (gST->ConOut, ATTR_BASIC);
+    Temp = PoolPrint(L"Fatal Error: %s %s", Status, where);
+#endif
+    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
+    PrintUglyText(Temp, NEXTLINE);
+    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
     haveError = TRUE;
-
-    //gBS->Exit(ImageHandle, ExitStatus, ExitDataSize, ExitData);
+    MyFreePool(Temp);
 
     return TRUE;
-}
+} // BOOLEAN CheckFatalError()
 
 BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
 {
+    CHAR16 *Temp = NULL;
+
     if (!EFI_ERROR(Status))
         return FALSE;
 
-    gST->ConOut->SetAttribute (gST->ConOut, ATTR_ERROR);
-    Print(L"Error: %r %s\n", Status, where);
-    gST->ConOut->SetAttribute (gST->ConOut, ATTR_BASIC);
+#ifdef __MAKEWITH_GNUEFI
+    CHAR16 ErrorName[64];
+    StatusToString(ErrorName, Status);
+    Temp = PoolPrint(L"Error: %s %s", ErrorName, where);
+#else
+    Temp = PoolPrint(L"Error: %r %s", Status, where);
+#endif
+    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
+    PrintUglyText(Temp, NEXTLINE);
+    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
     haveError = TRUE;
+    MyFreePool(Temp);
 
     return TRUE;
-}
-#endif
+} // BOOLEAN CheckError()
 
 //
 // Graphics functions

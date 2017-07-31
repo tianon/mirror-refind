@@ -1408,7 +1408,7 @@ EFI_STATUS DirIterClose(IN OUT REFIT_DIR_ITER *DirIter)
       FreePool(DirIter->LastFileInfo);
       DirIter->LastFileInfo = NULL;
    }
-   if (DirIter->CloseDirHandle)
+   if ((DirIter->CloseDirHandle) && (DirIter->DirHandle->Close))
       refit_call1_wrapper(DirIter->DirHandle->Close, DirIter->DirHandle);
    return DirIter->LastStatus;
 }
