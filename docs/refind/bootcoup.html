@@ -154,7 +154,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
   </ul></li>
 
-<li class="tight"><a href="#osx">Recovering from a Coup Using OS X</a>
+<li class="tight"><a href="#osx">Recovering from a Coup Using MacOS</a>
 
   <ul class="tight">
 
@@ -186,6 +186,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="#unstable">The Unstable State: Dealing With Persistent Boot Coups</a></li>
 
+<li class="tight"><a href="#fallback">Managing Boot Coups with <tt>fallback.efi</tt>/<tt>fbx86.efi</tt></a></li>
+
 </ul>
 
 </div>
@@ -212,7 +214,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Staging a Counter-Revolution: Re-Installing rEFInd</h2>
 </a>
 
-<p>The most general, and in some cases the easiest, solution to a boot coup is to re-install rEFInd. If you haven't updated rEFInd in a while, this approach has the advantage of providing an update to rEFInd (assuming you first download the latest version). The <a href="installing.html">Installing rEFInd</a> page describes how to install rEFInd from Linux, OS X, Windows, or an EFI shell. The <tt>refind-install</tt> script preserves your existing <tt>refind.conf</tt> configuration file, so an upgrade should not affect your customizations. (The rEFInd icons will be updated to the latest versions, but <tt>refind-install</tt> moves the original icons to a backup directory, so you can restore them if you've customized them or if they've changed and you don't like the new icons.)</p>
+<p>The most general, and in some cases the easiest, solution to a boot coup is to re-install rEFInd. If you haven't updated rEFInd in a while, this approach has the advantage of providing an update to rEFInd (assuming you first download the latest version). The <a href="installing.html">Installing rEFInd</a> page describes how to install rEFInd from Linux, macOS, Windows, or an EFI shell. The <tt>refind-install</tt> script preserves your existing <tt>refind.conf</tt> configuration file, so an upgrade should not affect your customizations. (The rEFInd icons will be updated to the latest versions, but <tt>refind-install</tt> moves the original icons to a backup directory, so you can restore them if you've customized them or if they've changed and you don't like the new icons.)</p>
 
 <p>One possible complication to this approach is if you're stuck booting in an unfamiliar OS. In such a case, you may be able to boot into your preferred OS on a one-time basis by using your computer's built-in boot manager, as described in <a href="#evade_guards">the previous section.</a> The trouble is that how you do this varies greatly from one computer to another.</p>
 
@@ -319,16 +321,16 @@ Boot0085* ubuntu</pre>
 <p>You can achieve a similar result in Fedora by installing the <tt>yum-plugin-versionlock</tt> package, ensuring that <tt>enabled = 1</tt> is set in <tt>/etc/yum/pluginconf.d/versionlock.conf</tt>, and editing <tt>/etc/yum/pluginconf.d/versionlock.list</tt> to include the names and versions of packages you want to lock at a particular version.</p>
 
 <a name="osx">
-<h2>Recovering from a Coup Using OS X</h2>
+<h2>Recovering from a Coup Using MacOS</h2>
 </a>
 
-<p>A boot coup that leaves a computer booting straight to OS X was most likely caused by an update to OS X&mdash;either a software update that installed a fresh copy of the OS X boot loader or a complete re-installation of the OS. In either event, the solution is conceptually similar to the Linux solution, but the tools you use to correct the problem differ. In OS X, you would either <a href="#startup_disk">use Startup Disk</a> to set rEFInd as the default or <a href="#bless">use <tt>bless</tt></a> to do the same.</p>
+<p>A boot coup that leaves a computer booting straight to macOS was most likely caused by an update to macOS&mdash;either a software update that installed a fresh copy of the macOS boot loader or a complete re-installation of the OS. In either event, the solution is conceptually similar to the Linux solution, but the tools you use to correct the problem differ. In macOS, you would either <a href="#startup_disk">use Startup Disk</a> to set rEFInd as the default or <a href="#bless">use <tt>bless</tt></a> to do the same.</p>
 
 <a name="startup_disk">
 <h3>Using Startup Disk to Adjust Your Boot Priority</h3>
 </a>
 
-<p>The Startup Disk utility appears in the System Preferences tool. Unfortunately, it will likely be useless if you installed rEFInd using <tt>refind-install</tt> and its default options, since Startup Disk is designed to switch between OS X installations; it's not smart enough to detect a rEFInd installation and re-activate it.</p>
+<p>The Startup Disk utility appears in the System Preferences tool. Unfortunately, it will likely be useless if you installed rEFInd using <tt>refind-install</tt> and its default options, since Startup Disk is designed to switch between macOS installations; it's not smart enough to detect a rEFInd installation and re-activate it.</p>
 
 <p>If, however, you installed rEFInd by using the <tt>--ownhfs</tt> option to <tt>refind-install</tt>, your rEFInd installation volume should show up as an option in the Startup Disk utility. You should be able to click on it and then click Restart. Note that the name of the rEFInd volume may not be rEFInd, as it is in this screen shot; the name will match whatever volume holds rEFInd on your computer.</p>
 
@@ -336,13 +338,13 @@ Boot0085* ubuntu</pre>
     height="402" alt="Startup Disk may enable you to reset rEFInd to being
     the default boot program." border=2> </center><br />
 
-<p>As with most of the fixes described on this page, this method of recovering from a boot coup will not protect you from future boot coups. Fortunately, OS X updates that create boot coups are fairly rare, but you'll have to resign yourself to the fact that the problem may recur in the future.</p>
+<p>As with most of the fixes described on this page, this method of recovering from a boot coup will not protect you from future boot coups. Fortunately, macOS updates that create boot coups are fairly rare, but you'll have to resign yourself to the fact that the problem may recur in the future.</p>
 
 <a name="bless">
 <h3>Using <tt>bless</tt> to Adjust Your Boot Priority</h3>
 </a>
 
-<p>The more general solution to resetting rEFInd as the default boot manager from OS X is to follow a subset of the <a href="installing.html#osx">manual OS X installation instructions.</a> Unfortunately, some details depend on where it is installed&mdash;on the ESP, on the main OS X root (<tt>/</tt>) partition, or on a separate HFS+ volume. If rEFInd is installed on its own HFS+ partition, using Startup Disk, as described in <a href="#startup_disk">the previous section,</a> is likely to be the easier solution. For the other two options, you should first figure out where rEFInd is installed and then follow this procedure:</p>
+<p>The more general solution to resetting rEFInd as the default boot manager from macOS is to follow a subset of the <a href="installing.html#osx">manual macOS installation instructions.</a> Unfortunately, some details depend on where it is installed&mdash;on the ESP, on the main macOS root (<tt>/</tt>) partition, or on a separate HFS+ volume. If rEFInd is installed on its own HFS+ partition, using Startup Disk, as described in <a href="#startup_disk">the previous section,</a> is likely to be the easier solution. For the other two options, you should first figure out where rEFInd is installed and then follow this procedure:</p>
 
 <ol>
 
@@ -379,7 +381,7 @@ Boot0085* ubuntu</pre>
 
 <p>One major caveat is that the <tt>bless</tt> command will fail if System Integrity Protection (SIP) is active. This feature is part of OS X 10.11 (El Capitan) and later, and you will have dealt with it during rEFInd installation if it's active. See <a href="sip.html">this page of the rEFInd documentation</a> for more on this subject. You can use any of the procedures outlined there with reference to installing rEFInd for dealing with a boot coup, as well.</p>
 
-<p>As with most of the fixes described on this page, this method of recovering from a boot coup will not protect you from future boot coups. Fortunately, OS X updates that create boot coups are fairly rare, but you'll have to resign yourself to the fact that the problem may recur in the future.</p>
+<p>As with most of the fixes described on this page, this method of recovering from a boot coup will not protect you from future boot coups. Fortunately, macOS updates that create boot coups are fairly rare, but you'll have to resign yourself to the fact that the problem may recur in the future.</p>
 
 <a name="windows">
 <h2>Recovering from a Coup Using Windows</h2>
@@ -411,7 +413,7 @@ Boot0085* ubuntu</pre>
 
 </ol>
 
-<p>Note that EasyUEFI's menu shows the <i>names</i> of the boot entries. In some cases, rEFInd may be registered under another name. This is particularly likely if you used OS X's <tt>bless</tt> or Windows' <tt>bcdedit</tt> tools to register rEFInd with the firmware. You may be able to locate the rEFInd binary by examining the <i>File path</i> entry in the <i>Detailed information</i> pane, after selecting a "candidate" entry.</p>
+<p>Note that EasyUEFI's menu shows the <i>names</i> of the boot entries. In some cases, rEFInd may be registered under another name. This is particularly likely if you used macOS's <tt>bless</tt> or Windows' <tt>bcdedit</tt> tools to register rEFInd with the firmware. You may be able to locate the rEFInd binary by examining the <i>File path</i> entry in the <i>Detailed information</i> pane, after selecting a "candidate" entry.</p>
 
 <p>Like most of the remedies described on this page, this one makes an immediate change to the boot order but does not guarantee that the problem will not recur. In most cases, rEFInd will remain the primary boot program until it's changed again by another OS update, but all bets are off when that happens.</p>
 
@@ -548,6 +550,8 @@ Boot0085* ubuntu</pre>
 
 <li>Return the computer for a refund. If none of the preceding steps works, chances are your firmware is just plain defective. Note that by "defective" I mean "defective by design," not a sample defect, so you should not exchange the computer for another of the same model. (Indeed, even another model of the same brand may suffer from the same problem.) Your best bet in this case is to return the product to the store for a refund and <i>write to the manufacturer about the problem.</i> Manufacturers will not fix problems that they don't know exist, so informing them of the problem is important. Unfortunately, many people learn of such problems only after having owned a computer for months, so a return is not always practical....</li>
 
+<li>Use the <tt>fallback.efi</tt> program. This approach is described shortly, in <a href="#fallback">Managing Boot Coups with <tt>fallback.efi</tt>/<tt>fbx86.efi</tt>.</a></li>
+
 <li>Use a fallback filename. You can use <tt>mvrefind</tt> in Linux to rename rEFInd to use either of two fallback filenames:
 
   <ul>
@@ -562,9 +566,52 @@ Boot0085* ubuntu</pre>
 
 </ol>
 
-<p>Persistent boot coups may also be related to OS actions. As noted earlier, Windows will sometimes cause repeated problems, which can usually be fixed via <tt>bcdedit</tt>. I've not heard of repeated problems caused by Linux or OS X, with the exception of occasional problems caused by GRUB updates in Linux, which can be dealt with by use of <a href="#refind-mkdefault"><tt>refind-mkdefault</tt></a> in a startup or shutdown script or by <a href="#disabling_grub">disabling GRUB updates.</a></p>
+<p>Persistent boot coups may also be related to OS actions. As noted earlier, Windows will sometimes cause repeated problems, which can usually be fixed via <tt>bcdedit</tt>. Repeated problems in Linux can be caused by by frequent GRUB updates or by a combination of bad NVRAM handling and the <tt>fallback.efi</tt> program. If GRUB is updating so frequently that's it's causing annoyance, it can be dealt with by use of <a href="#refind-mkdefault"><tt>refind-mkdefault</tt></a> in a startup or shutdown script or by <a href="#disabling_grub">disabling GRUB updates.</a> If <tt>fallback.efi</tt> is causing you grief, read <a href="#fallback">the following section</a> for information on how to reconfigure it.</p>
 
 <p>Another thing that can produce symptoms similar to a persistent boot coup is Secure Boot. If Secure Boot is enabled on your computer and you install rEFInd without a Shim or PreLoader program, your computer will probably refuse to launch rEFInd. In this case, inserting Shim or PreLoader into the boot process, as described on the <a href="secureboot.html">rEFInd Secure Boot page,</a> normally overcomes this problem. On rare occasions, though, Shim or PreLoader won't work with a particular computer. In such a case, you may need to <a href="http://www.rodsbooks.com/efi-bootloaders/secureboot.html#disable">disable Secure Boot.</a> Note that this level of Secure Boot malfunction is quite rare. I see many posts in online forums that jump to the conclusion that Secure Boot is causing a problem, when in fact there's another more likely cause. Thus, I urge you to investigate other possibilities before concluding that Secure Boot is causing an inability to boot rEFInd.</p>
+
+<a name="fallback">
+<h2>Managing Boot Coups with <tt>fallback.efi</tt>/<tt>fbx86.efi</tt></h2>
+</a>
+
+<p>One type of boot problem is similar to a boot coup, but has a unique cause: Some EFIs, especially older ones (mostly from 2012 or earlier) have a tendency to forget their NVRAM entries. Such computers boot from the fallback boot loader (<tt>EFI/BOOT/bootx64.efi</tt>) or from the Microsoft boot loader (<tt>EFI/Microsoft/Boot/bootmgfw.efi</tt>), but that's about it. A similar problem is that some computers remove invalid boot entries from their boot lists. This is helpful if you delete a boot loader, but it's less than helpful if you temporarily unplug your boot disk and then plug it back in.</p>
+
+<p>In either of these cases, your computer may boot to an unwanted OS or completely fail to boot. One solution to this problem is to install rEFInd to the fallback filename, as described earlier, in <a href="#unstable">The Unstable State: Dealing With Persistent Boot Coups.</a> Another is to use an EFI program called <tt>fallback.efi</tt>, <tt>fbx64.efi</tt>, or an equivalent filename on other platforms. To use this program, you would install it to <tt>EFI/BOOT</tt> on the ESP, either renaming it to <tt>bootx64.efi</tt> (that is, <tt>fallback.efi</tt> uses the fallback filename) or installing Shim as <tt>bootx64.efi</tt>. Shim will try to launch <tt>fallback.efi</tt> or <tt>fbx64.efi</tt> when it boots, so either way, this program will launch. (Be sure to match your Shim and <tt>fallback.efi</tt>/<tt>fbx864.efi</tt> binaries, so that Shim launches the correct program!) (For simplicity, I call this program <tt>fallback.efi</tt> hereafter.)</p>
+
+<p>When <tt>fallback.efi</tt> launches, it reads every subdirectory of <tt>EFI</tt> on the ESP <i>except</i> for <tt>EFI/BOOT</tt> and looks for a file called <tt>BOOT.CSV</tt>. If this file exists and contains a <i>UCS-2</i> (UTF-16 also seems to work) text file, that file is read and used to create a new NVRAM boot variable. The format of <tt>BOOT.CSV</tt> is simple; it consists of one or more lines, each of which consists of four comma-separated fields:</p>
+
+<ul>
+
+<li><b><i>filename</i></b>&mdash;This is the filename of the file, in the same directory as <tt>BOOT.CSV</tt>, to be added to the NVRAM-based boot list.</li>
+
+<li><b><i>label</i></b>&mdash;This is the label to be associated with the file. This label is displayed by the firmware's own built-in boot manager.</li>
+
+<li><b><i>options</i></b>&mdash;If the boot loader requires options, you'd specify them here. rEFInd doesn't normally take options, so this field is likely to be empty.</li>
+
+<li><b><i>description</i></b>&mdash;This field describes the entry. It's not used by <tt>fallback.efi</tt>; it exists solely for human consumption.</li>
+
+</ul>
+
+<p>An example <tt>BOOT.CSV</tt> file for rEFInd might look like this:</p>
+
+<pre class="listing">refind_x64.efi,rEFInd,,This is the boot entry for rEFInd</pre>
+
+<p>This example is suitable for use with rEFInd if Secure Boot is not in use. (If you're using Secure Boot with Shim, you'd probably specify <tt>shimx64.efi</tt> rather than <tt>refind_x64.efi</tt> in this file and give rEFInd the filename <tt>grubx64.efi</tt>.) This example adds an entry for <tt>refind_x64.efi</tt>, with a label of <tt>rEFInd</tt>, to the NVRAM-based boot order list.</p>
+
+<p>One key point is that this file must be a UCS-2 or UTF-16 file. Most Linux (and Windows and macOS) text editors create ASCII files by default. You can use <tt>iconv</tt> to convert to an appropriate format. For instance, suppose you have an ASCII file called <tt>boot.csv</tt> in your home directory and you want to write it to <tt>/boot/efi/EFI/refind</tt> as a UCS-2 file. You could do so in two steps as follows:</p>
+
+<pre class="listing">$ <b>iconv -t UCS-2 < ~/boot.csv > ~/BOOT.CSV</b>
+$ <b>sudo cp ~/BOOT.CSV /boot/efi/EFI/refind/</b></pre>
+
+<p>Depending on permissions on your ESP and the account you use, you could do the same thing in a single step by writing directly to the ESP.</p>
+
+<p>Note that <tt>fallback.efi</tt> can <i>create</i> boot coups, in addition to fixing them. If it's run inappropriately, this program can modify your NVRAM-based boot list, causing something you don't want to run to become the default boot loader. Thus, if you're experiencing boot coups, you may want to check for the presence of this program and either delete it or adjust the <tt>BOOT.CSV</tt> files on your ESP. You can find all the <tt>BOOT.CSV</tt> files as follows, assuming the ESP is mounted at <tt>/boot/efi</tt>:</p>
+
+<pre class="listing">$ <b>find /boot/efi -iname BOOT.CSV</b></pre>
+
+<p>By default, Fedora and its relatives install <tt>fallback.efi</tt> in the fallback position (typically launched by Shim, actually) and set up a <tt>BOOT.CSV</tt> file in the directory that holds the distribution's GRUB. This is good for keeping Fedora booting, but if you want to boot with rEFInd, this configuration can result in a boot coup should the fallback boot loader run for any reason. One way to fix such a problem is to delete or rename <tt>BOOT.CSV</tt> in the GRUB boot loader's directory and create a suitable <tt>BOOT.CSV</tt> in the rEFInd directory on the ESP. The <tt>refind-install</tt> and <tt>mvrefind</tt> scripts in rEFInd 0.10.10 and later create such a file automatically. This file is harmless if <tt>fallback.efi</tt> never runs.</p>
+
+<p>Note that <tt>fallback.efi</tt> does not guarantee the order in which boot entries are created, nor does it provide any mechanism for controlling the boot order when the program runs. These details are determined by the order in which the program locates <tt>BOOT.CSV</tt> files. Thus, if you have multiple boot loaders with <tt>BOOT.CSV</tt> files, you'll end up with an essentially random boot loader selected as the default. With any luck, you'll be able to adjust the boot order with <tt>efibootmgr</tt>, EasyUEFI, or some other program once the system has booted. If your computer completely forgets its boot entries on every boot, though, your best bet is likely to be to delete all the <tt>BOOT.CSV</tt> files except for the one associated with the boot program you want to control the computer.</p>
 
 <hr />
 

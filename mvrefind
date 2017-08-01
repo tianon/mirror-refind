@@ -20,6 +20,7 @@
 #
 # Revision history:
 #
+# 0.10.10 -- Added creation of BOOT.CSV file to tasks
 # 0.10.2  -- Fixed bug in moving bootmgfw.efi in some situations
 # 0.10.1  -- Generalized to support ARM64 (aka AARCH64, aa64)
 # 0.10.0  -- Renamed from mvrefind.sh to mvrefind
@@ -201,18 +202,30 @@ MoveFiles() {
    mv $SourceDir/$Source $TargetDir/$Target 2> /dev/null
    mv $SourceDir/$SourceShim $TargetDir/$TargetShim 2> /dev/null
    mv $SourceDir/refind.conf* $TargetDir/ 2> /dev/null
+   rm $SourceDir/BOOT.CSV
    rmdir $SourceDir 2> /dev/null
 } # MoveFiles()
 
 # Clean up after moving files -- mainly restoring old backed-up files, if present
 PostMoveCleanup() {
-   if [[ $EfiSourceDir == "/efi/boot" && -d $InstallDir/EFI/BOOT-rEFIndBackup && ! -d $SourceDir ]] ; then
-      mv $InstallDir/EFI/BOOT-rEFIndBackup $SourceDir 2> /dev/null
+   if [[ "$EspSourceDir" == "/efi/boot" && -d "$InstallDir/EFI/BOOT-rEFIndBackup" && ! -d $SourceDir ]] ; then
+      mv "$InstallDir/EFI/BOOT-rEFIndBackup" "$SourceDir" 2> /dev/null
    fi
-   if [[ $EfiSourceDir == "/efi/microsoft/boot" && -f $InstallDir/EFI/Microsoft/bootmgfw.efi ]] ; then
-      mv -n $InstallDir/EFI/Microsoft/bootmgfw.efi $SourceDir/bootmgfw.efi
+   if [[ "$EspSourceDir" == "/efi/microsoft/boot" && -f "$InstallDir/EFI/Microsoft/bootmgfw.efi" ]] ; then
+      mv -n "$InstallDir/EFI/Microsoft/bootmgfw.efi" "$SourceDir/bootmgfw.efi"
    fi
 } # PostMoveCleanup()
+
+# Create a BOOT.CSV file in the same directory as rEFInd, to help in recovery
+# should the system's boot entry list be lost
+CreateBootCsvFile() {
+   IConv=`which iconv 2> /dev/null`
+   if [[ -x "$IConv" && -d "$TargetDir" ]] ; then
+      echo "$Target,rEFInd boot manager,,This is the boot entry for rEFInd" | \
+           $IConv -t UCS-2 > "$TargetDir/BOOT.CSV"
+   fi
+   exit
+} # CreateBootCsvFile()
 
 # If necessary, create a new NVRAM entry for the new location
 AddNvramEntry() {
@@ -281,4 +294,5 @@ AdjustFilenames
 CheckForFiles
 MoveFiles
 PostMoveCleanup
+CreateBootCsvFile
 AddNvramEntry

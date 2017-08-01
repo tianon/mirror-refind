@@ -37,6 +37,7 @@
 
 # Revision history:
 #
+# 0.10.10 -- Create BOOT.CSV file
 # 0.10.8  -- Enabled use of shimx64.efi.signed as Shim source file
 # 0.10.7  -- Added mm{arch}.efi as equivalent of MokManager.efi
 # 0.10.6  -- Improved identification of the root device under macOS.
@@ -732,6 +733,27 @@ MountDefaultTarget() {
    fi
 } # MountDefaultTarget()
 
+# Create a BOOT.CSV file in the same directory as rEFInd, to help in recovery
+# should the system's boot entry list be lost
+CreateBootCsvFile() {
+   IConv=`which iconv 2> /dev/null`
+   if [[ -x "$IConv" ]] ; then
+      if [[ "$Platform" == "x64" && -d "$InstallDir/$TargetDir" ]] ; then
+         echo "$TargetX64,rEFInd boot manager,,This is the boot entry for rEFInd" | \
+              $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
+      fi
+      if [[ "$Platform" == "ia32" && -d "$InstallDir/$TargetDir" ]] ; then
+         echo "$TargetIA32,rEFInd boot manager,,This is the boot entry for rEFInd" | \
+              $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
+      fi
+      if [[ "$Platform" == "aarch64" && -d "$InstallDir/$TargetDir" ]] ; then
+         echo "$TargetAARCH64,rEFInd boot manager,,This is the boot entry for rEFInd" | \
+              $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
+      fi
+   fi
+   exit
+} # CreateBootCsvFile()
+
 #
 # A series of OS X support functions....
 #
@@ -1307,6 +1329,7 @@ case "$OSTYPE" in
            exit 1
         fi
 esac
+CreateBootCsvFile
 
 if [[ $Problems ]] ; then
    echo

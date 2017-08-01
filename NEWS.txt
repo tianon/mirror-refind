@@ -1,6 +1,19 @@
 0.10.10 (?/??/2017):
 --------------------
 
+- Fixed bug in mvrefind that caused it to not move the EFI/BOOT-rEFIndBackup
+  directory back to EFI/BOOT when renaming rEFInd in EFI/BOOT to something
+  else.
+
+- The refind-install and mvrefind scripts now create a BOOT.CSV file in the
+  rEFInd installation directory. The fallback.efi (aka fbx64.efi) program
+  delivered with many distributions can use this file to re-create rEFInd's
+  NVRAM boot entry should it be lost. Some distributions (such as Fedora)
+  set up fallback.efi in the EFI/BOOT directory on the ESP, so it will run
+  automatically if NVRAM variables are lost. All this said, there's no
+  guarantee that rEFInd will be FIRST in the boot order should the NVRAM
+  entries be lost.
+
 - Improved error messaging on Macs; most serious system errors should now
   be reported on-screen in graphics mode.
 
