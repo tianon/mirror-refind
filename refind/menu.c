@@ -1535,9 +1535,14 @@ static VOID HideOSTag(REFIT_MENU_ENTRY *ChosenEntry) {
     HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
     switch (ChosenEntry->Tag) {
         case TAG_LOADER:
-            HideItemMenu.Title = L"Hide OS Tag";
-            if (HideTag(Loader, &HideItemMenu, L"HiddenTags"))
-                RescanAll(TRUE);
+            if (Loader->DiscoveryType == DISCOVERY_TYPE_AUTO) {
+                HideItemMenu.Title = L"Hide OS Tag";
+                if (HideTag(Loader, &HideItemMenu, L"HiddenTags"))
+                    RescanAll(TRUE);
+            } else {
+                DisplaySimpleMessage(L"Cannot Hide Entry for Manual Boot Stanza",
+                                     L"You must edit refind.conf to remove this entry.");
+            }
             break;
         case TAG_LEGACY:
         case TAG_LEGACY_UEFI:

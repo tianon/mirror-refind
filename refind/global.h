@@ -100,6 +100,11 @@
 #define LEGACY_TYPE_MAC  1
 #define LEGACY_TYPE_UEFI 2
 
+// How was a loader added to the menu?
+#define DISCOVERY_TYPE_UNKNOWN  0
+#define DISCOVERY_TYPE_AUTO     1
+#define DISCOVERY_TYPE_MANUAL   2
+
 #ifdef __MAKEWITH_GNUEFI
 //
 // define BBS Device Types
@@ -300,6 +305,7 @@ typedef struct {
    CHAR16           *LoadOptions;
    CHAR16           *InitrdPath; // Linux stub loader only
    CHAR8            OSType;
+   UINTN            DiscoveryType;
 } LOADER_ENTRY;
 
 typedef struct {

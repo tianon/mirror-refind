@@ -883,6 +883,7 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
    Entry->me.Row          = 0;
    Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
    Entry->VolName         = CurrentVolume->VolName;
+   Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
 
    // Parse the config file to add options for a single stanza, terminating when the token
    // is "}" or when the end of file is reached.

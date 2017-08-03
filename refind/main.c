@@ -720,6 +720,7 @@ LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry) {
         NewEntry->Enabled         = TRUE;
         NewEntry->UseGraphicsMode = FALSE;
         NewEntry->OSType          = 0;
+        NewEntry->DiscoveryType   = DISCOVERY_TYPE_UNKNOWN;
         if (Entry != NULL) {
             NewEntry->LoaderPath      = (Entry->LoaderPath) ? StrDuplicate(Entry->LoaderPath) : NULL;
             NewEntry->VolName         = (Entry->VolName) ? StrDuplicate(Entry->VolName) : NULL;
@@ -727,6 +728,7 @@ LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry) {
             NewEntry->UseGraphicsMode = Entry->UseGraphicsMode;
             NewEntry->LoadOptions     = (Entry->LoadOptions) ? StrDuplicate(Entry->LoadOptions) : NULL;
             NewEntry->InitrdPath      = (Entry->InitrdPath) ? StrDuplicate(Entry->InitrdPath) : NULL;
+            NewEntry->DiscoveryType   = Entry->DiscoveryType;
         }
     } // if
     return (NewEntry);
@@ -1156,6 +1158,7 @@ static LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTit
 
     CleanUpPathNameSlashes(LoaderPath);
     Entry = InitializeLoaderEntry(NULL);
+    Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
     if (Entry != NULL) {
         Entry->Title = StrDuplicate((LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
         Entry->me.Title = AllocateZeroPool(sizeof(CHAR16) * 256);
