@@ -1653,6 +1653,24 @@ VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Fil
     MyFreePool(Temp);
 } // VOID SplitPathName()
 
+// Finds a volume with the specified Identifier (a filesystem label, a
+// partition name, or a partition GUID). If found, sets *Volume to point
+// to that volume. If not, leaves it unchanged.
+// Returns TRUE if a match was found, FALSE if not.
+BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier) {
+    UINTN     i = 0;
+    BOOLEAN   Found = FALSE;
+
+    while ((i < VolumesCount) && (!Found)) {
+        if (VolumeMatchesDescription(Volumes[i], Identifier)) {
+            *Volume = Volumes[i];
+            Found = TRUE;
+        } // if
+        i++;
+    } // while()
+    return (Found);
+} // static VOID FindVolume()
+
 // Returns TRUE if Description matches Volume's VolName, PartName, or (once
 // transformed) PartGuid fields, FALSE otherwise (or if either pointer is NULL)
 BOOLEAN VolumeMatchesDescription(REFIT_VOLUME *Volume, CHAR16 *Description) {

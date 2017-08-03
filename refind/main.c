@@ -194,6 +194,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* *DontScanVolumes = */ NULL,
                               /* *DontScanDirs = */ NULL,
                               /* *DontScanFiles = */ NULL,
+                              /* *DontScanTools = */ NULL,
                               /* *WindowsRecoveryFiles = */ NULL,
                               /* *DriverDirs = */ NULL,
                               /* *IconsDir = */ NULL,
@@ -1793,7 +1794,7 @@ static VOID ScanForBootloaders(BOOLEAN ShowMessage) {
         BdsAddNonExistingLegacyBootOptions();
     } // if
 
-    HiddenTags = ReadHiddenTags();
+    HiddenTags = ReadHiddenTags(L"HiddenTags");
     if ((HiddenTags) && (StrLen(HiddenTags) > 0)) {
         MergeStrings(&GlobalConfig.DontScanFiles, HiddenTags, L',');
     }
@@ -1837,6 +1838,32 @@ static VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     FinishTextScreen(FALSE);
 } // static VOID ScanForBootloaders()
 
+// Checks to see if a specified file seems to be a valid tool.
+// Returns TRUE if it passes all tests, FALSE otherwise
+static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
+    CHAR16 *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis;
+    CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL;
+    BOOLEAN retval = TRUE;
+    UINTN i = 0;
+
+    if (FileExists(BaseVolume->RootDir, PathName) && IsValidLoader(BaseVolume->RootDir, PathName)) {
+        SplitPathName(PathName, &TestVolName, &TestPathName, &TestFileName);
+        while (retval && (DontScanThis = FindCommaDelimited(GlobalConfig.DontScanTools, i++))) {
+            SplitPathName(DontScanThis, &DontVolName, &DontPathName, &DontFileName);
+            if (MyStriCmp(TestFileName, DontFileName) &&
+                ((DontPathName == NULL) || (MyStriCmp(TestPathName, DontPathName))) &&
+                ((DontVolName == NULL) || (VolumeMatchesDescription(BaseVolume, DontVolName)))) {
+                retval = FALSE;
+            } // if
+        } // while
+    } else
+        retval = FALSE;
+    MyFreePool(TestVolName);
+    MyFreePool(TestPathName);
+    MyFreePool(TestFileName);
+    return retval;
+} // VOID IsValidTool()
+
 // Locate a single tool from the specified Locations using one of the
 // specified Names and add it to the menu.
 static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINTN Icon) {
@@ -1849,11 +1876,9 @@ static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINT
             PathName = StrDuplicate(DirName);
             MergeStrings(&PathName, FileName, MyStriCmp(PathName, L"\\") ? 0 : L'\\');
             for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                if ((Volumes[VolumeIndex]->RootDir != NULL) &&
-                    (FileExists(Volumes[VolumeIndex]->RootDir, PathName)) &&
-                    IsValidLoader(Volumes[VolumeIndex]->RootDir, PathName)) {
-                        SPrint(FullDescription, 255, L"%s at %s on %s", Description, PathName, Volumes[VolumeIndex]->VolName);
-                        AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, PathName, FullDescription, BuiltinIcon(Icon), 'S', FALSE);
+                if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], PathName))) {
+                    SPrint(FullDescription, 255, L"%s at %s on %s", Description, PathName, Volumes[VolumeIndex]->VolName);
+                    AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, PathName, FullDescription, BuiltinIcon(Icon), 'S', FALSE);
                 } // if
             } // for
             MyFreePool(PathName);
@@ -1926,7 +1951,7 @@ static VOID ScanForTools(VOID) {
             case TAG_SHELL:
                 j = 0;
                 while ((FileName = FindCommaDelimited(SHELL_NAMES, j++)) != NULL) {
-                    if (FileExists(SelfRootDir, FileName) && IsValidLoader(SelfRootDir, FileName)) {
+                    if (IsValidTool(SelfVolume, FileName)) {
                         AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"EFI Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
                                      'S', FALSE);
                     }
@@ -1937,7 +1962,7 @@ static VOID ScanForTools(VOID) {
             case TAG_GPTSYNC:
                 j = 0;
                 while ((FileName = FindCommaDelimited(GPTSYNC_NAMES, j++)) != NULL) {
-                    if (FileExists(SelfRootDir, FileName) && IsValidLoader(SelfRootDir, FileName)) {
+                    if (IsValidTool(SelfVolume, FileName)) {
                         AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"Hybrid MBR tool", BuiltinIcon(BUILTIN_ICON_TOOL_PART),
                                      'P', FALSE);
                     } // if
@@ -1949,7 +1974,7 @@ static VOID ScanForTools(VOID) {
             case TAG_GDISK:
                 j = 0;
                 while ((FileName = FindCommaDelimited(GDISK_NAMES, j++)) != NULL) {
-                    if (FileExists(SelfRootDir, FileName) && IsValidLoader(SelfRootDir, FileName)) {
+                    if (IsValidTool(SelfVolume, FileName)) {
                         AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"disk partitioning tool",
                                      BuiltinIcon(BUILTIN_ICON_TOOL_PART), 'G', FALSE);
                     } // if
@@ -1961,7 +1986,7 @@ static VOID ScanForTools(VOID) {
             case TAG_NETBOOT:
                 j = 0;
                 while ((FileName = FindCommaDelimited(NETBOOT_NAMES, j++)) != NULL) {
-                    if (FileExists(SelfRootDir, FileName) && IsValidLoader(SelfRootDir, FileName)) {
+                    if (IsValidTool(SelfVolume, FileName)) {
                         AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"Netboot",
                                      BuiltinIcon(BUILTIN_ICON_TOOL_NETBOOT), 'N', FALSE);
                     } // if
@@ -1973,12 +1998,10 @@ static VOID ScanForTools(VOID) {
             case TAG_APPLE_RECOVERY:
                 FileName = StrDuplicate(L"\\com.apple.recovery.boot\\boot.efi");
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                    if ((Volumes[VolumeIndex]->RootDir != NULL) &&
-                        (FileExists(Volumes[VolumeIndex]->RootDir, FileName)) &&
-                        IsValidLoader(Volumes[VolumeIndex]->RootDir, FileName)) {
-                            SPrint(Description, 255, L"Apple Recovery on %s", Volumes[VolumeIndex]->VolName);
-                            AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
-                                         BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE), 'R', TRUE);
+                    if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(SelfVolume, FileName))) {
+                        SPrint(Description, 255, L"Apple Recovery on %s", Volumes[VolumeIndex]->VolName);
+                        AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
+                                        BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE), 'R', TRUE);
                     } // if
                 } // for
                 MyFreePool(FileName);
@@ -1991,8 +2014,7 @@ static VOID ScanForTools(VOID) {
                     SplitVolumeAndFilename(&FileName, &VolName);
                     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
-                            (FileExists(Volumes[VolumeIndex]->RootDir, FileName)) &&
-                            IsValidLoader(Volumes[VolumeIndex]->RootDir, FileName) &&
+                            (IsValidTool(SelfVolume, FileName)) &&
                             ((VolName == NULL) || MyStriCmp(VolName, Volumes[VolumeIndex]->VolName))) {
                                 SPrint(Description, 255, L"Microsoft Recovery on %s", Volumes[VolumeIndex]->VolName);
                                 AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,

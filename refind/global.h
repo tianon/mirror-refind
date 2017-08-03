@@ -343,6 +343,7 @@ typedef struct {
    CHAR16           *DontScanVolumes;
    CHAR16           *DontScanDirs;
    CHAR16           *DontScanFiles;
+   CHAR16           *DontScanTools;
    CHAR16           *WindowsRecoveryFiles;
    CHAR16           *DriverDirs;
    CHAR16           *IconsDir;

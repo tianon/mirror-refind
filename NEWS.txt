@@ -1,6 +1,13 @@
 0.11.0 (?/??/2017):
 -------------------
 
+- Added dont_scan_tools refind.conf token to enable hiding EFI tools.
+  This feature overrides scantools -- if the latter includes, say, "shell",
+  but the former includes "shell.efi", any shell called "shell.efi" will be
+  ignored. As with dont_scan_files, you can specify a "bare" filename or a
+  complete path. The point is to enable hiding redundant tools -- say, if
+  multiple MokManager tools show up in the menu and you want just one.
+
 - A new feature enables you to hide EFI-mode OS tags from the rEFInd
   main menu: Highlight the OS tag and hit "d" or the Delete key. The OS tag
   should disappear, and remain gone between reboots. A new tool tag (on the

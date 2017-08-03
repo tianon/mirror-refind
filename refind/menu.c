@@ -1388,21 +1388,6 @@ VOID DisplaySimpleMessage(CHAR16 *Message) {
     RunGenericMenu(&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 } // VOID DisplaySimpleMessage()
 
-CHAR16* ReadHiddenTags(VOID) {
-    CHAR8 *Buffer = NULL;
-    UINTN Size;
-    EFI_STATUS Status;
-
-    Status = EfivarGetRaw(&RefindGuid, L"HiddenTags", &Buffer, &Size);
-    if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND))
-        CheckError(Status, L"in ReadHiddenTags()");
-    if ((Status == EFI_SUCCESS) && (Size == 0)) {
-        MyFreePool(Buffer);
-        Buffer = NULL;
-    }
-    return (CHAR16 *) Buffer;
-} // CHAR16* ReadHiddenTags()
-
 VOID ManageHiddenTags(VOID) {
     CHAR16 *HiddenTags, *OneElement, *NewList = NULL;
     INTN DefaultEntry = 0;
@@ -1419,7 +1404,7 @@ VOID ManageHiddenTags(VOID) {
     if (AllowGraphicsMode)
         Style = GraphicsMenuStyle;
 
-    HiddenTags = ReadHiddenTags();
+    HiddenTags = ReadHiddenTags(L"HiddenTags");
     if ((HiddenTags) && (StrLen(HiddenTags) > 0)) {
         AddMenuInfoLine(&HideItemMenu, L"Select a tag to restore it");
         while ((OneElement = FindCommaDelimited(HiddenTags, i++)) != NULL) {
@@ -1456,19 +1441,34 @@ VOID ManageHiddenTags(VOID) {
     }
 } // VOID ManageHiddenTags()
 
-static VOID AddToHiddenTags(CHAR16 *Pathname) {
+CHAR16* ReadHiddenTags(CHAR16 *VarName) {
+    CHAR8 *Buffer = NULL;
+    UINTN Size;
+    EFI_STATUS Status;
+
+    Status = EfivarGetRaw(&RefindGuid, VarName, &Buffer, &Size);
+    if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND))
+        CheckError(Status, L"in ReadHiddenTags()");
+    if ((Status == EFI_SUCCESS) && (Size == 0)) {
+        MyFreePool(Buffer);
+        Buffer = NULL;
+    }
+    return (CHAR16 *) Buffer;
+} // CHAR16* ReadHiddenTags()
+
+static VOID AddToHiddenTags(CHAR16 *VarName, CHAR16 *Pathname) {
     CHAR16 *HiddenTags;
     EFI_STATUS Status;
 
     if (Pathname && (StrLen(Pathname) > 0)) {
-        HiddenTags = ReadHiddenTags();
+        HiddenTags = ReadHiddenTags(VarName);
         MergeStrings(&HiddenTags, Pathname, L',');
-        Status = EfivarSetRaw(&RefindGuid, L"HiddenTags", (CHAR8 *) HiddenTags, StrLen(HiddenTags) * 2 + 2, TRUE);
+        Status = EfivarSetRaw(&RefindGuid, VarName, (CHAR8 *) HiddenTags, StrLen(HiddenTags) * 2 + 2, TRUE);
         CheckError(Status, L"in AddToHiddenTags()");
     } // if
 } // VOID AddToHiddenTags()
 
-static VOID HideOsTag(REFIT_MENU_ENTRY *ChosenEntry) {
+static VOID HideOSTag(REFIT_MENU_ENTRY *ChosenEntry) {
     REFIT_VOLUME *Volume = NULL;
     CHAR16 *Filename = NULL, *FullPath = NULL;
     LOADER_ENTRY *Loader = (LOADER_ENTRY *) ChosenEntry;
@@ -1502,7 +1502,7 @@ static VOID HideOsTag(REFIT_MENU_ENTRY *ChosenEntry) {
                 MergeStrings(&FullPath, GuidAsString(&Volume->PartGuid), L'\0');
                 MergeStrings(&FullPath, L":", L'\0');
                 MergeStrings(&FullPath, Filename, (Filename[0] == L'\\' ? L'\0' : L'\\'));
-                AddToHiddenTags(FullPath);
+                AddToHiddenTags(L"HiddenTags", FullPath);
                 RescanAll(TRUE);
             }
             break;
@@ -1576,7 +1576,7 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
             }
         } // Enter sub-screen
         if ((MenuExit == MENU_EXIT_HIDE) && (GlobalConfig.HiddenTags)) {
-            HideOsTag(TempChosenEntry);
+            HideOSTag(TempChosenEntry);
             MenuExit = 0;
         } // Hide launcher
     }
