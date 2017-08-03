@@ -1,6 +1,9 @@
 0.11.0 (?/??/2017):
 -------------------
 
+- Fixed bug that caused specifying a full path to the fallback boot
+  loader (EFI/BOOT/bootx64.efi) in dont_scan_files to fail to work.
+
 - Added dont_scan_tools refind.conf token to enable hiding EFI tools.
   This feature overrides scantools -- if the latter includes, say, "shell",
   but the former includes "shell.efi", any shell called "shell.efi" will be

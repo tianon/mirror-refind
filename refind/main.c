@@ -1678,8 +1678,9 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
 
         // If not a duplicate & if it exists & if it's not us, create an entry
         // for the fallback boot loader
-        if (ScanFallbackLoader && FileExists(Volume->RootDir, FALLBACK_FULLNAME) && ShouldScan(Volume, L"EFI\\BOOT")) {
-            AddLoaderEntry(FALLBACK_FULLNAME, L"Fallback boot loader", Volume, TRUE);
+        if (ScanFallbackLoader && FileExists(Volume->RootDir, FALLBACK_FULLNAME) && ShouldScan(Volume, L"EFI\\BOOT") &&
+            !FilenameIn(Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)) {
+                AddLoaderEntry(FALLBACK_FULLNAME, L"Fallback boot loader", Volume, TRUE);
         }
     } // if
 } // static VOID ScanEfiFiles()
@@ -1891,7 +1892,7 @@ static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINT
 // Add the second-row tags containing built-in and external tools (EFI shell,
 // reboot, etc.)
 static VOID ScanForTools(VOID) {
-    CHAR16 *FileName = NULL, *VolName = NULL, *MokLocations, Description[256];
+    CHAR16 *FileName = NULL, *VolName = NULL, *MokLocations, Description[256], *HiddenTools;
     REFIT_MENU_ENTRY *TempMenuEntry;
     UINTN i, j, VolumeIndex;
     UINT64 osind;
@@ -1901,6 +1902,12 @@ static VOID ScanForTools(VOID) {
     MokLocations = StrDuplicate(MOK_LOCATIONS);
     if (MokLocations != NULL)
         MergeStrings(&MokLocations, SelfDirPath, L',');
+
+    HiddenTools = ReadHiddenTags(L"HiddenTools");
+    if ((HiddenTools) && (StrLen(HiddenTools) > 0)) {
+        MergeStrings(&GlobalConfig.DontScanTools, HiddenTools, L',');
+    }
+    MyFreePool(HiddenTools);
 
     for (i = 0; i < NUM_TOOLS; i++) {
         switch(GlobalConfig.ShowTools[i]) {

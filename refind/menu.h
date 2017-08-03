@@ -106,7 +106,7 @@ VOID AddMenuEntry(IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
 UINTN ComputeRow0PosY(VOID);
 VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);
 UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry);
-VOID DisplaySimpleMessage(CHAR16 *Message);
+VOID DisplaySimpleMessage(CHAR16 *Title, CHAR16 *Message);
 VOID ManageHiddenTags(VOID);
 CHAR16* ReadHiddenTags(CHAR16 *VarName);
 UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN CHAR16** DefaultSelection, OUT REFIT_MENU_ENTRY **ChosenEntry);
