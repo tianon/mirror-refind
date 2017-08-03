@@ -198,6 +198,17 @@ timeout 20
 #
 #showtools shell, gdisk, memtest, mok_tool, apple_recovery, windows_recovery, about, hidden_tags, reboot, exit, firmware, fwupdate
 
+# Tool binaries to be excluded from the tools line, even if the
+# general class is specified in showtools. This enables trimming an
+# overabundance of tools, as when you see multiple mok_tool entries
+# after installing multiple Linux distributions.
+# Just as with dont_scan_files, you can specify a filename alone, a
+# full pathname, or a volume identifier (filesystem label, partition
+# name, or partition GUID) and a full pathname.
+# Default is an empty list (nothing is excluded)
+#
+#dont_scan_tools ESP2:/EFI/ubuntu/mmx64.efi,gptsync_x64.efi
+
 # Boot loaders that can launch a Windows restore or emergency system.
 # These tend to be OEM-specific.
 # Default is LRS_ESP:/EFI/Microsoft/Boot/LrsBootmgr.efi
