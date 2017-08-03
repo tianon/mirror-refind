@@ -660,6 +660,8 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.ShowTools[i - 1] = TAG_MEMTEST;
                 } else if (MyStriCmp(FlagName, L"netboot")) {
                    GlobalConfig.ShowTools[i - 1] = TAG_NETBOOT;
+                } else if (MyStriCmp(FlagName, L"hidden_tags")) {
+                    GlobalConfig.ShowTools[i - 1] = TAG_HIDDEN;
                 } else {
                    Print(L" unknown showtools flag: '%s'\n", FlagName);
                 }
@@ -784,47 +786,21 @@ VOID ReadConfig(CHAR16 *FileName)
 } /* VOID ReadConfig() */
 
 // Finds a volume with the specified Identifier (a filesystem label, a
-// partition name, a partition GUID, or a number followed by a colon). If
-// found, sets *Volume to point to that volume. If not, leaves it unchanged.
+// partition name, or a partition GUID). If found, sets *Volume to point
+// to that volume. If not, leaves it unchanged.
 // Returns TRUE if a match was found, FALSE if not.
 static BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier) {
-   UINTN     i = 0, CountedVolumes = 0, Length;
-   INTN      Number = -1;
-   BOOLEAN   Found = FALSE, IdIsGuid = FALSE;
-   EFI_GUID  VolGuid, NullGuid = NULL_GUID_VALUE;
+    UINTN     i = 0;
+    BOOLEAN   Found = FALSE;
 
-   VolGuid = StringAsGuid(Identifier);
-   Length = StrLen(Identifier);
-   if ((Length >= 2) && (Identifier[Length - 1] == L':') &&
-       (Identifier[0] >= L'0') && (Identifier[0] <= L'9')) {
-      Number = (INTN) Atoi(Identifier);
-   } else if (IsGuid(Identifier)) {
-      IdIsGuid = TRUE;
-   }
-   while ((i < VolumesCount) && (!Found)) {
-      if (Number >= 0) { // User specified a volume by number
-         if (Volumes[i]->IsReadable) {
-            if (CountedVolumes == Number) {
-               *Volume = Volumes[i];
-               Found = TRUE;
-            }
-            CountedVolumes++;
-         } // if
-      } else { // User specified a volume by label or GUID
-         if (MyStriCmp(Identifier, Volumes[i]->VolName) || MyStriCmp(Identifier, Volumes[i]->PartName)) {
+    while ((i < VolumesCount) && (!Found)) {
+        if (VolumeMatchesDescription(Volumes[i], Identifier)) {
             *Volume = Volumes[i];
             Found = TRUE;
-         } // if
-         if (IdIsGuid && !Found) {
-            if (GuidsAreEqual(&VolGuid, &(Volumes[i]->PartGuid)) && !GuidsAreEqual(&NullGuid, &(Volumes[i]->PartGuid))) {
-               *Volume = Volumes[i];
-               Found = TRUE;
-            } // if
-         } // if
-      } // if/else
-      i++;
-   } // while()
-   return (Found);
+        } // if
+        i++;
+    } // while()
+    return (Found);
 } // static VOID FindVolume()
 
 static VOID AddSubmenu(LOADER_ENTRY *Entry, REFIT_FILE *File, REFIT_VOLUME *Volume, CHAR16 *Title) {

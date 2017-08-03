@@ -64,6 +64,7 @@
 #include "libegint.h"
 #include "line_edit.h"
 #include "mystrings.h"
+#include "icns.h"
 #include "../include/refit_call_wrapper.h"
 
 #include "../include/egemb_back_selected_small.h"
@@ -105,6 +106,11 @@ EFI_ABSOLUTE_POINTER_PROTOCOL *TouchProtocol = NULL;
 EFI_GUID TouchGuid = EFI_ABSOLUTE_POINTER_PROTOCOL_GUID;
 BOOLEAN TouchEnabled = FALSE;
 BOOLEAN TouchActive = FALSE;
+
+extern EFI_GUID         RefindGuid;
+extern REFIT_MENU_ENTRY MenuEntryReturn;
+static REFIT_MENU_ENTRY MenuEntryYes = { L"Yes", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryNo = { L"No", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 
 //
 // Graphics helper functions
@@ -588,6 +594,9 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                 case SCAN_F2:
                     MenuExit = MENU_EXIT_DETAILS;
                     break;
+                case SCAN_DELETE:
+                    MenuExit = MENU_EXIT_HIDE;
+                    break;
                 case SCAN_F10:
                     egScreenShot();
                     break;
@@ -608,6 +617,9 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                 case '+':
                 case CHAR_TAB:
                     MenuExit = MENU_EXIT_DETAILS;
+                    break;
+                case 'd':
+                    MenuExit = MENU_EXIT_HIDE;
                     break;
                 default:
                     KeyAsString[0] = key.UnicodeChar;
@@ -1358,6 +1370,152 @@ static BOOLEAN EditOptions(LOADER_ENTRY *MenuEntry) {
 // user-callable dispatcher functions
 //
 
+VOID DisplaySimpleMessage(CHAR16 *Message) {
+    MENU_STYLE_FUNC Style = TextMenuStyle;
+    INTN DefaultEntry = 0;
+    REFIT_MENU_ENTRY *ChosenOption;
+    REFIT_MENU_SCREEN HideItemMenu = { L"Message", NULL, 0, NULL, 0, NULL, 0, NULL,
+                                       L"Press Enter to return to main menu", L"" };
+
+    if (!Message)
+        return;
+
+    if (AllowGraphicsMode)
+        Style = GraphicsMenuStyle;
+    HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
+    AddMenuInfoLine(&HideItemMenu, Message);
+    AddMenuEntry(&HideItemMenu, &MenuEntryReturn);
+    RunGenericMenu(&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+} // VOID DisplaySimpleMessage()
+
+CHAR16* ReadHiddenTags(VOID) {
+    CHAR8 *Buffer = NULL;
+    UINTN Size;
+    EFI_STATUS Status;
+
+    Status = EfivarGetRaw(&RefindGuid, L"HiddenTags", &Buffer, &Size);
+    if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND))
+        CheckError(Status, L"in ReadHiddenTags()");
+    if ((Status == EFI_SUCCESS) && (Size == 0)) {
+        MyFreePool(Buffer);
+        Buffer = NULL;
+    }
+    return (CHAR16 *) Buffer;
+} // CHAR16* ReadHiddenTags()
+
+VOID ManageHiddenTags(VOID) {
+    CHAR16 *HiddenTags, *OneElement, *NewList = NULL;
+    INTN DefaultEntry = 0;
+    MENU_STYLE_FUNC Style = TextMenuStyle;
+    REFIT_MENU_ENTRY *ChosenOption;
+    REFIT_MENU_SCREEN HideItemMenu = { L"Manage Hidden Tags Menu", NULL, 0, NULL, 0, NULL, 0, NULL,
+                                       L"Select an option and press Enter or",
+                                       L"press Esc to return to main menu without changes" };
+    REFIT_MENU_ENTRY *MenuEntryItem;
+    UINTN MenuExit, i = 0;
+    EFI_STATUS Status;
+
+    HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
+    if (AllowGraphicsMode)
+        Style = GraphicsMenuStyle;
+
+    HiddenTags = ReadHiddenTags();
+    if ((HiddenTags) && (StrLen(HiddenTags) > 0)) {
+        AddMenuInfoLine(&HideItemMenu, L"Select a tag to restore it");
+        while ((OneElement = FindCommaDelimited(HiddenTags, i++)) != NULL) {
+            MenuEntryItem = AllocateZeroPool(sizeof(REFIT_MENU_ENTRY));
+            MenuEntryItem->Title = StrDuplicate(OneElement);
+            MenuEntryItem->Tag = TAG_RETURN;
+            MenuEntryItem->Row = 1;
+            AddMenuEntry(&HideItemMenu, MenuEntryItem);
+        } // while
+        MenuExit = RunGenericMenu(&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+        if (MenuExit == MENU_EXIT_ENTER) {
+            i = 0;
+            while ((OneElement = FindCommaDelimited(HiddenTags, i++)) != NULL) {
+                if (!MyStriCmp(OneElement, ChosenOption->Title)) {
+                    MergeStrings(&NewList, OneElement, L',');
+                } // if
+            } // while
+            MyFreePool(OneElement);
+            i = StrLen(NewList);
+            if ((i > 0) && (NewList[i - 1] == L',')) {
+                NewList[i - 1] = '\0';
+                i--;
+            } // if
+            if (i == 0) {
+                Status = EfivarSetRaw(&RefindGuid, L"HiddenTags", (CHAR8 *) NewList, 0, TRUE);
+            } else {
+                Status = EfivarSetRaw(&RefindGuid, L"HiddenTags", (CHAR8 *) NewList, i * 2 + 2, TRUE);
+            } // if/else
+            CheckError(Status, L"in HiddenTags()");
+            RescanAll(TRUE);
+        } // if
+    } else {
+        DisplaySimpleMessage(L"No hidden tags found");
+    }
+} // VOID ManageHiddenTags()
+
+static VOID AddToHiddenTags(CHAR16 *Pathname) {
+    CHAR16 *HiddenTags;
+    EFI_STATUS Status;
+
+    if (Pathname && (StrLen(Pathname) > 0)) {
+        HiddenTags = ReadHiddenTags();
+        MergeStrings(&HiddenTags, Pathname, L',');
+        Status = EfivarSetRaw(&RefindGuid, L"HiddenTags", (CHAR8 *) HiddenTags, StrLen(HiddenTags) * 2 + 2, TRUE);
+        CheckError(Status, L"in AddToHiddenTags()");
+    } // if
+} // VOID AddToHiddenTags()
+
+static VOID HideOsTag(REFIT_MENU_ENTRY *ChosenEntry) {
+    REFIT_VOLUME *Volume = NULL;
+    CHAR16 *Filename = NULL, *FullPath = NULL;
+    LOADER_ENTRY *Loader = (LOADER_ENTRY *) ChosenEntry;
+    INTN DefaultEntry = 1;
+    UINTN MenuExit;
+    MENU_STYLE_FUNC Style = TextMenuStyle;
+    REFIT_MENU_ENTRY *ChosenOption;
+    REFIT_MENU_SCREEN HideItemMenu = { L"Hide OS Tag", NULL, 0, NULL, 0, NULL, 0, NULL,
+                                       L"Select an option and press Enter or",
+                                       L"press Esc to return to main menu without changes" };
+
+    HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
+    if (AllowGraphicsMode)
+        Style = GraphicsMenuStyle;
+    switch (ChosenEntry->Tag) {
+        case TAG_LOADER:
+            FindVolumeAndFilename(Loader->DevicePath, &Volume, &Filename);
+            if (Volume->VolName && (StrLen(Volume->VolName) > 0)) {
+                FullPath = StrDuplicate(Volume->PartName);
+            } else if (Volume->PartName && (StrLen(Volume->PartName) > 0)) {
+                FullPath = StrDuplicate(Volume->PartName);
+            }
+            MergeStrings(&FullPath, Filename, L':');
+            AddMenuInfoLine(&HideItemMenu, PoolPrint(L"Really hide %s?", FullPath));
+            AddMenuEntry(&HideItemMenu, &MenuEntryYes);
+            AddMenuEntry(&HideItemMenu, &MenuEntryNo);
+            MenuExit = RunGenericMenu(&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+            if (MyStriCmp(ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
+                MyFreePool(FullPath);
+                FullPath = NULL;
+                MergeStrings(&FullPath, GuidAsString(&Volume->PartGuid), L'\0');
+                MergeStrings(&FullPath, L":", L'\0');
+                MergeStrings(&FullPath, Filename, (Filename[0] == L'\\' ? L'\0' : L'\\'));
+                AddToHiddenTags(FullPath);
+                RescanAll(TRUE);
+            }
+            break;
+        case TAG_LEGACY:
+        case TAG_LEGACY_UEFI:
+            DisplaySimpleMessage(L"Hiding legacy OSes is not yet supported.");
+            break;
+        case TAG_TOOL:
+            DisplaySimpleMessage(L"To hide a tool, edit the 'showtools' line in refind.conf");
+            break;
+    } // switch()
+} // VOID HideOsTag()
+
 UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
 {
     INTN            DefaultEntry = -1;
@@ -1417,6 +1575,10 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
                MenuExit = 0;
             }
         } // Enter sub-screen
+        if ((MenuExit == MENU_EXIT_HIDE) && (GlobalConfig.HiddenTags)) {
+            HideOsTag(TempChosenEntry);
+            MenuExit = 0;
+        } // Hide launcher
     }
 
     if (ChosenEntry)

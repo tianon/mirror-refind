@@ -68,6 +68,7 @@
 #define MENU_EXIT_DETAILS (3)
 #define MENU_EXIT_TIMEOUT (4)
 #define MENU_EXIT_EJECT   (5)
+#define MENU_EXIT_HIDE    (6)
 
 #define TAG_RETURN       (99)
 
@@ -105,6 +106,9 @@ VOID AddMenuEntry(IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
 UINTN ComputeRow0PosY(VOID);
 VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);
 UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry);
+VOID DisplaySimpleMessage(CHAR16 *Message);
+CHAR16* ReadHiddenTags(VOID);
+VOID ManageHiddenTags(VOID);
 UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN CHAR16** DefaultSelection, OUT REFIT_MENU_ENTRY **ChosenEntry);
 UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINT64 PosX, IN UINT64 PosY);
 

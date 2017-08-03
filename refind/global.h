@@ -77,7 +77,8 @@
 #define TAG_NETBOOT          (17)
 #define TAG_CSR_ROTATE       (18)
 #define TAG_FWUPDATE_TOOL    (19)
-#define NUM_TOOLS            (20)
+#define TAG_HIDDEN           (20)
+#define NUM_TOOLS            (21)
 
 #define NUM_SCAN_OPTIONS 10
 
@@ -316,6 +317,7 @@ typedef struct {
    BOOLEAN          EnableAndLockVMX;
    BOOLEAN          FoldLinuxKernels;
    BOOLEAN          EnableTouch;
+   BOOLEAN          HiddenTags;
    UINTN            RequestedScreenWidth;
    UINTN            RequestedScreenHeight;
    UINTN            BannerBottomEdge;
@@ -390,6 +392,7 @@ LOADER_ENTRY * MakeGenericLoaderEntry(VOID);
 VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
 LOADER_ENTRY * AddPreparedLoaderEntry(LOADER_ENTRY *Entry);
 VOID StoreLoaderName(IN CHAR16 *Name);
+VOID RescanAll(BOOLEAN DisplayMessage);
 
 #endif
 

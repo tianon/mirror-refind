@@ -866,7 +866,12 @@ static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *D
                 } // if (GUIDs match && automounting OK)
                 Volume->IsMarkedReadOnly = ((PartInfo->attributes & GPT_READ_ONLY) > 0);
             } // if (PartInfo exists)
-        } // if (GPT disk)
+        } else {
+            // TODO: Better to assign a random GUID to MBR partitions, but I couldn't
+            // find an EFI function to do this. The below GUID is just one that I
+            // generated in Linux.
+            Volume->PartGuid = StringAsGuid(L"92a6c61f-7130-49b9-b05c-8d7e7b039127");
+        } // if/else (GPT disk)
     } // if (disk device)
 } // VOID SetPartGuid()
 
@@ -1648,6 +1653,21 @@ VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Fil
     MyFreePool(Temp);
 } // VOID SplitPathName()
 
+// Returns TRUE if Description matches Volume's VolName, PartName, or (once
+// transformed) PartGuid fields, FALSE otherwise (or if either pointer is NULL)
+BOOLEAN VolumeMatchesDescription(REFIT_VOLUME *Volume, CHAR16 *Description) {
+    EFI_GUID TargetVolGuid = NULL_GUID_VALUE;
+
+    if ((Volume == NULL) || (Description == NULL))
+        return FALSE;
+    if (IsGuid(Description)) {
+        TargetVolGuid = StringAsGuid(Description);
+        return GuidsAreEqual(&TargetVolGuid, &(Volume->PartGuid));
+    } else {
+        return (MyStriCmp(Description, Volume->VolName) || MyStriCmp(Description, Volume->PartName));
+    }
+} // BOOLEAN VolumeMatchesDescription()
+
 // Returns TRUE if specified Volume, Directory, and Filename correspond to an
 // element in the comma-delimited List, FALSE otherwise. Note that Directory and
 // Filename must *NOT* include a volume or path specification (that's part of
@@ -1663,8 +1683,7 @@ BOOLEAN FilenameIn(REFIT_VOLUME *Volume, CHAR16 *Directory, CHAR16 *Filename, CH
         while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
             Found = TRUE;
             SplitPathName(OneElement, &TargetVolName, &TargetPath, &TargetFilename);
-            VolumeNumberToName(Volume, &TargetVolName);
-            if (((TargetVolName != NULL) && ((Volume == NULL) || (!MyStriCmp(TargetVolName, Volume->VolName)))) ||
+            if (((TargetVolName != NULL) && (!VolumeMatchesDescription(Volume, TargetVolName))) ||
                  ((TargetPath != NULL) && (!MyStriCmp(TargetPath, Directory))) ||
                  ((TargetFilename != NULL) && (!MyStriCmp(TargetFilename, Filename)))) {
                 Found = FALSE;
@@ -1678,28 +1697,6 @@ BOOLEAN FilenameIn(REFIT_VOLUME *Volume, CHAR16 *Directory, CHAR16 *Filename, CH
     MyFreePool(TargetFilename);
     return Found;
 } // BOOLEAN FilenameIn()
-
-// If *VolName is of the form "fs#", where "#" is a number, and if Volume points
-// to this volume number, returns with *VolName changed to the volume name, as
-// stored in the Volume data structure.
-// Returns TRUE if this substitution was made, FALSE otherwise.
-BOOLEAN VolumeNumberToName(REFIT_VOLUME *Volume, CHAR16 **VolName) {
-   BOOLEAN MadeSubstitution = FALSE;
-   UINTN VolNum;
-
-   if ((VolName == NULL) || (*VolName == NULL))
-      return FALSE;
-
-   if ((StrLen(*VolName) > 2) && (*VolName[0] == L'f') && (*VolName[1] == L's') && (*VolName[2] >= L'0') && (*VolName[2] <= L'9')) {
-      VolNum = Atoi(*VolName + 2);
-      if (VolNum == Volume->VolNumber) {
-         MyFreePool(*VolName);
-         *VolName = StrDuplicate(Volume->VolName);
-         MadeSubstitution = TRUE;
-      } // if
-   } // if
-   return MadeSubstitution;
-} // BOOLEAN VolumeMatchesNumber()
 
 // Implement FreePool the way it should have been done to begin with, so that
 // it doesn't throw an ASSERT message if fed a NULL pointer....

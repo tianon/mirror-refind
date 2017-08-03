@@ -20,7 +20,7 @@
 #
 # Revision history:
 #
-# 0.10.10 -- Added creation of BOOT.CSV file to tasks
+# 0.11.0  -- Added creation of BOOT.CSV file to tasks
 # 0.10.2  -- Fixed bug in moving bootmgfw.efi in some situations
 # 0.10.1  -- Generalized to support ARM64 (aka AARCH64, aa64)
 # 0.10.0  -- Renamed from mvrefind.sh to mvrefind

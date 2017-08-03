@@ -1,5 +1,20 @@
-0.10.10 (?/??/2017):
---------------------
+0.11.0 (?/??/2017):
+-------------------
+
+- A new feature enables you to hide EFI-mode OS tags from the rEFInd
+  main menu: Highlight the OS tag and hit "d" or the Delete key. The OS tag
+  should disappear, and remain gone between reboots. A new tool tag (on the
+  second row) with a recycling icon enables recovering OS tags hidden in
+  this way.
+
+- You can now specify volumes by GUID number in dont_scan_dirs and
+  dont_scan_files specifications -- e.g., "dont_scan_files
+  2C17D5ED-850D-4F76-BA31-47A561740082:\EFI\badloader\badloader.efi" to keep
+  EFI\badloader\badloader.efi on the volume with a partition GUID value of
+  2C17D5ED-850D-4F76-BA31-47A561740082 off the menu.
+
+- I've removed support for the previously-deprecated volume-number style
+  volume specifications (fs0:, fs1:, etc.).
 
 - Fixed bug in mvrefind that caused it to not move the EFI/BOOT-rEFIndBackup
   directory back to EFI/BOOT when renaming rEFInd in EFI/BOOT to something

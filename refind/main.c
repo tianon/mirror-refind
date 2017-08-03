@@ -153,6 +153,7 @@ static REFIT_MENU_ENTRY MenuEntryReset    = { L"Reboot Computer", TAG_REBOOT, 1,
 static REFIT_MENU_ENTRY MenuEntryShutdown = { L"Shut Down Computer", TAG_SHUTDOWN, 1, 0, 'U', NULL, NULL, NULL };
 REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryExit     = { L"Exit rEFInd", TAG_EXIT, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryManageHidden = { L"Manage Hidden Tags Menu", TAG_HIDDEN, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryFirmware = { L"Reboot to Computer Setup Utility", TAG_FIRMWARE, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryRotateCsr = { L"Change SIP Policy", TAG_CSR_ROTATE, 1, 0, 0, NULL, NULL, NULL };
 
@@ -167,6 +168,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* EnableAndLockVMX = */ FALSE,
                               /* FoldLinuxKernels = */ TRUE,
                               /* EnableTouch = */ FALSE,
+                              /* HiddenTags = */ TRUE,
                               /* RequestedScreenWidth = */ 0,
                               /* RequestedScreenHeight = */ 0,
                               /* BannerBottomEdge = */ 0,
@@ -199,7 +201,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* *SpoofOSXVersion = */ NULL,
                               /* CsrValues = */ NULL,
                               /* ShowTools = */ { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY,
-                                                  TAG_MOK_TOOL, TAG_ABOUT, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE,
+                                                  TAG_MOK_TOOL, TAG_ABOUT, TAG_HIDDEN, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE,
                                                   TAG_FWUPDATE_TOOL, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
                             };
 
@@ -1311,7 +1313,6 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
     // See if Path includes an explicit volume declaration that's NOT Volume....
     PathCopy = StrDuplicate(Path);
     if (SplitVolumeAndFilename(&PathCopy, &VolName)) {
-        VolumeNumberToName(Volume, &VolName);
         if (VolName && !MyStriCmp(VolName, Volume->VolName)) {
             ScanIt = FALSE;
         } // if
@@ -1324,9 +1325,8 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
     while (ScanIt && (DontScanDir = FindCommaDelimited(GlobalConfig.DontScanDirs, i++))) {
         SplitVolumeAndFilename(&DontScanDir, &VolName);
         CleanUpPathNameSlashes(DontScanDir);
-        VolumeNumberToName(Volume, &VolName);
         if (VolName != NULL) {
-            if (MyStriCmp(VolName, Volume->VolName) && MyStriCmp(DontScanDir, Path))
+            if (VolumeMatchesDescription(Volume, VolName) && MyStriCmp(DontScanDir, Path))
                 ScanIt = FALSE;
         } else {
             if (MyStriCmp(DontScanDir, Path))
@@ -1775,6 +1775,7 @@ static VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     CHAR8    s;
     BOOLEAN  ScanForLegacy = FALSE;
     EG_PIXEL BGColor = COLOR_LIGHTBLUE;
+    CHAR16   *HiddenTags;
 
     if (ShowMessage)
         egDisplayMessage(L"Scanning for boot loaders; please wait....", &BGColor, CENTER);
@@ -1791,6 +1792,12 @@ static VOID ScanForBootloaders(BOOLEAN ShowMessage) {
         BdsDeleteAllInvalidLegacyBootOptions();
         BdsAddNonExistingLegacyBootOptions();
     } // if
+
+    HiddenTags = ReadHiddenTags();
+    if ((HiddenTags) && (StrLen(HiddenTags) > 0)) {
+        MergeStrings(&GlobalConfig.DontScanFiles, HiddenTags, L',');
+    }
+    MyFreePool(HiddenTags);
 
     // scan for loaders and tools, add them to the menu
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
@@ -1895,6 +1902,14 @@ static VOID ScanForTools(VOID) {
                 TempMenuEntry = CopyMenuEntry(&MenuEntryExit);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_EXIT);
                 AddMenuEntry(&MainMenu, TempMenuEntry);
+                break;
+
+            case TAG_HIDDEN:
+                if (GlobalConfig.HiddenTags) {
+                    TempMenuEntry = CopyMenuEntry(&MenuEntryManageHidden);
+                    TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
+                    AddMenuEntry(&MainMenu, TempMenuEntry);
+                }
                 break;
 
             case TAG_FIRMWARE:
@@ -2016,7 +2031,7 @@ static VOID ScanForTools(VOID) {
 } // static VOID ScanForTools
 
 // Rescan for boot loaders
-static VOID RescanAll(BOOLEAN DisplayMessage) {
+VOID RescanAll(BOOLEAN DisplayMessage) {
     FreeList((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
     MainMenu.Entries = NULL;
     MainMenu.EntryCount = 0;
@@ -2026,7 +2041,6 @@ static VOID RescanAll(BOOLEAN DisplayMessage) {
     SetVolumeIcons();
     ScanForBootloaders(TRUE);
     ScanForTools();
-    BltClearScreen(TRUE);
 } // VOID RescanAll()
 
 #ifdef __MAKEWITH_TIANO
@@ -2214,6 +2228,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
             case TAG_TOOL:     // Start a EFI tool
                 StartTool((LOADER_ENTRY *)ChosenEntry);
+                break;
+
+            case TAG_HIDDEN:  // Manage hidden tag entries
+                ManageHiddenTags();
                 break;
 
             case TAG_EXIT:    // Terminate rEFInd
