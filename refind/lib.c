@@ -1708,11 +1708,11 @@ BOOLEAN FilenameIn(REFIT_VOLUME *Volume, CHAR16 *Directory, CHAR16 *Filename, CH
             } // if
             MyFreePool(OneElement);
         } // while
+        MyFreePool(TargetVolName);
+        MyFreePool(TargetPath);
+        MyFreePool(TargetFilename);
     } // if
 
-    MyFreePool(TargetVolName);
-    MyFreePool(TargetPath);
-    MyFreePool(TargetFilename);
     return Found;
 } // BOOLEAN FilenameIn()
 

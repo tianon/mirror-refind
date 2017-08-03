@@ -1371,11 +1371,11 @@ static BOOLEAN EditOptions(LOADER_ENTRY *MenuEntry) {
 //
 
 VOID DisplaySimpleMessage(CHAR16* Title, CHAR16 *Message) {
-    MENU_STYLE_FUNC Style = TextMenuStyle;
-    INTN DefaultEntry = 0;
-    REFIT_MENU_ENTRY *ChosenOption;
-    REFIT_MENU_SCREEN HideItemMenu = { NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
-                                       L"Press Enter to return to main menu", L"" };
+    MENU_STYLE_FUNC     Style = TextMenuStyle;
+    INTN                DefaultEntry = 0;
+    REFIT_MENU_ENTRY    *ChosenOption;
+    REFIT_MENU_SCREEN   HideItemMenu = { NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
+                                         L"Press Enter to return to main menu", L"" };
 
     if (!Message)
         return;
@@ -1419,19 +1419,21 @@ static BOOLEAN DeleteTagFromVar(CHAR16 *ToDelete, CHAR16 *TagList, CHAR16 *VarNa
         } // if/else
         CheckError(Status, L"in DeleteTagFromVar()");
     } // if
+    MyFreePool(NewList);
     return DeletedSomething;
 } // BOOLEAN DeleteTagFromVar()
 
+// Present a menu that enables the user to delete hidden tags (that is, to
+// un-hide them).
 VOID ManageHiddenTags(VOID) {
-    CHAR16 *AllTags = NULL, *HiddenTags, *HiddenTools, *OneElement;
-    INTN DefaultEntry = 0;
-    MENU_STYLE_FUNC Style = TextMenuStyle;
-    REFIT_MENU_ENTRY *ChosenOption;
-    REFIT_MENU_SCREEN HideItemMenu = { L"Manage Hidden Tags Menu", NULL, 0, NULL, 0, NULL, 0, NULL,
-                                       L"Select an option and press Enter or",
-                                       L"press Esc to return to main menu without changes" };
-    REFIT_MENU_ENTRY *MenuEntryItem;
-    UINTN MenuExit, i = 0;
+    CHAR16              *AllTags = NULL, *HiddenTags, *HiddenTools, *OneElement = NULL;
+    INTN                DefaultEntry = 0;
+    MENU_STYLE_FUNC     Style = TextMenuStyle;
+    REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem;
+    REFIT_MENU_SCREEN   HideItemMenu = { L"Manage Hidden Tags Menu", NULL, 0, NULL, 0, NULL, 0, NULL,
+                                         L"Select an option and press Enter or",
+                                         L"press Esc to return to main menu without changes" };
+    UINTN               MenuExit, i = 0;
 
     HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
     if (AllowGraphicsMode)
@@ -1440,11 +1442,11 @@ VOID ManageHiddenTags(VOID) {
     HiddenTags = ReadHiddenTags(L"HiddenTags");
     HiddenTools = ReadHiddenTags(L"HiddenTools");
     if (HiddenTags || HiddenTools) {
-        AllTags = StrDuplicate(HiddenTags);
+        MergeStrings(&AllTags, HiddenTags, L'\0');
         MergeStrings(&AllTags, HiddenTools, L',');
     }
     if ((AllTags) && (StrLen(AllTags) > 0)) {
-        AddMenuInfoLine(&HideItemMenu, L"Select a tag to restore it");
+        AddMenuInfoLine(&HideItemMenu, L"Select a tag and press Enter to restore it");
         while ((OneElement = FindCommaDelimited(AllTags, i++)) != NULL) {
             MenuEntryItem = AllocateZeroPool(sizeof(REFIT_MENU_ENTRY));
             MenuEntryItem->Title = StrDuplicate(OneElement);
@@ -1462,12 +1464,16 @@ VOID ManageHiddenTags(VOID) {
     } else {
         DisplaySimpleMessage(L"Information", L"No hidden tags found");
     }
+    MyFreePool(AllTags);
+    MyFreePool(HiddenTags);
+    MyFreePool(HiddenTools);
+    MyFreePool(OneElement);
 } // VOID ManageHiddenTags()
 
 CHAR16* ReadHiddenTags(CHAR16 *VarName) {
-    CHAR8 *Buffer = NULL;
-    UINTN Size;
-    EFI_STATUS Status;
+    CHAR8       *Buffer = NULL;
+    UINTN       Size;
+    EFI_STATUS  Status;
 
     Status = EfivarGetRaw(&RefindGuid, VarName, &Buffer, &Size);
     if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND))
@@ -1488,17 +1494,18 @@ static VOID AddToHiddenTags(CHAR16 *VarName, CHAR16 *Pathname) {
         MergeStrings(&HiddenTags, Pathname, L',');
         Status = EfivarSetRaw(&RefindGuid, VarName, (CHAR8 *) HiddenTags, StrLen(HiddenTags) * 2 + 2, TRUE);
         CheckError(Status, L"in AddToHiddenTags()");
+        MyFreePool(HiddenTags);
     } // if
 } // VOID AddToHiddenTags()
 
 static BOOLEAN HideTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu, CHAR16 *VarName) {
-    REFIT_VOLUME *Volume = NULL;
-    BOOLEAN TagHidden = FALSE;
-    CHAR16 *Filename = NULL, *FullPath = NULL;
-    MENU_STYLE_FUNC Style = TextMenuStyle;
-    UINTN MenuExit;
-    INTN DefaultEntry = 1;
-    REFIT_MENU_ENTRY *ChosenOption;
+    REFIT_VOLUME       *Volume = NULL;
+    BOOLEAN            TagHidden = FALSE;
+    CHAR16             *Filename = NULL, *FullPath = NULL;
+    MENU_STYLE_FUNC    Style = TextMenuStyle;
+    UINTN              MenuExit;
+    INTN               DefaultEntry = 1;
+    REFIT_MENU_ENTRY   *ChosenOption;
 
     if (AllowGraphicsMode)
         Style = GraphicsMenuStyle;
@@ -1523,14 +1530,17 @@ static BOOLEAN HideTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu, CH
         AddToHiddenTags(VarName, FullPath);
         TagHidden = TRUE;
     } // if
+    MyFreePool(Volume);
+    MyFreePool(Filename);
+    MyFreePool(FullPath);
     return TagHidden;
 } // VOID HideTag()
 
 static VOID HideOSTag(REFIT_MENU_ENTRY *ChosenEntry) {
-    LOADER_ENTRY *Loader = (LOADER_ENTRY *) ChosenEntry;
-    REFIT_MENU_SCREEN HideItemMenu = { NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
-                                       L"Select an option and press Enter or",
-                                       L"press Esc to return to main menu without changes" };
+    LOADER_ENTRY       *Loader = (LOADER_ENTRY *) ChosenEntry;
+    REFIT_MENU_SCREEN  HideItemMenu = { NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
+                                        L"Select an option and press Enter or",
+                                        L"press Esc to return to main menu without changes" };
 
     HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
     switch (ChosenEntry->Tag) {
