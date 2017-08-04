@@ -36,7 +36,7 @@ LOCAL_LDFLAGS   = -L$(SRCDIR)/../libeg/ -L$(SRCDIR)/../mok/ \
                   -L$(SRCDIR)/../EfiLib/
 LOCAL_LIBS      = -leg -lmok -lEfiLib
 
-OBJS            = main.o mystrings.o apple.o line_edit.o config.o menu.o \
+OBJS            = main.o mystrings.o apple.o line_edit.o config.o menu.o pointer.o \
                   screen.o icns.o gpt.o crc32.o lib.o driver_support.o \
 		  legacy.o
 

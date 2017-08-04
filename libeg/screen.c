@@ -485,13 +485,19 @@ VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor, UINTN PositionCode) {
 // Copy the current contents of the display into an EG_IMAGE....
 // Returns pointer if successful, NULL if not.
 EG_IMAGE * egCopyScreen(VOID) {
+   return egCopyScreenArea(0, 0, egScreenWidth, egScreenHeight);
+} // EG_IMAGE * egCopyScreen()
+
+// Copy the current contents of the specified display area into an EG_IMAGE....
+// Returns pointer if successful, NULL if not.
+EG_IMAGE * egCopyScreenArea(UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) {
    EG_IMAGE *Image = NULL;
 
    if (!egHasGraphics)
       return NULL;
 
-   // allocate a buffer for the whole screen
-   Image = egCreateImage(egScreenWidth, egScreenHeight, FALSE);
+   // allocate a buffer for the screen area
+   Image = egCreateImage(Width, Height, FALSE);
    if (Image == NULL) {
       return NULL;
    }
@@ -499,13 +505,13 @@ EG_IMAGE * egCopyScreen(VOID) {
    // get full screen image
    if (GraphicsOutput != NULL) {
       refit_call10_wrapper(GraphicsOutput->Blt, GraphicsOutput, (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
-                           EfiBltVideoToBltBuffer, 0, 0, 0, 0, Image->Width, Image->Height, 0);
+                           EfiBltVideoToBltBuffer, XPos, YPos, 0, 0, Image->Width, Image->Height, 0);
    } else if (UgaDraw != NULL) {
       refit_call10_wrapper(UgaDraw->Blt, UgaDraw, (EFI_UGA_PIXEL *)Image->PixelData, EfiUgaVideoToBltBuffer,
-                           0, 0, 0, 0, Image->Width, Image->Height, 0);
+                           XPos, YPos, 0, 0, Image->Width, Image->Height, 0);
    }
    return Image;
-} // EG_IMAGE * egCopyScreen()
+} // EG_IMAGE * egCopyScreenArea()
 
 //
 // Make a screenshot

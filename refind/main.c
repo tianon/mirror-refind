@@ -62,6 +62,7 @@
 #include "lib.h"
 #include "icns.h"
 #include "menu.h"
+#include "pointer.h"
 #include "mok.h"
 #include "gpt.h"
 #include "apple.h"
@@ -167,6 +168,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* DeepLegacyScan = */ FALSE,
                               /* EnableAndLockVMX = */ FALSE,
                               /* FoldLinuxKernels = */ TRUE,
+                              /* EnableMouse = */ FALSE,
                               /* EnableTouch = */ FALSE,
                               /* HiddenTags = */ TRUE,
                               /* RequestedScreenWidth = */ 0,
@@ -180,6 +182,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* LegacyType = */ LEGACY_TYPE_MAC,
                               /* ScanDelay = */ 0,
                               /* ScreensaverTime = */ 0,
+                              /* MouseSpeed = */ 1,
                               /* IconSizes = */ { DEFAULT_BIG_ICON_SIZE / 4, DEFAULT_SMALL_ICON_SIZE, DEFAULT_BIG_ICON_SIZE },
                               /* BannerScale = */ BANNER_NOSCALE,
                               /* *DiscoveredRoot = */ NULL,
@@ -609,7 +612,6 @@ static CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
                     } // if
                 } // if
         } // if
-        MyFreePool(InitrdVersion);
     } // while
     if (InitrdNames) {
         if (InitrdNames->Next == NULL) {
@@ -720,7 +722,6 @@ LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry) {
         NewEntry->Enabled         = TRUE;
         NewEntry->UseGraphicsMode = FALSE;
         NewEntry->OSType          = 0;
-        NewEntry->DiscoveryType   = DISCOVERY_TYPE_UNKNOWN;
         if (Entry != NULL) {
             NewEntry->LoaderPath      = (Entry->LoaderPath) ? StrDuplicate(Entry->LoaderPath) : NULL;
             NewEntry->VolName         = (Entry->VolName) ? StrDuplicate(Entry->VolName) : NULL;
@@ -728,7 +729,6 @@ LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry) {
             NewEntry->UseGraphicsMode = Entry->UseGraphicsMode;
             NewEntry->LoadOptions     = (Entry->LoadOptions) ? StrDuplicate(Entry->LoadOptions) : NULL;
             NewEntry->InitrdPath      = (Entry->InitrdPath) ? StrDuplicate(Entry->InitrdPath) : NULL;
-            NewEntry->DiscoveryType   = Entry->DiscoveryType;
         }
     } // if
     return (NewEntry);

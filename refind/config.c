@@ -699,6 +699,12 @@ VOID ReadConfig(CHAR16 *FileName)
               HaveResized = TRUE;
            }
 
+        } else if (MyStriCmp(TokenList[0], L"mouse_size") && (TokenCount == 2)) {
+           HandleInt(TokenList, TokenCount, &i);
+           if (i >= DEFAULT_MOUSE_SIZE) {
+              GlobalConfig.IconSizes[ICON_SIZE_MOUSE] = i;
+           }
+
         } else if (MyStriCmp(TokenList[0], L"selection_small")) {
            HandleString(TokenList, TokenCount, &(GlobalConfig.SelectionSmallFileName));
 
@@ -774,8 +780,24 @@ VOID ReadConfig(CHAR16 *FileName)
               ReadConfig(TokenList[1]);
            }
 
+        } else if (MyStriCmp(TokenList[0], L"enable_mouse")) {
+           GlobalConfig.EnableMouse = HandleBoolean(TokenList, TokenCount);
+           if(GlobalConfig.EnableMouse) {
+               GlobalConfig.EnableTouch = FALSE;
+           }
+        
         } else if (MyStriCmp(TokenList[0], L"enable_touch")) {
            GlobalConfig.EnableTouch = HandleBoolean(TokenList, TokenCount);
+           if(GlobalConfig.EnableTouch) {
+               GlobalConfig.EnableMouse = FALSE;
+           }
+           
+        } else if (MyStriCmp(TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
+           HandleInt(TokenList, TokenCount, &i);
+           if (i >= 1 && i <= 32) {
+              GlobalConfig.MouseSpeed = i;
+           }
+
         }
 
         FreeTokenLine(&TokenList, &TokenCount);

@@ -101,11 +101,13 @@ static UINTN TileSizes[2] = { 144, 64 };
 static EG_IMAGE *SelectionImages[2] = { NULL, NULL };
 static EG_PIXEL SelectionBackgroundPixel = { 0xff, 0xff, 0xff, 0 };
 
-//Touch variables
-EFI_ABSOLUTE_POINTER_PROTOCOL *TouchProtocol = NULL;
-EFI_GUID TouchGuid = EFI_ABSOLUTE_POINTER_PROTOCOL_GUID;
-BOOLEAN TouchEnabled = FALSE;
-BOOLEAN TouchActive = FALSE;
+EFI_EVENT* WaitList = NULL;
+UINTN WaitListLength = 0;
+
+// Pointer variables
+BOOLEAN PointerEnabled = FALSE;
+BOOLEAN PointerActive = FALSE;
+BOOLEAN DrawSelection = TRUE;
 
 extern EFI_GUID         RefindGuid;
 extern REFIT_MENU_ENTRY MenuEntryReturn;
@@ -361,22 +363,17 @@ static VOID IdentifyRows(IN SCROLL_STATE *State, IN REFIT_MENU_SCREEN *Screen) {
         State->MaxVisible = State->FinalRow0 + 1;
 } // static VOID IdentifyRows()
 
-// Blank the screen, wait for a keypress or touch event, and restore banner/background.
+// Blank the screen, wait for a keypress or pointer event, and restore banner/background.
 // Screen may still require redrawing of text and icons on return.
 // TODO: Support more sophisticated screen savers, such as power-saving
 // mode and dynamic images.
 static VOID SaveScreen(VOID) {
-   UINTN index;
    EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
-   EFI_EVENT WaitList[2] = { ST->ConIn->WaitForKey, NULL };
    
    egClearScreen(&Black);
-   if(TouchEnabled) {
-      WaitList[1] = TouchProtocol->WaitForInput;
-      refit_call3_wrapper(BS->WaitForEvent, 2, WaitList, &index);
-   } else {
-      refit_call3_wrapper(BS->WaitForEvent, 1, WaitList, &index);
-   }
+   
+   WaitForInput(0);
+
    if (AllowGraphicsMode)
       SwitchToGraphicsAndClear();
    ReadAllKeyStrokes();
@@ -400,10 +397,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
     CHAR16 TimeoutMessage[256];
     CHAR16 KeyAsString[2];
     UINTN MenuExit;
-    EFI_STATUS TouchStatus = EFI_NOT_READY;
-    EFI_ABSOLUTE_POINTER_STATE TouchState;
-    UINT32 TouchScreenPosX;
-    UINT32 TouchScreenPosY;
+    EFI_STATUS PointerStatus = EFI_NOT_READY;
     UINTN Item;
 
     if (Screen->TimeoutSeconds > 0) {
@@ -444,12 +438,16 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
 
     while (!MenuExit) {
         // update the screen
+        pdClear();
         if (State.PaintAll && (GlobalConfig.ScreensaverTime != -1)) {
             StyleFunc(Screen, &State, MENU_FUNCTION_PAINT_ALL, NULL);
             State.PaintAll = FALSE;
         } else if (State.PaintSelection) {
             StyleFunc(Screen, &State, MENU_FUNCTION_PAINT_SELECTION, NULL);
             State.PaintSelection = FALSE;
+        }
+        if(PointerActive) {
+            pdDraw();
         }
 
         if (WaitForRelease) {
@@ -475,24 +473,25 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             }
         }
 
-        // read key press or touch event (and wait for them if applicable)
-        if (TouchEnabled) {
-             TouchStatus = refit_call2_wrapper(TouchProtocol->GetState, TouchProtocol, &TouchState);
+        // read key press or pointer event (and wait for them if applicable)
+        if(PointerEnabled) {
+            PointerStatus = pdUpdateState();
         }
         Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
 
-        if (Status == EFI_SUCCESS) {
-            TouchActive = FALSE;
+        if(Status == EFI_SUCCESS) {
+            PointerActive = FALSE;
+            DrawSelection = TRUE;
             TimeSinceKeystroke = 0;
-        } else if (TouchStatus == EFI_SUCCESS) {
-            if (StyleFunc != MainMenuStyle) {
+        } else if (PointerStatus == EFI_SUCCESS) {
+            if (StyleFunc != MainMenuStyle && pdGetState().Press) {
                 // prevent user from getting stuck on submenus
                 // (the only one currently reachable without a keyboard is the about screen)
                 MenuExit = MENU_EXIT_ENTER;
                 break;
             }
 
-            TouchActive = TRUE;
+            PointerActive = TRUE;
             TimeSinceKeystroke = 0;
         } else {
             EFI_EVENT WaitList[3] = { ST->ConIn->WaitForKey, NULL, NULL };
@@ -501,34 +500,16 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                 MenuExit = MENU_EXIT_TIMEOUT;
                 break;
             } else if (HaveTimeout || GlobalConfig.ScreensaverTime > 0) {
-                EFI_EVENT           TimerEvent;
-                UINTN               ElapsCount = 1;
+                UINTN ElapsCount = 1;
 
-                Status = refit_call5_wrapper(BS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
-                if (EFI_ERROR(Status)) {
-                    refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
-                } else {
-                    UINTN               Index;
+                UINTN Input = WaitForInput(1000); // 1s Timeout
 
-                    refit_call3_wrapper(BS->SetTimer, TimerEvent, TimerRelative, 10000000); // 1s Timeout
-
-                    if (TouchEnabled) {
-                        WaitList[1] = TouchProtocol->WaitForInput;
-                        WaitList[2] = TimerEvent;
-                        Status = refit_call3_wrapper(BS->WaitForEvent, 3, WaitList, &Index);
-                    } else {
-                        WaitList[1] = TimerEvent;
-                        Status = refit_call3_wrapper(BS->WaitForEvent, 2, WaitList, &Index);
-                    }
-
-                    refit_call1_wrapper(BS->CloseEvent, TimerEvent);
-                    if (EFI_ERROR(Status))
-                        refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
-                    else if(Index == 0 || (TouchEnabled && Index == 1))
-                        continue;
-                    else
-                        ElapsCount = 10; // always counted as 1s to end of the timeout
+                if(Input == INPUT_KEY || Input == INPUT_POINTER) {
+                    continue;
+                } else if(Input == INPUT_TIMEOUT) {
+                    ElapsCount = 10; // always counted as 1s to end of the timeout
                 }
+
                 TimeSinceKeystroke += ElapsCount;
                 if(HaveTimeout) {
                     TimeoutCountdown = TimeoutCountdown <= ElapsCount ? 0 : TimeoutCountdown - ElapsCount;
@@ -540,12 +521,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                         TimeSinceKeystroke = 0;
                 } // if
             } else {
-                if (TouchEnabled) {
-                    WaitList[1] = TouchProtocol->WaitForInput;
-                    refit_call3_wrapper(BS->WaitForEvent, 2, WaitList, &index);
-                } else {
-                    refit_call3_wrapper(BS->WaitForEvent, 1, WaitList, &index);
-                }
+                WaitForInput(0);
             }
             continue;
         } // if/else !read keystroke
@@ -561,7 +537,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             }
         }
 
-        if(!TouchActive) { // react to key press
+        if(!PointerActive) { // react to key press
             switch (key.ScanCode) {
                 case SCAN_UP:
                     UpdateScroll(&State, SCROLL_LINE_UP);
@@ -631,29 +607,53 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                     }
                     break;
             }
-        } else { //react to touch event
-            //the TouchProtocol min/max may not match the screen size
-            TouchScreenPosX = ((UINT32) TouchState.CurrentX * UGAWidth) / (UINT32) TouchProtocol->Mode->AbsoluteMaxX;
-            TouchScreenPosY = ((UINT32) TouchState.CurrentY * UGAHeight) / (UINT32) TouchProtocol->Mode->AbsoluteMaxY;
-            Item = FindMainMenuItem(Screen, &State, TouchScreenPosX, TouchScreenPosY);
+        } else { //react to pointer event
+            if (StyleFunc != MainMenuStyle) {
+                continue; // nothing to find on submenus
+            }
+            State.PreviousSelection = State.CurrentSelection;
+            POINTER_STATE PointerState = pdGetState();
+            Item = FindMainMenuItem(Screen, &State, PointerState.X, PointerState.Y);
             switch (Item) {
-                case TOUCH_NO_ITEM:
-                    //do nothing
+                case POINTER_NO_ITEM:
+                    if(DrawSelection) {
+                        DrawSelection = FALSE;
+                        State.PaintSelection = TRUE;
+                    }
                     break;
-                case TOUCH_LEFT_ARROW:
-                    UpdateScroll(&State, SCROLL_PAGE_UP);
+                case POINTER_LEFT_ARROW:
+                    if(PointerState.Press) {
+                        UpdateScroll(&State, SCROLL_PAGE_UP);
+                    }
+                    if(DrawSelection) {
+                        DrawSelection = FALSE;
+                        State.PaintSelection = TRUE;
+                    }
                     break;
-                case TOUCH_RIGHT_ARROW:
-                    UpdateScroll(&State, SCROLL_PAGE_DOWN);
+                case POINTER_RIGHT_ARROW:
+                    if(PointerState.Press) {
+                        UpdateScroll(&State, SCROLL_PAGE_DOWN);
+                    }
+                    if(DrawSelection) {
+                        DrawSelection = FALSE;
+                        State.PaintSelection = TRUE;
+                    }
                     break;
                 default:
-                    State.CurrentSelection = Item;
-                    MenuExit = MENU_EXIT_ENTER;
+                    if (!DrawSelection || Item != State.CurrentSelection) {
+                        DrawSelection = TRUE;
+                        State.PaintSelection = TRUE;
+                        State.CurrentSelection = Item;
+                    }
+                    if(PointerState.Press) {
+                        MenuExit = MENU_EXIT_ENTER;
+                    }
                     break;
             }
         }
     }
 
+    pdClear();
     StyleFunc(Screen, &State, MENU_FUNCTION_CLEANUP, NULL);
 
     if (ChosenEntry)
@@ -1051,8 +1051,8 @@ static VOID DrawMainMenuEntry(REFIT_MENU_ENTRY *Entry, BOOLEAN selected, UINTN X
 {
    EG_IMAGE *Background;
 
-   // don't draw selection image if using touch
-   if (selected && !TouchActive) {
+   // if using pointer, don't draw selection image when not hovering
+   if (selected && DrawSelection) {
       Background = egCropImage(GlobalConfig.ScreenBackground, XPos, YPos,
                                SelectionImages[Entry->Row]->Width, SelectionImages[Entry->Row]->Height);
       egComposeImage(Background, SelectionImages[Entry->Row], 0, 0);
@@ -1079,11 +1079,13 @@ static VOID PaintAll(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, UINTN
          DrawMainMenuEntry(Screen->Entries[i], (i == State->CurrentSelection) ? TRUE : FALSE, itemPosX[i], row1PosY);
       }
    }
-   if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL)) {
+   if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL) && (!PointerActive || (PointerActive && DrawSelection))) {
       DrawTextWithTransparency(L"", 0, textPosY);
       DrawTextWithTransparency(Screen->Entries[State->CurrentSelection]->Title,
                                (UGAWidth - egComputeTextWidth(Screen->Entries[State->CurrentSelection]->Title)) >> 1,
                                textPosY);
+   } else {
+        DrawTextWithTransparency(L"", 0, textPosY);
    }
 
    if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
@@ -1117,11 +1119,13 @@ static VOID PaintSelection(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State,
       } // if/else
       DrawMainMenuEntry(Screen->Entries[State->PreviousSelection], FALSE, itemPosX[XSelectPrev], YPosPrev);
       DrawMainMenuEntry(Screen->Entries[State->CurrentSelection], TRUE, itemPosX[XSelectCur], YPosCur);
-      if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL)) {
+      if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL) && (!PointerActive || (PointerActive && DrawSelection))) {
          DrawTextWithTransparency(L"", 0, textPosY);
          DrawTextWithTransparency(Screen->Entries[State->CurrentSelection]->Title,
                                   (UGAWidth - egComputeTextWidth(Screen->Entries[State->CurrentSelection]->Title)) >> 1,
                                   textPosY);
+      } else {
+          DrawTextWithTransparency(L"", 0, textPosY);
       }
    } else { // Current selection not visible; must redraw the menu....
       MainMenuStyle(Screen, State, MENU_FUNCTION_PAINT_ALL, NULL);
@@ -1264,7 +1268,7 @@ VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINT
 } // VOID MainMenuStyle()
 
 // Determines the index of the main menu item at the given coordinates.
-UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINT64 PosX, IN UINT64 PosY)
+UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN PosX, IN UINTN PosY)
 {
     UINTN i;
     static UINTN row0PosX, row0PosXRunning, row1PosY, row0Loaders;
@@ -1273,71 +1277,118 @@ UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN 
     static UINTN row0PosY;
     UINTN itemRow;
 
-    row0Count = 0;
-    row1Count = 0;
-    row0Loaders = 0;
-    for (i = 0; i <= State->MaxIndex; i++) {
-        if (Screen->Entries[i]->Row == 1) {
-            row1Count++;
-        } else {
-            row0Loaders++;
-            if (row0Count < State->MaxVisible)
-                row0Count++;
-        }
-    }
-    row0PosX = (UGAWidth + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
-    row0PosY = ComputeRow0PosY();
-    row1PosX = (UGAWidth + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
-    row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
-
-    if (PosY >= row0PosY && PosY <= row0PosY + TileSizes[0]) {
-        itemRow = 0;
-        if (PosX <= row0PosX) {
-            return TOUCH_LEFT_ARROW;
-        } else if (PosX >= (UGAWidth - row0PosX)) {
-            return TOUCH_RIGHT_ARROW;
-        }
-
-    } else if (PosY >= row1PosY && PosY <= row1PosY + TileSizes[1]) {
-        itemRow = 1;
-
-    } else { // Y coordinate is outside of either row
-        return TOUCH_NO_ITEM;
-    }
-
-    UINTN ItemIndex = TOUCH_NO_ITEM;
-
-    itemPosX = AllocatePool(sizeof(UINTN) * Screen->EntryCount);
-    row0PosXRunning = row0PosX;
-    row1PosXRunning = row1PosX;
-    for (i = 0; i <= State->MaxIndex; i++) {
-        if (Screen->Entries[i]->Row == 0) {
-            itemPosX[i] = row0PosXRunning;
-            row0PosXRunning += TileSizes[0] + TILE_XSPACING;
-        } else {
-            itemPosX[i] = row1PosXRunning;
-            row1PosXRunning += TileSizes[1] + TILE_XSPACING;
-        }
-    }
-
-    for (i = State->FirstVisible; i <= State->MaxIndex; i++) {
-        if (Screen->Entries[i]->Row == 0 && itemRow == 0) {
-            if (i <= State->LastVisible) {
-                if(PosX >= itemPosX[i - State->FirstVisible] && PosX <= itemPosX[i - State->FirstVisible] + TileSizes[0]) {
-                    ItemIndex = i;
-                    break;
-                }
-            } // if
-        } else if (Screen->Entries[i]->Row == 1 && itemRow == 1) {
-            if (PosX >= itemPosX[i] && PosX <= itemPosX[i] + TileSizes[1]) {
-                ItemIndex = i;
-                break;
-            }
-        }
-    }
-    MyFreePool(itemPosX);
-    return ItemIndex;
+	row0Count = 0;
+	row1Count = 0;
+	row0Loaders = 0;
+	for (i = 0; i <= State->MaxIndex; i++) {
+	   if (Screen->Entries[i]->Row == 1) {
+		  row1Count++;
+	   } else {
+		  row0Loaders++;
+		  if (row0Count < State->MaxVisible)
+			 row0Count++;
+	   }
+	}
+	row0PosX = (UGAWidth + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
+	row0PosY = ComputeRow0PosY();
+	row1PosX = (UGAWidth + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
+	row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
+	
+	if(PosY >= row0PosY && PosY <= row0PosY + TileSizes[0]) {
+		itemRow = 0;
+		if(PosX <= row0PosX) {
+			return POINTER_LEFT_ARROW;
+		}
+		else if(PosX >= (UGAWidth - row0PosX)) {
+			return POINTER_RIGHT_ARROW;
+		}
+	} else if(PosY >= row1PosY && PosY <= row1PosY + TileSizes[1]) {
+		itemRow = 1;
+	} else { // Y coordinate is outside of either row
+		return POINTER_NO_ITEM;
+	}
+	
+	UINTN ItemIndex = POINTER_NO_ITEM;
+	
+	itemPosX = AllocatePool(sizeof(UINTN) * Screen->EntryCount);
+	row0PosXRunning = row0PosX;
+	row1PosXRunning = row1PosX;
+	for (i = 0; i <= State->MaxIndex; i++) {
+		if (Screen->Entries[i]->Row == 0) {
+			itemPosX[i] = row0PosXRunning;
+			row0PosXRunning += TileSizes[0] + TILE_XSPACING;
+		} else {
+			itemPosX[i] = row1PosXRunning;
+			row1PosXRunning += TileSizes[1] + TILE_XSPACING;
+		}
+	}
+	
+	for (i = State->FirstVisible; i <= State->MaxIndex; i++) {
+      if (Screen->Entries[i]->Row == 0 && itemRow == 0) {
+         if (i <= State->LastVisible) {
+			 if(PosX >= itemPosX[i - State->FirstVisible] && PosX <= itemPosX[i - State->FirstVisible] + TileSizes[0]) {
+				ItemIndex = i;
+				break;
+			 }
+         } // if
+      } else if (Screen->Entries[i]->Row == 1 && itemRow == 1) {
+		  if(PosX >= itemPosX[i] && PosX <= itemPosX[i] + TileSizes[1]) {
+			ItemIndex = i;
+			break;
+		  }
+      }
+   }
+	
+	MyFreePool(itemPosX);
+	
+	return ItemIndex;
 } // VOID FindMainMenuItem()
+
+VOID GenerateWaitList() {
+    UINTN PointerCount = pdCount();
+    WaitListLength = 2 + PointerCount;
+    WaitList = AllocatePool(sizeof(EFI_EVENT) * WaitListLength);
+
+    WaitList[0] = ST->ConIn->WaitForKey;
+
+    UINTN Index;
+    for(Index = 0; Index < PointerCount; Index++) {
+        WaitList[Index + 1] = pdWaitEvent(Index);
+    }
+} // VOID GenerateWaitList()
+
+UINTN WaitForInput(UINTN Timeout) {
+    UINTN Index = INPUT_TIMEOUT;
+    UINTN Length = WaitListLength;
+    EFI_EVENT TimerEvent;
+    EFI_STATUS Status;
+
+    if(Timeout == 0) {
+        Length--;
+    } else {
+        Status = refit_call5_wrapper(BS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
+        if(EFI_ERROR(Status)) {
+            refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
+            return INPUT_TIMER_ERROR;
+        } else {
+            Status = refit_call3_wrapper(BS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
+            WaitList[Length - 1] = TimerEvent;
+        }
+    }
+
+    Status = refit_call3_wrapper(BS->WaitForEvent, Length, WaitList, &Index);
+    refit_call1_wrapper(BS->CloseEvent, TimerEvent);
+
+    if(EFI_ERROR(Status)) {
+        refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
+        return INPUT_TIMER_ERROR;
+    } else if(Index == 0) {
+        return INPUT_KEY;
+    } else if(Index < Length - 1) {
+        return INPUT_POINTER;
+    }
+    return INPUT_TIMEOUT;
+} // UINTN WaitForInput()
 
 // Enable the user to edit boot loader options.
 // Returns TRUE if the user exited with edited options; FALSE if the user
@@ -1643,14 +1694,12 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
     if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
         MainStyle = MainMenuStyle;
-        if (GlobalConfig.EnableTouch) {
-            // Check for touch availability 
-            EFI_STATUS status = refit_call3_wrapper(BS->LocateProtocol, &TouchGuid, NULL, (VOID **) &TouchProtocol);
-            if (status == EFI_SUCCESS) {
-                TouchEnabled = TouchActive = TRUE;
-            }
-        }
+        
+        PointerEnabled = PointerActive = pdAvailable();
+        DrawSelection = !PointerEnabled;
     }
+
+    GenerateWaitList();
 
     while (!MenuExit) {
         MenuExit = RunGenericMenu(Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);
@@ -1675,6 +1724,10 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
             MenuExit = 0;
         } // Hide launcher
     }
+
+    FreePool(WaitList);
+    WaitList = NULL;
+    WaitListLength = 0;
 
     if (ChosenEntry)
         *ChosenEntry = TempChosenEntry;

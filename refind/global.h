@@ -149,11 +149,13 @@
 // Sizes of the default icons; badges are 1/4 the big icon size
 #define DEFAULT_SMALL_ICON_SIZE 48
 #define DEFAULT_BIG_ICON_SIZE   128
+#define DEFAULT_MOUSE_SIZE      16
 
 // Codes for types of icon sizes; used for indexing into GlobalConfig.IconSizes[]
 #define ICON_SIZE_BADGE 0
 #define ICON_SIZE_SMALL 1
 #define ICON_SIZE_BIG   2
+#define ICON_SIZE_MOUSE 3
 
 // Minimum horizontal resolution for a screen to be consider high-DPI
 #define HIDPI_MIN 1921
@@ -322,6 +324,7 @@ typedef struct {
    BOOLEAN          DeepLegacyScan;
    BOOLEAN          EnableAndLockVMX;
    BOOLEAN          FoldLinuxKernels;
+   BOOLEAN          EnableMouse;
    BOOLEAN          EnableTouch;
    BOOLEAN          HiddenTags;
    UINTN            RequestedScreenWidth;
@@ -335,7 +338,8 @@ typedef struct {
    UINTN            LegacyType;
    UINTN            ScanDelay;
    UINTN            ScreensaverTime;
-   UINTN            IconSizes[3];
+   UINTN            MouseSpeed;
+   UINTN            IconSizes[4];
    UINTN            BannerScale;
    REFIT_VOLUME     *DiscoveredRoot;
    EFI_DEVICE_PATH  *SelfDevicePath;

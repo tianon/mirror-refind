@@ -144,6 +144,7 @@ VOID egDrawImageArea(IN EG_IMAGE *Image,
                      IN UINTN ScreenPosX, IN UINTN ScreenPosY);
 VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor, UINTN PositionCode);
 EG_IMAGE * egCopyScreen(VOID);
+EG_IMAGE * egCopyScreenArea(UINTN XPos, UINTN YPos, UINTN Width, UINTN Height);
 VOID egScreenShot(VOID);
 BOOLEAN egSetTextMode(UINT32 RequestedMode);
 
