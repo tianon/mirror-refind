@@ -1802,6 +1802,10 @@ static VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     if ((HiddenTags) && (StrLen(HiddenTags) > 0)) {
         MergeStrings(&GlobalConfig.DontScanFiles, HiddenTags, L',');
     }
+    HiddenTags = ReadHiddenTags(L"HiddenLegacy");
+    if ((HiddenTags) && (StrLen(HiddenTags) > 0)) {
+        MergeStrings(&GlobalConfig.DontScanVolumes, HiddenTags, L',');
+    }
     MyFreePool(HiddenTags);
 
     // scan for loaders and tools, add them to the menu

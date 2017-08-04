@@ -11,11 +11,11 @@
   complete path. The point is to enable hiding redundant tools -- say, if
   multiple MokManager tools show up in the menu and you want just one.
 
-- A new feature enables you to hide EFI-mode OS tags from the rEFInd
-  main menu: Highlight the OS tag and hit "d" or the Delete key. The OS tag
-  should disappear, and remain gone between reboots. A new tool tag (on the
-  second row) with a recycling icon enables recovering OS tags hidden in
-  this way.
+- A new feature enables you to hide EFI-mode OS and external tool tags from
+  the rEFInd main menu: Highlight the OS tag and hit "d" or the Delete key.
+  The OS tag should disappear, and remain gone between reboots. A new tool
+  tag (on the second row) with a recycling icon enables recovering OS tags
+  hidden in this way.
 
 - You can now specify volumes by GUID number in dont_scan_dirs and
   dont_scan_files specifications -- e.g., "dont_scan_files

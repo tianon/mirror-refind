@@ -465,7 +465,7 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
     Entry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(Entry->me.Title, 255, L"Boot legacy target %s", LegacyDescription);
+    SPrint(Entry->me.Title, 255, L"Boot legacy OS from %s", LegacyDescription);
     Entry->me.Tag          = TAG_LEGACY_UEFI;
     Entry->me.Row          = 0;
     Entry->me.ShortcutLetter = ShortcutLetter;
