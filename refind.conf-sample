@@ -145,9 +145,33 @@ timeout 20
 # feature may not work for you. If it does work, you should be able
 # to launch an OS or tool by touching it. In a submenu, touching
 # anywhere launches the currently-selection item; there is, at present,
-# no way to select a specific submenu item.
+# no way to select a specific submenu item. This feature is mutually
+# exclusive with the enable_mouse feature. If both are uncommented,
+# the one read most recently takes precedence.
 #
 #enable_touch
+
+# Enable mouse support. If active, this feature enables use of the
+# computer's mouse. Note, however, that not all computers' EFIs
+# provide the necessary underlying support, so this feature may not
+# work for you. If it does work, you should be able to launch an
+# OS or tool by clicking it with the mouse pointer. This feature
+# is mutually exclusive with the enable_touch feature. If both
+# are uncommented, the one read most recently takes precedence.
+#
+#enable_mouse
+
+# Size of the mouse pointer, in pixels, per side.
+# Default is 16
+#
+#mouse_size
+
+# Speed of mouse tracking. Higher numbers equate to faster
+# mouse movement. This option requires that enable_mouse be
+# uncommented.
+# Legal values are between 1 and 32. Default is 1.
+#
+#mouse_speed 1
 
 # Launch specified OSes in graphics mode. By default, rEFInd switches
 # to text mode and displays basic pre-launch information when launching

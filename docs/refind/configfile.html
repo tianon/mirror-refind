@@ -326,7 +326,22 @@ timeout 20
 <tr>
    <td><tt>enable_touch</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
-   <td>Enables support for touch screens (as on tablets). Note that not all tablets provide the necessary support. If this feature is enabled and the tablet supports it, touching an OS or tool should launch it or enter a submenu. In a submenu, it is currently not possible to select a specific item; any touch will launch the default submenu option.</td>
+   <td>Enables support for touch screens (as on tablets). Note that not all tablets provide the necessary support. If this feature is enabled and the tablet supports it, touching an OS or tool should launch it or enter a submenu. In a submenu, it is currently not possible to select a specific item; any touch will launch the default submenu option. This option is incompatible with <tt>enable_mouse</tt>. If both are specified, the one appearing later in <tt>refind.conf</tt> takes precedence. The default is <tt>off</tt>.</td>
+</tr>
+<tr>
+   <td><tt>enable_mouse</tt></td>
+   <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
+   <td>Enables support for mice (and related pointing devices). Note that not all tablets provide the necessary support. If this feature is enabled and the computer supports it, clicking an OS or tool should launch it or enter a submenu. In a submenu, it is currently not possible to select a specific item; any click will launch the default submenu option. This option is incompatible with <tt>enable_touch</tt>. If both are specified, the one appearing later in <tt>refind.conf</tt> takes precedence. The default is <tt>off</tt>.</td>
+</tr>
+<tr>
+   <td><tt>mouse_size</tt></td>
+   <td>numeric value</td>
+   <td>Sets the size of the mouse pointer, in pixels squared. The default is <tt>16</tt>.</td>
+</tr>
+<tr>
+   <td><tt>mouse_speed</tt></td>
+   <td>numeric value</td>
+   <td>Sets the speed of the mouse pointer, with higher numbers meaning faster tracking. The default is <tt>1</tt>.</td>
 </tr>
 <tr>
    <td><tt>use_graphics_for</tt></td>
