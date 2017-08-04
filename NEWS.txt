@@ -1,6 +1,13 @@
 0.11.0 (?/??/2017):
 -------------------
 
+- Added new mouse support: Uncomment enable_mouse in refind.conf to activate
+  this support. You can select an OS to launch with this feature active, but
+  you cannot use submenus via the mouse. The mouse_size and mouse_speed
+  tokens control the mouse size in pixels and tracking speed, respectively.
+  Note that not all computers support mice in their EFIs, which is why this
+  feature is disabled by default.
+
 - Fixed bug that caused specifying a full path to the fallback boot
   loader (EFI/BOOT/bootx64.efi) in dont_scan_files to fail to work.
 

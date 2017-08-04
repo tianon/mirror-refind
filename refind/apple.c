@@ -156,7 +156,7 @@ EFI_STATUS SetAppleOSInfo() {
                 Status = EFI_OUT_OF_RESOURCES;
                 Print(L"Out of resources in SetAppleOSInfo!\n");
             }
-            if ((Status == EFI_SUCCESS) && (SetOs->Version == 2))
+            if ((Status == EFI_SUCCESS) && (SetOs->Version >= 2))
                 Status = refit_call1_wrapper (SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
             MyFreePool(AppleOSVersion);
         } // if (AppleOSVersion)
