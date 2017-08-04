@@ -47,6 +47,7 @@
   refind/menu.c
   refind/mystrings.c
   refind/screen.c
+  refind/pointer.c
   refind/driver_support.c
   refind/gpt.c
   refind/crc32.c

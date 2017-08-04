@@ -40,23 +40,29 @@ VOID pdInitialize() {
 
     // Get all handles that support absolute pointer protocol (usually touchscreens, but sometimes mice)
     UINTN NumPointerHandles = 0;
-    EFI_STATUS handlestatus = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &APointerGuid, NULL, &NumPointerHandles, &APointerHandles);
+    EFI_STATUS handlestatus = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &APointerGuid, NULL,
+                                                  &NumPointerHandles, &APointerHandles);
 
-    if(!EFI_ERROR(handlestatus)) {
+    if (!EFI_ERROR(handlestatus)) {
         APointerProtocol = AllocatePool(sizeof(EFI_ABSOLUTE_POINTER_PROTOCOL*) * NumPointerHandles);
         UINTN Index;
         for(Index = 0; Index < NumPointerHandles; Index++) {
             // Open the protocol on the handle
-            EFI_STATUS status = refit_call6_wrapper(BS->OpenProtocol, APointerHandles[Index], &APointerGuid, (VOID **) &APointerProtocol[NumAPointerDevices], SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+            EFI_STATUS status = refit_call6_wrapper(BS->OpenProtocol, APointerHandles[Index], &APointerGuid,
+                                                    (VOID **) &APointerProtocol[NumAPointerDevices],
+                                                    SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
             if (status == EFI_SUCCESS) {
                 NumAPointerDevices++; 
             }
         }
+    } else {
+        GlobalConfig.EnableTouch = FALSE;
     }
 
     // Get all handles that support simple pointer protocol (mice)
     NumPointerHandles = 0;
-    handlestatus = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &SPointerGuid, NULL, &NumPointerHandles, &SPointerHandles);
+    handlestatus = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &SPointerGuid, NULL,
+                                       &NumPointerHandles, &SPointerHandles);
 
     if(!EFI_ERROR(handlestatus)) {
         SPointerProtocol = AllocatePool(sizeof(EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
@@ -68,12 +74,14 @@ VOID pdInitialize() {
                 NumSPointerDevices++; 
             }
         }
+    } else {
+        GlobalConfig.EnableMouse = FALSE;
     }
 
     PointerAvailable = (NumAPointerDevices + NumSPointerDevices > 0);
 
     // load mouse icon
-    if(PointerAvailable && GlobalConfig.EnableMouse) {
+    if (PointerAvailable && GlobalConfig.EnableMouse) {
         MouseImage = BuiltinIcon(BUILTIN_ICON_MOUSE);
     }
 #endif

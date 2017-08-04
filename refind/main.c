@@ -2209,6 +2209,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     // SetupScreen() clears the screen; but ScanForBootloaders() may display a
     // message that must be deleted, so do so
     BltClearScreen(TRUE);
+    pdInitialize();
 
     if (GlobalConfig.ScanDelay > 0) {
        if (GlobalConfig.ScanDelay > 1)

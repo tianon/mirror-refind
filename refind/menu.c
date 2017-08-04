@@ -388,7 +388,6 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
     SCROLL_STATE State;
     EFI_STATUS Status;
     EFI_INPUT_KEY key;
-    UINTN index;
     INTN ShortcutEntry;
     BOOLEAN HaveTimeout = FALSE;
     BOOLEAN WaitForRelease = FALSE;
@@ -494,7 +493,6 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             PointerActive = TRUE;
             TimeSinceKeystroke = 0;
         } else {
-            EFI_EVENT WaitList[3] = { ST->ConIn->WaitForKey, NULL, NULL };
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
                 MenuExit = MENU_EXIT_TIMEOUT;
@@ -1277,71 +1275,71 @@ UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN 
     static UINTN row0PosY;
     UINTN itemRow;
 
-	row0Count = 0;
-	row1Count = 0;
-	row0Loaders = 0;
-	for (i = 0; i <= State->MaxIndex; i++) {
-	   if (Screen->Entries[i]->Row == 1) {
-		  row1Count++;
-	   } else {
-		  row0Loaders++;
-		  if (row0Count < State->MaxVisible)
-			 row0Count++;
-	   }
-	}
-	row0PosX = (UGAWidth + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
-	row0PosY = ComputeRow0PosY();
-	row1PosX = (UGAWidth + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
-	row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
-	
-	if(PosY >= row0PosY && PosY <= row0PosY + TileSizes[0]) {
-		itemRow = 0;
-		if(PosX <= row0PosX) {
-			return POINTER_LEFT_ARROW;
-		}
-		else if(PosX >= (UGAWidth - row0PosX)) {
-			return POINTER_RIGHT_ARROW;
-		}
-	} else if(PosY >= row1PosY && PosY <= row1PosY + TileSizes[1]) {
-		itemRow = 1;
-	} else { // Y coordinate is outside of either row
-		return POINTER_NO_ITEM;
-	}
-	
-	UINTN ItemIndex = POINTER_NO_ITEM;
-	
-	itemPosX = AllocatePool(sizeof(UINTN) * Screen->EntryCount);
-	row0PosXRunning = row0PosX;
-	row1PosXRunning = row1PosX;
-	for (i = 0; i <= State->MaxIndex; i++) {
-		if (Screen->Entries[i]->Row == 0) {
-			itemPosX[i] = row0PosXRunning;
-			row0PosXRunning += TileSizes[0] + TILE_XSPACING;
-		} else {
-			itemPosX[i] = row1PosXRunning;
-			row1PosXRunning += TileSizes[1] + TILE_XSPACING;
-		}
-	}
-	
-	for (i = State->FirstVisible; i <= State->MaxIndex; i++) {
-      if (Screen->Entries[i]->Row == 0 && itemRow == 0) {
-         if (i <= State->LastVisible) {
-			 if(PosX >= itemPosX[i - State->FirstVisible] && PosX <= itemPosX[i - State->FirstVisible] + TileSizes[0]) {
-				ItemIndex = i;
-				break;
-			 }
-         } // if
-      } else if (Screen->Entries[i]->Row == 1 && itemRow == 1) {
-		  if(PosX >= itemPosX[i] && PosX <= itemPosX[i] + TileSizes[1]) {
-			ItemIndex = i;
-			break;
-		  }
-      }
-   }
-	
-	MyFreePool(itemPosX);
-	
-	return ItemIndex;
+    row0Count = 0;
+    row1Count = 0;
+    row0Loaders = 0;
+    for (i = 0; i <= State->MaxIndex; i++) {
+        if (Screen->Entries[i]->Row == 1) {
+                row1Count++;
+        } else {
+                row0Loaders++;
+                if (row0Count < State->MaxVisible)
+                        row0Count++;
+        }
+    }
+    row0PosX = (UGAWidth + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
+    row0PosY = ComputeRow0PosY();
+    row1PosX = (UGAWidth + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
+    row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
+
+    if (PosY >= row0PosY && PosY <= row0PosY + TileSizes[0]) {
+        itemRow = 0;
+        if(PosX <= row0PosX) {
+            return POINTER_LEFT_ARROW;
+        }
+        else if(PosX >= (UGAWidth - row0PosX)) {
+            return POINTER_RIGHT_ARROW;
+        }
+    } else if (PosY >= row1PosY && PosY <= row1PosY + TileSizes[1]) {
+        itemRow = 1;
+    } else { // Y coordinate is outside of either row
+        return POINTER_NO_ITEM;
+    }
+
+    UINTN ItemIndex = POINTER_NO_ITEM;
+
+    itemPosX = AllocatePool(sizeof(UINTN) * Screen->EntryCount);
+    row0PosXRunning = row0PosX;
+    row1PosXRunning = row1PosX;
+    for (i = 0; i <= State->MaxIndex; i++) {
+        if (Screen->Entries[i]->Row == 0) {
+            itemPosX[i] = row0PosXRunning;
+            row0PosXRunning += TileSizes[0] + TILE_XSPACING;
+        } else {
+            itemPosX[i] = row1PosXRunning;
+            row1PosXRunning += TileSizes[1] + TILE_XSPACING;
+        }
+    }
+
+    for (i = State->FirstVisible; i <= State->MaxIndex; i++) {
+        if (Screen->Entries[i]->Row == 0 && itemRow == 0) {
+            if (i <= State->LastVisible) {
+                if(PosX >= itemPosX[i - State->FirstVisible] && PosX <= itemPosX[i - State->FirstVisible] + TileSizes[0]) {
+                    ItemIndex = i;
+                    break;
+                }
+        } // if
+        } else if (Screen->Entries[i]->Row == 1 && itemRow == 1) {
+            if(PosX >= itemPosX[i] && PosX <= itemPosX[i] + TileSizes[1]) {
+                ItemIndex = i;
+                break;
+            }
+        }
+    }
+
+    MyFreePool(itemPosX);
+
+    return ItemIndex;
 } // VOID FindMainMenuItem()
 
 VOID GenerateWaitList() {
