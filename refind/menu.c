@@ -445,9 +445,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             StyleFunc(Screen, &State, MENU_FUNCTION_PAINT_SELECTION, NULL);
             State.PaintSelection = FALSE;
         }
-        if(PointerActive) {
-            pdDraw();
-        }
+        pdDraw();
 
         if (WaitForRelease) {
             Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
@@ -473,12 +471,12 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
         }
 
         // read key press or pointer event (and wait for them if applicable)
-        if(PointerEnabled) {
+        if (PointerEnabled) {
             PointerStatus = pdUpdateState();
         }
         Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
 
-        if(Status == EFI_SUCCESS) {
+        if (Status == EFI_SUCCESS) {
             PointerActive = FALSE;
             DrawSelection = TRUE;
             TimeSinceKeystroke = 0;
@@ -502,21 +500,21 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
 
                 UINTN Input = WaitForInput(1000); // 1s Timeout
 
-                if(Input == INPUT_KEY || Input == INPUT_POINTER) {
+                if (Input == INPUT_KEY || Input == INPUT_POINTER) {
                     continue;
-                } else if(Input == INPUT_TIMEOUT) {
+                } else if (Input == INPUT_TIMEOUT) {
                     ElapsCount = 10; // always counted as 1s to end of the timeout
                 }
 
                 TimeSinceKeystroke += ElapsCount;
-                if(HaveTimeout) {
+                if (HaveTimeout) {
                     TimeoutCountdown = TimeoutCountdown <= ElapsCount ? 0 : TimeoutCountdown - ElapsCount;
                 } else if (GlobalConfig.ScreensaverTime > 0 &&
-                        TimeSinceKeystroke > (GlobalConfig.ScreensaverTime * 10))
+                    TimeSinceKeystroke > (GlobalConfig.ScreensaverTime * 10))
                 {
-                        SaveScreen();
-                        State.PaintAll = TRUE;
-                        TimeSinceKeystroke = 0;
+                    SaveScreen();
+                    State.PaintAll = TRUE;
+                    TimeSinceKeystroke = 0;
                 } // if
             } else {
                 WaitForInput(0);
@@ -535,7 +533,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
             }
         }
 
-        if(!PointerActive) { // react to key press
+        if (!PointerActive) { // react to key press
             switch (key.ScanCode) {
                 case SCAN_UP:
                     UpdateScroll(&State, SCROLL_LINE_UP);
@@ -1345,6 +1343,7 @@ UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN 
 VOID GenerateWaitList() {
     UINTN PointerCount = pdCount();
     WaitListLength = 2 + PointerCount;
+
     WaitList = AllocatePool(sizeof(EFI_EVENT) * WaitListLength);
 
     WaitList[0] = ST->ConIn->WaitForKey;
@@ -1361,7 +1360,7 @@ UINTN WaitForInput(UINTN Timeout) {
     EFI_EVENT TimerEvent;
     EFI_STATUS Status;
 
-    if(Timeout == 0) {
+    if (Timeout == 0) {
         Length--;
     } else {
         Status = refit_call5_wrapper(BS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
@@ -1697,6 +1696,8 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
         DrawSelection = !PointerEnabled;
     }
 
+    // Generate this now and keep it around forever, since it's likely to be
+    // used after this function terminates....
     GenerateWaitList();
 
     while (!MenuExit) {
@@ -1717,15 +1718,12 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
                MenuExit = 0;
             }
         } // Enter sub-screen
-        if ((MenuExit == MENU_EXIT_HIDE) && (GlobalConfig.HiddenTags)) {
-            HideOSTag(TempChosenEntry);
+        if (MenuExit == MENU_EXIT_HIDE) {
+            if (GlobalConfig.HiddenTags)
+                HideOSTag(TempChosenEntry);
             MenuExit = 0;
         } // Hide launcher
     }
-
-    FreePool(WaitList);
-    WaitList = NULL;
-    WaitListLength = 0;
 
     if (ChosenEntry)
         *ChosenEntry = TempChosenEntry;

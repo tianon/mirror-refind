@@ -1,6 +1,8 @@
 0.11.0 (?/??/2017):
 -------------------
 
+- Fixed spoof_osx_version to work with newer Apple EFIs.
+
 - Added new mouse support: Uncomment enable_mouse in refind.conf to activate
   this support. You can select an OS to launch with this feature active, but
   you cannot use submenus via the mouse. The mouse_size and mouse_speed

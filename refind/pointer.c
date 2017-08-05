@@ -34,7 +34,7 @@ POINTER_STATE State;
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdInitialize() {
     pdCleanup(); // just in case
-    
+
 #ifndef EFI32
     if (!(GlobalConfig.EnableMouse || GlobalConfig.EnableTouch)) return;
 
@@ -280,7 +280,7 @@ VOID pdDraw() {
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdClear() {
 #ifndef EFI32
-    if(Background) {
+    if (Background) {
         egDrawImage(Background, LastXPos, LastYPos);
         egFreeImage(Background);
         Background = NULL;

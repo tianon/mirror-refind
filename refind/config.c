@@ -667,6 +667,7 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.ShowTools[i - 1] = TAG_NETBOOT;
                 } else if (MyStriCmp(FlagName, L"hidden_tags")) {
                     GlobalConfig.ShowTools[i - 1] = TAG_HIDDEN;
+                    GlobalConfig.HiddenTags = TRUE;
                 } else {
                    Print(L" unknown showtools flag: '%s'\n", FlagName);
                 }
@@ -794,10 +795,11 @@ VOID ReadConfig(CHAR16 *FileName)
            
         } else if (MyStriCmp(TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
            HandleInt(TokenList, TokenCount, &i);
-           if (i >= 1 && i <= 32) {
-              GlobalConfig.MouseSpeed = i;
-           }
-
+           if (i < 1)
+              i = 1;
+           if (i > 32)
+              i = 32;
+           GlobalConfig.MouseSpeed = i;
         }
 
         FreeTokenLine(&TokenList, &TokenCount);
