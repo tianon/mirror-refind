@@ -1088,7 +1088,7 @@ VOID ScanVolumes(VOID)
     UINTN                   HandleIndex;
     UINTN                   VolumeIndex, VolumeIndex2;
     UINTN                   PartitionIndex;
-    UINTN                   SectorSum, i, VolNumber = 0;
+    UINTN                   SectorSum, i;
     UINT8                   *SectorBuffer1, *SectorBuffer2;
     EFI_GUID                *UuidList;
     EFI_GUID                NullUuid = NULL_GUID_VALUE;
@@ -1122,10 +1122,6 @@ VOID ScanVolumes(VOID)
               } // if
            } // for
         } // if
-        if (Volume->IsReadable)
-           Volume->VolNumber = VolNumber++;
-        else
-           Volume->VolNumber = VOL_UNREADABLE;
 
         AddListElement((VOID ***) &Volumes, &VolumesCount, Volume);
 

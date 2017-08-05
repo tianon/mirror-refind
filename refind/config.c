@@ -513,9 +513,7 @@ VOID ReadConfig(CHAR16 *FileName)
           if (SelfVolume->VolName) {
              TempStr = SelfVolume->VolName ? StrDuplicate(SelfVolume->VolName) : NULL;
           } else {
-             TempStr = AllocateZeroPool(256 * sizeof(CHAR16));
-             if (TempStr != NULL)
-                SPrint(TempStr, 255, L"fs%d", SelfVolume->VolNumber);
+             TempStr = GuidAsString(&(SelfVolume->PartGuid));
           } // if/else
        }
        MergeStrings(&TempStr, SelfDirPath, L':');

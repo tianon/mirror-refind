@@ -253,7 +253,6 @@ typedef struct {
    EFI_GUID            PartGuid;
    EFI_GUID            PartTypeGuid;
    BOOLEAN             IsMarkedReadOnly;
-   UINTN               VolNumber;
    EG_IMAGE            *VolIconImage;
    EG_IMAGE            *VolBadgeImage;
    UINTN               DiskKind;
