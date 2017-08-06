@@ -153,13 +153,13 @@ IsDevicePathValid (
   IN       UINTN                    MaxSize
   )
 {
-  UINTN Count;
+//  UINTN Count;
   UINTN Size;
   UINTN NodeLength;
 
   ASSERT (DevicePath != NULL);
 
-  for (Count = 0, Size = 0; !IsDevicePathEnd (DevicePath); DevicePath = NextDevicePathNode (DevicePath)) {
+  for (/* Count = 0, */ Size = 0; !IsDevicePathEnd (DevicePath); DevicePath = NextDevicePathNode (DevicePath)) {
     NodeLength = DevicePathNodeLength (DevicePath);
     if (NodeLength < sizeof (EFI_DEVICE_PATH_PROTOCOL)) {
       return FALSE;

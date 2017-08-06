@@ -49,6 +49,7 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit);
 CHAR16 *FindNumbers(IN CHAR16 *InString);
 UINTN NumCharsInCommon(IN CHAR16* String1, IN CHAR16* String2);
 CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index);
+BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List);
 BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List);
 BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List);
 BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN CHAR16 *ReplString);

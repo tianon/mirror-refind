@@ -26,6 +26,7 @@
 
 #include "mystrings.h"
 #include "lib.h"
+#include "screen.h"
 
 BOOLEAN StriSubCmp(IN CHAR16 *SmallStr, IN CHAR16 *BigStr) {
     BOOLEAN Found = 0, Terminate = 0;
@@ -325,6 +326,34 @@ CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index) {
     } // if
     return (FoundString);
 } // CHAR16 *FindCommaDelimited()
+
+// Delete an individual element from a comma-separated value list.
+// This function modifies the original *List string, but not the
+// *ToDelete string!
+// Returns TRUE if the item was deleted, FALSE otherwise.
+BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List) {
+    CHAR16 *Found, *Comma;
+
+    if ((ToDelete == NULL) || (List == NULL))
+        return FALSE;
+
+    if ((Found = MyStrStr(List, ToDelete)) != NULL) {
+        if ((Comma = MyStrStr(Found, L",")) == NULL) {
+            // Found is final element
+            if (Found == List) { // Found is ONLY element
+                List[0] = L'\0';
+            } else { // Delete the comma preceding Found....
+                Found--;
+                Found[0] = L'\0';
+            } // if/else
+        } else { // Found is NOT final element
+            StrCpy(Found, &Comma[1]);
+        } // if/else
+        return TRUE;
+    } else {
+        return FALSE;
+    } // if/else
+} // BOOLEAN DeleteItemFromCsvList()
 
 // Returns TRUE if SmallString is an element in the comma-delimited List,
 // FALSE otherwise. Performs comparison case-insensitively.

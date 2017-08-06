@@ -590,7 +590,7 @@ static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC Sty
                 case CHAR_TAB:
                     MenuExit = MENU_EXIT_DETAILS;
                     break;
-                case 'd':
+                case '-':
                     MenuExit = MENU_EXIT_HIDE;
                     break;
                 default:
@@ -1437,39 +1437,45 @@ VOID DisplaySimpleMessage(CHAR16* Title, CHAR16 *Message) {
     RunGenericMenu(&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 } // VOID DisplaySimpleMessage()
 
-static BOOLEAN DeleteTagFromVar(CHAR16 *ToDelete, CHAR16 *TagList, CHAR16 *VarName) {
-    UINTN       i = 0;
-    CHAR16      *OneElement, *NewList = NULL;
-    BOOLEAN     DeletedSomething = FALSE;
-    EFI_STATUS  Status;
+// Check each filename in FilenameList to be sure it refers to a valid file. If
+// not, delete it. This works only on filenames that are complete, with volume,
+// path, and filename components; if the filename omits the volume, the search
+// is not done and the item is left intact, no matter what.
+// Returns TRUE if any files were deleted, FALSE otherwise.
+static BOOLEAN RemoveInvalidFilenames(CHAR16 *FilenameList, CHAR16 *VarName) {
+    UINTN i = 0;
+    CHAR16 *Filename, *OneElement, *VolName = NULL /*, *NewList = NULL */;
+    REFIT_VOLUME *Volume;
+    EFI_FILE_HANDLE FileHandle;
+    BOOLEAN DeleteIt = FALSE, DeletedSomething = FALSE;
+    EFI_STATUS Status;
 
-    if ((ToDelete == NULL) || (TagList == NULL) || (VarName == NULL))
-        return FALSE;
-
-    while ((OneElement = FindCommaDelimited(TagList, i++)) != NULL) {
-        if (!MyStriCmp(OneElement, ToDelete)) {
-            MergeStrings(&NewList, OneElement, L',');
+    while ((OneElement = FindCommaDelimited(FilenameList, i)) != NULL) {
+        DeleteIt = FALSE;
+        Filename = StrDuplicate(OneElement);
+        if (SplitVolumeAndFilename(&Filename, &VolName)) {
+            DeleteIt = TRUE;
+            if (FindVolume(&Volume, VolName)) {
+                Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle,
+                                             Filename, EFI_FILE_MODE_READ, 0);
+                if (Status == EFI_SUCCESS) {
+                    DeleteIt = FALSE;
+                    refit_call1_wrapper(FileHandle->Close, FileHandle);
+                } // if file exists
+            } // if volume exists
+        } // if list item includes volume
+        if (DeleteIt) {
+            DeleteItemFromCsvList(OneElement, FilenameList);
         } else {
-            DeletedSomething = TRUE;
+            i++;
         }
-    } // while
-    MyFreePool(OneElement);
-    i = StrLen(NewList);
-    if ((i > 0) && (NewList[i - 1] == L',')) {
-        NewList[i - 1] = '\0';
-        i--;
-    } // if
-    if (DeletedSomething) {
-        if (i == 0) {
-            Status = EfivarSetRaw(&RefindGuid, VarName, (CHAR8 *) NewList, 0, TRUE);
-        } else {
-            Status = EfivarSetRaw(&RefindGuid, VarName, (CHAR8 *) NewList, i * 2 + 2, TRUE);
-        } // if/else
-        CheckError(Status, L"in DeleteTagFromVar()");
-    } // if
-    MyFreePool(NewList);
+        MyFreePool(OneElement);
+        MyFreePool(Filename);
+        MyFreePool(VolName);
+        DeletedSomething |= DeleteIt;
+    } // while()
     return DeletedSomething;
-} // BOOLEAN DeleteTagFromVar()
+} // BOOLEAN RemoveInvalidFilenames()
 
 // Present a menu that enables the user to delete hidden tags (that is, to
 // un-hide them).
@@ -1477,20 +1483,24 @@ VOID ManageHiddenTags(VOID) {
     CHAR16              *AllTags = NULL, *HiddenTags, *HiddenTools, *HiddenLegacy, *OneElement = NULL;
     INTN                DefaultEntry = 0;
     MENU_STYLE_FUNC     Style = TextMenuStyle;
-    REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem;
+    REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
     REFIT_MENU_SCREEN   HideItemMenu = { L"Manage Hidden Tags Menu", NULL, 0, NULL, 0, NULL, 0, NULL,
                                          L"Select an option and press Enter or",
                                          L"press Esc to return to main menu without changes" };
     UINTN               MenuExit, i = 0;
+    BOOLEAN             SaveTags = FALSE, SaveTools = FALSE, SaveLegacy = FALSE;
+    EFI_STATUS          Status;
 
     HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
     if (AllowGraphicsMode)
         Style = GraphicsMenuStyle;
 
     HiddenTags = ReadHiddenTags(L"HiddenTags");
+    SaveTags = RemoveInvalidFilenames(HiddenTags, L"HiddenTags");
     if (HiddenTags && (HiddenTags[0] != L'\0'))
         AllTags = StrDuplicate(HiddenTags);
     HiddenTools = ReadHiddenTags(L"HiddenTools");
+    SaveTools = RemoveInvalidFilenames(HiddenTools, L"HiddenTools");
     if (HiddenTools && (HiddenTools[0] != L'\0'))
         MergeStrings(&AllTags, HiddenTools, L',');
     HiddenLegacy = ReadHiddenTags(L"HiddenLegacy");
@@ -1507,12 +1517,27 @@ VOID ManageHiddenTags(VOID) {
         } // while
         MenuExit = RunGenericMenu(&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
         if (MenuExit == MENU_EXIT_ENTER) {
-            if (DeleteTagFromVar(ChosenOption->Title, HiddenTags, L"HiddenTags") ||
-                DeleteTagFromVar(ChosenOption->Title, HiddenTools, L"HiddenTools") ||
-                DeleteTagFromVar(ChosenOption->Title, HiddenLegacy, L"HiddenLegacy")) {
-                    RescanAll(TRUE);
+            SaveTags |= DeleteItemFromCsvList(ChosenOption->Title, HiddenTags);
+            SaveTools |= DeleteItemFromCsvList(ChosenOption->Title, HiddenTools);
+            if (DeleteItemFromCsvList(ChosenOption->Title, HiddenLegacy)) {
+                i = HiddenLegacy ? StrLen(HiddenLegacy) : 0;
+                Status = EfivarSetRaw(&RefindGuid, L"HiddenLegacy", (CHAR8 *) HiddenLegacy, i * 2 + 2 * (i > 0), TRUE);
+                SaveLegacy = TRUE;
+                CheckError(Status, L"in ManageHiddenTags()");
             } // if
         } // if
+        if (SaveTags) {
+            i = HiddenTags ? StrLen(HiddenTags) : 0;
+            Status = EfivarSetRaw(&RefindGuid, L"HiddenTags", (CHAR8 *) HiddenTags, i * 2 + 2 * (i > 0), TRUE);
+            CheckError(Status, L"in ManageHiddenTags()");
+        }
+        if (SaveTools) {
+            i = HiddenTools ? StrLen(HiddenTools) : 0;
+            Status = EfivarSetRaw(&RefindGuid, L"HiddenTools", (CHAR8 *) HiddenTools, i * 2 + 2 * (i > 0), TRUE);
+            CheckError(Status, L"in ManageHiddenTags()");
+        }
+        if (SaveTags || SaveTools || SaveLegacy)
+            RescanAll(TRUE);
     } else {
         DisplaySimpleMessage(L"Information", L"No hidden tags found");
     }
@@ -1521,6 +1546,7 @@ VOID ManageHiddenTags(VOID) {
     MyFreePool(HiddenTools);
     MyFreePool(HiddenLegacy);
     MyFreePool(OneElement);
+    MyFreePool(MenuEntryItem);
 } // VOID ManageHiddenTags()
 
 CHAR16* ReadHiddenTags(CHAR16 *VarName) {
@@ -1538,9 +1564,10 @@ CHAR16* ReadHiddenTags(CHAR16 *VarName) {
     return (CHAR16 *) Buffer;
 } // CHAR16* ReadHiddenTags()
 
+// Add PathName to the hidden tags variable specified by *VarName.
 static VOID AddToHiddenTags(CHAR16 *VarName, CHAR16 *Pathname) {
-    CHAR16 *HiddenTags;
-    EFI_STATUS Status;
+    CHAR16      *HiddenTags;
+    EFI_STATUS  Status;
 
     if (Pathname && (StrLen(Pathname) > 0)) {
         HiddenTags = ReadHiddenTags(VarName);
@@ -1551,6 +1578,10 @@ static VOID AddToHiddenTags(CHAR16 *VarName, CHAR16 *Pathname) {
     } // if
 } // VOID AddToHiddenTags()
 
+// Adds a filename, specified by the *Loader variable, to the *VarName EFI variable,
+// using the mostly-prepared *HideItemMenu structure to prompt the user to confirm
+// hiding that item.
+// Returns TRUE if item was hidden, FALSE otherwise.
 static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu, CHAR16 *VarName) {
     REFIT_VOLUME       *Volume = NULL;
     BOOLEAN            TagHidden = FALSE;
@@ -1560,10 +1591,16 @@ static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu,
     INTN               DefaultEntry = 1;
     REFIT_MENU_ENTRY   *ChosenOption;
 
+    if ((!Loader) || (!HideItemMenu) || (!VarName))
+        return FALSE;
+
     if (AllowGraphicsMode)
         Style = GraphicsMenuStyle;
 
     FindVolumeAndFilename(Loader->DevicePath, &Volume, &Filename);
+    if ((!Volume) || (!Filename))
+        return FALSE;
+
     if (Volume->VolName && (StrLen(Volume->VolName) > 0)) {
         FullPath = StrDuplicate(Volume->VolName);
     } else if (Volume->PartName && (StrLen(Volume->PartName) > 0)) {
@@ -1574,7 +1611,8 @@ static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu,
     AddMenuEntry(HideItemMenu, &MenuEntryYes);
     AddMenuEntry(HideItemMenu, &MenuEntryNo);
     MenuExit = RunGenericMenu(HideItemMenu, Style, &DefaultEntry, &ChosenOption);
-    if (MyStriCmp(ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
+
+    if (ChosenOption && MyStriCmp(ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
         MyFreePool(FullPath);
         FullPath = NULL;
         MergeStrings(&FullPath, GuidAsString(&Volume->PartGuid), L'\0');
@@ -1583,9 +1621,11 @@ static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu,
         AddToHiddenTags(VarName, FullPath);
         TagHidden = TRUE;
     } // if
+
     MyFreePool(Volume);
     MyFreePool(Filename);
     MyFreePool(FullPath);
+
     return TagHidden;
 } // BOOLEAN HideEfiTag()
 
@@ -1595,6 +1635,7 @@ static BOOLEAN HideLegacyTag(LEGACY_ENTRY *LegacyLoader, REFIT_MENU_SCREEN *Hide
     INTN               DefaultEntry = 1;
     UINTN              MenuExit;
     CHAR16             *Name = NULL;
+    BOOLEAN            TagHidden = FALSE;
 
     if (AllowGraphicsMode)
         Style = GraphicsMenuStyle;
@@ -1611,25 +1652,37 @@ static BOOLEAN HideLegacyTag(LEGACY_ENTRY *LegacyLoader, REFIT_MENU_SCREEN *Hide
     MenuExit = RunGenericMenu(HideItemMenu, Style, &DefaultEntry, &ChosenOption);
     if (MyStriCmp(ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
         AddToHiddenTags(L"HiddenLegacy", Name);
+        TagHidden = TRUE;
     } // if
     MyFreePool(Name);
-    return TRUE;
+    return TagHidden;
 } // BOOLEAN HideLegacyTag()
 
-static VOID HideOSTag(REFIT_MENU_ENTRY *ChosenEntry) {
+static VOID HideTag(REFIT_MENU_ENTRY *ChosenEntry) {
     LOADER_ENTRY       *Loader = (LOADER_ENTRY *) ChosenEntry;
     LEGACY_ENTRY       *LegacyLoader = (LEGACY_ENTRY *) ChosenEntry;
     REFIT_MENU_SCREEN  HideItemMenu = { NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
                                         L"Select an option and press Enter or",
                                         L"press Esc to return to main menu without changes" };
 
+    if (ChosenEntry == NULL)
+        return;
+
     HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
+    // BUG:The RescanAll() calls should be conditional on successful calls to
+    // HideEfiTag() or HideLegacyTag(); but for the former, this causes
+    // crashes on a second call hide a tag if the user chose "No" to the first
+    // call. This seems to be related to memory management of Volumes; the
+    // crash occurs in FindVolumeAndFilename() and lib.c when calling
+    // DevicePathToStr(). Calling RescanAll() on all returns from HideEfiTag()
+    // seems to be an effective workaround, but there's likely a memory
+    // management bug somewhere that's the root cause.
     switch (ChosenEntry->Tag) {
         case TAG_LOADER:
             if (Loader->DiscoveryType == DISCOVERY_TYPE_AUTO) {
                 HideItemMenu.Title = L"Hide EFI OS Tag";
-                if (HideEfiTag(Loader, &HideItemMenu, L"HiddenTags"))
-                    RescanAll(TRUE);
+                HideEfiTag(Loader, &HideItemMenu, L"HiddenTags");
+                RescanAll(TRUE);
             } else {
                 DisplaySimpleMessage(L"Cannot Hide Entry for Manual Boot Stanza",
                                      L"You must edit refind.conf to remove this entry.");
@@ -1653,11 +1706,11 @@ static VOID HideOSTag(REFIT_MENU_ENTRY *ChosenEntry) {
             break;
         case TAG_TOOL:
             HideItemMenu.Title = L"Hide Tool Tag";
-            if (HideEfiTag(Loader, &HideItemMenu, L"HiddenTools"))
-                RescanAll(TRUE);
+            HideEfiTag(Loader, &HideItemMenu, L"HiddenTools");
+            RescanAll(TRUE);
             break;
     } // switch()
-} // VOID HideOsTag()
+} // VOID HideTag()
 
 UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
 {
@@ -1720,7 +1773,7 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
         } // Enter sub-screen
         if (MenuExit == MENU_EXIT_HIDE) {
             if (GlobalConfig.HiddenTags)
-                HideOSTag(TempChosenEntry);
+                HideTag(TempChosenEntry);
             MenuExit = 0;
         } // Hide launcher
     }

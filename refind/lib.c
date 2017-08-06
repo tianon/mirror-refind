@@ -1565,6 +1565,9 @@ VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **Devi
     UINTN i = 0;
     BOOLEAN Found = FALSE;
 
+    if (!loadpath || !DeviceVolume || !loader)
+        return;
+
     MyFreePool(*loader);
     MyFreePool(*DeviceVolume);
     *DeviceVolume = NULL;
@@ -1572,6 +1575,10 @@ VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **Devi
     *loader = SplitDeviceString(DeviceString);
 
     while ((i < VolumesCount) && (!Found)) {
+        if (Volumes[i]->DevicePath == NULL) {
+            i++;
+            continue;
+        }
         VolumeDeviceString = DevicePathToStr(Volumes[i]->DevicePath);
         Temp = SplitDeviceString(VolumeDeviceString);
         if (MyStriCmp(DeviceString, VolumeDeviceString)) {
