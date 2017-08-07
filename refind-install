@@ -109,6 +109,7 @@ TargetShim="default"
 TargetX64="refind_x64.efi"
 TargetIA32="refind_ia32.efi"
 LocalKeys=0
+EncryptKeys=0
 DeleteRefindDir=0
 AlwaysYes=0
 
@@ -144,6 +145,8 @@ GetParams() {
               ;;
          --localkeys) LocalKeys=1
               ;;
+         --encryptkeys) EncryptKeys=1
+              ;;
          --shim | --preloader) ShimSource="$2"
               ShimType=`basename $ShimSource`
               shift
@@ -159,7 +162,7 @@ GetParams() {
          * ) echo "Usage: $0 [--notesp | --usedefault {device-file} | --root {dir} |"
              echo "                     --ownhfs {device-file} ] [--keepname]"
              echo "                  [--nodrivers | --alldrivers]"
-             echo "                  [--localkeys] [--keepname] [--yes]"
+             echo "                  [--localkeys] [--encryptkeys] [--keepname] [--yes]"
              exit 1
       esac
       shift
@@ -213,6 +216,33 @@ ReadYesNo() {
       echo "Y"
    else
       read YesNo
+   fi
+}
+
+
+# Get a passphrase for decrpyting a private key, and store it in the
+# KeyPassphrase variable.
+#   $1   Set to "--no-confirm" to skip passphrase input confirmation.
+ReadKeyPassphrase() {
+   if [[ $EncryptKeys == 1 ]]  && [ -z "$KeyPassphrase" ]; then
+      while true; do
+         echo -n "Private key passphrase (no echo): "
+         read -r -s
+         KeyPassphrase="$REPLY"
+         REPLY="shred value"
+         echo
+         if [ "$1" == "--no-confirm" ]; then
+            break
+         else
+            echo -n "Confirm passphrase (no echo): "
+            read -r -s
+            echo
+            if [ "$KeyPassphrase" == "$REPLY" ]; then
+               REPLY="shred value"
+               break
+            fi
+         fi
+      done
    fi
 }
 
@@ -1026,8 +1056,13 @@ GenerateKeys() {
          echo "Backing up existing $DerKey"
          cp -f "$DerKey" "$DerKey.backup" 2> /dev/null
       fi
+      if [[ $EncryptKeys == 1 ]]; then
+         KeyEncryptionArgument=""
+      else
+         KeyEncryptionArgument="-nodes"
+      fi
       "$OpenSSL" req -new -x509 -newkey rsa:2048 -keyout "$PrivateKey" -out "$CertKey" \
-                     -nodes -days 3650 -subj "/CN=Locally-generated rEFInd key/"
+                     $KeyEncryptionArgument -days 3650 -subj "/CN=Locally-generated rEFInd key/"
       "$OpenSSL" x509 -in "$CertKey" -out "$DerKey" -outform DER
       chmod 0600 "$PrivateKey"
    else
@@ -1041,9 +1076,18 @@ GenerateKeys() {
 # Also assumes that the SBSign and various key variables are set appropriately.
 # Aborts script on error
 SignOneBinary() {
-   $SBSign --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1" 2>&1 >/dev/null | \
+   ReadKeyPassphrase --no-confirm
+   SbSignCommand=$(printf "%q " "$SBSign" --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1")
+   echo "$KeyPassphrase" |
+      script -qefc "$SbSignCommand" --force /dev/null 2>&1 | ( \
+           if [[ $EncryptKeys == 1 ]]; then
+             head -n 2 >/dev/null # Skip the first two lines (incl. passphrase).
+           else
+             head -n 1 >/dev/null
+           fi
            grep -v "data remaining.*gaps between PE/COFF sections"
-   if [[ "${PIPESTATUS[0]}" != 0 ]] ; then
+         )
+   if [[ "${PIPESTATUS[1]}" != 0 ]] ; then
       echo "Problem signing the binary $1! Aborting!"
       exit 1
    fi
