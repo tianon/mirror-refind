@@ -8,7 +8,7 @@ refind-install \- Install rEFInd to the ESP and create an NVRAM entry
 .BI "refind-install "
 [--notesp | --usedefault \fIdevice-file\fR | --root \fImount-point\fR |
 --ownhfs \fIdevice-file\fR ] [--keepname] [--nodrivers | --alldrivers]
-[--shim \fIshim-filename\fR] [--localkeys] [--yes]
+[--shim \fIshim-filename\fR] [--localkeys] [--encryptkeys] [--yes]
 
 
 .SH "DESCRIPTION"
@@ -231,6 +231,20 @@ used to sign many other users' binaries; however, this method requires that
 both the \fBopenssl\fR and \fBsbsign\fR binaries be installed. The former
 is readily available in most distributions' repositories, but the latter is
 not, so this option is not the default.
+
+.TP
+.B \-\-encryptkeys
+Ordinarily, if you use the \-\-localkeys option, \fBrefind\-install\fR
+stores the local key files on your hard disk in an unencrypted form. Thus,
+should your computer be compromised, the intruder could use your own key to
+sign a modified boot loader, eliminating the benefits of Secure Boot. If you
+use this option, then the private key is stored in an encrypted form,
+secured via an encryption password. You must enter this password before the
+key can be used to sign any binary, thus reducing the risk that an intruder
+could hijack your boot process. This is obviously a highly desirable option,
+but the downside is that you must remember the password and enter it
+whenever you update rEFInd or any other program signed with your private
+key. This also makes a fully automated update of rEFInd impossible.
 
 .TP
 .B \-\-keepname

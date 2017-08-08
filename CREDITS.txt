@@ -3,8 +3,8 @@ program is not the work of a single person. Others have contributed to the
 program, both in its original version (rEFIt) and by providing features
 I've incorporated into the current version. Specifically:
 
-Program (C source code) files:
-------------------------------
+Program (C source code and script) files:
+-----------------------------------------
 
 * Christoph Pfisterer was the original author of rEFIt. See its Web page,
   http://refit.sourceforge.net, for this version of the program. Christoph
@@ -76,6 +76,9 @@ Program (C source code) files:
   slightly modified version of LodePNG (http://lodev.org/lodepng/) by Lode
   Vandevenne. (The libeg/lodepng_xtra.c file provides some necessary
   ancillary and interface functions written by me.)
+
+* Pavel Penev contributed the code to enable encrypting rEFInd's locally
+  generated signing keys in refind-install.
 
 * The RefindPkg.dec and RefindPkg.dsc files, used to enable compiling
   rEFInd in the traditional TianoCore way, come from
