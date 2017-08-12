@@ -2193,7 +2193,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     LoadDrivers();
     ScanVolumes(); // Do before ReadConfig() because it needs SelfVolume->VolName
     ReadConfig(GlobalConfig.ConfigFilename);
-    SetVolumeIcons();
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')
         SetAppleOSInfo();
@@ -2207,6 +2206,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     // further bootstrap (now with config available)
     SetupScreen();
+    SetVolumeIcons();
     ScanForBootloaders(GlobalConfig.ScanDelay == 0);
     ScanForTools();
     // SetupScreen() clears the screen; but ScanForBootloaders() may display a

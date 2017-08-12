@@ -180,9 +180,10 @@ VOID SetupScreen(VOID)
         // clear screen and show banner
         // (now we know we'll stay in graphics mode)
         if ((UGAWidth >= HIDPI_MIN) && !HaveResized) {
-            GlobalConfig.IconSizes[0] *= 2;
-            GlobalConfig.IconSizes[1] *= 2;
-            GlobalConfig.IconSizes[2] *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_BIG] *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
             HaveResized = TRUE;
         } // if
         SwitchToGraphics();

@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-5/21/2017, referencing rEFInd 0.10.8</p>
+8/12/2017, referencing rEFInd 0.11.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -234,23 +234,20 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
     <li>I've been receiving reports of blank screens when using rEFInd on
 	some recent Mac models. I've investigated this with the help of one
-	user, and I suspect that Apple has made changes to its firmware
-	that are likely to affect just about any EFI program. I don't have
-	a definitive solution, but at least one user has reported that
+	user, and I suspect that Apple has made changes to its firmware that
+	are likely to affect just about any EFI program. I don't have a
+	definitive solution, but at least one user has reported that
 	removing rEFInd's drivers has caused the problem to go into
-	remission.</li>
+	remission. Changes made in version 0.11.0 improve error reporting on
+	Macs, which may help with this issue.</li>
 
     <li>Another Mac-specific display problem relates to "retina" displays:
 	Some users report that rEFInd comes up in a lower resolution than
 	the screen supports, and that this setting persists into the running
 	OS X instance, and can't be adjusted using the usual OS X means.
-	Unfortunately, I lack the hardware necessary to experiment and find
-	a solution to this problem within rEFInd. Thus, a fix will have to
-	wait for me to get my hands on such hardware (which is not on my
-	immediate purchase list) or until somebody with such hardware and
-	the necessary skills submits a fix. (Note that a fix could
-	conceivably involve passing options to the OS X boot loader or
-	something else that would require trivial or no changes to rEFInd.)
+	I've just recently (mid-2017) purchased an iMac with a "retina"
+	display, so I can now begin to investigate this problem, but as of
+	rEFInd 0.11.0, I haven't yet had a chance to look into it in depth.
 	I've heard that this problem affects not just rEFInd, but also GRUB,
 	and even Windows when dual-booting on a Mac; see <a
 	href="https://youtu.be/tgTMxB-ffjM?t=3m44s">this YouTube video</a>
@@ -282,13 +279,12 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
     <li>A couple of Mac users have reported that the brightness-adjustment
 	features in Windows don't work when Windows is booted via rEFInd,
-	but that these features do work when Windows is booted via the
-	Mac's built-in boot manager. Unfortunately, I have no idea what
-	causes this problem, I have no Windows installation on my one
-	(elderly) Mac, and I have no way to debug it. Therefore, it's
-	unlikely that I'll be able to fix this problem myself; but if you
-	have the equipment and skill to do so, I'd be interested in
-	receiving a patch.</li>
+	but that these features do work when Windows is booted via the Mac's
+	built-in boot manager. Unfortunately, I have no idea what causes
+	this problem, I have no Windows installation on my Macs, and I have
+	no way to debug it. Therefore, it's unlikely that I'll be able to
+	fix this problem myself; but if you have the equipment and skill to
+	do so, I'd be interested in receiving a patch.</li>
 
     <li>If you use a true MBR disk on a Mac to boot Windows or some other
 	BIOS-only OS, and if that disk has an extended partition, bogus
@@ -301,10 +297,10 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	ignoring new media or keeping old media that have been ejected.
 	This should be investigated and fixed.</li>
 
-    <li>The "scanning for new boot loaders" message that appears during the
-	re-scan feature is primitive. Some sort of dynamic icon would be
-	nice, but perhaps impractical, given the single-tasking nature of
-	EFI.</li>
+    <li>The "scanning for boot loaders" message that appears at startup and
+	during the re-scan feature is primitive. Some sort of dynamic icon
+	would be nice, but perhaps impractical, given the single-tasking
+	nature of EFI.</li>
 
     <li>On my Mac Mini, launching a shell, returning, and performing a
 	re-scan causes the system to be unable to launch the shell again. I
@@ -317,32 +313,40 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	in the actual volume name read from disk. Thus, you can't specify a
 	volume by name if it includes a slash (as in <tt>Fedora
 	/boot</tt>). Workarounds are to rename the volume to omit the slash
-	and to use a filesystem number rather than a volume label.</li>
+	and to use a partition GUID rather than a volume label.</li>
 
     <li>The code is in need of review to search for memory leaks and
 	similar problems.</li>
 
-    <li>If the user has a Linux software RAID 1 array with Btrfs, HFS+,
-        or FAT filesystem, rEFInd will detect kernels or boot loaders in
-	RAID 1 twice. Checks to prevent this with ext2/3/4fs and ReiserFS
-	already exist; these checks could be expanded to block such
-	duplication with more filesystems.</li>
+    <li>If the user has a Linux software RAID 1 array with Btrfs, HFS+, or
+	FAT filesystem, rEFInd will detect kernels or boot loaders in RAID 1
+	twice. Checks to prevent this with ext2/3/4fs and ReiserFS already
+	exist; these checks could be expanded to block such duplication with
+	more filesystems. Using the in-rEFInd hiding feature (activated by
+	the Delete or minus [<tt>-</tt>] key) can remove a redundant
+	entry.</li>
 
     <li>Some Macs experience problems with waking up from suspend states
-	when rEFInd is installed. Unfortunately, I lack the hardware to
-	test and experiment with this (my only Intel-based Mac doesn't
-	exhibit this problem), so I can't fix this myself. <a
+	when rEFInd is installed. <a
 	href="apple.stackexchange.com/questions/91139/why-does-my-mbp-sleep-on-mountain-lion-and-often-not-wake-up/91150#91150">Using
-	<tt>pmset</tt> to disable the <tt>autopoweroff</tt> option</a> is
-	<a
+	<tt>pmset</tt> to disable the <tt>autopoweroff</tt> option</a> is <a
 	href="http://apple.stackexchange.com/questions/91529/macbook-air-not-waking-up-from-suspend-sleep-with-refind-boot-manager-installed">claimed
-	by some</a> to at least partially fix the problem, though. Using
-	the <tt>--ownhfs</tt> installation option may also help in some
+	by some</a> to at least partially fix the problem, though. Using the
+	<tt>--ownhfs</tt> installation option may also help in some
 	cases.</li>
 
     <li>If you activate BIOS-mode support on UEFI-based PCs, you may find
 	multiple copies of the BIOS-mode loaders added to your firmware's
 	boot manager. Only one copy shows up in rEFInd, though.</li>
+
+    <li>If you have a manual boot stanza for a Linux kernel with both an
+	<tt>initrd</tt> line and a second initrd file specified on the
+	<tt>options</tt> line, both initrd files will be passed to the
+	kernel in most situations; <i>however,</i> one will be omitted if
+	you enter the submenu (via F2, Insert, or Tab) and select the
+	default entry there. This bug is caused by the convoluted way rEFInd
+	generates its submenus, and I'm putting off fixing it until I can
+	give that code the overhaul it desperately needs.</li>
 
     </ul></li> <!-- Known bugs -->
 
@@ -388,16 +392,17 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	the NVRAM, and so on. This would be useful in system maintenance
 	and in recovering from boot problems.</li>
 
-    <li>An installation tool for the EFI environment would be useful.
-        A simple EFI shell script might work, but because this function
-	requires access to the <tt>bcfg</tt> command, this would work
-	only from a version 2 shell or if <tt>bcfg</tt> were implemented
-	as a standalone program. Another alternative would be a program
-	written in C.</li>
+    <li>An installation tool for the EFI environment would be useful. A
+	simple EFI shell script might work, but because this function
+	requires access to the <tt>bcfg</tt> command, this would work only
+	from a version 2 shell or if <tt>bcfg</tt> were implemented as a
+	standalone program. Another alternative would be a program written
+	in C. Since Python is now available in EFI, a Python-based script
+	might also work; but that would require installing Python.</li>
 
-    <li>It should be possible to override specific auto-detected boot
-	loader settings&mdash;say, to disable one specific boot loader or
-	change its icon.</li>
+    <li>It should be possible to override specific auto-detected boot loader
+	settings&mdash;say, to change the icon for one specific boot
+	loader.</li>
 
     <li>A GUI configuration tool for host OSes (Linux, OS X, Windows, etc.)
 	would be nice, but it's low on my personal priority list. If you'd
@@ -462,7 +467,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2016 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2017 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

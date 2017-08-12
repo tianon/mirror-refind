@@ -69,6 +69,10 @@ Files: refind/gpt.[ch]
 Copyright: 2014-2015 Roderick W. Smith
 License: GPL-3+
 
+Files: refind/pointer.[ch]
+Copyright: 2017 CJ Vaughter
+License: GPL-3+
+
 Files: refind/crc32.[ch]
 Copyright: 1986 Gary S. Brown
 License: unrestricted-crc32
@@ -328,6 +332,7 @@ Comment: tool_windows_rescue is combination of os_win8.png with
 
 Files: icons/boot_win.png
        icons/func_csr_rotate.png
+       icons/mouse.png
        icons/os_clover.png
        icons/os_freebsd.png
        icons/os_gummiboot.png
@@ -345,7 +350,7 @@ Files: icons/boot_win.png
        icons/tool_rescue.png
        icons/transparent.png
        icons/README
-Copyright: 2015 by Roderick W. Smith
+Copyright: 2015-2017 by Roderick W. Smith
 License: LGPL-3+ or CC-BY-SA-3.0
 
 Files: icons/os_trusty.png

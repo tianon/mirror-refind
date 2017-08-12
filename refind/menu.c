@@ -1669,7 +1669,7 @@ static VOID HideTag(REFIT_MENU_ENTRY *ChosenEntry) {
         return;
 
     HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
-    // BUG:The RescanAll() calls should be conditional on successful calls to
+    // BUG: The RescanAll() calls should be conditional on successful calls to
     // HideEfiTag() or HideLegacyTag(); but for the former, this causes
     // crashes on a second call hide a tag if the user chose "No" to the first
     // call. This seems to be related to memory management of Volumes; the

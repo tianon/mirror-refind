@@ -457,8 +457,6 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <p>The <a href="http://www.easyuefi.com/index-us.html">EasyUEFI tool</a> is a free (as in beer) GUI tool for managing EFI boot programs. I've only tried it once, and it seemed fairly intuitive and easy to use, but I don't have detailed instructions on how to use it. If you want to use EasyUEFI, you'll have to use it in place of <tt>bcdedit</tt> at the end of the following procedure.</p>
 
-<p class="sidebar"><b>Caution:</b> I've received reports that Windows 10 has made changes that make the following instructions not work. If you're using this OS, until I have a chance to investigate and update these instructions, your best bet may be to install rEFInd using a Linux live disk, such as an Ubuntu installation disk in its "try before installing" mode.</p>
-
 <p>Attempt this method of installation only on a UEFI-based PC; this method will not work on Windows that's installed on a Mac in BIOS/CSM/legacy mode. To install rEFInd under Windows, you must first find a way to access the ESP, which Windows normally hides from view. One way to accomplish this goal, and to proceed forward once the ESP is accessible, is as follows:</p>
 
 <ol>
@@ -479,11 +477,9 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <li>Type <b><tt>rename refind.conf-sample refind.conf</tt></b> to rename rEFInd's configuration file.</li>
 
-<p class="sidebar"><b>Note:</b> I've heard from a couple of Windows 10 users that the <tt>bcdedit</tt> commands described here don't work. I don't yet know if this is a coincidence or if Microsoft has changed <tt>bcdedit</tt> in such a way that these instructions no longer apply. If you run into this problem, either try using EasyUEFI or use another installation method, such as the <a href="#linux">Linux method</a> from a Linux emergency boot disc.</p>
+<li>Type <b><tt>bcdedit /set "{bootmgr}" path \EFI\refind\refind_x64.efi</tt></b> to set rEFInd as the default EFI boot program. Note that <tt>"{bootmgr}"</tt> is entered as such, including both the quotes and braces (<tt>{}</tt>). Also, change <tt>refind_x64.efi</tt> to <tt>refind_ia32.efi</tt> on systems with 32-bit EFIs. Such computers are rare, and most of them are tablets. Check your Windows bit depth to determine which binary you should use.</li>
 
-<li>Type <b><tt>bcdedit /set {bootmgr} path \EFI\refind\refind_x64.efi</tt></b> to set rEFInd as the default EFI boot program. Note that <tt>{bootmgr}</tt> is entered as such; that's not a notation for a variable. Also, change <tt>refind_x64.efi</tt> to <tt>refind_ia32.efi</tt> on systems with 32-bit EFIs. Such computers are rare, and most of them are tablets. Check your Windows bit depth to determine which binary you should use.</li>
-
-<li>If you like, type <b><tt>bcdedit /set {bootmgr} description "<i>rEFInd description</i>"</tt></b> to set a description (change <tt><i>rEFInd description</i></tt> as you see fit).</li>
+<li>If you like, type <b><tt>bcdedit /set "{bootmgr}" description "<i>rEFInd description</i>"</tt></b> to set a description (change <tt><i>rEFInd description</i></tt> as you see fit).</li>
 
 </ol>
 

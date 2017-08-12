@@ -22,6 +22,7 @@
 #    "--shim {shimfile}" to install a shim.efi file for Secure Boot. Valid
 #           only under Linux.
 #    "--preloader" is synonymous with "--shim". Valid only under Linux.
+#    "--encryptkeys" password-protects the Secure Boot private key.
 #    "--localkeys" to re-sign x86-64 binaries with a locally-generated key.
 #           Valid only under Linux.
 #    "--keepname" to keep refind_x64.efi name as such even when using shim.
@@ -37,7 +38,7 @@
 
 # Revision history:
 #
-# 0.11.0  -- Create BOOT.CSV file
+# 0.11.0  -- Create BOOT.CSV file and option to encrypt SB private key
 # 0.10.8  -- Enabled use of shimx64.efi.signed as Shim source file
 # 0.10.7  -- Added mm{arch}.efi as equivalent of MokManager.efi
 # 0.10.6  -- Improved identification of the root device under macOS.
