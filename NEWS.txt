@@ -1,6 +1,9 @@
 0.11.0 (?/??/2017):
 -------------------
 
+- Fixed lack of scaling of disk badges when other icons were properly scaled
+  on HiDPI/retina displays.
+
 - Added new --encryptkeys option to refind-install, to improve the security
   of locally-generated Secure Boot keys stored on your computer's hard disk.
 

@@ -162,8 +162,8 @@ GetParams() {
               ;;
          * ) echo "Usage: $0 [--notesp | --usedefault {device-file} | --root {dir} |"
              echo "                     --ownhfs {device-file} ] [--keepname]"
-             echo "                  [--nodrivers | --alldrivers]"
-             echo "                  [--localkeys] [--encryptkeys] [--keepname] [--yes]"
+             echo "                  [--nodrivers | --alldrivers] [--shim {shimfile}]"
+             echo "                  [--localkeys [--encryptkeys]] [--keepname] [--yes]"
              exit 1
       esac
       shift
@@ -203,6 +203,10 @@ GetParams() {
          echo "Aborting installation!"
          exit 0
       fi
+   fi
+   if [[ "$EncryptKeys" == 1 && "$LocalKeys" == 0 ]] ; then
+      echo "The --encryptkeys option requires the use of --localkeys! Aborting!"
+      exit 1
    fi
    RLConfFile="$RootDir/boot/refind_linux.conf"
    EtcKeysDir="$RootDir/etc/refind.d/keys"
@@ -1069,7 +1073,7 @@ GenerateKeys() {
    else
       echo "Using existing local keys...."
    fi
-}
+} # GenerateKeys()
 
 # Sign a single binary. Requires parameters:
 #   $1 = source file
@@ -1078,21 +1082,24 @@ GenerateKeys() {
 # Aborts script on error
 SignOneBinary() {
    ReadKeyPassphrase --no-confirm
-   SbSignCommand=$(printf "%q " "$SBSign" --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1")
-   echo "$KeyPassphrase" |
-      script -qefc "$SbSignCommand" --force /dev/null 2>&1 | ( \
-           if [[ $EncryptKeys == 1 ]]; then
-             head -n 2 >/dev/null # Skip the first two lines (incl. passphrase).
-           else
-             head -n 1 >/dev/null
-           fi
-           grep -v "data remaining.*gaps between PE/COFF sections"
-         )
-   if [[ "${PIPESTATUS[1]}" != 0 ]] ; then
+   if [[ "$EncryptKeys" == 1 ]] ; then
+      SbSignCommand=$(printf "%q " "$SBSign" --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1")
+      echo "$KeyPassphrase" |
+         script -qefc "$SbSignCommand" --force /dev/null 2>&1 | ( \
+              head -n 2 >/dev/null # Skip the first two lines (incl. passphrase).
+              grep -v "data remaining.*gaps between PE/COFF sections"
+            )
+       local status="${PIPESTATUS[1]}"
+   else
+      "$SBSign" --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1" 2>&1 >/dev/null | \
+                grep -v "data remaining.*gaps between PE/COFF sections"
+      local status="${PIPESTATUS[0]}"
+   fi
+   if [[ "$status" != 0 ]] ; then
       echo "Problem signing the binary $1! Aborting!"
       exit 1
    fi
-}
+} # SignOneBinary()
 
 # Re-sign the x86-64 binaries with a locally-generated key, First look for appropriate
 # key files in $EtcKeysDir. If they're present, use them to re-sign the binaries. If

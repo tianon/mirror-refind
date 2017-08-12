@@ -459,6 +459,15 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	BIOS-mode boot loader from some servers that offer both, which
 	makes it useless on those networks.</li>
 
+    <li>The handling of encrypted local Secure Boot keys by
+	<tt>refind-install</tt> could be improved. Specifically, if you
+	install without encrypted keys and then run <tt>refind-install</tt>
+	with <tt>--encryptkeys</tt>, or vice-versa, the script is likely to
+	ask for keys repeatedly. Error handling (if an incorrect key is
+	entered, for instance) is also poor. If an encrypted key is used and
+	a rEFInd RPM or Debian package is installed, that installation may
+	fail to set things up correctly.</li>
+
     <li>A Mac-specific package is highly desirable.</li>
 
     </ul></li>
