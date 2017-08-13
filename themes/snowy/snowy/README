@@ -12,7 +12,7 @@ Icon Sources (Overview)
 
 - Original work for rEFInd
   - Source: https://sourceforge.net/p/refind (this archive)
-  - Copyright (c) 2015 by Roderick W. Smith
+  - Copyright (c) 2015-2017 by Roderick W. Smith
   - License: LGPLv3+ or CC-SA 3.0
 
 - Debian OS icon
@@ -20,10 +20,20 @@ Icon Sources (Overview)
   - Copyright (c) 1999 Debian Project
   - License: LGPLv3+ or CC-SA 3.0
 
+- Devuan OS icon
+  - Source: https://devuan.org/ui/img/devuan-emblem.svg
+  - Copyright (c) 2017 Dyne.org foundation
+  - License: CC-BY-SA 4.0
+
 - Elementary OS icon
   - Source: https://commons.wikimedia.org/wiki/File:Elementary_logo.svg
   - Copyright (c) 2008 Dan Rabbit
   - License: GPLv2+
+
+- Ubuntu "animal" icons
+  - Source: https://wiki.ubuntu.com/Artwork/Official
+  - Copyright (c) 2014-2017 Canonical Ltd.
+  - License: CC-BY-SA 3.0
 
 Some icons have been altered from their original forms -- normally
 conversion from SVG to PNG format, resizing, changes in coloration, or
@@ -91,11 +101,18 @@ Modified Debian OS icon:
 os_debian.png (LGPLv3+ or CC-BY-SA 3.0)
 
 
-Banner and icons created by me (Roderick W. Smith):
+Modified Ubuntu "animal" icons:
 
-banner-snowy.png
+os_trusty.png
+os_xenial.png
+os_zesty.png
+
+
+Icons created by me (Roderick W. Smith):
+
 boot_win.png
 func_csr_rotate.png
+mouse.png
 os_clover.png
 os_freebsd.png
 os_gummiboot.png
@@ -108,6 +125,7 @@ os_refind.png
 os_refit.png
 os_win.png
 tool_apple_rescue.png
+tool_fwupdate.png
 tool_memtest.png
 tool_rescue.png
 transparent.png

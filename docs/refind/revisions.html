@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 7/30/2017</p>
+<p>Last Web page update: 8/13/2017</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,110 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.11.0 (8/13/2017)</b>&mdash;In addition to a few bug fixes,
+    this version sees several new features, many of which are likely
+    to be important to a significant number of people....
+    <ul>
+
+    <li>CJ Vaughter has improved his touch-screen code. This should both
+	make more tablets' touch screens work and expands the support to
+	work with mice. Both input methods are disabled by default; you must
+	enable one by uncommenting the <tt>enable_touch</tt> or
+	<tt>enable_mouse</tt> options in <tt>refind.conf</tt>. (Enable only
+	<i>one</i> of these features, though; they're mutually exclusive!)
+	If you enable mouse support, the <tt>mouse_speed</tt> and
+	<tt>mouse_size</tt> options affect the mouse tracking speed and the
+	size of the mouse pointer, too. Note that not all computers support
+	mouse input, much less touch input. The former seems to be largely
+	unrelated to whether the firmware's own user interface supports
+	mice, in my testing. If you enable one of these features and your
+	computer doesn't support it, you can still use rEFInd; but you may
+	see a useless mouse pointer, and the default selection may not come
+	up in a highlighted state. Also, these features do not work on
+	32-bit systems.</li>
+
+    <li>You can now hide OSes and external tool tags from the rEFInd main
+	menu by pressing the minus key (<tt>-</tt>) or Delete key (on PC
+	keyboards; some third-party Mac keyboards label this key Del, but
+	most Apple keyboards lack this key entirely). If you accidentally
+	hide a loder, you can recover it using the new tag recovery tool,
+	which uses a recycle icon on the second row. Hiding or un-hiding
+	loaders relies on the <tt>hidden_tags</tt> option being set on the
+	<tt>showtools</tt> line; but if you hide a tag and then remove the
+	<tt>hidden_tags</tt> option, rEFInd will continue to honor the
+	hidden settings. This option is set by default, but if you've edited
+	<tt>showtools</tt> for a previous installation and upgrade rEFInd,
+	you'll need to add <tt>hidden_tags</tt> to use this new
+	feature.</li>
+
+    <li>A new <tt>refind.conf</tt> option, <tt>dont_scan_tools</tt>, works
+	much like <tt>dont_scan_files</tt>, but applies to external tools
+	(shells, MokManager binaries, etc.). You can use this option to hide
+	duplicate external tools.</li>
+
+    <li>Thanks to Pavel Penev, the <tt>refind-install</tt> script now
+	supports a new option, <tt>--encryptkeys</tt>, which causes it to
+	encrypt and password-protect its local Secure Boot public key. This
+	option is useful only in conjunction with <tt>--localkeys</tt>. This
+	feature should help prevent abuse should somebody break into your
+	computer; the intruder won't be able to sign malware with your own
+	key and insert it into your boot path. You must set and remember a
+	password if you use this feature, though.</li>
+
+    <li>The <tt>refind-install</tt> and <tt>mvrefind</tt> scripts now create
+	a file called <tt>BOOT.CSV</tt> and place it in the directory where
+	rEFInd is installed. This file is used by the <tt>fallback.efi</tt>
+	(aka <tt>fbx64.efi</tt>) program, which Fedora and some other
+	distributions are now installing, to regenerate a working boot list
+	should the NVRAM-based boot order be lost. See the page on <a
+	href="bootcoup.html">keeping rEFInd booting</a> for more on how to
+	control this functionality.</li>
+
+    <li>Disk partitions can now be identified by partition GUID values in
+	more places&mdash;namely, in <tt>dont_scan_dirs</tt> and
+	<tt>dont_scan_files</tt>. Note that the GUIDs are <i>partition</i>
+	GUIDs, which some Linux tools identify as <tt>PARTUUID</tt> values.
+	Filesystem UUIDs are different. Partition GUIDs are fundamentally
+	GPT features; they don't exist on MBR disks. rEFInd assigns one
+	"fake" partition GUID to all MBR partitions, so MBR partitions can
+	be referred to, but cannot be distinguished from one another, in
+	this way.</li>
+
+    <li>Identifying partitions by filesystem number (e.g., <tt>fs0:</tt> or
+	<tt>fs2:</tt>), which was deprecated with version 0.8.7 in 2015, is
+	now no longer supported&mdash;the relevant code has been removed.
+	You now <i>must</i> use filesystem labels, partition names, or
+	partition GUIDs instead of the unreliable filesystem numbers.</li>
+
+    <li>In the past, some error messages on Macs would never appear on the
+	display, sometimes including a prompt to press a key to continue,
+	which could make it seem as if rEFInd had hung. rEFInd now includes
+	new features that enable such messages to appear in <i>most</i> (but
+	not yet all) cases, so you're less likely to see mysterious hangs
+	that aren't quite hangs on Macs. This does not affect UEFI-based
+	PCs.</li>
+
+    <li>I've fixed a bug that caused disk badges to not be scaled along with
+        the main loader tag.</li>
+
+    <li>Apple has updated at least some EFIs in a way that broke the
+	<tt>spoof_osx_version</tt> feature. This has been fixed.</li>
+
+    <li>I've fixed a bug that caused rEFInd to ignore references to the
+	fallback boot loader (<tt>EFI/BOOT/bootx64.efi</tt>) in
+	<tt>dont_scan_files</tt> in some cases.</li>
+
+    <li>I've fixed a bug in <tt>mvrefind</tt> that caused it to not restore
+	<tt>EFI/BOOT-rEFIndBackup</tt> when moving rEFInd out of the
+	<tt>EFI/BOOT</tt> location.</li>
+
+    <li>I've fixed a bug that caused rEFInd to not properly sort a
+	Fedora/CentOS/RHEL <tt>vmlinuz-0-rescue*</tt> kernel to the bottom
+	of the kernel list.</li>
+
+    </ul>
+</li>
 
 <li><b>0.10.9 (7/30/2017)</b>&mdash;This version sees changes in some
     graphics features and in the build process....
