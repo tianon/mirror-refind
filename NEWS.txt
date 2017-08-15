@@ -1,3 +1,9 @@
+0.11.1 (?/??/2017):
+-------------------
+
+- Fixed bug, introduced in 0.11.0, that caused Apple's recovery tool to
+  not be detected.
+
 0.11.0 (8/13/2017):
 -------------------
 

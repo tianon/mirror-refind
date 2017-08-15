@@ -2015,7 +2015,7 @@ static VOID ScanForTools(VOID) {
             case TAG_APPLE_RECOVERY:
                 FileName = StrDuplicate(L"\\com.apple.recovery.boot\\boot.efi");
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                    if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(SelfVolume, FileName))) {
+                    if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], FileName))) {
                         SPrint(Description, 255, L"Apple Recovery on %s", Volumes[VolumeIndex]->VolName);
                         AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
                                         BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE), 'R', TRUE);
