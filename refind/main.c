@@ -2031,7 +2031,7 @@ static VOID ScanForTools(VOID) {
                     SplitVolumeAndFilename(&FileName, &VolName);
                     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
-                            (IsValidTool(SelfVolume, FileName)) &&
+                            (IsValidTool(Volumes[VolumeIndex], FileName)) &&
                             ((VolName == NULL) || MyStriCmp(VolName, Volumes[VolumeIndex]->VolName))) {
                                 SPrint(Description, 255, L"Microsoft Recovery on %s", Volumes[VolumeIndex]->VolName);
                                 AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
