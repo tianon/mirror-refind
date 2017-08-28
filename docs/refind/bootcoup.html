@@ -196,9 +196,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Evading the Guards: Performing a One-Time Boot to Your Desired OS</h2>
 </a>
 
-<p>Most EFIs provide their own build-in boot managers. These tools are primitive, and in some cases they can be difficult to reach, but they can be useful if you need to bypass a new system default in order to boot an OS that has the tools you need to control the boot process.</p>
+<p>Most EFIs provide their own built-in boot managers. These tools are primitive, and in some cases they can be difficult to reach, but they can be useful if you need to bypass a new system default in order to boot an OS that has the tools you need to control the boot process.</p>
 
-<p>On Macs, holding the Option key (or Alt with a PC keyboard) brings up the Mac's boot manager. Typically, the Esc key, Enter key, or a function key (usually F8 or above) does the job on UEFI-based PCs. Some computers provide a prompt for what key to use to access the boot menu, but this isn't always true. Sometimes the keyboard is disabled in the early stages of the boot process by default&mdash;part of a strategy to speed up system boots. Disabling a "fast start" feature in the firmware may work around this problem. Getting into the firmware can be a challenge on such computers, though. Microsoft provides a way to do this in Windows 8 and later; see <a href="http://www.howtogeek.com/126016/three-ways-to-access-the-windows-8-boot-options-menu/">this How-To Geek article</a> for documentation on how to use this feature.</p>
+<p>On Macs, holding the Option key (or Alt with a PC keyboard) brings up the Mac's boot manager. Typically, the Esc key, Enter key, or a function key (usually F8 or above) does the job on UEFI-based PCs. Some computers provide a prompt for what key to use to access the boot menu, but this isn't always true. Sometimes the keyboard is disabled in the early stages of the boot process by default&mdash;part of a strategy to speed up system boots. Disabling a "fast start" feature in the firmware may work around this problem. Getting into the firmware can be a challenge on such computers, though. Microsoft provides a way to do this in Windows 8 and later; see <a href="http://www.howtogeek.com/126016/three-ways-to-access-the-windows-8-boot-options-menu/">this How-To Geek article</a> for documentation on how to use this feature. If a Linux distribution uses the popular <tt>systemd</tt> initialization system, you can type <tt class="userinput">systemctl reboot --firmware</tt> as <tt>root</tt> (or using <tt>sudo</tt>) to do the same from Linux.</p>
 
 <p>Once you've found the built-in boot manager, you'll see its display, which is typically a text-mode listing of boot options. On UEFI-based PCs, the user interface is typically similar to the one used in years past on BIOS-based computers to select the boot device; it's simply been upgraded to include the descriptions held in NVRAM for specific boot loaders. (In fact, prompts are often outdated and misleading; as in the below example, they may refer to "boot devices," when in fact most of the options are EFI boot loader programs, not hardware devices.) As an example, an ASUS P8 H77-I's boot manager looks like this:</p>
 
@@ -344,7 +344,7 @@ Boot0085* ubuntu</pre>
 <h3>Using <tt>bless</tt> to Adjust Your Boot Priority</h3>
 </a>
 
-<p>The more general solution to resetting rEFInd as the default boot manager from macOS is to follow a subset of the <a href="installing.html#osx">manual macOS installation instructions.</a> Unfortunately, some details depend on where it is installed&mdash;on the ESP, on the main macOS root (<tt>/</tt>) partition, or on a separate HFS+ volume. If rEFInd is installed on its own HFS+ partition, using Startup Disk, as described in <a href="#startup_disk">the previous section,</a> is likely to be the easier solution. For the other two options, you should first figure out where rEFInd is installed and then follow this procedure:</p>
+<p>The more general solution to resetting rEFInd as the default boot manager from macOS is to follow a subset of the <a href="installing.html#osx">manual macOS installation instructions.</a> Unfortunately, some details depend on where rEFInd is installed&mdash;on the ESP, on the main macOS root (<tt>/</tt>) partition, or on a separate HFS+ volume. If rEFInd is installed on its own HFS+ partition, using Startup Disk, as described in <a href="#startup_disk">the previous section,</a> is likely to be the easier solution. For the other two options, you should first figure out where rEFInd is installed and then follow this procedure:</p>
 
 <ol>
 
@@ -427,9 +427,9 @@ Boot0085* ubuntu</pre>
 
 <li>Locate Command Prompt in the Start menu, right-click it, and select Run as Administrator. This action opens a Command Prompt window with administrative privileges.</li>
 
-<li>Type <b><tt>bcdedit /set {bootmgr} path \EFI\refind\refind_x64.efi</tt></b> to set rEFInd as the default EFI boot program. Note that <tt>{bootmgr}</tt> is entered as such; that's not a notation for a variable. Also, change <tt>refind_x64.efi</tt> to <tt>refind_ia32.efi</tt> on systems with 32-bit EFIs. Such computers are rare, and most of them are tablets. Check your Windows bit depth to determine which binary you should use. If you use Shim or PreLoader to boot with Secure Boot active, you should change the name of the binary appropriately.</li>
+<li>Type <b><tt>bcdedit /set "{bootmgr}" path \EFI\refind\refind_x64.efi</tt></b> to set rEFInd as the default EFI boot program. Note that <tt>"{bootmgr}"</tt> is entered as such; that's not a notation for a variable. Also, change <tt>refind_x64.efi</tt> to <tt>refind_ia32.efi</tt> on systems with 32-bit EFIs. Such computers are rare, and most of them are tablets. Check your Windows bit depth to determine which binary you should use. If you use Shim or PreLoader to boot with Secure Boot active, you should change the name of the binary appropriately.</li>
 
-<li>If you like, type <b><tt>bcdedit /set {bootmgr} description "<i>rEFInd description</i>"</tt></b> to set a description (change <tt><i>rEFInd description</i></tt> as you see fit).</li>
+<li>If you like, type <b><tt>bcdedit /set "{bootmgr}" description "<i>rEFInd description</i>"</tt></b> to set a description (change <tt><i>rEFInd description</i></tt> as you see fit).</li>
 
 </ol>
 
@@ -473,7 +473,7 @@ Boot0085* ubuntu</pre>
 <h3>Using an EFI Shell to Adjust Your Boot Priority</h3>
 </a>
 
-<p>Version 2 of the EFI shell provides a command, <tt>bcfg</tt>, which can adjust the EFI boot order. Unfortunately, this tool is not present in version 1 of the EFI shell, and version 2 is reliable only with EFI version 2.3 and later. To date (early 2016), all Intel-based Macs use EFI 1.1, and many PCs sold prior to Windows 8's release use UEFI (EFI 2.x) versions prior to 2.3. Thus, this approach may not work for you.</p>
+<p>Version 2 of the EFI shell provides a command, <tt>bcfg</tt>, which can adjust the EFI boot order. Unfortunately, this tool is not present in version 1 of the EFI shell, and version 2 is reliable only with EFI version 2.3 and later. To date (mid-2017), all Intel-based Macs use EFI 1.1, and many PCs sold prior to Windows 8's release use UEFI (EFI 2.x) versions prior to 2.3. Thus, this approach may not work for you.</p>
 
 <p>Even if your computer works with a version 2 shell, it may not have one built in. In fact, most EFIs I've seen lack a built-in shell. If a shell is available, it should appear on the EFI's built-in boot manager, as described earlier, in <a href="#evade_guards">Evading the Guards: Performing a One-Time Boot to Your Desired OS.</a> If a shell is not built into your firmware, you can add one; here are a few links that may be helpful:</p>
 
@@ -609,7 +609,15 @@ $ <b>sudo cp ~/BOOT.CSV /boot/efi/EFI/refind/</b></pre>
 
 <pre class="listing">$ <b>find /boot/efi -iname BOOT.CSV</b></pre>
 
-<p>By default, Fedora and its relatives install <tt>fallback.efi</tt> in the fallback position (typically launched by Shim, actually) and set up a <tt>BOOT.CSV</tt> file in the directory that holds the distribution's GRUB. This is good for keeping Fedora booting, but if you want to boot with rEFInd, this configuration can result in a boot coup should the fallback boot loader run for any reason. One way to fix such a problem is to delete or rename <tt>BOOT.CSV</tt> in the GRUB boot loader's directory and create a suitable <tt>BOOT.CSV</tt> in the rEFInd directory on the ESP. The <tt>refind-install</tt> and <tt>mvrefind</tt> scripts in rEFInd 0.10.10 and later create such a file automatically. This file is harmless if <tt>fallback.efi</tt> never runs.</p>
+<p>By default, Fedora and its relatives install <tt>fallback.efi</tt> in the
+fallback position (typically launched by Shim, actually) and set up a
+<tt>BOOT.CSV</tt> file in the directory that holds the distribution's GRUB.
+This is good for keeping Fedora booting, but if you want to boot with
+rEFInd, this configuration can result in a boot coup should the fallback
+boot loader run for any reason. One way to fix such a problem is to delete
+or rename <tt>BOOT.CSV</tt> in the GRUB boot loader's directory and create a
+suitable <tt>BOOT.CSV</tt> in the rEFInd directory on the ESP. The
+<tt>refind-install</tt> and <tt>mvrefind</tt> scripts in rEFInd 0.11.0 and later create such a file automatically. This file is harmless if <tt>fallback.efi</tt> never runs.</p>
 
 <p>Note that <tt>fallback.efi</tt> does not guarantee the order in which boot entries are created, nor does it provide any mechanism for controlling the boot order when the program runs. These details are determined by the order in which the program locates <tt>BOOT.CSV</tt> files. Thus, if you have multiple boot loaders with <tt>BOOT.CSV</tt> files, you'll end up with an essentially random boot loader selected as the default. With any luck, you'll be able to adjust the boot order with <tt>efibootmgr</tt>, EasyUEFI, or some other program once the system has booted. If your computer completely forgets its boot entries on every boot, though, your best bet is likely to be to delete all the <tt>BOOT.CSV</tt> files except for the one associated with the boot program you want to control the computer.</p>
 
