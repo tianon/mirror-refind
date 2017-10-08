@@ -202,6 +202,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* *DontScanFiles = */ NULL,
                               /* *DontScanTools = */ NULL,
                               /* *WindowsRecoveryFiles = */ NULL,
+                              /* *MacOSRecoveryFiles = */ NULL,
                               /* *DriverDirs = */ NULL,
                               /* *IconsDir = */ NULL,
                               /* *ExtraKernelVersionStrings = */ NULL,
@@ -1108,7 +1109,7 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
         MergeStrings(&OSIconName, L"refind", L',');
         Entry->OSType = 'R';
         ShortcutLetter = 'R';
-    } else if (MyStriCmp(LoaderPath, MACOSX_LOADER_PATH)) {
+    } else if (StriSubCmp(MACOSX_LOADER_PATH, LoaderPath)) {
         MergeStrings(&OSIconName, L"mac", L',');
         Entry->OSType = 'M';
         ShortcutLetter = 'M';
@@ -1588,6 +1589,25 @@ static VOID ScanNetboot() {
     } 
 } // VOID ScanNetBoot()
 
+// Adds *FullFileName as a macOS loader, if it exists.
+// Returns TRUE if the fallback loader is NOT a duplicate of this one,
+// FALSE if it IS a duplicate.
+static BOOLEAN ScanMacOsLoader(REFIT_VOLUME *Volume, CHAR16* FullFileName) {
+    BOOLEAN  ScanFallbackLoader = TRUE;
+    CHAR16   *VolName = NULL, *PathName = NULL, *FileName = NULL;
+
+    SplitPathName(FullFileName, &VolName, &PathName, &FileName);
+    if (FileExists(Volume->RootDir, FullFileName) && !FilenameIn(Volume, PathName, L"boot.efi", GlobalConfig.DontScanFiles)) {
+        AddLoaderEntry(FullFileName, L"macOS", Volume, TRUE);
+        if (DuplicatesFallback(Volume, FullFileName))
+            ScanFallbackLoader = FALSE;
+    } // if
+    MyFreePool(VolName);
+    MyFreePool(PathName);
+    MyFreePool(FileName);
+    return ScanFallbackLoader;
+} // VOID ScanMacOsLoader()
+
 static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
     EFI_STATUS              Status;
     REFIT_DIR_ITER          EfiDirIter;
@@ -1605,11 +1625,18 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
         // check for macOS boot loader
         if (ShouldScan(Volume, MACOSX_LOADER_DIR)) {
             StrCpy(FileName, MACOSX_LOADER_PATH);
-            if (FileExists(Volume->RootDir, FileName) && !FilenameIn(Volume, MACOSX_LOADER_DIR, L"boot.efi", GlobalConfig.DontScanFiles)) {
-                AddLoaderEntry(FileName, L"macOS", Volume, TRUE);
-                if (DuplicatesFallback(Volume, FileName))
-                    ScanFallbackLoader = FALSE;
-            }
+            ScanFallbackLoader &= ScanMacOsLoader(Volume, FileName);
+            DirIterOpen(Volume->RootDir, L"\\", &EfiDirIter);
+            while (DirIterNext(&EfiDirIter, 1, NULL, &EfiDirEntry)) {
+                if (IsGuid(EfiDirEntry->FileName)) {
+                    SPrint(FileName, 255, L"%s\\%s", EfiDirEntry->FileName, MACOSX_LOADER_PATH);
+                    ScanFallbackLoader &= ScanMacOsLoader(Volume, FileName);
+                    SPrint(FileName, 255, L"%s\\%s", EfiDirEntry->FileName, L"boot.efi");
+                    if (!StriSubCmp(FileName, GlobalConfig.MacOSRecoveryFiles))
+                        MergeStrings(&GlobalConfig.MacOSRecoveryFiles, FileName, L',');
+                } // if
+            } // while
+            Status = DirIterClose(&EfiDirIter);
 
             // check for XOM
             StrCpy(FileName, L"System\\Library\\CoreServices\\xom.efi");
@@ -2013,16 +2040,18 @@ static VOID ScanForTools(VOID) {
                 break;
 
             case TAG_APPLE_RECOVERY:
-                FileName = StrDuplicate(L"\\com.apple.recovery.boot\\boot.efi");
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                    if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], FileName))) {
-                        SPrint(Description, 255, L"Apple Recovery on %s", Volumes[VolumeIndex]->VolName);
-                        AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
-                                        BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE), 'R', TRUE);
-                    } // if
+                    j = 0;
+                    while ((FileName = FindCommaDelimited(GlobalConfig.MacOSRecoveryFiles, j++)) != NULL) {
+                        if ((Volumes[VolumeIndex]->RootDir != NULL)) {
+                            if ((IsValidTool(Volumes[VolumeIndex], FileName))) {
+                                SPrint(Description, 255, L"Apple Recovery on %s", Volumes[VolumeIndex]->VolName);
+                                AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
+                                                BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE), 'R', TRUE);
+                            } // if
+                        } // if
+                    } // while
                 } // for
-                MyFreePool(FileName);
-                FileName = NULL;
                 break;
 
             case TAG_WINDOWS_RECOVERY:

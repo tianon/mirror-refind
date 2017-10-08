@@ -187,6 +187,8 @@
 #define MEMTEST_LOCATIONS       L"EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
+// Files that may be macOS recovery files
+#define MACOS_RECOVERY_FILES    L"com.apple.recovery.boot\\boot.efi"
 
 // Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
 // L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive
@@ -256,7 +258,7 @@ typedef struct {
    EG_IMAGE            *VolIconImage;
    EG_IMAGE            *VolBadgeImage;
    UINTN               DiskKind;
-   BOOLEAN             IsAppleLegacy;
+//    BOOLEAN             IsAppleLegacy;
    BOOLEAN             HasBootCode;
    CHAR16              *OSIconName;
    CHAR16              *OSName;
@@ -354,6 +356,7 @@ typedef struct {
    CHAR16           *DontScanFiles;
    CHAR16           *DontScanTools;
    CHAR16           *WindowsRecoveryFiles;
+   CHAR16           *MacOSRecoveryFiles;
    CHAR16           *DriverDirs;
    CHAR16           *IconsDir;
    CHAR16           *ExtraKernelVersionStrings;

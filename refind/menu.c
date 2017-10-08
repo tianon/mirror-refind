@@ -1455,7 +1455,7 @@ static BOOLEAN RemoveInvalidFilenames(CHAR16 *FilenameList, CHAR16 *VarName) {
         Filename = StrDuplicate(OneElement);
         if (SplitVolumeAndFilename(&Filename, &VolName)) {
             DeleteIt = TRUE;
-            if (FindVolume(&Volume, VolName)) {
+            if (FindVolume(&Volume, VolName) && Volume->RootDir) {
                 Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle,
                                              Filename, EFI_FILE_MODE_READ, 0);
                 if (Status == EFI_SUCCESS) {
@@ -1583,9 +1583,9 @@ static VOID AddToHiddenTags(CHAR16 *VarName, CHAR16 *Pathname) {
 // hiding that item.
 // Returns TRUE if item was hidden, FALSE otherwise.
 static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu, CHAR16 *VarName) {
-    REFIT_VOLUME       *Volume = NULL;
+    REFIT_VOLUME       *Volume = NULL, *TestVolume = NULL;
     BOOLEAN            TagHidden = FALSE;
-    CHAR16             *Filename = NULL, *FullPath = NULL;
+    CHAR16             *Filename = NULL, *FullPath = NULL, *GuidStr = NULL;
     MENU_STYLE_FUNC    Style = TextMenuStyle;
     UINTN              MenuExit;
     INTN               DefaultEntry = 1;
@@ -1613,11 +1613,14 @@ static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu,
     MenuExit = RunGenericMenu(HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
     if (ChosenOption && MyStriCmp(ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
-        MyFreePool(FullPath);
-        FullPath = NULL;
-        MergeStrings(&FullPath, GuidAsString(&Volume->PartGuid), L'\0');
-        MergeStrings(&FullPath, L":", L'\0');
-        MergeStrings(&FullPath, Filename, (Filename[0] == L'\\' ? L'\0' : L'\\'));
+        GuidStr = GuidAsString(&Volume->PartGuid);
+        if (FindVolume(&TestVolume, GuidStr) && TestVolume->RootDir) {
+            MyFreePool(FullPath);
+            FullPath = NULL;
+            MergeStrings(&FullPath, GuidAsString(&Volume->PartGuid), L'\0');
+            MergeStrings(&FullPath, L":", L'\0');
+            MergeStrings(&FullPath, Filename, (Filename[0] == L'\\' ? L'\0' : L'\\'));
+        }
         AddToHiddenTags(VarName, FullPath);
         TagHidden = TRUE;
     } // if
@@ -1625,6 +1628,7 @@ static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu,
     MyFreePool(Volume);
     MyFreePool(Filename);
     MyFreePool(FullPath);
+    MyFreePool(GuidStr);
 
     return TagHidden;
 } // BOOLEAN HideEfiTag()

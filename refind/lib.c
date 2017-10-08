@@ -946,11 +946,11 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
             Bootable = TRUE;
         }
 
-        if (DevicePathType(DevicePath) == MEDIA_DEVICE_PATH && DevicePathSubType(DevicePath) == MEDIA_VENDOR_DP) {
-            Volume->IsAppleLegacy = TRUE;             // legacy BIOS device entry
-            // TODO: also check for Boot Camp GUID
-            Bootable = FALSE;   // this handle's BlockIO is just an alias for the whole device
-        }
+//         if (DevicePathType(DevicePath) == MEDIA_DEVICE_PATH && DevicePathSubType(DevicePath) == MEDIA_VENDOR_DP) {
+//             Volume->IsAppleLegacy = TRUE;             // legacy BIOS device entry
+//             // TODO: also check for Boot Camp GUID
+//             Bootable = FALSE;   // this handle's BlockIO is just an alias for the whole device
+//         }
 
         if (DevicePathType(DevicePath) == MESSAGING_DEVICE_PATH) {
             // make a device path for the whole device

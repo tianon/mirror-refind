@@ -1,6 +1,11 @@
 0.11.1 (?/??/2017):
 -------------------
 
+- Added support for new macOS boot loader locations used in macOS 10.13
+  ("High Sierra").
+
+- Fixed bug that could cause hidden-tag maintenance tool to hang.
+
 - Fixed bug, introduced in 0.11.0, that caused the Apple and Microsoft
   recovery tools to not be detected.
 

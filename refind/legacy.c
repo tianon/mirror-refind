@@ -584,10 +584,12 @@ static VOID ScanLegacyVolume(REFIT_VOLUME *Volume, UINTN VolumeIndex) {
 
    ShowVolume = FALSE;
    HideIfOthersFound = FALSE;
-   if (Volume->IsAppleLegacy) {
-      ShowVolume = TRUE;
-      HideIfOthersFound = TRUE;
-   } else if (Volume->HasBootCode) {
+//    if (Volume->IsAppleLegacy) {
+//       Print(L"  Volume is Apple legacy\n");
+//       ShowVolume = TRUE;
+//       HideIfOthersFound = TRUE;
+//    } else
+   if (Volume->HasBootCode) {
       ShowVolume = TRUE;
       if (Volume->BlockIO == Volume->WholeDiskBlockIO &&
          Volume->BlockIOOffset == 0 &&
