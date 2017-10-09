@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 8/13/2017</p>
+<p>Last Web page update: 10/9/2017</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,47 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.11.1 (10/9/2017)</b>&mdash;This version is mainly a maintenance
+    release in response to Apple's release of macOS 10.13 ("High Sierra"),
+    although there are a couple of unrelated improvements. Its specific
+    changes are:
+    <ul>
+
+    <li>The new Apple Filesystem (APFS) uses subvolumes, which appear as
+	subdirectories with UUIDs as names to the EFI and EFI programs such
+	as rEFInd. This fact means that the location of Apple's boot loader
+	has changed, from rEFInd's perspective, necessitating a code
+	update. This version provides that update.</li>
+
+    <li>As a follow-on to the preceding change, I discovered that compiling
+	rEFInd with GNU-EFI resulted in a failure to properly track some
+	files on APFS volumes. I don't know if this failure reflected a bug
+	in Apple's EFI, in GNU-EFI, or in rEFInd; but I changed the way
+	rEFInd tracks boot loader files internally to work around the
+	problem. Although I've tested this version on an unusually wide
+	number of computers, it's possible that this change will introduce
+	new bugs. Thus, if you upgrade and have problems with boot loaders
+	not being detected or not launching, dropping back to version 0.11.0
+	may be worth trying. (Be sure to <a
+	href="mailto:rodsmith@rodsbooks.com">contact me</a> with a bug
+	report, too!)</li>
+
+    <li>I've modified <tt>refind-install</tt> to be smarter about modifying
+	existing NVRAM entries for rEFInd under Linux. Previously,
+	<tt>refind-install</tt> was quite aggressive about deleting and
+	re-creating these entries; however, this was causing failures on a
+	few computers. The script now checks more carefully to see if an
+	existing entry boots rEFInd and is set as the default; and if so, it
+	leaves that entry alone.</li>
+
+    <li>I fixed a bug that could cause the hidden-tag maintenance feature to
+        crash the program.</li>
+
+    <li>I fixed a bug, introduced in version 0.11.0, that caused both Apple
+	and Microsoft second-row recovery tools to go undiscovered.</li>
+
+    </ul>
 
 <li><b>0.11.0 (8/13/2017)</b>&mdash;In addition to a few bug fixes,
     this version sees several new features, many of which are likely
