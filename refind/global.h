@@ -91,10 +91,6 @@
 #define GRAPHICS_FOR_GRUB       8
 #define GRAPHICS_FOR_WINDOWS   16
 
-// Load types
-#define TYPE_EFI    1
-#define TYPE_LEGACY 2
-
 // Type of legacy (BIOS) boot support detected
 #define LEGACY_TYPE_NONE 0
 #define LEGACY_TYPE_MAC  1
@@ -301,8 +297,7 @@ typedef struct {
    REFIT_MENU_ENTRY me;
    CHAR16           *Title;
    CHAR16           *LoaderPath;
-   CHAR16           *VolName;
-   EFI_DEVICE_PATH  *DevicePath;
+   REFIT_VOLUME     *Volume;
    BOOLEAN          UseGraphicsMode;
    BOOLEAN          Enabled;
    CHAR16           *LoadOptions;
@@ -385,16 +380,11 @@ extern EFI_GUID gEfiGlobalVariableGuid;
 
 extern BOOLEAN HaveResized;
 
-EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
-                             IN CHAR16 *LoadOptions, IN UINTN LoaderType,
-                             IN CHAR16 *ImageTitle, IN CHAR8 OSType,
-                             OUT UINTN *ErrorInStep,
-                             IN BOOLEAN Verbose,
-                             IN BOOLEAN IsDriver);
-EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
-                         IN CHAR16 *LoadOptions, IN UINTN LoaderType,
-                         IN CHAR16 *ImageTitle, IN CHAR8 OSType,
-                         OUT UINTN *ErrorInStep,
+EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
+                         IN CHAR16 *Filename,
+                         IN CHAR16 *LoadOptions,
+                         IN CHAR16 *ImageTitle,
+                         IN CHAR8 OSType,
                          IN BOOLEAN Verbose,
                          IN BOOLEAN IsDriver);
 LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry);

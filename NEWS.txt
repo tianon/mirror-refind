@@ -1,6 +1,13 @@
 0.11.1 (?/??/2017):
 -------------------
 
+- Modified the way rEFInd tracks boot loader files. This was made necessary
+  by macOS 10.13/APFS, which was confusing rEFInd's old tracking code when
+  it was compiled with GNU-EFI. Ideally, this will have no noticeable effect
+  to end users; however, it's possible that some loaders will appear or
+  disappear from the menu, or "file not found" errors when launching loaders
+  will go away, after upgrading to this version of rEFInd.
+
 - Added support for new macOS boot loader locations used in macOS 10.13
   ("High Sierra").
 

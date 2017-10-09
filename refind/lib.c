@@ -212,7 +212,7 @@ static EFI_STATUS FinishInitRefitLib(VOID)
 EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
 {
     EFI_STATUS  Status;
-    CHAR16      *DevicePathAsString, *Temp;
+    CHAR16      *DevicePathAsString, *Temp = NULL;
 
     SelfImageHandle = ImageHandle;
     Status = refit_call3_wrapper(BS->HandleProtocol, SelfImageHandle, &LoadedImageProtocol, (VOID **) &SelfLoadedImage);

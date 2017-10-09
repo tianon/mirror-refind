@@ -323,6 +323,78 @@ static EFI_DEVICE_PATH *LegacyLoaderList[] = {
 
 #define MAX_DISCOVERED_PATHS (16)
 
+// Launch a BIOS boot loader (Mac mode)
+static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
+                                       IN CHAR16 *LoadOptions,
+                                       OUT UINTN *ErrorInStep)
+{
+    EFI_STATUS              Status, ReturnStatus;
+    EFI_HANDLE              ChildImageHandle;
+    EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
+    UINTN                   DevicePathIndex;
+    CHAR16                  ErrorInfo[256];
+    CHAR16                  *FullLoadOptions = NULL;
+
+    if (ErrorInStep != NULL)
+        *ErrorInStep = 0;
+
+    // set load options
+    if (LoadOptions != NULL) {
+        FullLoadOptions = StrDuplicate(LoadOptions);
+    } // if (LoadOptions != NULL)
+    Print(L"Starting legacy loader\nUsing load options '%s'\n", FullLoadOptions ? FullLoadOptions : L"");
+
+    // load the image into memory
+    ReturnStatus = Status = EFI_NOT_FOUND;  // in case the list is empty
+    for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
+        ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePaths[DevicePathIndex],
+                                                    NULL, 0, &ChildImageHandle);
+        if (ReturnStatus != EFI_NOT_FOUND) {
+            break;
+        }
+    } // for
+    SPrint(ErrorInfo, 255, L"while loading legacy loader");
+    if (CheckError(Status, ErrorInfo)) {
+        if (ErrorInStep != NULL)
+            *ErrorInStep = 1;
+        goto bailout;
+    }
+
+    ReturnStatus = Status = refit_call3_wrapper(BS->HandleProtocol, ChildImageHandle, &LoadedImageProtocol,
+                                                (VOID **) &ChildLoadedImage);
+    if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
+        if (ErrorInStep != NULL)
+            *ErrorInStep = 2;
+        goto bailout_unload;
+    }
+    ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
+    ChildLoadedImage->LoadOptionsSize = FullLoadOptions ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof(CHAR16) : 0;
+    // turn control over to the image
+    // TODO: (optionally) re-enable the EFI watchdog timer!
+
+    // close open file handles
+    UninitRefitLib();
+    ReturnStatus = Status = refit_call3_wrapper(BS->StartImage, ChildImageHandle, NULL, NULL);
+
+    // control returns here when the child image calls Exit()
+    SPrint(ErrorInfo, 255, L"returned from legacy loader");
+    if (CheckError(Status, ErrorInfo)) {
+        if (ErrorInStep != NULL)
+            *ErrorInStep = 3;
+    }
+
+    // re-open file handles
+    ReinitRefitLib();
+
+bailout_unload:
+    // unload the image, we don't care if it works or not...
+    Status = refit_call1_wrapper(BS->UnloadImage, ChildImageHandle);
+
+bailout:
+    MyFreePool(FullLoadOptions);
+    return ReturnStatus;
+} /* EFI_STATUS StartLegacyImageList() */
+
 VOID StartLegacy(IN LEGACY_ENTRY *Entry, IN CHAR16 *SelectionName)
 {
     EFI_STATUS          Status;
@@ -348,7 +420,7 @@ VOID StartLegacy(IN LEGACY_ENTRY *Entry, IN CHAR16 *SelectionName)
     ExtractLegacyLoaderPaths(DiscoveredPathList, MAX_DISCOVERED_PATHS, LegacyLoaderList);
 
     StoreLoaderName(SelectionName);
-    Status = StartEFIImageList(DiscoveredPathList, Entry->LoadOptions, TYPE_LEGACY, L"legacy loader", 0, &ErrorInStep, TRUE, FALSE);
+    Status = StartLegacyImageList(DiscoveredPathList, Entry->LoadOptions, &ErrorInStep);
     if (Status == EFI_NOT_FOUND) {
         if (ErrorInStep == 1) {
             Print(L"\nPlease make sure that you have the latest firmware update installed.\n");

@@ -315,7 +315,7 @@ static BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     if ((RootDir == NULL) || (FileName == NULL)) {
         // Assume valid here, because Macs produce NULL RootDir (& maybe FileName)
         // when launching from a Firewire drive. This should be handled better, but
-        // fix would have to be in StartEFIImageList() and/or in FindVolumeAndFilename().
+        // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         return TRUE;
     } // if
 
@@ -339,103 +339,90 @@ static BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
 } // BOOLEAN IsValidLoader()
 
 // Launch an EFI binary.
-EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
-                             IN CHAR16 *LoadOptions, IN UINTN LoaderType,
-                             IN CHAR16 *ImageTitle, IN CHAR8 OSType,
-                             OUT UINTN *ErrorInStep,
-                             IN BOOLEAN Verbose,
-                             IN BOOLEAN IsDriver)
+EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
+                         IN CHAR16 *Filename,
+                         IN CHAR16 *LoadOptions,
+                         IN CHAR16 *ImageTitle,
+                         IN CHAR8 OSType,
+                         IN BOOLEAN Verbose,
+                         IN BOOLEAN IsDriver)
 {
     EFI_STATUS              Status, ReturnStatus;
     EFI_HANDLE              ChildImageHandle, ChildImageHandle2;
+    EFI_DEVICE_PATH         *DevicePath;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
-    REFIT_VOLUME            *Volume = NULL;
-    UINTN                   DevicePathIndex;
     CHAR16                  ErrorInfo[256];
     CHAR16                  *FullLoadOptions = NULL;
-    CHAR16                  *Filename = NULL;
     CHAR16                  *Temp;
-
-    if (ErrorInStep != NULL)
-        *ErrorInStep = 0;
 
     // set load options
     if (LoadOptions != NULL) {
         FullLoadOptions = StrDuplicate(LoadOptions);
-        if ((LoaderType == TYPE_EFI) && (OSType == 'M')) {
+        if (OSType == 'M') {
             MergeStrings(&FullLoadOptions, L" ", 0);
             // NOTE: That last space is also added by the EFI shell and seems to be significant
             // when passing options to Apple's boot.efi...
         } // if
     } // if (LoadOptions != NULL)
     if (Verbose)
-    Print(L"Starting %s\nUsing load options '%s'\n", ImageTitle, FullLoadOptions ? FullLoadOptions : L"");
+        Print(L"Starting %s\nUsing load options '%s'\n", ImageTitle, FullLoadOptions ? FullLoadOptions : L"");
 
     // load the image into memory
     ReturnStatus = Status = EFI_NOT_FOUND;  // in case the list is empty
-    for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
-        FindVolumeAndFilename(DevicePaths[DevicePathIndex], &Volume, &Filename);
-        // Some EFIs crash if attempting to load driver for invalid architecture, so
-        // protect for this condition; but sometimes Volume comes back NULL, so provide
-        // an exception. (TODO: Handle this special condition better.)
-        if ((LoaderType == TYPE_LEGACY) || (Volume == NULL) || IsValidLoader(Volume->RootDir, Filename)) {
-            if (Filename && (LoaderType != TYPE_LEGACY)) {
-                Temp = PoolPrint(L"\\%s %s", Filename, FullLoadOptions ? FullLoadOptions : L"");
-                if (Temp != NULL) {
-                    MyFreePool(FullLoadOptions);
-                    FullLoadOptions = Temp;
-                }
-            } // if (Filename)
-
-            // NOTE: Below commented-out line could be more efficient if file were read ahead of
-            // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
-            // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
-            // kernel returns a "Failed to handle fs_proto" error message.
-            // TODO: Track down the cause of this error and fix it, if possible.
-            // ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePaths[DevicePathIndex],
-            //                                            ImageData, ImageSize, &ChildImageHandle);
-            ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePaths[DevicePathIndex],
-                                                        NULL, 0, &ChildImageHandle);
-            if (secure_mode() && ShimLoaded()) {
-                // Load ourself into memory. This is a trick to work around a bug in Shim 0.8,
-                // which ties itself into the BS->LoadImage() and BS->StartImage() functions and
-                // then unregisters itself from the EFI system table when its replacement
-                // StartImage() function is called *IF* the previous LoadImage() was for the same
-                // program. The result is that rEFInd can validate only the first program it
-                // launches (often a filesystem driver). Loading a second program (rEFInd itself,
-                // here, to keep it smaller than a kernel) works around this problem. See the
-                // replacements.c file in Shim, and especially its start_image() function, for
-                // the source of the problem.
-                // NOTE: This doesn't check the return status or handle errors. It could
-                // conceivably do weird things if, say, rEFInd were on a USB drive that the
-                // user pulls before launching a program.
-                refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, GlobalConfig.SelfDevicePath,
-                                    NULL, 0, &ChildImageHandle2);
+    // Some EFIs crash if attempting to load driver for invalid architecture, so
+    // protect for this condition; but sometimes Volume comes back NULL, so provide
+    // an exception. (TODO: Handle this special condition better.)
+    if (IsValidLoader(Volume->RootDir, Filename)) {
+        if (Filename) {
+            Temp = PoolPrint(L"\\%s %s", Filename, FullLoadOptions ? FullLoadOptions : L"");
+            if (Temp != NULL) {
+                MyFreePool(FullLoadOptions);
+                FullLoadOptions = Temp;
             }
-        } else {
-            Print(L"Invalid loader file!\n");
-            ReturnStatus = EFI_LOAD_ERROR;
+        } // if (Filename)
+
+        DevicePath = FileDevicePath(Volume->DeviceHandle, Filename);
+        // NOTE: Below commented-out line could be more efficient if file were read ahead of
+        // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
+        // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
+        // kernel returns a "Failed to handle fs_proto" error message.
+        // TODO: Track down the cause of this error and fix it, if possible.
+        // ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePath,
+        //                                            ImageData, ImageSize, &ChildImageHandle);
+        ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePath,
+                                                    NULL, 0, &ChildImageHandle);
+        if (secure_mode() && ShimLoaded()) {
+            // Load ourself into memory. This is a trick to work around a bug in Shim 0.8,
+            // which ties itself into the BS->LoadImage() and BS->StartImage() functions and
+            // then unregisters itself from the EFI system table when its replacement
+            // StartImage() function is called *IF* the previous LoadImage() was for the same
+            // program. The result is that rEFInd can validate only the first program it
+            // launches (often a filesystem driver). Loading a second program (rEFInd itself,
+            // here, to keep it smaller than a kernel) works around this problem. See the
+            // replacements.c file in Shim, and especially its start_image() function, for
+            // the source of the problem.
+            // NOTE: This doesn't check the return status or handle errors. It could
+            // conceivably do weird things if, say, rEFInd were on a USB drive that the
+            // user pulls before launching a program.
+            refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, GlobalConfig.SelfDevicePath,
+                                NULL, 0, &ChildImageHandle2);
         }
-        if (ReturnStatus != EFI_NOT_FOUND) {
-            break;
-        }
-    } // for
+    } else {
+        Print(L"Invalid loader file!\n");
+        ReturnStatus = EFI_LOAD_ERROR;
+    }
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
         WarnSecureBootError(ImageTitle, Verbose);
         goto bailout;
     }
     SPrint(ErrorInfo, 255, L"while loading %s", ImageTitle);
     if (CheckError(Status, ErrorInfo)) {
-        if (ErrorInStep != NULL)
-            *ErrorInStep = 1;
         goto bailout;
     }
 
     ReturnStatus = Status = refit_call3_wrapper(BS->HandleProtocol, ChildImageHandle, &LoadedImageProtocol,
                                                 (VOID **) &ChildLoadedImage);
     if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
-        if (ErrorInStep != NULL)
-            *ErrorInStep = 2;
         goto bailout_unload;
     }
     ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
@@ -449,10 +436,7 @@ EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
 
     // control returns here when the child image calls Exit()
     SPrint(ErrorInfo, 255, L"returned from %s", ImageTitle);
-    if (CheckError(Status, ErrorInfo)) {
-        if (ErrorInStep != NULL)
-            *ErrorInStep = 3;
-    }
+    CheckError(Status, ErrorInfo);
     if (IsDriver) {
         // Below should have no effect on most systems, but works
         // around bug with some EFIs that prevents filesystem drivers
@@ -471,21 +455,7 @@ bailout_unload:
 bailout:
     MyFreePool(FullLoadOptions);
     return ReturnStatus;
-} /* EFI_STATUS StartEFIImageList() */
-
-EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
-                         IN CHAR16 *LoadOptions, IN UINTN LoaderType,
-                         IN CHAR16 *ImageTitle, IN CHAR8 OSType,
-                         OUT UINTN *ErrorInStep,
-                         IN BOOLEAN Verbose,
-                         IN BOOLEAN IsDriver)
-{
-    EFI_DEVICE_PATH *DevicePaths[2];
-
-    DevicePaths[0] = DevicePath;
-    DevicePaths[1] = NULL;
-    return StartEFIImageList(DevicePaths, LoadOptions, LoaderType, ImageTitle, OSType, ErrorInStep, Verbose, IsDriver);
-} /* static EFI_STATUS StartEFIImage() */
+} /* EFI_STATUS StartEFIImage() */
 
 // From gummiboot: Reboot the computer into its built-in user interface
 static EFI_STATUS RebootIntoFirmware(VOID) {
@@ -554,16 +524,14 @@ static VOID DoEnableAndLockVMX(VOID)
 
 static VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName)
 {
-    UINTN ErrorInStep = 0;
-
     if (GlobalConfig.EnableAndLockVMX) {
         DoEnableAndLockVMX();
     }
 
     BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
     StoreLoaderName(SelectionName);
-    StartEFIImage(Entry->DevicePath, Entry->LoadOptions, TYPE_EFI,
-                  Basename(Entry->LoaderPath), Entry->OSType, &ErrorInStep, !Entry->UseGraphicsMode, FALSE);
+    StartEFIImage(Entry->Volume, Entry->LoaderPath, Entry->LoadOptions,
+                  Basename(Entry->LoaderPath), Entry->OSType, !Entry->UseGraphicsMode, FALSE);
     FinishExternalScreen();
 }
 
@@ -728,8 +696,7 @@ LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry) {
         NewEntry->OSType          = 0;
         if (Entry != NULL) {
             NewEntry->LoaderPath      = (Entry->LoaderPath) ? StrDuplicate(Entry->LoaderPath) : NULL;
-            NewEntry->VolName         = (Entry->VolName) ? StrDuplicate(Entry->VolName) : NULL;
-            NewEntry->DevicePath      = Entry->DevicePath;
+            NewEntry->Volume          = Entry->Volume;
             NewEntry->UseGraphicsMode = Entry->UseGraphicsMode;
             NewEntry->LoadOptions     = (Entry->LoadOptions) ? StrDuplicate(Entry->LoadOptions) : NULL;
             NewEntry->InitrdPath      = (Entry->InitrdPath) ? StrDuplicate(Entry->InitrdPath) : NULL;
@@ -773,7 +740,7 @@ REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry) {
         if (SubScreen != NULL) {
             SubScreen->Title = AllocateZeroPool(sizeof(CHAR16) * 256);
             SPrint(SubScreen->Title, 255, L"Boot Options for %s on %s",
-                   (Entry->Title != NULL) ? Entry->Title : FileName, Entry->VolName);
+                   (Entry->Title != NULL) ? Entry->Title : FileName, Entry->Volume->VolName);
             SubScreen->TitleImage = Entry->me.Image;
             // default entry
             SubEntry = InitializeLoaderEntry(Entry);
@@ -887,7 +854,7 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
                 SubEntry->me.Title        = L"Run Apple Hardware Test";
                 MyFreePool(SubEntry->LoaderPath);
                 SubEntry->LoaderPath      = StrDuplicate(DiagsFileName);
-                SubEntry->DevicePath      = FileDevicePath(Volume->DeviceHandle, SubEntry->LoaderPath);
+                SubEntry->Volume          = Volume;
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // if
@@ -1181,8 +1148,7 @@ static LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTit
             Entry->LoaderPath = NULL;
         }
         MergeStrings(&(Entry->LoaderPath), LoaderPath, 0);
-        Entry->VolName = Volume->VolName;
-        Entry->DevicePath = FileDevicePath(Volume->DeviceHandle, Entry->LoaderPath);
+        Entry->Volume = Volume;
         SetLoaderDefaults(Entry, LoaderPath, Volume);
         GenerateSubScreen(Entry, Volume, SubScreenReturn);
         AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
@@ -1219,7 +1185,7 @@ static VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, RE
             MyFreePool(SubEntry->LoaderPath);
             SubEntry->LoaderPath = StrDuplicate(FileName);
             CleanUpPathNameSlashes(SubEntry->LoaderPath);
-            SubEntry->DevicePath = FileDevicePath(Volume->DeviceHandle, SubEntry->LoaderPath);
+            SubEntry->Volume = Volume;
             FreeTokenLine(&TokenList, &TokenCount);
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
             AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -1777,12 +1743,12 @@ static VOID StartTool(IN LOADER_ENTRY *Entry)
 {
     BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
     StoreLoaderName(Entry->me.Title);
-    StartEFIImage(Entry->DevicePath, Entry->LoadOptions, TYPE_EFI,
-                  Basename(Entry->LoaderPath), Entry->OSType, NULL, TRUE, FALSE);
+    StartEFIImage(Entry->Volume, Entry->LoaderPath, Entry->LoadOptions,
+                  Basename(Entry->LoaderPath), Entry->OSType, TRUE, FALSE);
     FinishExternalScreen();
 } /* static VOID StartTool() */
 
-static LOADER_ENTRY * AddToolEntry(EFI_HANDLE DeviceHandle, IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN EG_IMAGE *Image,
+static LOADER_ENTRY * AddToolEntry(REFIT_VOLUME *Volume, IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN EG_IMAGE *Image,
                                    IN CHAR16 ShortcutLetter, IN BOOLEAN UseGraphicsMode)
 {
     LOADER_ENTRY *Entry;
@@ -1797,7 +1763,7 @@ static LOADER_ENTRY * AddToolEntry(EFI_HANDLE DeviceHandle, IN CHAR16 *LoaderPat
     Entry->me.ShortcutLetter = ShortcutLetter;
     Entry->me.Image = Image;
     Entry->LoaderPath = (LoaderPath) ? StrDuplicate(LoaderPath) : NULL;
-    Entry->DevicePath = FileDevicePath(DeviceHandle, Entry->LoaderPath);
+    Entry->Volume = Volume;
     Entry->UseGraphicsMode = UseGraphicsMode;
 
     AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
@@ -1916,7 +1882,7 @@ static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINT
             for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                 if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], PathName))) {
                     SPrint(FullDescription, 255, L"%s at %s on %s", Description, PathName, Volumes[VolumeIndex]->VolName);
-                    AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, PathName, FullDescription, BuiltinIcon(Icon), 'S', FALSE);
+                    AddToolEntry(Volumes[VolumeIndex], PathName, FullDescription, BuiltinIcon(Icon), 'S', FALSE);
                 } // if
             } // for
             MyFreePool(PathName);
@@ -1996,7 +1962,7 @@ static VOID ScanForTools(VOID) {
                 j = 0;
                 while ((FileName = FindCommaDelimited(SHELL_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
-                        AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"EFI Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
+                        AddToolEntry(SelfVolume, FileName, L"EFI Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
                                      'S', FALSE);
                     }
                 MyFreePool(FileName);
@@ -2019,7 +1985,7 @@ static VOID ScanForTools(VOID) {
                 j = 0;
                 while ((FileName = FindCommaDelimited(GDISK_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
-                        AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"disk partitioning tool",
+                        AddToolEntry(SelfVolume, FileName, L"disk partitioning tool",
                                      BuiltinIcon(BUILTIN_ICON_TOOL_PART), 'G', FALSE);
                     } // if
                     MyFreePool(FileName);
@@ -2031,7 +1997,7 @@ static VOID ScanForTools(VOID) {
                 j = 0;
                 while ((FileName = FindCommaDelimited(NETBOOT_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
-                        AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"Netboot",
+                        AddToolEntry(SelfVolume, FileName, L"Netboot",
                                      BuiltinIcon(BUILTIN_ICON_TOOL_NETBOOT), 'N', FALSE);
                     } // if
                     MyFreePool(FileName);
@@ -2046,7 +2012,7 @@ static VOID ScanForTools(VOID) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL)) {
                             if ((IsValidTool(Volumes[VolumeIndex], FileName))) {
                                 SPrint(Description, 255, L"Apple Recovery on %s", Volumes[VolumeIndex]->VolName);
-                                AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
+                                AddToolEntry(Volumes[VolumeIndex], FileName, Description,
                                                 BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE), 'R', TRUE);
                             } // if
                         } // if
@@ -2063,7 +2029,7 @@ static VOID ScanForTools(VOID) {
                             (IsValidTool(Volumes[VolumeIndex], FileName)) &&
                             ((VolName == NULL) || MyStriCmp(VolName, Volumes[VolumeIndex]->VolName))) {
                                 SPrint(Description, 255, L"Microsoft Recovery on %s", Volumes[VolumeIndex]->VolName);
-                                AddToolEntry(Volumes[VolumeIndex]->DeviceHandle, FileName, Description,
+                                AddToolEntry(Volumes[VolumeIndex], FileName, Description,
                                              BuiltinIcon(BUILTIN_ICON_TOOL_WINDOWS_RESCUE), 'R', TRUE);
                         } // if
                     } // for
@@ -2219,8 +2185,15 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
     SetConfigFilename(ImageHandle);
     MokProtocol = SecureBootSetup();
-    LoadDrivers();
-    ScanVolumes(); // Do before ReadConfig() because it needs SelfVolume->VolName
+
+    // Scan volumes first to find SelfVolume, which is required by LoadDrivers();
+    // however, if drivers are loaded, a second call to ScanVolumes() is needed
+    // to register the new filesystem(s) accessed by the drivers.
+    // Also, ScanVolumes() must be done before ReadConfig(), which needs
+    // SelfVolume->VolName.
+    ScanVolumes();
+    if (LoadDrivers())
+        ScanVolumes();
     ReadConfig(GlobalConfig.ConfigFilename);
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')

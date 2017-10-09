@@ -833,7 +833,7 @@ static VOID AddSubmenu(LOADER_ENTRY *Entry, REFIT_FILE *File, REFIT_VOLUME *Volu
       if (MyStriCmp(TokenList[0], L"loader") && (TokenCount > 1)) { // set the boot loader filename
          MyFreePool(SubEntry->LoaderPath);
          SubEntry->LoaderPath = StrDuplicate(TokenList[1]);
-         SubEntry->DevicePath = FileDevicePath(Volume->DeviceHandle, SubEntry->LoaderPath);
+         SubEntry->Volume = Volume;
 
       } else if (MyStriCmp(TokenList[0], L"volume") && (TokenCount > 1)) {
          if (FindVolume(&Volume, TokenList[1])) {
@@ -842,7 +842,7 @@ static VOID AddSubmenu(LOADER_ENTRY *Entry, REFIT_FILE *File, REFIT_VOLUME *Volu
                SubEntry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
                SPrint(SubEntry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", Volume->VolName);
                SubEntry->me.BadgeImage   = Volume->VolBadgeImage;
-               SubEntry->VolName         = Volume->VolName;
+               SubEntry->Volume          = Volume;
             } // if volume is readable
          } // if match found
 
@@ -905,7 +905,7 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
    SPrint(Entry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", CurrentVolume->VolName);
    Entry->me.Row          = 0;
    Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
-   Entry->VolName         = CurrentVolume->VolName;
+   Entry->Volume          = CurrentVolume;
    Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
 
    // Parse the config file to add options for a single stanza, terminating when the token
@@ -913,7 +913,7 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
    while (((TokenCount = ReadTokenLine(File, &TokenList)) > 0) && (StrCmp(TokenList[0], L"}") != 0)) {
       if (MyStriCmp(TokenList[0], L"loader") && (TokenCount > 1)) { // set the boot loader filename
          Entry->LoaderPath = StrDuplicate(TokenList[1]);
-         Entry->DevicePath = FileDevicePath(CurrentVolume->DeviceHandle, Entry->LoaderPath);
+         Entry->Volume = Volume;
          SetLoaderDefaults(Entry, TokenList[1], CurrentVolume);
          MyFreePool(Entry->LoadOptions);
          Entry->LoadOptions = NULL; // Discard default options, if any
@@ -926,7 +926,7 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
                Entry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
                SPrint(Entry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", CurrentVolume->VolName);
                Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
-               Entry->VolName         = CurrentVolume->VolName;
+               Entry->Volume          = CurrentVolume;
             } // if volume is readable
          } // if match found
 

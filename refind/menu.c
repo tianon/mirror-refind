@@ -1583,50 +1583,44 @@ static VOID AddToHiddenTags(CHAR16 *VarName, CHAR16 *Pathname) {
 // hiding that item.
 // Returns TRUE if item was hidden, FALSE otherwise.
 static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu, CHAR16 *VarName) {
-    REFIT_VOLUME       *Volume = NULL, *TestVolume = NULL;
+    REFIT_VOLUME       *TestVolume = NULL;
     BOOLEAN            TagHidden = FALSE;
-    CHAR16             *Filename = NULL, *FullPath = NULL, *GuidStr = NULL;
+    CHAR16             *FullPath = NULL, *GuidStr = NULL;
     MENU_STYLE_FUNC    Style = TextMenuStyle;
     UINTN              MenuExit;
     INTN               DefaultEntry = 1;
     REFIT_MENU_ENTRY   *ChosenOption;
 
-    if ((!Loader) || (!HideItemMenu) || (!VarName))
+    if ((!Loader) || (!(Loader->Volume)) || (!(Loader->LoaderPath)) || (!HideItemMenu) || (!VarName))
         return FALSE;
 
     if (AllowGraphicsMode)
         Style = GraphicsMenuStyle;
 
-    FindVolumeAndFilename(Loader->DevicePath, &Volume, &Filename);
-    if ((!Volume) || (!Filename))
-        return FALSE;
-
-    if (Volume->VolName && (StrLen(Volume->VolName) > 0)) {
-        FullPath = StrDuplicate(Volume->VolName);
-    } else if (Volume->PartName && (StrLen(Volume->PartName) > 0)) {
-        FullPath = StrDuplicate(Volume->PartName);
+    if (Loader->Volume->VolName && (StrLen(Loader->Volume->VolName) > 0)) {
+        FullPath = StrDuplicate(Loader->Volume->VolName);
+    } else if (Loader->Volume->PartName && (StrLen(Loader->Volume->PartName) > 0)) {
+        FullPath = StrDuplicate(Loader->Volume->PartName);
     }
-    MergeStrings(&FullPath, Filename, L':');
+    MergeStrings(&FullPath, Loader->LoaderPath, L':');
     AddMenuInfoLine(HideItemMenu, PoolPrint(L"Really hide %s?", FullPath));
     AddMenuEntry(HideItemMenu, &MenuEntryYes);
     AddMenuEntry(HideItemMenu, &MenuEntryNo);
     MenuExit = RunGenericMenu(HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
     if (ChosenOption && MyStriCmp(ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
-        GuidStr = GuidAsString(&Volume->PartGuid);
+        GuidStr = GuidAsString(&Loader->Volume->PartGuid);
         if (FindVolume(&TestVolume, GuidStr) && TestVolume->RootDir) {
             MyFreePool(FullPath);
             FullPath = NULL;
-            MergeStrings(&FullPath, GuidAsString(&Volume->PartGuid), L'\0');
+            MergeStrings(&FullPath, GuidAsString(&Loader->Volume->PartGuid), L'\0');
             MergeStrings(&FullPath, L":", L'\0');
-            MergeStrings(&FullPath, Filename, (Filename[0] == L'\\' ? L'\0' : L'\\'));
+            MergeStrings(&FullPath, Loader->LoaderPath, (Loader->LoaderPath[0] == L'\\' ? L'\0' : L'\\'));
         }
         AddToHiddenTags(VarName, FullPath);
         TagHidden = TRUE;
     } // if
 
-    MyFreePool(Volume);
-    MyFreePool(Filename);
     MyFreePool(FullPath);
     MyFreePool(GuidStr);
 

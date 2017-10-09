@@ -553,9 +553,8 @@ static UINTN ScanDriverDir(IN CHAR16 *Path)
 
         SPrint(FileName, 255, L"%s\\%s", Path, DirEntry->FileName);
         NumFound++;
-        Status = StartEFIImage(FileDevicePath(SelfLoadedImage->DeviceHandle, FileName),
-                               L"", TYPE_EFI, DirEntry->FileName, 0, NULL, FALSE, TRUE);
-    }
+        Status = StartEFIImage(SelfVolume, FileName, L"", DirEntry->FileName, 0, FALSE, TRUE);
+    } // while
     Status = DirIterClose(&DirIter);
     if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
         SPrint(FileName, 255, L"while scanning the %s directory", Path);
@@ -569,7 +568,8 @@ static UINTN ScanDriverDir(IN CHAR16 *Path)
 // directories specified by the user in the "scan_driver_dirs" configuration
 // file line.
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
-VOID LoadDrivers(VOID) {
+// Returns TRUE if any drivers are loaded, FALSE otherwise.
+BOOLEAN LoadDrivers(VOID) {
     CHAR16        *Directory, *SelfDirectory;
     UINTN         i = 0, Length, NumFound = 0;
 
@@ -598,4 +598,5 @@ VOID LoadDrivers(VOID) {
     // connect all devices
     if (NumFound > 0)
         ConnectAllDriversToAllControllers();
-} /* VOID LoadDrivers() */
+    return (NumFound > 0);
+} /* BOOLEAN LoadDrivers() */
