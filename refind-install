@@ -38,6 +38,7 @@
 
 # Revision history:
 #
+# 0.11.1  -- In Linux, be less aggressive about replacing existing NVRAM entries
 # 0.11.0  -- Create BOOT.CSV file and option to encrypt SB private key
 # 0.10.8  -- Enabled use of shimx64.efi.signed as Shim source file
 # 0.10.7  -- Added mm{arch}.efi as equivalent of MokManager.efi
@@ -863,7 +864,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.11.0</string>
+        <string>0.11.1</string>
 </dict>
 </plist>
 ENDOFHERE
@@ -1208,13 +1209,19 @@ FindMountedESP() {
    echo "ESP was found at $InstallDir using $EspFilesystem"
 } # FindMountedESP
 
-# Uses efibootmgr to add an entry for rEFInd to the EFI's NVRAM.
+# Uses efibootmgr to add an entry for rEFInd to the EFI's NVRAM, if necessary.
 # If this fails, sets Problems=1
 AddBootEntry() {
    local PartNum
    local InstallDisk
    local InstallPart
+   local InstallPartGuid
    local Name
+   local ExistingEntry
+   local KeepExistingEntry=0
+   local ExistingEntryBootNum
+   local FirstBoot
+
    Efibootmgr=`which efibootmgr 2> /dev/null`
    if [[ "$Efibootmgr" ]] ; then
       InstallPart=`grep "$InstallDir" /etc/mtab | cut -d " " -f 1`
@@ -1234,26 +1241,34 @@ AddBootEntry() {
       EntryFilename="$TargetDir/$Refind"
       EfiEntryFilename=`echo ${EntryFilename//\//\\\}`
       EfiEntryFilename2=`echo ${EfiEntryFilename} | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g`
-      ExistingEntry=`"$Efibootmgr" -v | grep -i "$EfiEntryFilename2"`
+      InstallPartGuid=`blkid -s PARTUUID -o value "$InstallPart"`
+      FirstBoot=`"$Efibootmgr" | grep BootOrder | cut -c 12-15`
+      ExistingEntry=`"$Efibootmgr" -v | grep -i "$EfiEntryFilename2" | grep -i "$InstallPartGuid" | head -n 1`
+      ExistingEntryFirstBoot=`"$Efibootmgr" -v | grep -i "$EfiEntryFilename2" | grep -i "$InstallPartGuid" | grep "Boot$FirstBoot"`
 
       if [[ "$ExistingEntry" ]] ; then
          ExistingEntryBootNum=`echo "$ExistingEntry" | cut -c 5-8`
-         FirstBoot=`"$Efibootmgr" | grep BootOrder | cut -c 12-15`
-         if [[ "$ExistingEntryBootNum" != "$FirstBoot" ]] ; then
+         if [[ ! -n "$ExistingEntryFirstBoot" ]] ; then
             echo "An existing rEFInd boot entry exists, but isn't set as the default boot"
             echo "manager. The boot order is being adjusted to make rEFInd the default boot"
             echo "manager. If this is NOT what you want, you should use efibootmgr to"
             echo "manually adjust your EFI's boot order."
+            "$Efibootmgr" -b $ExistingEntryBootNum -B &> /dev/null
+         else
+            KeepExistingEntry=1
          fi
-         "$Efibootmgr" -b $ExistingEntryBootNum -B &> /dev/null
       fi
 
-      echo "Installing it!"
-      if [[ "$KeepName" == 0 ]] ; then
-         "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
+      if [[ "$KeepExistingEntry" == 0 ]] ; then
+         echo "Creating new NVRAM entry"
+         if [[ "$KeepName" == 0 ]] ; then
+             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
+         else
+             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum \
+                           -u "$TargetShim $TargetX64" &> /dev/null
+         fi
       else
-         "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum \
-                       -u "$TargetShim $TargetX64" &> /dev/null
+         echo "Keeping existing NVRAM entry"
       fi
       if [[ $? != 0 ]] ; then
          EfibootmgrProblems=1
@@ -1273,7 +1288,7 @@ AddBootEntry() {
       echo "EFI/BOOT/bootaa64.efi on ARM64 systems) to have it run!"
       echo
    else
-      echo "rEFInd has been set as the default boot manager."
+      echo "rEFInd is set as the default boot manager."
    fi
 } # AddBootEntry()
 

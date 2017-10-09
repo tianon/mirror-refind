@@ -1,5 +1,9 @@
-0.11.1 (?/??/2017):
+0.11.1 (10/9/2017):
 -------------------
+
+- Modified refind-install to be smarter about modifying NVRAM entries under
+  Linux. It now re-creates existing rEFInd entries only if the existing
+  entries don't point to the same location that rEFInd will use.
 
 - Modified the way rEFInd tracks boot loader files. This was made necessary
   by macOS 10.13/APFS, which was confusing rEFInd's old tracking code when
