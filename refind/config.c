@@ -913,7 +913,6 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
    while (((TokenCount = ReadTokenLine(File, &TokenList)) > 0) && (StrCmp(TokenList[0], L"}") != 0)) {
       if (MyStriCmp(TokenList[0], L"loader") && (TokenCount > 1)) { // set the boot loader filename
          Entry->LoaderPath = StrDuplicate(TokenList[1]);
-         Entry->Volume = Volume;
          SetLoaderDefaults(Entry, TokenList[1], CurrentVolume);
          MyFreePool(Entry->LoadOptions);
          Entry->LoadOptions = NULL; // Discard default options, if any
