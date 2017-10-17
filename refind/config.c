@@ -632,6 +632,7 @@ VOID ReadConfig(CHAR16 *FileName)
 
         } else if (MyStriCmp(TokenList[0], L"showtools")) {
             SetMem(GlobalConfig.ShowTools, NUM_TOOLS * sizeof(UINTN), 0);
+            GlobalConfig.HiddenTags = FALSE;
             for (i = 1; (i < TokenCount) && (i < NUM_TOOLS); i++) {
                 FlagName = TokenList[i];
                 if (MyStriCmp(FlagName, L"shell")) {
