@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-10/9/2017, referencing rEFInd 0.11.1</p>
+10/22/2017, referencing rEFInd 0.11.2</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -163,11 +163,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>You can load a filesystem driver to gain access to files on a filesystem other than FAT (or HFS+ on Macs or ISO-9660 on some systems). This is most likely to be useful on a Linux installation, since a filesystem driver can enable you to store a Linux kernel with EFI stub loader or for use by ELILO on a Linux-native filesystem if your EFI System Partition (ESP) is getting crowded.</li>
 
-<li>You can load a driver for a plug-in disk controller to give the EFI access to its disks. Note that this is <i>not</i> required if you place your boot loader (and perhaps your OS kernel) on another disk, or if the plug-in disk controller includes EFI-capable firmware. It could be handy, perhaps in conjunction with a filesystem driver, to enable the EFI to read a boot loader or kernel from a disk on a plug-in controller, though.</li>
+<li>You can load a driver for a plug-in disk controller to give the EFI access to its disks. Note that this is <i>not</i> required if you place your boot loader (and perhaps your OS kernel) on another disk, or if the plug-in disk controller includes EFI-capable firmware. It could be handy, perhaps in conjunction with a filesystem driver, to enable the EFI to read a boot loader or kernel from a disk on a plug-in controller, though. I've received one report of the NVMe driver from <a href="https://sourceforge.net/projects/cloverefiboot/">Clover</a> being useful to boot from an aftermarket NVMe disk on a Mac, for instance.</li>
 
 <li>You can load a driver for a plug-in network card to enable the computer to boot from the network, or to access the network without booting an OS. Note that rEFInd does not currently support network boots itself, though.</li>
 
 <li>You can load a video card driver to set an appropriate video mode or to support a plug-in card that lacks EFI support in ts own firmware.</li>
+
+<li>You can load a mouse or touchscreen driver to enable the mouse or touchscreen to work even if your firmware lacks this support. (Note that you must also explicitly activate rEFInd's mouse or touch support in <tt>refind.conf</tt> for the driver to be useful.) Note that I've not tested this myself or heard of it working, but in theory it should work, provided you find a compatible driver.</li>
 
 </ul>
 
@@ -352,7 +354,7 @@ fs0: <tt class="userinput">map -r</tt>
 
 <li><b><a href="https://sourceforge.net/projects/cloverefiboot/">Clover EFI's ISO-9660, ext2fs, ext4fs, and HFS+ drivers</a></b>&mdash;This project is an offshoot of TianoCore, the main UEFI project. It's primarily a Hackintosh boot loader, but it includes drivers for <a href="http://cloverefiboot.svn.sourceforge.net/viewvc/cloverefiboot/VBoxFsDxe/">ISO-9660, ext2fs, ext4fs, and HFS+;</a> however, building them requires a fair amount of expertise. These drivers are closely related to rEFInd's own drivers. Thus, as with the rEFIt drivers, there's likely to be no advantage to using the Clover drivers over the rEFInd drivers.</li>
 
-<li><b><a href="http://www.osx86.net/view/2571-clover_v2_r384__efi_bootloader_pkg_+_gpt_efi_tools.html">Clover's EFI Tools package</a></b>&mdash;This osx86.net thread includes links to a package called <tt> 	EFI_Tools_Clover_v2_r1888_EN.zip</tt>, which holds an OS X application (a directory with a <tt>.app</tt> extension, as seen from other platforms) with a number of drivers in the <tt>Contents/Resources/EFI/drivers64</tt> directory (and an equivalent for 32-bit binaries). Some of these, such as keyboard drivers, are unlikely to be useful unless your system is badly broken as delivered. Three that caught my eye, however, are <tt>VBoxExt2-64.efi</tt>, <tt>VBoxIso9600-64.efi</tt>, and <tt>NTFS-64.efi</tt>. The first two of those are presumably variants on rEFInd's drivers, but the NTFS driver is not. I don't know this driver's provenance, so I'm reluctant to recommend its use, but it bears mentioning.</li>
+<li><b><a href="https://sourceforge.net/projects/cloverefiboot/files/Bootable_ISO/">Clover's non-filesystem drivers</a></b>&mdash;In addition to its filesystem drivers, Clover includes a number of hardware drivers, such as one for NVMe devices (<tt>nvmexpressdxe-64.efi</tt>) and two mouse drivers (<tt>ps2mousedxe-64.efi</tt> and <tt>usbmousedxe-64.efi</tt>, for PS/2 and USB mice, respectively). I haven't tested these drivers, but I've received a report that the NVMe driver, at least, is useful to enable booting OSes installed on NVMe devices. The easiest way to obtain these drivers is likely to be to download the <tt>.iso</tt> file, mount it, and copy the drivers from the <tt>efi/clover/drivers*</tt> directories (there are several, with varying purposes). I recommend caution when testing them, though; using an inappropriate driver could cause a system hang.</li>
 
 <li><b><a href="https://www.virtualbox.org/browser/vbox/trunk/src/VBox/Devices/EFI/Firmware2/VBoxPkg/VBoxFsDxe">VirtualBox's HFS+ and ISO-9660 drivers</a></b>&mdash;These drivers are available in source code form, and come with VirtualBox binaries. I've not attempted to compile them myself, but I've seen a report that suggests they may include assumptions that require use of <a href="http://www.mingw.org/">MinGW,</a> a GCC-based compiler for Windows (and cross-compiler to build Windows executables under Linux). I don't know of a source for binaries suitable for use on EFI-based computers; if you want to use them, you'll need to figure out how to compile them yourself. As noted earlier, rEFInd's drivers are closely related to these.</li>
 
@@ -364,7 +366,7 @@ fs0: <tt class="userinput">map -r</tt>
 
 </ul>
 
-<p>The rEFIt, Clover, and VirtualBox drivers are related, and all of them
+<p>The rEFIt, Clover filesystem, and VirtualBox drivers are related, and all of them
 have fed into rEFInd's drivers. Specific versions can have their own
 quirks, though. For instance, the Clover (and I suspect VirtualBox) drivers
 don't return volume labels, which causes rEFInd to display loaders on those
