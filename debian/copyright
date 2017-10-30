@@ -373,6 +373,11 @@ Files: icons/os_elementary.png
 Copyright: 2008 Dan Rabbit
 License: GPL-2
 
+Files: icons/os_void.png
+License: public-domain
+ Claimed as public domain by source
+ (https://commons.wikimedia.org/wiki/File:Void_Linux_logo.svg)
+
 Files: icons/svg/*
 Copyright: 2015 by Roderick W. Smith
 License: LGPL-3+ or CC-BY-SA-3.0

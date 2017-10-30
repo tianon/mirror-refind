@@ -35,6 +35,10 @@ Icon Sources (Overview)
   - Copyright (c) 2014-2017 Canonical Ltd.
   - License: CC-BY-SA 3.0
 
+- Void Linux icon
+  - Source: https://commons.wikimedia.org/wiki/File:Void_Linux_logo.svg
+  - Copyright: Public Domain
+
 Some icons have been altered from their original forms -- normally
 conversion from SVG to PNG format, resizing, changes in coloration, or
 addition of "drop shadow" effects. Details follow....
@@ -100,6 +104,11 @@ os_elementary.png (GPLv2+)
 Modified Debian OS icon:
 
 os_debian.png (LGPLv3+ or CC-BY-SA 3.0)
+
+
+Modified Void Linux icon:
+
+os_void.png (public domain)
 
 
 Modified Ubuntu "animal" icons:
