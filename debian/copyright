@@ -361,6 +361,11 @@ Files: icons/os_trusty.png
 Copyright: 2014-2017 by Canonical Ltd.
 License: CC-BY-SA-3.0
 
+Files: icons/os_artful.png
+       icons/os_bionic.png
+Copyright: 2017-2018 by Canonical Ltd.
+License: CC-BY-SA-3.0
+
 Files: icons/os_debian.png
 Copyright: 1999 by Debian Project
 License: LGPL-3+ or CC-BY-SA-3.0
