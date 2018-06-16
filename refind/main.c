@@ -545,6 +545,8 @@ static VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName)
 // If more than one initrd file matches the extracted version string, the one
 // that matches more characters AFTER (actually, from the start of) the version
 // string is used.
+// If more than one initrd file matches the extracted version string AND they match
+// the same amount of characters, the initrd file with the shortest file name is used.
 // If no matching init file can be found, returns NULL.
 static CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     CHAR16              *InitrdName = NULL, *FileName, *KernelVersion, *InitrdVersion, *Path;
@@ -595,7 +597,7 @@ static CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
                 KernelPostNum = MyStrStr(LoaderPath, KernelVersion);
                 InitrdPostNum = MyStrStr(CurrentInitrdName->Value, KernelVersion);
                 SharedChars = NumCharsInCommon(KernelPostNum, InitrdPostNum);
-                if (SharedChars > MaxSharedChars) {
+                if (SharedChars > MaxSharedChars || (SharedChars == MaxSharedChars && StrLen(CurrentInitrdName->Value) < StrLen(MaxSharedInitrd->Value))) {
                     MaxSharedChars = SharedChars;
                     MaxSharedInitrd = CurrentInitrdName;
                 } // if
