@@ -1,7 +1,10 @@
 0.11.3 (??/??/2017):
 --------------------
 
-- Added icon for Void Linux.
+- Added icons for Void Linux, Ubuntu 17.10, and Ubuntu 18.04.
+
+- Eliminated "Scanning for boot loaders; please wait" message from
+  initial boot scan, which seems to be universally disliked.
 
 0.11.2 (10/22/2017):
 --------------------

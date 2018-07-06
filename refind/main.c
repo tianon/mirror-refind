@@ -2209,7 +2209,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     // further bootstrap (now with config available)
     SetupScreen();
     SetVolumeIcons();
-    ScanForBootloaders(GlobalConfig.ScanDelay == 0);
+    ScanForBootloaders(FALSE);
     ScanForTools();
     // SetupScreen() clears the screen; but ScanForBootloaders() may display a
     // message that must be deleted, so do so
