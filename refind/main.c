@@ -1748,8 +1748,8 @@ static VOID StartTool(IN LOADER_ENTRY *Entry)
     FinishExternalScreen();
 } /* static VOID StartTool() */
 
-static LOADER_ENTRY * AddToolEntry(REFIT_VOLUME *Volume, IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN EG_IMAGE *Image,
-                                   IN CHAR16 ShortcutLetter, IN BOOLEAN UseGraphicsMode)
+static LOADER_ENTRY * AddToolEntry(REFIT_VOLUME *Volume,IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle,
+                                   IN EG_IMAGE *Image, IN CHAR16 ShortcutLetter, IN BOOLEAN UseGraphicsMode)
 {
     LOADER_ENTRY *Entry;
     CHAR16       *TitleStr = NULL;
