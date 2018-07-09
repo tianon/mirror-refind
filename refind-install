@@ -775,15 +775,15 @@ CreateBootCsvFile() {
    IConv=`which iconv 2> /dev/null`
    if [[ -x "$IConv" ]] ; then
       if [[ "$Platform" == "x64" && -d "$InstallDir/$TargetDir" ]] ; then
-         echo "$TargetX64,rEFInd boot manager,,This is the boot entry for rEFInd" | \
+         echo "$TargetX64,rEFInd Boot Manager,,This is the boot entry for rEFInd" | \
               $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
       fi
       if [[ "$Platform" == "ia32" && -d "$InstallDir/$TargetDir" ]] ; then
-         echo "$TargetIA32,rEFInd boot manager,,This is the boot entry for rEFInd" | \
+         echo "$TargetIA32,rEFInd Boot Manager,,This is the boot entry for rEFInd" | \
               $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
       fi
       if [[ "$Platform" == "aarch64" && -d "$InstallDir/$TargetDir" ]] ; then
-         echo "$TargetAARCH64,rEFInd boot manager,,This is the boot entry for rEFInd" | \
+         echo "$TargetAARCH64,rEFInd Boot Manager,,This is the boot entry for rEFInd" | \
               $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
       fi
    fi
