@@ -38,6 +38,7 @@
 
 # Revision history:
 #
+# 0.11.3  -- Added support for ESP mounted at /efi under Linux
 # 0.11.1  -- In Linux, be less aggressive about replacing existing NVRAM entries
 # 0.11.0  -- Create BOOT.CSV file and option to encrypt SB private key
 # 0.10.8  -- Enabled use of shimx64.efi.signed as Shim source file
