@@ -171,6 +171,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* EnableMouse = */ FALSE,
                               /* EnableTouch = */ FALSE,
                               /* HiddenTags = */ TRUE,
+                              /* UseNvram = */ TRUE,
                               /* RequestedScreenWidth = */ 0,
                               /* RequestedScreenHeight = */ 0,
                               /* BannerBottomEdge = */ 0,
@@ -2159,6 +2160,33 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
     } // if
 } // VOID SetConfigFilename()
 
+// Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
+// rEFInd PreviousBoot variable, if it's available. If it's not available, delete that
+// element.
+VOID AdjustDefaultSelection() {
+    UINTN i = 0, j;
+    CHAR16 *Element = NULL, *NewCommaDelimited = NULL, *PreviousBoot = NULL;
+    EFI_STATUS Status;
+
+    while ((Element = FindCommaDelimited(GlobalConfig.DefaultSelection, i++)) != NULL) {
+        if (MyStriCmp(Element, L"+")) {
+            Status = EfivarGetRaw(&RefindGuid, L"PreviousBoot", (CHAR8 **) &PreviousBoot, &j);
+            if (Status == EFI_SUCCESS) {
+                MyFreePool(Element);
+                Element = PreviousBoot;
+            } else {
+                Element = NULL;
+            }
+        } // if
+        if (Element && StrLen(Element)) {
+            MergeStrings(&NewCommaDelimited, Element, L',');
+        } // if
+        MyFreePool(Element);
+    } // while
+    MyFreePool(GlobalConfig.DefaultSelection);
+    GlobalConfig.DefaultSelection = NewCommaDelimited;
+} // AdjustDefaultSelection()
+
 //
 // main entry point
 //
@@ -2197,6 +2225,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     if (LoadDrivers())
         ScanVolumes();
     ReadConfig(GlobalConfig.ConfigFilename);
+    AdjustDefaultSelection();
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')
         SetAppleOSInfo();

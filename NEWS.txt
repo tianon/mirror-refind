@@ -1,6 +1,19 @@
 0.11.3 (??/??/2017):
 --------------------
 
+- Added new use_nvram token, which defaults to true to mimic the original
+  behavior. When set to false, this option tells rEFInd to store its
+  variables (PreviousBoot, HiddenTags, HiddenLegacy, and Hidden tools, used
+  to enable booting the the previously-booted OS and to manage hidden OS
+  tags) on the hard disk rather than in NVRAM. Note that this token does NOT
+  affect rEFInd's reading NVRAM for non-rEFInd-specific variables, such as
+  the one holding the Secure Boot status.
+
+- The "+" symbol in default_selection may now be placed anywhere in the
+  default_selection string to refer to the previous boot. For instance,
+  "bzImage,+,vmlinuz" now works, prioritizing any bzImage files over the
+  previous boot, but the previous boot over vmlinuz files.
+
 - Added icons for Void Linux, Ubuntu 17.10, and Ubuntu 18.04.
 
 - Copied the gummiboot icon (os_gummiboot.png) to os_systemd.png, so
@@ -8,6 +21,9 @@
 
 - Eliminated "Scanning for boot loaders; please wait" message from
   initial boot scan, which seems to be universally disliked.
+
+- Fixed bug that caused rEFInd to ignore refind.conf if the first
+  line was empty.
 
 0.11.2 (10/22/2017):
 --------------------

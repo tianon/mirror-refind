@@ -12,11 +12,29 @@
 #
 timeout 20
 
+# Whether to store rEFInd's rEFInd-specific variables in NVRAM (1, true,
+# or on) or in files in the "vars" subdirectory of rEFInd's directory on
+# disk (0, false, or off). Using NVRAM works well with most computers;
+# however, it increases wear on the motherboard's NVRAM, and if the EFI
+# is buggy or the NVRAM is old and worn out, it may not work at all.
+# Storing variables on disk is a viable alternative in such cases, or
+# if you want to minimize wear and tear on the NVRAM; however, it won't
+# work if rEFInd is stored on a filesystem that's read-only to the EFI
+# (such as an HFS+ volume), and it increases the risk of filesystem
+# damage. Note that this option affects ONLY rEFInd's own variables,
+# such as the PreviousBoot, HiddenTags, HiddenTools, and HiddenLegacy
+# variables. It does NOT affect Secure Boot or other non-rEFInd
+# variables.
+# Default is true
+#
+#use_nvram false
+
 # Screen saver timeout; the screen blanks after the specified number of
 # seconds with no keyboard input. The screen returns after most keypresses
 # (unfortunately, not including modifier keys such as Shift, Control, Alt,
 # or Option). Setting a value of "-1" causes rEFInd to start up with its
 # screen saver active. The default is 0, which disables the screen saver.
+#
 #screensaver 300
 
 # Hide user interface elements for personal preference or to increase
