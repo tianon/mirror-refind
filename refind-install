@@ -1184,7 +1184,7 @@ FindLinuxESP() {
 FindMountedESP() {
    mount /boot &> /dev/null
    mount /boot/efi &> /dev/null
-   mount /esp &> /dev/null
+   mount /efi &> /dev/null
    EspLine=`df "$RootDir/efi" 2> /dev/null | grep efi`
    if [[ ! -n "$EspLine" ]] ; then
       EspLine=`df "$RootDir"/boot/efi 2> /dev/null | grep boot/efi`
