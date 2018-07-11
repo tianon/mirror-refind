@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Script to create a bootable CD image file containing rEFInd.
 # Usage:

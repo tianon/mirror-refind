@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Script to prepare source code and binary distribution files of rEFInd.
 # By Rod Smith, 3/11/2012

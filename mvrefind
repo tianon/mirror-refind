@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Linux script to move an existing rEFInd installation from one directory to
 # another
