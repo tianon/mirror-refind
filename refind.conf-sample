@@ -99,7 +99,9 @@ timeout 20
 # for the OS icons, and a small one (64 x 64) for the function icons in the
 # second row. If only a small image is given, that one is also used for
 # the big icons by stretching it in the middle. If only a big one is given,
-# the built-in default will be used for the small icons.
+# the built-in default will be used for the small icons. If an image other
+# than the optimal size is specified, it will be scaled in a way that may
+# be ugly.
 #
 # Like the banner option above, these options take a filename of an
 # uncompressed BMP image file with a color depth of 24, 8, 4, or 1 bits,
