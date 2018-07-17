@@ -56,6 +56,8 @@
   libeg/load_icns.c
   libeg/lodepng.c
   libeg/lodepng_xtra.c
+  libeg/nanojpeg.c
+  libeg/nanojpeg_xtra.c
   libeg/screen.c
   libeg/text.c
 

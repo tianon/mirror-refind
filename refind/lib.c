@@ -352,7 +352,7 @@ EFI_STATUS ReinitRefitLib(VOID)
 // rEFInd's "vars" subdirectory, depending on GlobalConfig.UseNvram.
 // Returns EFI status
 EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *size) {
-    CHAR8 *buf = NULL;
+    UINT8 *buf = NULL;
     UINTN l;
     EFI_STATUS Status;
     EFI_FILE *VarsDir = NULL;
@@ -370,7 +370,7 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
         Status = refit_call5_wrapper(RT->GetVariable, name, vendor, NULL, &l, buf);
     }
     if (EFI_ERROR(Status) == EFI_SUCCESS) {
-        *buffer = buf;
+        *buffer = (CHAR8*) buf;
         if (size)
             *size = l;
     } else

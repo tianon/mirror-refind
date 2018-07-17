@@ -160,23 +160,37 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <ul>
 
-<li><b>Banners and backgrounds</b>&mdash;A <i>banner</i> is a logo or small graphical element that rEFInd displays horizontally centered in the top half of the screen. The rest of the screen is filled with a solid color derived from the color used in the top-left pixel of the banner image. rEFInd includes a built-in banner image that's used if you don't specify another image with the <tt>banner</tt> token in <tt>refind.conf</tt>. A <i>background</i> is simply a banner image that fills the screen.</li>
+<li><b>Banners and backgrounds</b>&mdash;A <i>banner</i> is a logo or small graphical element that rEFInd displays horizontally centered in the top half of the screen. The rest of the screen is filled with a solid color derived from the color used in the top-left pixel of the banner image. rEFInd includes a built-in banner image that's used if you don't specify another image with the <tt>banner</tt> token in <tt>refind.conf</tt>. A <i>background</i> is simply a banner image that fills the screen. As a general rule, PNG and JPEG files work best for this element.</li>
 
-<li><b>Icons</b>&mdash;rEFInd uses icons for its OSes and utilities. The vast majority of these icons are loaded from disk files and so are easily replaced without adjusting the <tt>refind.conf</tt> file. Alternatively, you can specify a new icons directory with the <tt>icons_dir</tt> token in <tt>refind.conf</tt>.</li>
+<li><b>Icons</b>&mdash;rEFInd uses icons for its OSes and utilities. The vast majority of these icons are loaded from disk files and so are easily replaced without adjusting the <tt>refind.conf</tt> file. Alternatively, you can specify a new icons directory with the <tt>icons_dir</tt> token in <tt>refind.conf</tt>. Icons are generally PNG or ICNS files, with the latter being a Mac-centric format and so less common.</li>
 
-<li><b>Icon selection backgrounds</b>&mdash;When an icon is selected, it's merged with a slightly larger selection icon, which you can change by specifying a new file with the <tt>selection_big</tt> and <tt>selection_small</tt> tokens in <tt>refind.conf</tt>.</li>
+<li><b>Icon selection backgrounds</b>&mdash;When an icon is selected, it's merged with a slightly larger selection icon, which you can change by specifying a new file with the <tt>selection_big</tt> and <tt>selection_small</tt> tokens in <tt>refind.conf</tt>. These elements are generally best done as PNG files.</li>
 
-<li><b>fonts</b>&mdash;rEFInd uses a 14-point monospaced sans serif font by default. If you don't like this font, you can change it to another monospaced font by using the <tt>font</tt> token in <tt>refind.conf</tt>; however, the font file is a simple PNG image of the font's characters, which limits rEFInd's font capabilities.</li>
+<li><b>fonts</b>&mdash;rEFInd uses a 14-point monospaced sans serif font by default. If you don't like this font, you can change it to another monospaced font by using the <tt>font</tt> token in <tt>refind.conf</tt>; however, the font file is a simple image of the font's characters, which limits rEFInd's font capabilities. The PNG format works best for a font.</li>
 
 </ul>
 
 <p>Of course, not all of these elements are likely to be included in all themes. You might want to change just one or two elements&mdash;say, to add an icon for your OS or to change the banner or background.</p>
 
+<p>As noted in the <a href="configfile.html#icons">Setting OS Icons</a> section of the <a href="configfile.html">Configuring the Boot Manager</a> page, rEFInd supports four image file formats: <a href="http://en.wikipedia.org/wiki/Apple_Icon_Image_format">Apple's ICNS</a> format, <a href="http://en.wikipedia.org/wiki/Portable_Network_Graphics">Portable Network Graphics (PNG)</a> format, <a href="https://en.wikipedia.org/wiki/BMP_file_format">bitmap image file (BMP)</a> format, and <a href="https://en.wikipedia.org/wiki/JPEG">Joint Photographic Experts Group (JPEG)</a> format. The demands of each type of image mean that certain file formats work best for it, as noted above; however, you can in principle use any file format for any purpose. Specific file format limitations include:</p>
+
+<ul>
+
+<li>rEFInd's BMP and JPEG implementations lack support for transparency, which is highly desirable in icons, icon backgrounds, and fonts.</li>
+
+<li>Apple's ICNS format supports a limited range of sizes, all of which are square, not rectangular.</li>
+
+<li>rEFInd's BMP implementation does not support compression, so full-screen BMP images will be quite large.</li>
+
+</ul>
+
+<p>rEFInd relies on the <a href="https://lodev.org/lodepng/">LodePNG</a> and <a href="https://keyj.emphy.de/nanojpeg/">NanoJPEG</a> libraries for PNG and JPEG support, respectively. These libraries have certain limitations; for instance, NanoJPEG, and therefore rEFInd, does not support progressive JPEGs. If you have problems with a specific icon or banner image, check the libraries' pages and re-save or convert the image into a more generic form, or even to a different format.</p>
+
 <a name="banners">
 <h2>Banners and Backgrounds</h2>
 </a>
 
-<p>You can create a new background image and logo by placing a PNG or BMP file in rEFInd's main directory and passing its filename to rEFInd with the <tt>banner</tt> option in <tt>refind.conf</tt>. If the image is smaller than the screen, the color in the top-left pixel of the image will be used for the rest of the display. This pixel's color is also used as the background color for submenu text, even for full-screen backgrounds. Using a full-screen background image can produce a dramatically different "look" for rEFInd:</p>
+<p>You can create a new background image and logo by placing an image file in rEFInd's main directory and passing its filename to rEFInd with the <tt>banner</tt> option in <tt>refind.conf</tt>. If the image is smaller than the screen, the color in the top-left pixel of the image will be used for the rest of the display. This pixel's color is also used as the background color for submenu text, even for full-screen backgrounds. Using a full-screen background image can produce a dramatically different "look" for rEFInd:</p>
 
     <br /><center><img src="refind-background.png" align="center"
     width="750" height="563" alt="rEFInd provides extensive theming
@@ -184,11 +198,11 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p class="sidebar"><b>Tip:</b> If you use a laptop, you can create a banner or background that includes your contact information. If you lose your laptop and it's found by an honest person, this should facilitate your getting it back. Setting <tt>timeout 0</tt> in <tt>refind.conf</tt> will ensure that the message remains on the screen indefinitely.</p>
 
-<p>Note that in this example, the text immediately below the icons is white, whereas the hint text at the bottom of the screen is black. The text color is determined by the brightness of the background; rEFInd uses black text against light backgrounds and light text against dark backgrounds. This adjustment is done on a line-by-line basis, so it copes better with horizontal lines than with vertical lines.</p>
+<p>Note that in this example, the text immediately below the icons is white, whereas the hint text at the bottom of the screen is black. The text color is determined by the brightness of the background; rEFInd uses black text against light backgrounds and white text against dark backgrounds. This adjustment is done on a line-by-line basis, so it copes better with horizontal lines than with vertical lines.</p>
 
 <p>If you want to use a full-screen background but also include the rEFInd logo, you can merge the two in a graphics editor by including the <tt>refind_banner-alpha.png</tt> or <tt>refind-banner.svg</tt> image from the <tt>banners</tt> subdirectory of the rEFInd package in your background.</p>
 
-<p>Beginning with rEFInd 0.7.8, it's possible to stretch or shrink any image to fill the screen. To do so, you should use the <tt>banner_scale</tt> option in <tt>refind.conf</tt>: Set it to <tt>noscale</tt> (the default) to use small banners as such or to crop larger images; or set it to <tt>fillscreen</tt> to adjust your banner's size to exactly fill the screen. This should be particularly handy for theme developers who want to use a full-screen background image, since you can now do this with just one image file.</p>
+<p>It's possible to stretch or shrink any image to fill the screen. To do so, you should use the <tt>banner_scale</tt> option in <tt>refind.conf</tt>: Set it to <tt>noscale</tt> (the default) to use small banners as such or to crop larger images; or set it to <tt>fillscreen</tt> to adjust your banner's size to exactly fill the screen. This should be particularly handy for theme developers who want to use a full-screen background image, since you can now do this with just one image file.</p>
 
 <a name="icons">
 <h2>Icons</h2>
@@ -210,17 +224,17 @@ graphics, so you can change them.</p>
 
 <ul>
 
-<li>You can create new icons, place them in a subdirectory of rEFInd's main directory, and tell the program to use the new icons by setting the <tt>icons_dir</tt> token in <tt>refind.conf</tt>. This will affect the appearance of the OS tags, the utility tags, and so on. The names of these icons should match those in the <tt>icons</tt> subdirectory (although you can substitute ICNS for PNG files, with a suitable filename change), and are fairly self-explanatory. The default size for OS tags is 128x128 pixels, tags for 2nd-row utilities are ordinarily 48x48 pixels, and drive-type badges are 32x32 pixels by default. If an icon is missing from the directory specified by <tt>icons_dir</tt>, rEFInd falls back to the icon from the standard <tt>icons</tt> subdirectory; thus, you can replace just a subset of the standard icons. rEFInd can use icons in either Apple's <a href="http://en.wikipedia.org/wiki/Apple_Icon_Image">icon image (ICNS)</a> or <a href="http://en.wikipedia.org/wiki/Portable_Network_Graphics">Portable Network Graphics (PNG)</a> format. PNG files are easier to generate on most platforms. You can generate ICNS files in various Apple programs or by using the <a href="http://icns.sourceforge.net/">libicns</a> library (and in particular its <tt>png2icns</tt> program) in Linux.</li>
+<li>You can create new icons, place them in a subdirectory of rEFInd's main directory, and tell the program to use the new icons by setting the <tt>icons_dir</tt> token in <tt>refind.conf</tt>. This will affect the appearance of the OS tags, the utility tags, and so on. The names of these icons should match those in the <tt>icons</tt> subdirectory (although you can substitute file formats, with a suitable filename change), and are fairly self-explanatory. The default size for OS tags is 128x128 pixels, tags for 2nd-row utilities are ordinarily 48x48 pixels, and drive-type badges are 32x32 pixels by default. If an icon is missing from the directory specified by <tt>icons_dir</tt>, rEFInd falls back to the icon from the standard <tt>icons</tt> subdirectory; thus, you can replace just a subset of the standard icons. rEFInd can use icons in any of several formats, as described earlier, in <a href="#basics">Theming Basics.</a> PNG files are the easiest to generate on most platforms. You can generate ICNS files in various Apple programs or by using the <a href="http://icns.sourceforge.net/">libicns</a> library (and in particular its <tt>png2icns</tt> program) in Linux.</li>
 
 <li>You can do as above, but place your new icons in the default <tt>icons</tt> subdirectory. This method is discouraged because using the <tt>refind-install</tt> script to upgrade rEFInd will replace your customized icons.</li>
 
-<li>You can customize the appearance of an individual boot loader by placing an ICNS or PNG file in its directory with the same name as the boot loader but with a <tt>.icns</tt> or <tt>.png</tt> extension. For instance, if your boot loader program is <tt>elilo.efi</tt>, you can create a custom icon by naming it <tt>elilo.png</tt>.</li>
+<li>You can customize the appearance of an individual boot loader by placing an ICNS or PNG file in its directory with the same name as the boot loader but with a suitable image file extension, such as <tt>.icns</tt> or <tt>.png</tt>. For instance, if your boot loader program is <tt>elilo.efi</tt>, you can create a custom icon by naming it <tt>elilo.png</tt>.</li>
 
-<li>You can provide an icon for boot loaders stored in the root directory of a filesystem by placing a file called <tt>.VolumeIcon.icns</tt> or <tt>.VolumeIcon.png</tt> in that volume's root.</li>
+<li>You can provide an icon for boot loaders stored in the root directory of a filesystem by placing a file called <tt>.VolumeIcon.icns</tt>, <tt>.VolumeIcon.png</tt>, <tt>.VolumeIcon.bmp</tt>, <tt>.VolumeIcon.jpg</tt>, or <tt>.VolumeIcon.jpeg</tt> in that volume's root.</li>
 
-<li>You can set a custom badge (the icon that identifies the disk type) by creating a file called <tt>.VolumeBadge.icns</tt> or <tt>.VolumeBadge.png</tt> in that volume's root. This setting applies to all the boot loaders found on this volume, even if they're in subdirectories.</li>
+<li>You can set a custom badge (the icon that identifies the disk type) by creating a file called <tt>.VolumeBadge.icns</tt>, <tt>.VolumeBadge.png</tt>, <tt>.VolumeBadge.bmp</tt>, <tt>.VolumeBadge.jpg</tt>, or <tt>.VolumeBadge.jpeg</tt> in that volume's root. This setting applies to all the boot loaders found on this volume, even if they're in subdirectories.</li>
 
-<li>You can adjust the sizes of icons by using the <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens in <tt>refind.conf</tt>. These tokens adjust the size of the first-row OS and second-row tool icons, respectively. The <tt>big_icon_size</tt> option also indirectly sets the disk-type badge size; badges have sides that 1/4 the size of OS icons. The icons provided with rEFInd are 128x128 for OS icons, 48x48 for tools, and 32x32 for badges. The <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens cause these icons to be scaled to the desired value; however, for best results you should replace your the default icons with ones generated natively in the desired size. (PNG and ICNS are both bitmap formats, and so will be degraded by scaling operations.) Because ICNS is limited in the sizes it supports, you're better off using PNG if you want to create larger icons.</li>
+<li>You can adjust the sizes of icons by using the <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens in <tt>refind.conf</tt>. These tokens adjust the size of the first-row OS and second-row tool icons, respectively. The <tt>big_icon_size</tt> option also indirectly sets the disk-type badge size; badges have sides that 1/4 the size of OS icons. The icons provided with rEFInd are 128x128 for OS icons, 48x48 for tools, and 32x32 for badges. The <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens cause these icons to be scaled to the desired value; however, for best results you should replace your the default icons with ones generated natively in the desired size. (All the image file formats supported by rEFInd are bitmap formats, and so the images will be degraded by scaling operations.)</li>
 
 </ul>
 
@@ -235,13 +249,13 @@ graphics, so you can change them.</p>
 <h2>Icon Selection Backgrounds</h2>
 </a>
 
-<p>rEFInd identifies the current selection by displaying a partially-transparent icon "between" the OS or tool icon and the background image. The default icon works reasonably well on both solid and image backgrounds, but if you like, you can customize it by creating new icons in PNG or in Microsoft's <a href="http://en.wikipedia.org/wiki/BMP_file_format">BMP format.</a> You should create both 144x144 and 64x64 images and tell rEFInd about them by using the <tt>selection_big</tt> and <tt>selection_small</tt> tokens, respectively, in <tt>refind.conf</tt>. (If you scale your icons, you may want to adjust the selection tile images appropriately. The big image is 9/8 the size of its matching icons, while the small tile is 4/3 the size of its icons.) If you omit the large icon, rEFInd will stretch the small icon to fit the larger space; if you omit the small icon, rEFInd will use the default small icon. Because BMP doesn't support transparency (alpha channels), you must use the PNG format if you want your selection background to show the underlying image beneath it. (You can create the illusion of transparency on a solid background by matching the colors, though.)</p>
+<p>rEFInd identifies the current selection by displaying a partially-transparent icon "between" the OS or tool icon and the background image. The default icon works reasonably well on both solid and image backgrounds, but if you like, you can customize it by creating new icons. You should create both 144x144 and 64x64 images and tell rEFInd about them by using the <tt>selection_big</tt> and <tt>selection_small</tt> tokens, respectively, in <tt>refind.conf</tt>. (If you scale your icons, you may want to adjust the selection tile images appropriately. The big image is 9/8 the size of its matching icons, while the small tile is 4/3 the size of its icons.) If you omit the large icon, rEFInd will stretch the small icon to fit the larger space; if you omit the small icon, rEFInd will use the default small icon. Because PNG supports both transparency and the unusual sizes of the selection icon, PNG is best if you want your selection background to show the underlying image beneath it. (You can create the illusion of transparency on a solid background by matching the colors, though.)</p>
 
 <a name="fonts">
 <h2>Fonts</h2>
 </a>
 
-<p>rEFInd's default font is a 14-point (12-point in 0.6.5 and earlier) serif monospaced font. I also include a handful of alternatives in the <tt>fonts</tt> subdirectory. rEFInd's font support is extremely rudimentary, though; it reads a PNG file that holds the glyphs from ASCII 32 (space) through ASCII 126 (tilde, <tt>~</tt>), plus a glyph that's displayed for all characters outside of this range. Thus, rEFInd can't currently display non-ASCII characters or use proportional (variable-width) fonts. You can change the font from one monospaced font to another and change the font size, though.</p>
+<p>rEFInd's default font is a 14-point (12-point in 0.6.5 and earlier) serif monospaced font. I also include a handful of alternatives in the <tt>fonts</tt> subdirectory. rEFInd's font support is extremely rudimentary, though; it reads an image file that holds the glyphs from ASCII 32 (space) through ASCII 126 (tilde, <tt>~</tt>), plus a glyph that's displayed for all characters outside of this range. Thus, rEFInd can't currently display non-ASCII characters or use proportional (variable-width) fonts. You can change the font from one monospaced font to another and change the font size, though.</p>
 
 <p>If you want to create your own fonts, you can do so. If you're using Linux, the <tt>mkfont.sh</tt> script in the <tt>fonts</tt> subdirectory will convert an installed <i>monospace</i> font into a suitable format. (This script works properly for most fonts, but if a font is unusually thin or wide, you will have to adjust the <tt>let CellWidth=</tt> line near the end of the file.) You can use it like this:</p>
 
@@ -267,19 +281,18 @@ $ <tt class="userinput">./mkfont.sh Liberation-Mono-Italic 14 -1 liberation-mono
 
 </ul>
 
-<p>I recommend checking the PNG file in a graphics program like <tt>eog</tt> before using it. Note that the font files should have an alpha layer, which many graphics programs display as a gray-and-white checkered background.</p>
+<p>I recommend checking the PNG file in a graphics program like <tt>eog</tt> before using it. Note that the font files should have an alpha layer, which many graphics programs display as a gray-and-white checkered background. This requirement, combined with ICNS's limited set of supported sizes, makes PNG the only practical file format for rEFInd fonts.</p>
 
 <p>If you're not using Linux, or if you want to use some other method of
-generating fonts, you can do so. The font files must be in PNG format (the
-BMP format doesn't support an alpha layer, which is required for proper
-transparency). They must contain glyphs for the 95 characters between ASCII
-32 (space) and ASCII 126 (tilde, ~), inclusive, plus a 96th glyph that
-rEFInd displays for out-of-range characters. To work properly, the
-characters must be evenly spaced and the PNG image must be a multiple
-of 96 pixels wide, with divisions at appropriate points. In theory, you
-should be able to take a screen shot of a program displaying the relevant
-characters and then crop it to suit your needs. In practice, this is likely
-to be tedious.</p>
+generating fonts, you can do so. The font files must contain glyphs for the
+95 characters between ASCII 32 (space) and ASCII 126 (tilde, ~), inclusive,
+plus a 96th glyph that rEFInd displays for out-of-range characters. To work
+properly, the characters must be evenly spaced and the PNG image must be a
+multiple of 96 pixels wide, with divisions at appropriate points. In theory,
+you should be able to take a screen shot of a program displaying the
+relevant characters and then crop it to suit your needs and convert the
+background color to transparency. In practice, this is likely to be
+tedious.</p>
 
 <a name="known_themes">
 <h2>Known Themes</h2>
@@ -370,7 +383,7 @@ to be tedious.</p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2017 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2018 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

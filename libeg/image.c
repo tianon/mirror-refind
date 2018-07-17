@@ -62,6 +62,7 @@
 #include "../refind/mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "lodepng.h"
+#include "libeg.h"
 
 #define MAX_FILE_SIZE (1024*1024*1024)
 
@@ -337,6 +338,8 @@ static EG_IMAGE * egDecodeAny(IN UINT8 *FileData, IN UINTN FileDataLength, IN UI
    if (NewImage == NULL)
       NewImage = egDecodePNG(FileData, FileDataLength, IconSize, WantAlpha);
    if (NewImage == NULL)
+      NewImage = egDecodeJPEG(FileData, FileDataLength, IconSize, WantAlpha);
+   if (NewImage == NULL)
       NewImage = egDecodeBMP(FileData, FileDataLength, IconSize, WantAlpha);
 
    return NewImage;
@@ -386,8 +389,10 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
     FreePool(FileData);
     if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
        NewImage = egScaleImage(Image, IconSize, IconSize);
-       if (!NewImage)
-          Print(L"Warning: Unable to scale icon of the wrong size from '%s'\n", Path);
+       if (!NewImage) {
+          Print(L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'\n",
+                Image->Width, Image->Height, IconSize, IconSize, Path);
+       }
        egFreeImage(Image);
        Image = NewImage;
     }

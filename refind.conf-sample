@@ -61,6 +61,10 @@ timeout 20
 # an icon can't be found in the specified directory, an attempt is made
 # to load it from the default directory; thus, you can replace just some
 # icons in your own directory and rely on the default for others.
+# Icon files may be in any supported format -- ICNS (*.icns), BMP (*.bmp),
+# PNG (*.png), or JPEG (*.jpg or *.jpeg); however, rEFInd's BMP and JPEG
+# implementations do not support transparency, which is highly desirable
+# in icons.
 # Default is "icons".
 #
 #icons_dir myicons
@@ -70,10 +74,14 @@ timeout 20
 # path is relative to the directory where refind.efi is located. The color
 # in the top left corner of the image is used as the background color
 # for the menu screens. Currently uncompressed BMP images with color
-# depths of 24, 8, 4 or 1 bits are supported, as well as PNG images.
+# depths of 24, 8, 4 or 1 bits are supported, as well as PNG and JPEG
+# images. (ICNS images can also be used, but ICNS has limitations that
+# make it a poor choice for this purpose.) PNG and JPEG support is
+# limited by the underlying libraries; some files, like progressive JPEGs,
+# will not work.
 #
 #banner hostname.bmp
-#banner mybanner.png
+#banner mybanner.jpg
 #banner icons/snowy/banner-snowy.png
 
 # Specify how to handle banners that aren't exactly the same as the screen
@@ -104,20 +112,20 @@ timeout 20
 # be ugly.
 #
 # Like the banner option above, these options take a filename of an
-# uncompressed BMP image file with a color depth of 24, 8, 4, or 1 bits,
-# or a PNG image. The PNG format is required if you need transparency
-# support (to let you "see through" to a full-screen banner).
+# uncompressed BMP, PNG, JPEG, or ICNS image file with a color depth of
+# 24, 8, 4, or 1 bits. The PNG or ICNS format is required if you need
+# transparency support (to let you "see through" to a full-screen banner).
 #
 #selection_big   selection-big.bmp
 #selection_small selection-small.bmp
 
 # Set the font to be used for all textual displays in graphics mode.
-# The font must be a PNG file with alpha channel transparency. It must
-# contain ASCII characters 32-126 (space through tilde), inclusive, plus
-# a glyph to be displayed in place of characters outside of this range,
-# for a total of 96 glyphs. Only monospaced fonts are supported. Fonts
-# may be of any size, although large fonts can produce display
-# irregularities.
+# For best results, the font must be a PNG file with alpha channel
+# transparency. It must contain ASCII characters 32-126 (space through
+# tilde), inclusive, plus a glyph to be displayed in place of characters
+# outside of this range, for a total of 96 glyphs. Only monospaced fonts
+# are supported. Fonts may be of any size, although large fonts can
+# produce display irregularities.
 # The default is rEFInd's built-in font, Luxi Mono Regular 12 point.
 #
 #font myfont.png

@@ -1,6 +1,11 @@
 0.11.3 (??/??/2017):
 --------------------
 
+- Added support for JPEG images. These are most useful as background
+  (banner) images, since alpha/transparency is not supported. For that
+  matter, progressive, lossless, and other JPEG features are not supported,
+  either; see https://keyj.emphy.de/nanojpeg/ for details.
+
 - Added new use_nvram token, which defaults to true to mimic the original
   behavior. When set to false, this option tells rEFInd to store its
   variables (PreviousBoot, HiddenTags, HiddenLegacy, and Hidden tools, used

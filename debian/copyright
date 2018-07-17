@@ -66,7 +66,8 @@ License: BSD-3-clause
 
 Files: refind/gpt.[ch]
        libeg/lodepng_xtra.c
-Copyright: 2014-2015 Roderick W. Smith
+       libeg/nanojpeg_xtra.c
+Copyright: 2014-2018 Roderick W. Smith
 License: GPL-3+
 
 Files: refind/pointer.[ch]
@@ -106,6 +107,10 @@ License: GPL-3+
 Files: libeg/lodepng.[ch]
 Copyright: 2005-2015 Lode Vandevenne
 License: zlib
+
+Files: libeg/nanojpeg.c
+Copyright: 2009-2016 Martin J. Fiedler <martin.fiedler@gmx.net>
+License: Expat
 
 Files: mok/*
 Copyright: 2012 James Bottomley
