@@ -1,6 +1,10 @@
 0.11.3 (??/??/2017):
 --------------------
 
+- Fixed bug that caused portions of the "Pausing before disk scan; please
+  wait...." message displayed when scan_delay is set to a value over 1 to
+  remain on screen.
+
 - Added support for JPEG images. These are most useful as background
   (banner) images, since alpha/transparency is not supported. For that
   matter, progressive, lossless, and other JPEG features are not supported,

@@ -2252,8 +2252,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
           egDisplayMessage(L"Pausing before disk scan; please wait....", &BGColor, CENTER);
        for (i = 0; i < GlobalConfig.ScanDelay; i++)
           refit_call1_wrapper(BS->Stall, 1000000);
-       BltClearScreen(TRUE);
        RescanAll(GlobalConfig.ScanDelay > 1);
+       BltClearScreen(TRUE);
     } // if
 
     if (GlobalConfig.DefaultSelection)
