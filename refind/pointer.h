@@ -2,7 +2,7 @@
  * refind/pointer.h
  * pointer device functions header file
  *
- * Copyright (c) 2017 CJ Vaughter
+ * Copyright (c) 2018 CJ Vaughter
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
