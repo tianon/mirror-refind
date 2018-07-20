@@ -256,6 +256,11 @@ timeout 20
    <td>Sets the timeout period in seconds. If <tt>0</tt>, the timeout is disabled&mdash;rEFInd waits indefinitely for user input. If <tt>-1</tt>, rEFInd will normally boot immediately to the default selection; however, if a shortcut key (for instance, <tt>W</tt> for Windows) is pressed, that system will boot instead. If any other key is pressed, the menu will show with no timeout.</td>
 </tr>
 <tr>
+   <td><tt>shutdown_after_timeout</tt></td>
+   <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
+   <td>If set to <tt>false</tt> or one of its synonyms (the default), rEFInd boots the option set via <tt>default_selection</tt> when the timeout period is reached. When set to <tt>true</tt> or one of its synonyms, rEFInd attempts to shut down the computer when the timeout period is reached. <i>Many EFIs lack software shutdown support. On them, setting this option to <tt>true</tt> will cause a reboot or a hang!</i></td>
+</tr>
+<tr>
    <td><tt>use_nvram</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
    <td>If set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt> (the default), stores rEFInd-specific variables in NVRAM. If set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, stores these variables in the <tt>vars</tt> subdirectory of rEFInd's home directory, if possible. (Read-only filesystems obviously make this option impossible.) Using NVRAM ties rEFInd's variables to a specific computer and increases wear on the NVRAM, whereas storing them on disk makes the variables move with rEFInd (which is potentially useful on an installation on a removable disk).</td>

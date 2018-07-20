@@ -542,6 +542,9 @@ VOID ReadConfig(CHAR16 *FileName)
         if (MyStriCmp(TokenList[0], L"timeout")) {
             HandleInt(TokenList, TokenCount, &(GlobalConfig.Timeout));
 
+        } else if (MyStriCmp(TokenList[0], L"shutdown_after_timeout")) {
+           GlobalConfig.ShutdownAfterTimeout = HandleBoolean(TokenList, TokenCount);
+
         } else if (MyStriCmp(TokenList[0], L"hideui")) {
             for (i = 1; i < TokenCount; i++) {
                 FlagName = TokenList[i];

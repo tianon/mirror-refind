@@ -1,6 +1,12 @@
 0.11.3 (??/??/2017):
 --------------------
 
+- Added shutdown_after_timeout feature. When set, this causes rEFInd to
+  attempt to shut down the computer rather than boot the default option when
+  the timeout value is reached. Note, however, that some computers will
+  instead hang or reboot when the timeout value is reached because they lack
+  support for the shutdown option.
+
 - Fixed bug that caused portions of the "Pausing before disk scan; please
   wait...." message displayed when scan_delay is set to a value over 1 to
   remain on screen.

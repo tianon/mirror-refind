@@ -172,6 +172,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* EnableTouch = */ FALSE,
                               /* HiddenTags = */ TRUE,
                               /* UseNvram = */ TRUE,
+                              /* ShutdownAfterTimeout = */ FALSE,
                               /* RequestedScreenWidth = */ 0,
                               /* RequestedScreenHeight = */ 0,
                               /* BannerBottomEdge = */ 0,
@@ -2258,6 +2259,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     if (GlobalConfig.DefaultSelection)
        SelectionName = StrDuplicate(GlobalConfig.DefaultSelection);
+    if (GlobalConfig.ShutdownAfterTimeout)
+        MainMenu.TimeoutText = L"Shutdown";
 
     while (MainLoopRunning) {
         MenuExit = RunMainMenu(&MainMenu, &SelectionName, &ChosenEntry);
@@ -2267,6 +2270,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             MenuExit = 0;
             RescanAll(TRUE);
             continue;
+        }
+
+        if ((MenuExit == MENU_EXIT_TIMEOUT) && GlobalConfig.ShutdownAfterTimeout) {
+            ChosenEntry->Tag = TAG_SHUTDOWN;
         }
 
         switch (ChosenEntry->Tag) {
