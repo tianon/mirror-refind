@@ -65,7 +65,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
 # Copy the rEFInd binaries (rEFInd proper and drivers) to /usr/share/refind-%{version},
 # including signing the binaries if sbsign is installed and a %{keydir}/refind.key file
 # is available
-declare SBSign=`which sbsign 2> /dev/null`
+SBSign=`which sbsign 2> /dev/null`
 if [[ -f %{keydir}/refind.key && -x $SBSign ]] ; then
    $SBSign --key %{keydir}/refind.key --cert %{keydir}/refind.crt --output $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/refind_%{efiarch}.efi refind/refind_%{efiarch}.efi
    mkdir -p $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/drivers_%{efiarch}
@@ -147,12 +147,12 @@ else
 fi
 # Note: Two find operations for ShimFile favors shim over PreLoader -- if both are
 # present, the script uses shim rather than PreLoader.
-declare ShimFile=`find /boot -name shim\.efi -o -name shimx64\.efi -o -name PreLoader\.efi 2> /dev/null | head -n 1`
+ShimFile=`find /boot -name shim\.efi -o -name shimx64\.efi -o -name PreLoader\.efi 2> /dev/null | head -n 1`
 if [[ ! -n $ShimFile ]] ; then
-   declare ShimFile=`find /boot -name PreLoader\.efi 2> /dev/null | head -n 1`
+   ShimFile=`find /boot -name PreLoader\.efi 2> /dev/null | head -n 1`
 fi
-declare SBSign=`which sbsign 2> /dev/null`
-declare OpenSSL=`which openssl 2> /dev/null`
+SBSign=`which sbsign 2> /dev/null`
+OpenSSL=`which openssl 2> /dev/null`
 
 # Run the rEFInd installation script. Do so with the --shim option
 # if Secure Boot mode is suspected and if a shim program can be
