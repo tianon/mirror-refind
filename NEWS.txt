@@ -1,6 +1,10 @@
 0.11.3 (7/22/2017):
 -------------------
 
+- Changes to scripts for portability; should have no visible effects.
+
+- Updated pointer support to work on some (many? Most?) 32-bit systems.
+
 - Added shutdown_after_timeout feature. When set, this causes rEFInd to
   attempt to shut down the computer rather than boot the default option when
   the timeout value is reached. Note, however, that some computers will
