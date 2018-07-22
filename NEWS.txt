@@ -1,5 +1,5 @@
-0.11.3 (??/??/2017):
---------------------
+0.11.3 (7/22/2017):
+-------------------
 
 - Added shutdown_after_timeout feature. When set, this causes rEFInd to
   attempt to shut down the computer rather than boot the default option when
