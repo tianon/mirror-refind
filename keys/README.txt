@@ -23,7 +23,7 @@ The files in this directory are, in alphabetical order:
   Taken from the alt-uefi-certs package
   (http://www.sisyphus.ru/br/srpm/Sisyphus/alt-uefi-certs/spec).
 
-- canonical-uefi-ca.crt & canonical-uefi-ca.der -- Canonical's public key,
+- canonical-uefi-ca.crt & canonical-uefi-ca.cer -- Canonical's public key,
   matched to the one used to sign Ubuntu boot loaders and kernels.
 
 - centos.crt & centos.cer -- Public keys used to sign CentOS binaries, taken
@@ -35,19 +35,19 @@ The files in this directory are, in alphabetical order:
 - fedora-ca.cer & fedora-ca.crt -- Fedora's public key, matched to the one
   used used to sign Fedora's shim 0.8 binary.
 
-- microsoft-kekca-public.der -- Microsoft's key exchange key (KEK), which
+- microsoft-kekca-public.cer -- Microsoft's key exchange key (KEK), which
   is present on most UEFI systems with Secure Boot. The purpose of
   Microsoft's KEK is to enable Microsoft tools to update Secure Boot
   variables. There is no reason to add it to your MOK list.
 
-- microsoft-pca-public.der -- A Microsoft public key, matched to the one
+- microsoft-pca-public.cer -- A Microsoft public key, matched to the one
   used to sign Microsoft's own boot loader. You might include this key in
   your MOK list if you replace the keys that came with your computer with
   your own key but still want to boot Windows. There's no reason to add it
   to your MOK list if your computer came this key pre-installed and you did
   not replace the default keys.
 
-- microsoft-uefica-public.der -- A Microsoft public key, matched to the one
+- microsoft-uefica-public.cer -- A Microsoft public key, matched to the one
   Microsoft uses to sign third-party applications and drivers. If you
   remove your default keys, adding this one to your MOK list will enable
   you to launch third-party boot loaders and other tools signed by
