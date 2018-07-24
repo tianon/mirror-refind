@@ -515,10 +515,8 @@ VOID ReadConfig(CHAR16 *FileName)
        GlobalConfig.DontScanVolumes = StrDuplicate(DONT_SCAN_VOLUMES);
        GlobalConfig.WindowsRecoveryFiles = StrDuplicate(WINDOWS_RECOVERY_FILES);
        GlobalConfig.MacOSRecoveryFiles = StrDuplicate(MACOS_RECOVERY_FILES);
-       if (GlobalConfig.DefaultSelection != NULL) {
-          MyFreePool(GlobalConfig.DefaultSelection);
-          GlobalConfig.DefaultSelection = NULL;
-       }
+       MyFreePool(GlobalConfig.DefaultSelection);
+       GlobalConfig.DefaultSelection = StrDuplicate(L"+");
     } // if
 
     if (!FileExists(SelfDir, FileName)) {
