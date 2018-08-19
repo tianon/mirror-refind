@@ -2077,7 +2077,7 @@ VOID RescanAll(BOOLEAN DisplayMessage) {
     ScanVolumes();
     ReadConfig(GlobalConfig.ConfigFilename);
     SetVolumeIcons();
-    ScanForBootloaders(TRUE);
+    ScanForBootloaders(DisplayMessage);
     ScanForTools();
 } // VOID RescanAll()
 
