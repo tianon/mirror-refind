@@ -236,7 +236,7 @@ Setting a boot order of 0000,0002,0085,0003</pre>
 
 <p>The exact output of the script depends on the current state of the system; it might also respond that rEFInd is already the default boot entry or that it could not identify a rEFInd entry, for instance. The boot order shown in this example is meaningless by itself; it's the boot order as identified by <tt>efibootmgr</tt>; for details, see <a href="#efibootmgr">the next section.</a></p>
 
-<p>Instead of using <tt>refind-mkdefault</tt> manually, you might consider running it automatically at every boot or shutdown. You can, for instance, call it from <tt>/etc/rc.local</tt> or create a script in <tt>/etc/rc6.d</tt> that calls it to have it run when you start up or shut down the computer, respectively. Details, however, vary from one distribution to another, so you should consult your distribution's documentation for details. If you use it in this way, rEFInd should correct a boot coup caused by an update to GRUB; however, this repair will happen only <i>after</i> a reboot if you call <tt>refind-mkdefault</tt> in a startup script. If you call it from a shutdown script, rEFInd should correct such a coup before it has a chance to cause problems; but then in won't run if the computer crashes. Note that <tt>refind-mkdefault</tt> does <i>not</i> touch the NVRAM variables if rEFInd is already the default boot option. Thus, calling this script as a regular part of your startup or shutdown procedure runs little risk of causing problems. If you decide to stop using rEFInd, though, you'll have to remember to remove the call to <tt>refind-mkdefault</tt> from your startup and shutdown scripts.</p>
+<p>Instead of using <tt>refind-mkdefault</tt> manually, you might consider running it automatically at every boot or shutdown. You can, for instance, call it from <tt>/etc/rc.local</tt> or create a script in <tt>/etc/rc6.d</tt> that calls it to have it run when you start up or shut down the computer, respectively. Details, however, vary from one distribution to another, so you should consult your distribution's documentation for details. If you use it in this way, rEFInd should correct a boot coup caused by an update to GRUB; however, this repair will happen only <i>after</i> a reboot if you call <tt>refind-mkdefault</tt> in a startup script. If you call it from a shutdown script, rEFInd should correct such a coup before it has a chance to cause problems; but then it won't run if the computer crashes. Note that <tt>refind-mkdefault</tt> does <i>not</i> touch the NVRAM variables if rEFInd is already the default boot option. Thus, calling this script as a regular part of your startup or shutdown procedure poses little risk of causing problems. If you decide to stop using rEFInd, though, you'll have to remember to remove the call to <tt>refind-mkdefault</tt> from your startup and shutdown scripts.</p>
 
 <p>If you've given the rEFInd entry an unusual name, you can pass the script the <tt>-L <tt class="variable">name</tt></tt> or <tt>--label <tt class="variable">name</tt></tt> option, as in:</p>
 
@@ -273,7 +273,7 @@ Boot0002* Windows Boot Manager	HD(2,113800,113000,8b0b6d94-06af-4894-b9de-13ca35
 Boot0003* Windows Boot Manager	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(\EFI\Microsoft\Boot\bootmgfw.efi)WINDOWS.........x...B.C.D.O.B.J.E.C.T.=.{.9.d.e.a.8.6.2.c.-.5.c.d.d.-.4.e.7.0.-.a.c.c.1.-.f.3.2.b.3.4.4.d.4.7.9.5.}....................
 Boot0085* ubuntu	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(EFI\Ubuntu\grubx64.efi)</pre>
 
-<p>Much of this output looks like gibberish, and is useful only for very advanced diagnostics. Note, however, the part of most lines that specifies a filename, in parentheses after <tt>File</tt>&mdash;this information can help disambiguate a misleading or redundant name. In this example, for instance, there are two <tt>Windows Boot Manager</tt> entries on two different partitions; each boots a different version of Windows.</p>
+<p>Much of this output looks like gibberish, and is useful only for very advanced diagnostics. Note, however, the part of most lines that specifies a filename, in parentheses after <tt>File</tt>&mdash;this information can help disambiguate a misleading or duplicate name. In this example, for instance, there are two <tt>Windows Boot Manager</tt> entries on two different partitions; each boots a different version of Windows.</p>
 
 <p>To adjust the boot order, you must identify the rEFInd entry and then use the <tt>-o</tt> option to <tt>efibootmgr</tt> to adjust the order:</p>
 
@@ -459,7 +459,7 @@ Boot0085* ubuntu</pre>
     height="600" alt="Some EFIs provide a way to adjust the boot order."
     border=2> </center><br />
 
-<li>Click and drag the rEFInd entry to move it to the front of the list.</li>
+<li>Click and drag the rEFInd entry to move it to the front of the list (all the way to the left).</li>
 
 <li>Hit F10 to save your changes. A dialog box will ask for confirmation; click <i>Save Changes & Reset.</i></li>
 
@@ -483,17 +483,15 @@ Boot0085* ubuntu</pre>
 
 <li><a href="https://edk2.svn.sourceforge.net/svnroot/edk2/trunk/edk2/ShellBinPkg/UefiShell/Ia32/Shell.efi"><i>x</i>86 (32-bit) shell 2</a></li>
 
-<li><a href="http://dl.dropbox.com/u/17629062/Shell2.zip">Alternate <i>x</i>86-64 (64-bit) shell 2 for older EFIs,</a> which <i>may</i> run on pre-2.3 EFIs</li>
-
 </ul>
 
-<p>If you need to use the shell to overcome a boot coup, your best bet is to install it to a USB flash drive and boot from it, as follows:</p>
+<p class="sidebar"><b>Note:</b> You can use an OS other than Linux to prepare the EFI shell boot disk, but you'll need to adjust the commands appropriately.</p>
+
+<p>If you need to use the shell to overcome a boot coup, your best bet is to install it to a USB flash drive and boot from it. You can do so as follows in Linux:</p>
 
 <ol>
 
 <li>Prepare a USB flash drive with a FAT filesystem. Depending on your firmware, it may need to use GPT and the partition may need to be marked as an EFI System Partition (ESP)&mdash;that is, with a type code of EF00 in <tt>gdisk</tt> or with its "boot flag" set in <tt>parted</tt> or GParted.</li>
-
-<p class="sidebar"><b>Note:</b> You can use an OS other than Linux to prepare the EFI shell boot disk, but you'll need to adjust the commands appropriately.</p>
 
 <li>Mount the USB flash drive. In this procedure, I assume it's mounted at <tt>/mnt</tt>. If you mount it elsewhere, adjust the following commands appropriately.</li>
 
@@ -536,7 +534,7 @@ Boot0085* ubuntu</pre>
 <h2>The Unstable State: Dealing With Persistent Boot Coups</h2>
 </a>
 
-<p>If your computer simply refuses to boot into rEFInd, chances are your firmware is either ignoring its boot entries or forgetting them. For the most part, which is the case doesn't really matter, since the solutions are similar for both cases. There are a few obscure exceptions, though; for instance, an entry will be ignored if it's malformed&mdash;for instance, if the filename specification includes a typo. Also, there is at least one <a href="http://mjg59.dreamwidth.org/20187.html">known bug</a> that causes the computer to ignore boot loader entries except for those named "Windows Boot Manager" or "Red Hat Enterprise Linux." Such problems can be fixed by creating a fresh NVRAM entry for rEFInd that fix the typo or give the entry the name that the EFI expects (even if it's a misleading name).</p>
+<p>If your computer simply refuses to boot into rEFInd, chances are your firmware is either ignoring its boot entries or forgetting them. For the most part, which is the case doesn't really matter, since the solutions are similar for both cases. There are a few obscure exceptions, though; for instance, an entry will be ignored if it's malformed&mdash;such as if the filename specification includes a typo. Also, there is at least one <a href="http://mjg59.dreamwidth.org/20187.html">known bug</a> that causes the computer to ignore boot loader entries except for those named "Windows Boot Manager" or "Red Hat Enterprise Linux." Such problems can be fixed by creating a fresh NVRAM entry for rEFInd that fix the typo or give the entry the name that the EFI expects (even if it's a misleading name).</p>
 
 <p>More common are problems in which the firmware ignores or forgets its boot entries. Such problems used to be quite common, but are becoming rarer as manufacturers (slowly) improve their products. My general advice for fixing such problems is to attempt each of the following, in more-or-less the stated order:</p>
 
@@ -576,7 +574,7 @@ Boot0085* ubuntu</pre>
 
 <p>One type of boot problem is similar to a boot coup, but has a unique cause: Some EFIs, especially older ones (mostly from 2012 or earlier) have a tendency to forget their NVRAM entries. Such computers boot from the fallback boot loader (<tt>EFI/BOOT/bootx64.efi</tt>) or from the Microsoft boot loader (<tt>EFI/Microsoft/Boot/bootmgfw.efi</tt>), but that's about it. A similar problem is that some computers remove invalid boot entries from their boot lists. This is helpful if you delete a boot loader, but it's less than helpful if you temporarily unplug your boot disk and then plug it back in.</p>
 
-<p>In either of these cases, your computer may boot to an unwanted OS or completely fail to boot. One solution to this problem is to install rEFInd to the fallback filename, as described earlier, in <a href="#unstable">The Unstable State: Dealing With Persistent Boot Coups.</a> Another is to use an EFI program called <tt>fallback.efi</tt>, <tt>fbx64.efi</tt>, or an equivalent filename on other platforms. To use this program, you would install it to <tt>EFI/BOOT</tt> on the ESP, either renaming it to <tt>bootx64.efi</tt> (that is, <tt>fallback.efi</tt> uses the fallback filename) or installing Shim as <tt>bootx64.efi</tt>. Shim will try to launch <tt>fallback.efi</tt> or <tt>fbx64.efi</tt> when it boots, so either way, this program will launch. (Be sure to match your Shim and <tt>fallback.efi</tt>/<tt>fbx864.efi</tt> binaries, so that Shim launches the correct program!) (For simplicity, I call this program <tt>fallback.efi</tt> hereafter.)</p>
+<p>In either of these cases, your computer may boot to an unwanted OS or completely fail to boot. One solution to this problem is to install rEFInd to the fallback filename, as described earlier, in <a href="#unstable">The Unstable State: Dealing With Persistent Boot Coups.</a> Another is to use an EFI program called <tt>fallback.efi</tt>, <tt>fbx64.efi</tt>, or an equivalent filename on other platforms. To use this program, you would install it to <tt>EFI/BOOT</tt> on the ESP, either renaming it to <tt>bootx64.efi</tt> (that is, <tt>fallback.efi</tt> uses the fallback filename) or installing Shim as <tt>bootx64.efi</tt>. Shim will try to launch <tt>fallback.efi</tt> or <tt>fbx64.efi</tt> when it boots, so either way, this program will launch. (Be sure to match your Shim and <tt>fallback.efi</tt>/<tt>fbx864.efi</tt> binaries, so that Shim launches the correct program!) For simplicity, I call this program <tt>fallback.efi</tt> hereafter.</p>
 
 <p>When <tt>fallback.efi</tt> launches, it reads every subdirectory of <tt>EFI</tt> on the ESP <i>except</i> for <tt>EFI/BOOT</tt> and looks for a file called <tt>BOOT.CSV</tt>. If this file exists and contains a <i>UCS-2</i> (UTF-16 also seems to work) text file, that file is read and used to create a new NVRAM boot variable. The format of <tt>BOOT.CSV</tt> is simple; it consists of one or more lines, each of which consists of four comma-separated fields:</p>
 

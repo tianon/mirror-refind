@@ -1,6 +1,9 @@
 0.11.4 (?/??/2017):
 -------------------
 
+- Reverted a change to refind-install and mountesp scripts, introduced in
+  0.11.3, that caused them to fail when run in macOS's Recovery environment.
+
 - Fixed bug, introduced in 0.11.3, that caused the default of booting
   to the previously-launched loader to be lost in favor of launching the
   first loader found. Explicitly setting the option via default_selection
