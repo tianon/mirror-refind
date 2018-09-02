@@ -1,6 +1,8 @@
 0.11.4 (?/??/2017):
 -------------------
 
+- Added a reference to the rEFInd-Chalkboard theme to themes.html.
+
 - Reverted a change to refind-install and mountesp scripts, introduced in
   0.11.3, that caused them to fail when run in macOS's Recovery environment.
 
