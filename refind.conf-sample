@@ -478,7 +478,7 @@ timeout 20
 # The symptom on Windows is Hyper-V not working even if the CPU
 # meets the minimum requirements (HW assisted virtualization and SLAT)
 # DO NOT SET THIS EXCEPT ON INTEL CPUs THAT SUPPORT VMX! See
-# http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature!
+# http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
 # for more on this subject.
 # The default is false: Don't try to enable and lock the MSR.
 #
