@@ -251,6 +251,10 @@ Copyright: 2010 Free Software Foundation, Inc.
            2013 Tencent, Inc. (Samuel Liao)
 License: GPL-3+
 
+Files: filesystems/fsw_btrfs_zstd.h
+Copyright: 2016 Facebook, Inc.
+License: GPL-2
+
 Files: filesystems/minilzo.[ch]
 Copyright: 1996-2011 Markus Franz Xaver Johannes Oberhumer
 License: GPL-2+
