@@ -848,7 +848,12 @@ static struct fsw_btrfs_recover_cache *get_recover_cache(struct fsw_btrfs_volume
 	if(fsw_alloc_zero(sizeof(struct fsw_btrfs_recover_cache) * RECOVER_CACHE_SIZE, (void **)&vol->rcache) != FSW_SUCCESS)
 	    return NULL;
     }
+#ifdef __MAKEWITH_TIANO
+    unsigned hash;
+    DivU64x32Remainder(((device_id >> 32) | device_id | (offset >> 32) | offset), RECOVER_CACHE_SIZE, &hash);
+#else
     unsigned hash = ((device_id >> 32) | device_id | (offset >> 32) | offset) % RECOVER_CACHE_SIZE;
+#endif
     struct fsw_btrfs_recover_cache *rc = &vol->rcache[hash];
     if(rc->buffer == NULL) {
 	if(fsw_alloc_zero(vol->sectorsize, (void **)&rc->buffer) != FSW_SUCCESS)
@@ -960,7 +965,7 @@ chunk_found:
 
                         stripe_length = DivU64x32 (fsw_u64_le_swap (chunk->size), nstripes, NULL);
 
-                        if(stripe_length >= 1UL<<32)
+                        if(stripe_length >= 1ULL<<32)
                             return FSW_VOLUME_CORRUPTED;
 
                         stripen = DivU64x32 (off, (uint32_t)stripe_length, &stripe_offset);

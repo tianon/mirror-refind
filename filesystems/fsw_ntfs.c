@@ -1427,7 +1427,7 @@ static fsw_status_t fsw_ntfs_dir_lookup(struct fsw_volume *volg, struct fsw_dnod
 	    } else if(cmp < 0) {
 		if(!(flag & 1) || !dno->has_idxtree)
 		    goto notfound;
-		block = GETU64(buf, next-8)/cpb + 1;
+		block = FSW_U64_DIV(GETU64(buf, next-8), cpb) + 1;
 		break;
 	    } else { /* cmp > 0 */
 		off = next;
