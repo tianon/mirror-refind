@@ -247,6 +247,10 @@ static fsw_status_t find_attrlist_direct(fsw_u8 *atlst, int atlen, int type, fsw
 	    mftno = GETU64(atlst, off+0x10) & MFTMASK;
 	}
     }
+    if(mftno != BADMFT) {
+	*out = mftno;
+	return FSW_SUCCESS;
+    }
     return FSW_NOT_FOUND;
 }
 
@@ -544,9 +548,11 @@ static fsw_status_t find_attribute(struct fsw_ntfs_volume *vol, struct ntfs_mft 
 	    buf = attr->emft;
 	} else {
 	    attr->emftno = BADMFT;
-	    err = fsw_alloc(1<<vol->mftbits, &attr->emft);
-	    if(err != FSW_SUCCESS)
-		return err;
+	    if(attr->emft==NULL) {
+		err = fsw_alloc(1<<vol->mftbits, &attr->emft);
+		if(err != FSW_SUCCESS)
+		    return err;
+	    }
 	    err = read_mft(vol, attr->emft, mftno);
 	    if(err != FSW_SUCCESS)
 		return err;
@@ -1372,6 +1378,7 @@ static fsw_status_t fsw_ntfs_dir_lookup(struct fsw_volume *volg, struct fsw_dnod
     int off;
     fsw_status_t err;
     fsw_u64 block;
+    fsw_u8 cpb;
 
     *child_dno = NULL;
     err = fsw_strdup_coerce(&s, FSW_STRING_TYPE_UTF16_LE, lookup_name);
@@ -1383,6 +1390,9 @@ static fsw_status_t fsw_ntfs_dir_lookup(struct fsw_volume *volg, struct fsw_dnod
     len = dno->rootsz - 16;
     if(len < 0x18)
 	goto notfound;
+
+    cpb = GETU8(dno->idxroot, 12);
+    if(cpb == 0) cpb = 1;
 
     while(depth < 10) {
 	/* real index size */
@@ -1417,7 +1427,7 @@ static fsw_status_t fsw_ntfs_dir_lookup(struct fsw_volume *volg, struct fsw_dnod
 	    } else if(cmp < 0) {
 		if(!(flag & 1) || !dno->has_idxtree)
 		    goto notfound;
-		block = GETU64(buf, next-8) + 1;
+		block = GETU64(buf, next-8)/cpb + 1;
 		break;
 	    } else { /* cmp > 0 */
 		off = next;

@@ -190,21 +190,6 @@ fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u64 phys_bno, fsw_u32 
     if (cache_level > MAX_CACHE_LEVEL)
         cache_level = MAX_CACHE_LEVEL;
 
-    if (vol->bcache_size > 0 && vol->bcache == NULL) {
-        /* driver set the initial cache size */
-        status = fsw_alloc(vol->bcache_size * sizeof(struct fsw_blockcache), &vol->bcache);
-        if(status)
-            return status;
-        for (i = 0; i < vol->bcache_size; i++) {
-            vol->bcache[i].refcount = 0;
-            vol->bcache[i].cache_level = 0;
-            vol->bcache[i].phys_bno = (fsw_u64)FSW_INVALID_BNO;
-            vol->bcache[i].data = NULL;
-        }
-        i = 0;
-        goto miss;
-    }
-
     // check block cache
     for (i = 0; i < vol->bcache_size; i++) {
         if (vol->bcache[i].phys_bno == phys_bno) {
@@ -258,7 +243,6 @@ fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u64 phys_bno, fsw_u32 
         vol->bcache_size = new_bcache_size;
     }
     vol->bcache[i].phys_bno = (fsw_u64)FSW_INVALID_BNO;
-miss:
 
     // read the data
     if (vol->bcache[i].data == NULL) {

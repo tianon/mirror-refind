@@ -60,7 +60,6 @@
 #include "scandisk.c"
 
 #define BTRFS_DEFAULT_BLOCK_SIZE 4096
-#define BTRFS_INITIAL_BCACHE_SIZE 1024
 #define GRUB_BTRFS_SIGNATURE "_BHRfS_M"
 
 /* From http://www.oberhumer.com/opensource/lzo/lzofaq.php
@@ -128,6 +127,15 @@ struct fsw_btrfs_device_desc
     uint64_t id;
 };
 
+#define RECOVER_CACHE_SIZE 17
+struct fsw_btrfs_recover_cache
+{
+    uint64_t device_id;
+    uint64_t offset;
+    char *buffer;
+    BOOLEAN valid;
+};
+
 struct fsw_btrfs_volume
 {
     struct fsw_volume g;            //!< Generic volume structure
@@ -144,6 +152,7 @@ struct fsw_btrfs_volume
     unsigned sectorshift;
     unsigned sectorsize;
     int is_master;
+    int rescan_once;
 
     struct fsw_btrfs_device_desc *devices_attached;
     unsigned n_devices_attached;
@@ -156,6 +165,7 @@ struct fsw_btrfs_volume
     uint64_t exttree;
     uint32_t extsize;
     struct btrfs_extent_data *extent;
+    struct fsw_btrfs_recover_cache *rcache;
 };
 
 enum
@@ -188,9 +198,12 @@ struct btrfs_chunk_item
 #define GRUB_BTRFS_CHUNK_TYPE_RAID1         0x10
 #define GRUB_BTRFS_CHUNK_TYPE_DUPLICATED    0x20
 #define GRUB_BTRFS_CHUNK_TYPE_RAID10        0x40
+#define GRUB_BTRFS_CHUNK_TYPE_RAID5         0x80
+#define GRUB_BTRFS_CHUNK_TYPE_RAID6         0x100
     uint8_t dummy2[0xc];
     uint16_t nstripes;
     uint16_t nsubstripes;
+#define RAID5_TAG	0x100000
 } __attribute__ ((__packed__));
 
 struct btrfs_chunk_stripe
@@ -308,6 +321,8 @@ struct btrfs_extent_data
 #define GRUB_BTRFS_COMPRESSION_NONE 0
 #define GRUB_BTRFS_COMPRESSION_ZLIB 1
 #define GRUB_BTRFS_COMPRESSION_LZO  2
+#define GRUB_BTRFS_COMPRESSION_ZSTD  3
+#define GRUB_BTRFS_COMPRESSION_MAX  3
 
 #define GRUB_BTRFS_OBJECT_ID_CHUNK 0x100
 
@@ -698,7 +713,6 @@ static int btrfs_add_multi_device(struct fsw_btrfs_volume *master, struct fsw_vo
     if(slave == NULL)
             return FSW_OUT_OF_MEMORY;
     fsw_set_blocksize(slave, master->sectorsize, master->sectorsize);
-    slave->bcache_size = BTRFS_INITIAL_BCACHE_SIZE;
 
     master->devices_attached[i].id = sb->this_device.device_id;
     master->devices_attached[i].dev = slave;
@@ -726,37 +740,146 @@ static int scan_disks_hook(struct fsw_volume *volg, struct fsw_volume *slave) {
     return btrfs_add_multi_device(vol, slave, &sb);
 }
 
+static int do_rescan_once(struct fsw_btrfs_volume *vol) {
+    if(vol->rescan_once == 0 || vol->n_devices_attached >= vol->n_devices_allocated)
+	return 0;
+    vol->rescan_once = 0;
+    return scan_disks(scan_disks_hook, &vol->g);
+}
+
 static struct fsw_volume *
-find_device (struct fsw_btrfs_volume *vol, uint64_t id, int do_rescan) {
+find_device (struct fsw_btrfs_volume *vol, uint64_t id) {
     int i;
 
-    do {
-        for (i = 0; i < vol->n_devices_attached; i++)
-            if (id == vol->devices_attached[i].id)
-                return vol->devices_attached[i].dev;
-    } while(vol->n_devices_attached < vol->n_devices_allocated &&
-            do_rescan-- > 0 &&
-            scan_disks(scan_disks_hook, &vol->g) > 0);
+    for (i = 0; i < vol->n_devices_attached; i++)
+	if (id == vol->devices_attached[i].id)
+	    return vol->devices_attached[i].dev;
     DPRINT(L"sub device %d not found\n", id);
     return NULL;
+}
+
+struct stripe_table {
+    struct fsw_volume *dev;
+    uint64_t off;
+    char *ptr;
+};
+
+static void block_xor(char *dst, const char *src, uint32_t blocksize)
+{
+    UINTN *d = (UINTN *)dst;
+    const UINTN *s = (const UINTN *)src;
+    blocksize /= sizeof(UINTN);
+    uint32_t i;
+    for( i = 0; i < blocksize; i++)
+	d[i] ^= s[i];
+}
+
+static void stripe_xor(char *dst, struct stripe_table *stripe, int data_stripes, uint32_t blocksize)
+{
+    unsigned i, j;
+    UINTN c;
+    for(j = 0; j < blocksize; j += sizeof(UINTN)) {
+	/* data + P stripes */
+	for(c=0, i=0; i <= data_stripes; i++)
+	    if(stripe[i].ptr)
+		c ^= *(UINTN *)(stripe[i].ptr + j);
+	*(UINTN *)(dst + j) = c;
+    }
+}
+
+static void stripe_release(struct stripe_table *stripe, int count, uint32_t offset)
+{
+    unsigned i;
+    for(i = 0; i < count; i++) {
+	if(stripe[i].ptr) {
+	    fsw_block_release(stripe[i].dev, stripe[i].off + offset, (void *)stripe[i].ptr);
+	}
+    }
+}
+
+/* x**y.  */
+static uint8_t powx[255 * 2];
+/* Such an s that x**s = y */
+static unsigned powx_inv[256];
+static const uint8_t poly = 0x1d;
+static void block_mulx (unsigned mul, char *buf, uint32_t size)
+{
+    uint32_t i;
+    uint8_t *p = (uint8_t *) buf;
+    for (i = 0; i < size; i++, p++)
+	if (*p)
+	    *p = powx[mul + powx_inv[*p]];
+}
+static void block_mulx_xor (char *dst, unsigned mul, const char *buf, uint32_t size)
+{
+    uint32_t i;
+    const uint8_t *p = (const uint8_t *) buf;
+    uint8_t *q = (uint8_t *) dst;
+    for (i = 0; i < size; i++, p++, q++)
+	if (*p)
+	    *q ^= powx[mul + powx_inv[*p]];
+}
+
+static void raid6_init_table (void)
+{
+    static int initialized = 0;
+    unsigned i;
+
+    if(initialized)
+	return;
+
+    uint8_t cur = 1;
+    for (i = 0; i < 255; i++)
+    {
+	powx[i] = cur;
+	powx[i + 255] = cur;
+	powx_inv[cur] = i;
+	if (cur & 0x80)
+	    cur = (cur << 1) ^ poly;
+	else
+	    cur <<= 1;
+    }
+    initialized = 1;
+}
+
+static struct fsw_btrfs_recover_cache *get_recover_cache(struct fsw_btrfs_volume *vol, uint64_t device_id, uint64_t offset)
+{
+    if(vol->rcache == NULL) {
+	if(fsw_alloc_zero(sizeof(struct fsw_btrfs_recover_cache) * RECOVER_CACHE_SIZE, (void **)&vol->rcache) != FSW_SUCCESS)
+	    return NULL;
+    }
+    unsigned hash = ((device_id >> 32) | device_id | (offset >> 32) | offset) % RECOVER_CACHE_SIZE;
+    struct fsw_btrfs_recover_cache *rc = &vol->rcache[hash];
+    if(rc->buffer == NULL) {
+	if(fsw_alloc_zero(vol->sectorsize, (void **)&rc->buffer) != FSW_SUCCESS)
+	    return NULL;
+    }
+    if(rc->device_id != device_id || rc->offset != offset) {
+	rc->valid = FALSE;
+	rc->device_id = device_id;
+	rc->offset = offset;
+    }
+    return rc;
 }
 
 static fsw_status_t fsw_btrfs_read_logical (struct fsw_btrfs_volume *vol, uint64_t addr,
         void *buf, fsw_size_t size, int rdepth, int cache_level)
 {
+    struct stripe_table *stripe_table = NULL;
+    int challoc = 0;
+    struct btrfs_chunk_item *chunk = NULL;
+    fsw_status_t err = 0;
     while (size > 0)
     {
         uint8_t *ptr;
         struct btrfs_key *key;
-        struct btrfs_chunk_item *chunk;
         uint64_t csize;
-        fsw_status_t err = 0;
         struct btrfs_key key_out;
-        int challoc = 0;
         struct btrfs_key key_in;
         fsw_size_t chsize;
         uint64_t chaddr;
 
+	err = 0;
         for (ptr = vol->bootstrap_mapping; ptr < vol->bootstrap_mapping + sizeof (vol->bootstrap_mapping) - sizeof (struct btrfs_key);)
         {
             key = (struct btrfs_key *) ptr;
@@ -796,11 +919,7 @@ static fsw_status_t fsw_btrfs_read_logical (struct fsw_btrfs_volume *vol, uint64
         challoc = 1;
         err = fsw_btrfs_read_logical (vol, chaddr, chunk, chsize, rdepth, cache_level < 5 ? cache_level+1 : 5);
         if (err)
-        {
-            if(chunk)
-                FreePool (chunk);
-            return err;
-        }
+	    goto io_error;
 
 chunk_found:
         {
@@ -812,21 +931,22 @@ chunk_found:
 #define UINTREM UINT32
 #endif
             UINTREM stripen;
+            UINTREM stripeq;
             UINTREM stripe_offset;
             uint64_t off = addr - fsw_u64_le_swap (key->offset);
             unsigned redundancy = 1;
-            unsigned i, j;
+            unsigned i;
 
             if (fsw_u64_le_swap (chunk->size) <= off)
-            {
-                return FSW_VOLUME_CORRUPTED;
                 //"couldn't find the chunk descriptor");
-            }
+                goto volume_corrupted;
+
+	    uint16_t nstripes = fsw_u16_le_swap (chunk->nstripes);
 
             DPRINT(L"btrfs chunk 0x%lx+0xlx %d stripes (%d substripes) of %lx\n",
                     fsw_u64_le_swap (key->offset),
                     fsw_u64_le_swap (chunk->size),
-                    fsw_u16_le_swap (chunk->nstripes),
+                    nstripes,
                     fsw_u16_le_swap (chunk->nsubstripes),
                     fsw_u64_le_swap (chunk->stripe_length));
 
@@ -838,10 +958,9 @@ chunk_found:
                     {
                         uint64_t stripe_length;
 
-                        stripe_length = DivU64x32 (fsw_u64_le_swap (chunk->size),
-                                fsw_u16_le_swap (chunk->nstripes), NULL);
+                        stripe_length = DivU64x32 (fsw_u64_le_swap (chunk->size), nstripes, NULL);
 
-                        if(stripe_length > 1UL<<30)
+                        if(stripe_length >= 1UL<<32)
                             return FSW_VOLUME_CORRUPTED;
 
                         stripen = DivU64x32 (off, (uint32_t)stripe_length, &stripe_offset);
@@ -870,7 +989,7 @@ chunk_found:
 
                         middle = DivU64x32 (off, (uint32_t)stripe_length, &low);
 
-                        high = DivU64x32 (middle, fsw_u16_le_swap (chunk->nstripes), &stripen);
+                        high = DivU64x32 (middle, nstripes, &stripen);
                         stripe_offset =
                             low + fsw_u64_le_swap (chunk->stripe_length) * high;
                         csize = fsw_u64_le_swap (chunk->stripe_length) - low;
@@ -888,10 +1007,7 @@ chunk_found:
 
                         middle = DivU64x32 (off, stripe_length, &low);
 
-                        high = DivU64x32 (middle,
-                                fsw_u16_le_swap (chunk->nstripes)
-                                / fsw_u16_le_swap (chunk->nsubstripes),
-                                &stripen);
+                        high = DivU64x32 (middle, nstripes / fsw_u16_le_swap (chunk->nsubstripes), &stripen);
                         stripen *= fsw_u16_le_swap (chunk->nsubstripes);
                         redundancy = fsw_u16_le_swap (chunk->nsubstripes);
                         stripe_offset = low + fsw_u64_le_swap (chunk->stripe_length)
@@ -900,20 +1016,48 @@ chunk_found:
                         DPRINT(L"read_logical %d chunk_found raid01 csize=%d\n", __LINE__, csize);
                         break;
                     }
+                case GRUB_BTRFS_CHUNK_TYPE_RAID5:
+                case GRUB_BTRFS_CHUNK_TYPE_RAID6:
+                    {
+                        uint64_t stripe_length = fsw_u64_le_swap (chunk->stripe_length);
+                        uint64_t middle, high;
+			uint16_t nparities = (fsw_u64_le_swap(chunk->type) & GRUB_BTRFS_CHUNK_TYPE_RAID6) ? 2 : 1;
+                        UINTREM low;
+
+                        if(stripe_length > 1UL<<30 || nstripes > 255)
+                            goto volume_corrupted;
+
+                        middle = DivU64x32 (off, stripe_length, &low);
+
+                        high = DivU64x32 (middle, nstripes - nparities, &stripen);
+			DivU64x32(high + stripen, nstripes, &stripen);
+			if(nparities == 1) {
+			    stripeq = RAID5_TAG;
+			} else {
+			    middle = DivU64x32(high + nstripes -1, nstripes, &stripeq);
+			}
+                        redundancy = RAID5_TAG;
+                        stripe_offset = low + fsw_u64_le_swap (chunk->stripe_length) * high;
+                        csize = fsw_u64_le_swap (chunk->stripe_length) - low;
+                        DPRINT(L"read_logical %d chunk_found raid01 csize=%d\n", __LINE__, csize);
+                        break;
+                    }
                 default:
                     DPRINT (L"btrfs: unsupported RAID\n");
-                    return FSW_UNSUPPORTED;
+                    err = FSW_UNSUPPORTED;
+		    goto io_error;
             }
             if (csize == 0)
                 //"couldn't find the chunk descriptor");
-                return FSW_VOLUME_CORRUPTED;
+                goto volume_corrupted;
 
             if (csize > (uint64_t) size)
                 csize = size;
 
-            for (j = 0; j < 2; j++)
-            {
-                for (i = 0; i < redundancy; i++)
+	    if(redundancy < RAID5_TAG) {
+begin_direct_read:
+		err = 0;
+                for (i = 0; !err && i < redundancy; i++)
                 {
                     struct btrfs_chunk_stripe *stripe;
                     uint64_t paddr;
@@ -929,18 +1073,15 @@ chunk_found:
                     DPRINT (L"btrfs: chunk 0x%lx+0x%lx (%d stripes (%d substripes) of %lx) stripe %lx maps to 0x%lx\n",
                             fsw_u64_le_swap (key->offset),
                             fsw_u64_le_swap (chunk->size),
-                            fsw_u16_le_swap (chunk->nstripes),
+                            nstripes,
                             fsw_u16_le_swap (chunk->nsubstripes),
                             fsw_u64_le_swap (chunk->stripe_length),
                             stripen, stripe->offset);
                     DPRINT (L"btrfs: reading paddr 0x%lx for laddr 0x%lx\n", paddr, addr);
 
-                    dev = find_device (vol, stripe->device_id, j);
+                    dev = find_device (vol, stripe->device_id);
                     if (!dev)
-                    {
-                        err = FSW_VOLUME_CORRUPTED;
                         continue;
-                    }
 
                     uint32_t off = paddr & (vol->sectorsize - 1);
                     paddr >>= vol->sectorshift;
@@ -965,19 +1106,179 @@ chunk_found:
                     if(n>=csize)
                         break;
                 }
-                if (i != redundancy)
-                    break;
-            }
-            if (err)
-                return err;
+                if (i == redundancy) {
+		    if(do_rescan_once(vol) > 0)
+			goto begin_direct_read;
+		    if(err == 0)
+                        goto volume_corrupted;
+		}
+		if (err)
+		    goto io_error;
+
+	    } else {
+		// RAID5/RAID6
+		struct btrfs_chunk_stripe *stripe = (struct btrfs_chunk_stripe *) (chunk + 1);
+		unsigned sectorsize = vol->sectorsize;
+
+		{
+		    uint64_t sectormask = fsw_u64_le_swap(sectorsize - 1);
+		    for(i = 0; i < nstripes; i++)
+			if(stripe[i].offset & sectormask)
+			    goto volume_corrupted;
+		}
+
+		struct fsw_volume *dev = find_device (vol, stripe[stripen].device_id);
+		if(dev == NULL && do_rescan_once(vol) > 0)
+		    dev = find_device (vol, stripe[stripen].device_id);
+
+		uint32_t posN = stripen;
+		BOOLEAN is_raid5 = stripeq == RAID5_TAG;
+		uint32_t dstripes = nstripes - (is_raid5 ? 1 : 2);
+
+		uint64_t n = 0;
+		uint32_t off = stripe_offset & (sectorsize - 1);
+		stripe_offset >>= vol->sectorshift;
+		while(n < csize) {
+		    int used_bytes = sectorsize - off;
+		    if(used_bytes > csize - n)
+			used_bytes = csize - n;
+		    char *buffer;
+		    struct fsw_btrfs_recover_cache *rcache = NULL;
+		    uint64_t paddrN = (fsw_u64_le_swap (stripe[stripen].offset) >> vol->sectorshift) + stripe_offset;
+
+		    if(dev && !(err = fsw_block_get(dev, paddrN, cache_level, (void **)&buffer))) {
+			// reading direct sector first
+                        fsw_memcpy(buf+n, buffer+off, used_bytes);
+                        fsw_block_release(dev, paddrN, (void *)buffer);
+
+		    } else if((rcache = get_recover_cache(vol, stripe[stripen].device_id, paddrN)) == NULL) {
+			err = FSW_OUT_OF_MEMORY;
+			goto io_error;
+		    } else if(rcache->valid) {
+			// hit recovered cache
+                        fsw_memcpy(buf+n, rcache->buffer+off, used_bytes);
+
+                    } else {
+			// need recover data
+			if(!stripe_table) {
+			    // build&rotate(raid6) stripe table
+			    err = fsw_alloc_zero(sizeof(struct stripe_table) * nstripes, (void **)&stripe_table);
+			    if(err)
+				goto io_error;
+			    unsigned dev_count = 0;
+			    uint32_t stripeI = is_raid5 ? 0 : (stripeq + 1) % nstripes;
+			    for(i = 0; i < nstripes; i++) {
+				if(stripeI == stripen) {
+				    stripe_table[i].dev = NULL;
+				    posN = i;
+				} else {
+				    stripe_table[i].off = fsw_u64_le_swap (stripe[stripeI].offset) >> vol->sectorshift;
+				    stripe_table[i].dev = find_device (vol, stripe[stripeI].device_id);
+				    if(stripe_table[i].dev == NULL && do_rescan_once(vol) > 0)
+					stripe_table[i].dev = find_device (vol, stripe[stripeI].device_id);
+				    if(stripe_table[i].dev)
+					dev_count ++;
+				}
+				stripeI = stripeI == nstripes -1 ? 0 : stripeI + 1;
+			    }
+			    if(dev_count < dstripes)
+				// no enough dev, no recover available
+				goto volume_corrupted;
+			}
+
+			// reading data
+			uint32_t bad2 = RAID5_TAG;
+			err = 0;
+			for(i = 0; i < nstripes; i++) {
+			    stripe_table[i].ptr = NULL;
+			    if(i == posN) {
+				// the target, first failed
+			    } else {
+				err = stripe_table[i].dev == NULL ? FSW_IO_ERROR :
+				    fsw_block_get(stripe_table[i].dev, stripe_table[i].off + stripe_offset, cache_level, (void **)&(stripe_table[i].ptr));
+				if(err) {
+				    if(is_raid5 || bad2 != RAID5_TAG)
+					// third failed
+					break;
+				    // second failed
+				    bad2 = i;
+				    err = 0;
+				} else {
+				    if(i == dstripes  && bad2 == RAID5_TAG)
+					// P ok & one failed, XOR recover & skip reading Q
+					break;
+				}
+			    }
+			}
+
+			char *pbuf; // only used by double data failed
+			if(err) {
+			    // too many failed
+			    stripe_release(stripe_table, i, stripe_offset);
+			} else if(bad2 == RAID5_TAG) {
+			    // single failed
+			    stripe_xor(rcache->buffer, stripe_table, i, sectorsize);
+			    stripe_release(stripe_table, i+1, stripe_offset);
+			} else {
+			    raid6_init_table();
+
+			    // calc Q
+			    fsw_memzero(rcache->buffer, sectorsize);
+			    for( i = 0; i < nstripes - 2; i++) {
+				if(stripe_table[i].ptr)
+				    block_mulx_xor(rcache->buffer, i, stripe_table[i].ptr, sectorsize);
+			    }
+			    block_xor(rcache->buffer, /*Q*/stripe_table[nstripes - 1].ptr, sectorsize);
+
+			    if(bad2 == nstripes - 2) {
+				// target & P failed
+				block_mulx(255 - posN, rcache->buffer, sectorsize);
+			    } else if((err = fsw_alloc(sectorsize, (void **)&pbuf))==FSW_SUCCESS) {
+				// double data failed
+				unsigned int c = ((255 ^ posN) + (255 ^ powx_inv[(powx[bad2 + (posN ^ 255)] ^ 1)]))%255;
+				block_mulx (c, rcache->buffer, sectorsize);
+				stripe_xor(pbuf, stripe_table, dstripes, sectorsize);
+				block_mulx_xor(rcache->buffer, (bad2+c)%255, pbuf, sectorsize);
+				fsw_free(pbuf);
+			    }
+			    stripe_release(stripe_table, nstripes, stripe_offset);
+			}
+
+			if(err)
+			    goto io_error;
+
+			fsw_memcpy(buf+n, rcache->buffer+off, used_bytes);
+			rcache->valid = TRUE;
+		    }
+
+		    err = 0;
+		    n += used_bytes;
+		    off = 0;
+		    stripe_offset++;
+                    DPRINT (L"read logical: err %d csize %d got %d\n", err, csize, n);
+                }
+	    }
         }
         size -= csize;
         buf = (uint8_t *) buf + csize;
         addr += csize;
         if (challoc && chunk)
             FreePool (chunk);
+        challoc = 0;
+	if(stripe_table)
+	    fsw_free(stripe_table);
+	stripe_table = NULL;
     }
     return FSW_SUCCESS;
+
+volume_corrupted:
+    err = FSW_VOLUME_CORRUPTED;
+io_error:
+    if(challoc && chunk)
+	FreePool (chunk);
+    if(stripe_table)
+	FreePool(stripe_table);
+    return err;
 }
 
 static fsw_status_t fsw_btrfs_get_default_root(struct fsw_btrfs_volume *vol, uint64_t root_dir_objectid);
@@ -990,7 +1291,6 @@ static fsw_status_t fsw_btrfs_volume_mount(struct fsw_volume *volg) {
     int i;
 
     init_crc32c_table();
-    fsw_memzero((char *)vol+sizeof(*volg), sizeof(*vol)-sizeof(*volg));
 
     err = btrfs_read_superblock (volg, &sblock);
     if (err)
@@ -1020,12 +1320,12 @@ static fsw_status_t fsw_btrfs_volume_mount(struct fsw_volume *volg) {
     }
 
     fsw_set_blocksize(volg, vol->sectorsize, vol->sectorsize);
-    vol->g.bcache_size = BTRFS_INITIAL_BCACHE_SIZE;
     vol->n_devices_allocated = vol->num_devices;
-    vol->devices_attached = AllocatePool (sizeof (vol->devices_attached[0])
-            * vol->n_devices_allocated);
-    if (!vol->devices_attached)
-        return FSW_OUT_OF_MEMORY;
+    vol->rescan_once = vol->num_devices > 1;
+    err = fsw_alloc(sizeof(struct fsw_btrfs_device_desc) * vol->n_devices_allocated,
+	(void **)&vol->devices_attached);
+    if (err)
+        return err;
 
     vol->n_devices_attached = 1;
     vol->devices_attached[0].dev = volg;
@@ -1067,13 +1367,22 @@ static void fsw_btrfs_volume_free(struct fsw_volume *volg)
     if (vol->is_master)
         master_uuid_remove(vol);
 
-    /* The device 0 is closed one layer upper.  */
-    for (i = 1; i < vol->n_devices_attached; i++)
-        fsw_unmount (vol->devices_attached[i].dev);
-    if(vol->devices_attached)
-        FreePool (vol->devices_attached);
+    if(vol->devices_attached) {
+	/* The device 0 is closed one layer upper.  */
+	for (i = 1; i < vol->n_devices_attached; i++) {
+	    if(vol->devices_attached[i].dev)
+		fsw_unmount (vol->devices_attached[i].dev);
+	}
+	FreePool (vol->devices_attached);
+    }
     if(vol->extent)
         FreePool (vol->extent);
+    if(vol->rcache) {
+	for(i = 0; i < RECOVER_CACHE_SIZE; i++)
+	    if(vol->rcache->buffer)
+		FreePool(vol->rcache->buffer);
+        FreePool (vol->rcache);
+    }
 }
 
 static fsw_status_t fsw_btrfs_volume_stat(struct fsw_volume *volg, struct fsw_volume_stat *sb)
@@ -1264,6 +1573,23 @@ static fsw_ssize_t grub_btrfs_lzo_decompress(char *ibuf, fsw_size_t isize, grub_
     return ret;
 }
 
+#include "fsw_btrfs_zstd.h"
+
+typedef fsw_ssize_t (*decompressor_t)(char *ibuf, fsw_size_t isize, grub_off_t off, char *obuf, fsw_size_t osize);
+static decompressor_t btrfs_decompressor_table[GRUB_BTRFS_COMPRESSION_MAX] = {
+	grub_zlib_decompress,
+	grub_btrfs_lzo_decompress,
+	zstd_decompress,
+};
+
+static fsw_ssize_t btrfs_decompress(uint8_t comp,
+	char *ibuf, fsw_size_t isize,
+	grub_off_t off,
+        char *obuf, fsw_size_t osize)
+{
+	return btrfs_decompressor_table[comp-1](ibuf, isize, off, obuf, osize);
+}
+
 static fsw_status_t fsw_btrfs_get_extent(struct fsw_volume *volg, struct fsw_dnode *dnog,
         struct fsw_extent *extent)
 {
@@ -1348,6 +1674,7 @@ static fsw_status_t fsw_btrfs_get_extent(struct fsw_volume *volg, struct fsw_dno
     switch(vol->extent->compression) {
         case GRUB_BTRFS_COMPRESSION_LZO:
         case GRUB_BTRFS_COMPRESSION_ZLIB:
+        case GRUB_BTRFS_COMPRESSION_ZSTD:
         case GRUB_BTRFS_COMPRESSION_NONE:
             break;
         default:
@@ -1361,32 +1688,18 @@ static fsw_status_t fsw_btrfs_get_extent(struct fsw_volume *volg, struct fsw_dno
             buf = AllocatePool( count << vol->sectorshift);
             if(!buf)
                 return FSW_OUT_OF_MEMORY;
-            if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
-            {
-                if (grub_zlib_decompress (vol->extent->inl, vol->extsize -
-                            ((uint8_t *) vol->extent->inl
-                             - (uint8_t *) vol->extent),
-                            extoff, buf, csize)
-                        != (fsw_ssize_t) csize)
-                {
-                    FreePool(buf);
-                    return FSW_VOLUME_CORRUPTED;
-                }
-            }
-            else if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
-            {
-                if (grub_btrfs_lzo_decompress(vol->extent->inl, vol->extsize -
-                            ((uint8_t *) vol->extent->inl
-                             - (uint8_t *) vol->extent),
-                            extoff, buf, csize)
-                        != (fsw_ssize_t) csize)
-                {
-                    FreePool(buf);
-                    return -FSW_VOLUME_CORRUPTED;
-                }
-            }
-            else
+            if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_NONE)
                 fsw_memcpy (buf, vol->extent->inl + extoff, csize);
+            else if (btrfs_decompress (vol->extent->compression,
+				vol->extent->inl, vol->extsize -
+                            ((uint8_t *) vol->extent->inl
+                             - (uint8_t *) vol->extent),
+                            extoff, buf, csize)
+                        != (fsw_ssize_t) csize)
+	    {
+                FreePool(buf);
+                return FSW_VOLUME_CORRUPTED;
+	    }
             break;
 
         case GRUB_BTRFS_EXTENT_REGULAR:
@@ -1412,7 +1725,10 @@ static fsw_status_t fsw_btrfs_get_extent(struct fsw_volume *volg, struct fsw_dno
                 }
                 break;
             }
-            if (vol->extent->compression != GRUB_BTRFS_COMPRESSION_NONE)
+
+            if (vol->extent->compression > GRUB_BTRFS_COMPRESSION_MAX)
+                    return -FSW_VOLUME_CORRUPTED;
+
             {
                 char *tmp;
                 uint64_t zsize;
@@ -1435,18 +1751,10 @@ static fsw_status_t fsw_btrfs_get_extent(struct fsw_volume *volg, struct fsw_dno
                     return FSW_OUT_OF_MEMORY;
                 }
 
-                if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
-                {
-                    ret = grub_zlib_decompress (tmp, zsize, extoff
-                            + fsw_u64_le_swap (vol->extent->offset),
-                            buf, csize);
-                }
-                else if (vol->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
-                    ret = grub_btrfs_lzo_decompress (tmp, zsize, extoff
-                            + fsw_u64_le_swap (vol->extent->offset),
-                            buf, csize);
-                else
-                    ret = -1;
+		ret = btrfs_decompress ( vol->extent->compression,
+			tmp, zsize,
+			extoff + fsw_u64_le_swap (vol->extent->offset),
+			buf, csize);
 
                 FreePool (tmp);
 
@@ -1701,7 +2009,6 @@ static fsw_status_t fsw_btrfs_get_default_root(struct fsw_btrfs_volume *vol, uin
     fsw_status_t err;
     struct fsw_string s;
     struct btrfs_dir_item *direl=NULL, *cdirel;
-    uint64_t default_tree_id = 0;
     struct btrfs_key top_root_key;
 
     /* Get to top tree id */
@@ -1712,22 +2019,22 @@ static fsw_status_t fsw_btrfs_get_default_root(struct fsw_btrfs_volume *vol, uin
     if (err)
         return err;
 
+    uint64_t default_tree_id = vol->top_tree;
+
     s.type = FSW_STRING_TYPE_UTF8;
     s.data = "default";
     s.size = 7;
     err = fsw_btrfs_lookup_dir_item(vol, vol->root_tree, root_dir_objectid, &s, &direl, &cdirel);
 
     /* if "default" is failed or invalid, use top tree */
-    if (err || /* failed */
-            cdirel->type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY || /* not dir */
-            cdirel->key.type != GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM || /* not tree */
-            cdirel->key.object_id == fsw_u64_le_swap(5UL) || /* same as top */
-            (err = fsw_btrfs_get_root_tree (vol, &cdirel->key, &default_tree_id)))
-        default_tree_id = vol->top_tree;
+    if (!err && /* failed */
+            cdirel->type == GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY && /* not dir */
+            cdirel->key.type == GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM && /* not tree */
+            cdirel->key.object_id != fsw_u64_le_swap(5UL))
+	fsw_btrfs_get_root_tree (vol, &cdirel->key, &default_tree_id);
 
-    if (!err)
-        err = fsw_dnode_create_root_with_tree(&vol->g, default_tree_id,
-                fsw_u64_le_swap (GRUB_BTRFS_OBJECT_ID_CHUNK), &vol->g.root);
+    err = fsw_dnode_create_root_with_tree(&vol->g, default_tree_id,
+	    fsw_u64_le_swap (GRUB_BTRFS_OBJECT_ID_CHUNK), &vol->g.root);
     if (direl)
         FreePool (direl);
     return err;

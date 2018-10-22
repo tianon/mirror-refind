@@ -1,6 +1,12 @@
 0.11.4 (?/??/2017):
 -------------------
 
+- Updates to NTFS and btrfs driver, provided by Samuel Liao.
+  - The NTFS driver fixes bugs related to fragmented files and filesystems
+    with a cluster size of over 4KiB.
+  - The btrfs driver adds support for zstd decompression, which requires a
+    huge (537K) buffer; and it fixes RAID1 issues and adds RAID5/6 support.
+
 - Added a reference to the rEFInd-Chalkboard theme to themes.html.
 
 - Reverted a change to refind-install and mountesp scripts, introduced in
