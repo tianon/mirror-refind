@@ -850,10 +850,10 @@ static struct fsw_btrfs_recover_cache *get_recover_cache(struct fsw_btrfs_volume
     }
 #ifdef __MAKEWITH_TIANO
     unsigned hash;
-    DivU64x32Remainder(((device_id >> 32) | device_id | (offset >> 32) | offset), RECOVER_CACHE_SIZE, &hash);
 #else
-    unsigned hash = ((device_id >> 32) | device_id | (offset >> 32) | offset) % RECOVER_CACHE_SIZE;
+    UINTN hash;
 #endif
+    DivU64x32Remainder(((device_id >> 32) | device_id | (offset >> 32) | offset), RECOVER_CACHE_SIZE, &hash);
     struct fsw_btrfs_recover_cache *rc = &vol->rcache[hash];
     if(rc->buffer == NULL) {
 	if(fsw_alloc_zero(vol->sectorsize, (void **)&rc->buffer) != FSW_SUCCESS)
