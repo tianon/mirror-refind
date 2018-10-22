@@ -7,7 +7,8 @@
   - The btrfs driver adds support for zstd decompression, which requires a
     huge (537K) buffer; and it fixes RAID1 issues and adds RAID5/6 support.
 
-- Added a reference to the rEFInd-Chalkboard theme to themes.html.
+- Added references to several new themes to themes.html, and fixed a
+  broken URL in that file.
 
 - Reverted a change to refind-install and mountesp scripts, introduced in
   0.11.3, that caused them to fail when run in macOS's Recovery environment.
