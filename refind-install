@@ -38,6 +38,7 @@
 
 # Revision history:
 #
+# 0.11.4  -- Fixed generation of GUID when automount of ESP in use on Linux
 # 0.11.3  -- Added support for ESP mounted at /efi under Linux
 # 0.11.1  -- In Linux, be less aggressive about replacing existing NVRAM entries
 # 0.11.0  -- Create BOOT.CSV file and option to encrypt SB private key
@@ -1229,7 +1230,7 @@ AddBootEntry() {
 
    Efibootmgr=`which efibootmgr 2> /dev/null`
    if [[ "$Efibootmgr" ]] ; then
-      InstallPart=`grep "$InstallDir" /etc/mtab | cut -d " " -f 1`
+      InstallPart=`grep "$InstallDir" /etc/mtab | grep -v autofs | cut -d " " -f 1`
       for Name in `lsblk -r | grep disk | cut -f 1 -d " "` ; do
          if [[ $InstallPart == *"$Name"* ]] ; then
             InstallDisk="/dev/"$Name
