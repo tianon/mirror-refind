@@ -64,7 +64,7 @@ h1,h2,h3,h4 {
 
 .navbar {
     width: 40%;
-    float: none;
+    float: left;
     padding: 5px;
     border: 5px solid gray;
     margin: 10px;
