@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 7/22/2018</p>
+<p>Last Web page update: 11/12/2018</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,44 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.11.4 (11/12/2018)</b>&mdash;This release fixes a couple of small
+    but annoying bugs introduced in version 0.11.3 and improves some
+    filesystem drivers. More specifically:
+    <ul>
+
+    <li>Samuel Liao provided bug fixes to the NTFS driver relating to
+        fragmented files and filesystems with cluster sizes of over
+	4KiB.</li>
+
+    <li>Samuel Liao also added support for zstd decompression to the
+        btrfs driver. He's also fixed a RAID1 issue and added support
+	for RAID5 and 6.</li>
+
+    <li>Version 0.11.3 introduced a bug in both <tt>refind-install</tt>
+        and <tt>mountesp</tt> that caused these scripts to fail in
+	macOS's Recovery environment. These bugs have been squashed.</li>
+
+    <li><tt>refind-install</tt> has long had a bug that caused it to
+        fail to properly identify the ESP in Linux when autofs was in
+	use. This bug has been squashed.</li>
+
+    <li>rEFInd 0.11.3 introduced a bug that caused the default of
+        booting to the last-booted OS to be lost unless it was set
+	explicitly via <tt>default_selection</tt> in <tt>refind.conf</tt>.
+	This has been fixed.</li>
+
+    <li>rEFInd would fail to compile with recent versions of EDK2
+        (obtained via <tt>git</tt>) because of an issue with
+	<tt>Refind.Pkg.dsc</tt>. This problem has been corrected.</li>
+
+    <li>I've added referebces ti several themes in <tt>themes.html</tt>, and
+	fixed a broken link or two. Thanks especially to <a
+	href="https://www.deviantart.com/aliciatransmuted/gallery/67179261/rEFInd-themes">AliciaTransmuted,</a>
+	who's been cranking out rEFInd themes!</li>
+
+    </ul>
+</li>
 
 <li><b>0.11.3 (7/22/2018)</b>&mdash;This release implements a number of
     minor bug fixes and some more major improvements; its two changes are:

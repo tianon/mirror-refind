@@ -1,6 +1,6 @@
 Summary: EFI boot manager software
 Name: refind
-Version: 0.11.3
+Version: 0.11.4
 Release: 1%{?dist}
 Summary: EFI boot manager software
 License: GPLv3
@@ -50,13 +50,8 @@ Linux kernels that provide EFI stub support.
 %setup -q
 
 %build
-if [[ -d /usr/local/UDK2014 ]] ; then
-   make
-   make fs
-else
-   make gnuefi
-   make fs_gnuefi
-fi
+make
+make fs
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -181,6 +176,8 @@ fi
 # thus wiping out the just-updated files.
 
 %changelog
+* Mon Nov 12 2018 R Smith <rodsmith@rodsbooks.com> - 0.11.4
+- Updated spec file for 0.11.4
 * Sun Jul 22 2018 R Smith <rodsmith@rodsbooks.com> - 0.11.3
 - Updated spec file for 0.11.3
 * Sun Oct 22 2017 R Smith <rodsmith@rodsbooks.com> - 0.11.2

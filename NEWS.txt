@@ -1,5 +1,8 @@
-0.11.4 (?/??/2017):
--------------------
+0.11.4 (11/12/2017):
+--------------------
+
+- Fixed a problem with RefindPkg.dsc that caused compilation failures
+  with the latest git version of TianoCore when using the edk2 target.
 
 - Fixed a refind-install bug that caused it to misidentify the ESP when
   adding a rEFInd boot entry when autofs was in use.
