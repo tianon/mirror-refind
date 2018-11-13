@@ -1,4 +1,4 @@
-0.11.4 (11/12/2017):
+0.11.4 (11/12/2018):
 --------------------
 
 - Fixed a problem with RefindPkg.dsc that caused compilation failures
@@ -24,7 +24,7 @@
   first loader found. Explicitly setting the option via default_selection
   still worked.
 
-0.11.3 (7/22/2017):
+0.11.3 (7/22/2018):
 -------------------
 
 - Changes to scripts for portability; should have no visible effects.
