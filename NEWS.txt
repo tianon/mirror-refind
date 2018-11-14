@@ -1,3 +1,9 @@
+0.11.5 (??/??/201?):
+--------------------
+
+- Fixed bug that caused hidden tag management to not work reliably when
+  use_nvram was set to false.
+
 0.11.4 (11/12/2018):
 --------------------
 

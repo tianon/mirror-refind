@@ -356,12 +356,14 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
     UINTN l;
     EFI_STATUS Status;
     EFI_FILE *VarsDir = NULL;
+    BOOLEAN ReadFromNvram = TRUE;
 
     if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
         Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
                                   EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY);
         if (Status == EFI_SUCCESS)
             Status = egLoadFile(VarsDir, name, &buf, size);
+        ReadFromNvram = FALSE;
     } else {
         l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
         buf = AllocatePool(l);
@@ -371,7 +373,7 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
     }
     if (EFI_ERROR(Status) == EFI_SUCCESS) {
         *buffer = (CHAR8*) buf;
-        if (size)
+        if ((size) && ReadFromNvram)
             *size = l;
     } else
         MyFreePool(buf);

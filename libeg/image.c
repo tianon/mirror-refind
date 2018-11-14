@@ -312,14 +312,17 @@ EFI_STATUS egSaveFile(IN EFI_FILE* BaseDir OPTIONAL, IN CHAR16 *FileName,
     }
 
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName,
-                                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
+                                EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
     if (EFI_ERROR(Status))
         return Status;
 
-    BufferSize = FileDataLength;
-    Status = refit_call3_wrapper(FileHandle->Write, FileHandle, &BufferSize, FileData);
-    refit_call1_wrapper(FileHandle->Close, FileHandle);
-
+    if (FileDataLength > 0) {
+        BufferSize = FileDataLength;
+        Status = refit_call3_wrapper(FileHandle->Write, FileHandle, &BufferSize, FileData);
+        refit_call1_wrapper(FileHandle->Close, FileHandle);
+    } else {
+        Status = refit_call1_wrapper(FileHandle->Delete, FileHandle);
+    } // if/else (FileDataLength > 0)
     return Status;
 }
 
