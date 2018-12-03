@@ -390,6 +390,9 @@ timeout 20
 # TextMode.efi,ebounce.efi,GraphicsConsole.efi,MokManager.efi,HashTool.efi,
 # HashTool-signed.efi,bootmgr.efi,fb{arch}.efi
 # (where "{arch}" is the architecture code, like "x64").
+# If you want to keep these defaults but add to them, be sure to
+# specify "+" as the first item in the new list; if you don't, then
+# items from the default list are likely to appear.
 #
 #dont_scan_files shim.efi,MokManager.efi
 
