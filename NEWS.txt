@@ -1,5 +1,8 @@
-0.11.5 (??/??/201?):
+0.11.5 (??/??/2019):
 --------------------
+
+- Fixed bug that caused screen corruption when exiting the EFI shell
+  (and perhaps other programs) on some systems.
 
 - Fixed bug that caused hidden tag management to not work reliably when
   use_nvram was set to false.

@@ -341,6 +341,8 @@ EFI_STATUS ReinitRefitLib(VOID)
           SelfRootDir = SelfVolume->RootDir;
     } // if
 
+    InitScreen();
+    SetupScreen();
     return FinishInitRefitLib();
 }
 

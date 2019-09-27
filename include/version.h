@@ -10,5 +10,5 @@
  *
  */
 
-#define REFIND_VERSION L"0.11.4.2"
+#define REFIND_VERSION L"0.11.4.4"
 
