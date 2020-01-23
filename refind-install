@@ -1203,7 +1203,8 @@ FindMountedESP() {
    fi
    if [[ $EspFilesystem != 'vfat' ]] ; then
       echo "$RootDir/$InstallDir doesn't seem to be on a VFAT filesystem. The ESP must be"
-      echo "mounted at $RootDir/boot or $RootDir/boot/efi and it must be VFAT! Aborting!"
+      echo "mounted at $RootDir/boot or $RootDir/boot/efi and it must be VFAT (not msdos)!"
+      echo "Aborting!"
       if [[ -d /sys/firmware/efi ]] ; then
          exit 1
       else
