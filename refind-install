@@ -1178,9 +1178,9 @@ FindLinuxESP() {
    done
 } # FindLinuxESP()
 
-# Identifies the ESP's location (/boot or /boot/efi, or these locations under
-# the directory specified by --root); aborts if the ESP isn't mounted at
-# either location.
+# Identifies the ESP's location (/boot, /boot/efi, /efi, or these locations
+# under the directory specified by --root); aborts if the ESP isn't mounted at
+# any of these locations.
 # Sets InstallDir to the ESP mount point.
 FindMountedESP() {
    mount /boot &> /dev/null
