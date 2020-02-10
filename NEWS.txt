@@ -7,6 +7,19 @@
 - Fixed bug that caused hidden tag management to not work reliably when
   use_nvram was set to false.
 
+- Cleaned up excessive slashes ("/") in refind-install script
+
+- Corrected incorrect display of "scanning for boot loaders" message
+  under some circumstances
+
+- Minor formatting changes to man pages
+
+- Renamed .der certificates to .cer, for better compatibility with
+  KeyTool.efi
+
+- Can now use "%v" as part of a Linux kernel options string in
+  refind_linux.conf to refer to the kernel's version number.
+
 0.11.4 (11/12/2018):
 --------------------
 

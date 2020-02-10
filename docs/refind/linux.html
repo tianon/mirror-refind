@@ -355,7 +355,7 @@ extends it as follows:</p>
 
 <li>If a file's name ends in <tt>.efi.signed</tt>, any other file with an
     otherwise-identical name that <i>lacks</i> this extension is excluded.
-    This peculiar rule exists because Ubuntu delivers two
+    This peculiar rule exists because old versions of Ubuntu deliver two
     copies of every kernel, one with and one without this extension. The
     one with the extension is signed with a Secure Boot key; the one
     without it is not so signed. Thus, if both files are present, the one
@@ -378,7 +378,7 @@ extends it as follows:</p>
     <tt>4.2.5-300.fc23.x86_64</tt>, which matches
     <tt>initrd-4.2.5-300.fc23.x86_64.img</tt>. Many other matches are
     possible. If an initial RAM disk is identified, rEFInd passes a suitable
-    <tt>initrd=</tt> option to the kernel when it boots. There are two
+    <tt>initrd=</tt> option to the kernel when it boots. There are three
     variants on this rule:
 
     <ul>
@@ -402,7 +402,18 @@ extends it as follows:</p>
 	disk files, one to be used for normal booting and one for recovery
 	situations. You can specify each initial RAM disk file on its own
 	line, which gives you the ability to control which to use at boot
-	time.</li></ul>
+	time.</li>
+
+    <li>If you include a <tt>%v</tt> string in the options set, the detected
+	kernel version will be substituted. This is intended for cases in
+	which you have multiple initrd files and you want to have separate
+	boot options for each one; you would then explicitly include an
+	option like <tt>initrd=myinitrd-%v.img</tt>. A second line in
+	<tt>refind_linux.conf</tt> might then reference
+	<tt>initrd=other-initrd-%v.img</tt>; one option in rEFInd will then
+	launch the kernel with <tt>initrd=myinitrd-5.5.0.img</tt> and the
+	other will pass <tt>initrd=other-initrd-5.5.0.img</tt>, if the
+	kernel's version string is <tt>5.5.0</tt>.</ul>
 
 <li>rEFInd looks for a file called <tt>refind_linux.conf</tt> in the same
     directory as the kernel file. It consists of a series of lines, each of
