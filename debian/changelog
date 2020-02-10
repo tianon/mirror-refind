@@ -1,3 +1,9 @@
+refind (0.11.5-0ppa1) bionic; urgency=medium
+
+  * Version bump
+
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Mon, 10 Feb 2020 13:56:51 -0500
+
 refind (0.11.4-0ppa1) bionic; urgency=medium
 
   * Version bump

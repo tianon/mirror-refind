@@ -176,6 +176,8 @@ fi
 # thus wiping out the just-updated files.
 
 %changelog
+* Mon Feb 10 2020 R Smith <rodsmith@rodsbooks.com> - 0.11.5
+- Updated spec file for 0.11.5
 * Mon Nov 12 2018 R Smith <rodsmith@rodsbooks.com> - 0.11.4
 - Updated spec file for 0.11.4
 * Sun Jul 22 2018 R Smith <rodsmith@rodsbooks.com> - 0.11.3

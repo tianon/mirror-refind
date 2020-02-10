@@ -20,6 +20,10 @@
 - Can now use "%v" as part of a Linux kernel options string in
   refind_linux.conf to refer to the kernel's version number.
 
+- No longer build NTFS driver by default; it's just too buggy. The source
+  code is still available and can be built by typing "make ntfs" in the
+  filesystems subdirectory.
+
 0.11.4 (11/12/2018):
 --------------------
 

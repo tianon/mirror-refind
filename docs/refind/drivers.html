@@ -313,15 +313,16 @@ fs0: <tt class="userinput">map -r</tt>
     providing the driver mainly because it compiled cleanly with no extra
     work, aside from providing a Makefile entry for it.</li>
 
-<p class="sidebar"><b>Warning:</b> I've received multiple reports of system hangs when using the NTFS driver; however, I've been unable to replicate the problem. (The problem is probably triggered either by interactions with specific EFIs or by unique features of the "problem" NTFS volumes.) I therefore recommend avoiding the NTFS driver unless it's absolutely necessary. Various rEFInd versions include fixes intended to address this problem, but I can't be sure it's been completely eliminated.</p>
+<p class="sidebar"><b>Warning:</b> I've received multiple reports of system hangs when using the NTFS driver; however, I've been unable to replicate the problem. (The problem is probably triggered either by interactions with specific EFIs or by unique features of the "problem" NTFS volumes.) I therefore recommend avoiding the NTFS driver unless it's absolutely necessary, and as of rEFInd version 0.11.5, this driver is no longer built by default. It can still be built from source code by typing <tt><b>make ntfs</b></tt> in the <tt>filesystems</tt> subdirectory of the rEFInd source code.</p>
 
 <li><b>NTFS</b>&mdash;Samuel Liao contributed this driver, which uses the
-    rEFIt/rEFInd driver framework. Note that this driver is
-    <i><b>not</b></i> required to boot Windows with rEFInd, since Windows
-    stores its EFI boot loader on the (FAT) ESP, and the BIOS boot process
-    (generally used when dual-booting on a Mac) relies only on the
-    partition's boot sector, which is read without the benefit of this
-    driver. Reasons to use this driver include:
+    rEFIt/rEFInd driver framework. <b>As of rEFInd 0.11.5, this driver is
+    not built by default; see the Warning sidebar to the right.</b> Note
+    that this driver is <i><b>not</b></i> required to boot Windows with
+    rEFInd, since Windows stores its EFI boot loader on the (FAT) ESP, and
+    the BIOS boot process (generally used when dual-booting on a Mac) relies
+    only on the partition's boot sector, which is read without the benefit
+    of this driver. Reasons to use this driver include:
     <ul>
     <li>If you want to use Windows to write large files, such as RAM
         disk images, to be read from EFI.</li>
