@@ -397,7 +397,7 @@ LOADER_ENTRY * MakeGenericLoaderEntry(VOID);
 VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
 LOADER_ENTRY * AddPreparedLoaderEntry(LOADER_ENTRY *Entry);
 VOID StoreLoaderName(IN CHAR16 *Name);
-VOID RescanAll(BOOLEAN DisplayMessage);
+VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect);
 
 #endif
 

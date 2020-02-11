@@ -2080,11 +2080,16 @@ static VOID ScanForTools(VOID) {
 } // static VOID ScanForTools
 
 // Rescan for boot loaders
-VOID RescanAll(BOOLEAN DisplayMessage) {
+VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
     FreeList((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
     MainMenu.Entries = NULL;
     MainMenu.EntryCount = 0;
-    ScanVolumes();
+    // ConnectAllDriversToAllControllers() can cause system hangs with some
+    // buggy filesystem drivers, so do it only if necessary....
+    if (Reconnect) {
+        ConnectAllDriversToAllControllers();
+        ScanVolumes();
+    }
     ReadConfig(GlobalConfig.ConfigFilename);
     SetVolumeIcons();
     ScanForBootloaders(DisplayMessage);
@@ -2263,7 +2268,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
           egDisplayMessage(L"Pausing before disk scan; please wait....", &BGColor, CENTER);
        for (i = 0; i < GlobalConfig.ScanDelay; i++)
           refit_call1_wrapper(BS->Stall, 1000000);
-       RescanAll(GlobalConfig.ScanDelay > 1);
+       RescanAll(GlobalConfig.ScanDelay > 1, TRUE);
        BltClearScreen(TRUE);
     } // if
 
@@ -2278,7 +2283,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         // The Escape key triggers a re-scan operation....
         if (MenuExit == MENU_EXIT_ESCAPE) {
             MenuExit = 0;
-            RescanAll(TRUE);
+            RescanAll(TRUE, TRUE);
             continue;
         }
 
