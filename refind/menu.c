@@ -1537,7 +1537,7 @@ VOID ManageHiddenTags(VOID) {
             CheckError(Status, L"in ManageHiddenTags()");
         }
         if (SaveTags || SaveTools || SaveLegacy)
-            RescanAll(TRUE);
+            RescanAll(FALSE);
     } else {
         DisplaySimpleMessage(L"Information", L"No hidden tags found");
     }
@@ -1680,7 +1680,7 @@ static VOID HideTag(REFIT_MENU_ENTRY *ChosenEntry) {
             if (Loader->DiscoveryType == DISCOVERY_TYPE_AUTO) {
                 HideItemMenu.Title = L"Hide EFI OS Tag";
                 HideEfiTag(Loader, &HideItemMenu, L"HiddenTags");
-                RescanAll(TRUE);
+                RescanAll(FALSE);
             } else {
                 DisplaySimpleMessage(L"Cannot Hide Entry for Manual Boot Stanza",
                                      L"You must edit refind.conf to remove this entry.");
@@ -1690,7 +1690,7 @@ static VOID HideTag(REFIT_MENU_ENTRY *ChosenEntry) {
         case TAG_LEGACY_UEFI:
             HideItemMenu.Title = L"Hide Legacy OS Tag";
             if (HideLegacyTag(LegacyLoader, &HideItemMenu))
-                RescanAll(TRUE);
+                RescanAll(FALSE);
             break;
         case TAG_ABOUT:
         case TAG_REBOOT:
@@ -1705,7 +1705,7 @@ static VOID HideTag(REFIT_MENU_ENTRY *ChosenEntry) {
         case TAG_TOOL:
             HideItemMenu.Title = L"Hide Tool Tag";
             HideEfiTag(Loader, &HideItemMenu, L"HiddenTools");
-            RescanAll(TRUE);
+            RescanAll(FALSE);
             break;
     } // switch()
 } // VOID HideTag()

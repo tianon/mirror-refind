@@ -2084,7 +2084,6 @@ VOID RescanAll(BOOLEAN DisplayMessage) {
     FreeList((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
     MainMenu.Entries = NULL;
     MainMenu.EntryCount = 0;
-    ConnectAllDriversToAllControllers();
     ScanVolumes();
     ReadConfig(GlobalConfig.ConfigFilename);
     SetVolumeIcons();

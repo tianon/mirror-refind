@@ -7,6 +7,9 @@
 - Fixed bug that caused hidden tag management to not work reliably when
   use_nvram was set to false.
 
+- Fixed bug that could cause rescan operations (including after hiding
+  or un-hiding loaders or when using a scan delay) to hang rEFInd.
+
 - Cleaned up excessive slashes ("/") in refind-install script
 
 - Corrected incorrect display of "scanning for boot loaders" message
