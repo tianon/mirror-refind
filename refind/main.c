@@ -448,6 +448,10 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
 
     // re-open file handles
     ReinitRefitLib();
+    if (!IsDriver) {
+        InitScreen();
+        SetupScreen();
+    }
 
 bailout_unload:
     // unload the image, we don't care if it works or not...
