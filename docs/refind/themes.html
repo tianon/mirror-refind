@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-11/12/2018, referencing rEFInd 0.11.4</p>
+2/12/2020, referencing rEFInd 0.11.5</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -124,12 +124,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <hr />
 
-<div style="float:right; width:55%">
-
-<p>rEFInd relies on both built-in and external graphical elements in its user interface, and all of these elements can be replaced by user-specified files. This fact makes rEFInd's "look and feel" highly adjustable even by non-programmers. This page will help you get started in making such changes to each of the major sets of features: banners and backgrounds, icons, icon selection backgrounds, and fonts. I conclude this page with pointers to a few themes that users have created for rEFInd.</p>
-
-</div>
-
 <div class="navbar">
 
 <h4 class="tight">Contents</h4>
@@ -152,7 +146,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </div>
 
-<a name="basics">
+<p>rEFInd relies on both built-in and external graphical elements in its user interface, and all of these elements can be replaced by user-specified files. This fact makes rEFInd's "look and feel" highly adjustable even by non-programmers. This page will help you get started in making such changes to each of the major sets of features: banners and backgrounds, icons, icon selection backgrounds, and fonts. I conclude this page with pointers to a few themes that users have created for rEFInd.</p><a name="basics">
 <h2>Theming Basics</h2>
 </a>
 
@@ -162,7 +156,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li><b>Banners and backgrounds</b>&mdash;A <i>banner</i> is a logo or small graphical element that rEFInd displays horizontally centered in the top half of the screen. The rest of the screen is filled with a solid color derived from the color used in the top-left pixel of the banner image. rEFInd includes a built-in banner image that's used if you don't specify another image with the <tt>banner</tt> token in <tt>refind.conf</tt>. A <i>background</i> is simply a banner image that fills the screen. As a general rule, PNG and JPEG files work best for this element.</li>
 
-<li><b>Icons</b>&mdash;rEFInd uses icons for its OSes and utilities. The vast majority of these icons are loaded from disk files and so are easily replaced without adjusting the <tt>refind.conf</tt> file. Alternatively, you can specify a new icons directory with the <tt>icons_dir</tt> token in <tt>refind.conf</tt>. Icons are generally PNG or ICNS files, with the latter being a Mac-centric format and so less common.</li>
+<li><b>Icons</b>&mdash;rEFInd uses icons for its OS and utility selection tags. The vast majority of these icons are loaded from disk files and so are easily replaced without adjusting the <tt>refind.conf</tt> file. Alternatively, you can specify a new icons directory with the <tt>icons_dir</tt> token in <tt>refind.conf</tt>. Icons are generally PNG or ICNS files, with the latter being a Mac-centric format and so less common.</li>
 
 <li><b>Icon selection backgrounds</b>&mdash;When an icon is selected, it's merged with a slightly larger selection icon, which you can change by specifying a new file with the <tt>selection_big</tt> and <tt>selection_small</tt> tokens in <tt>refind.conf</tt>. These elements are generally best done as PNG files.</li>
 
@@ -178,7 +172,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>rEFInd's BMP and JPEG implementations lack support for transparency, which is highly desirable in icons, icon backgrounds, and fonts.</li>
 
-<li>Apple's ICNS format supports a limited range of sizes, all of which are square, not rectangular.</li>
+<li>Apple's ICNS format supports a limited range of sizes, all of which are square, not rectangular. On the other hand, ICNS supports multiple resolutions in one file, which can be desirable for icons.</li>
 
 <li>rEFInd's BMP implementation does not support compression, so full-screen BMP images will be quite large.</li>
 
@@ -196,9 +190,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
     width="750" height="563" alt="rEFInd provides extensive theming
     options." border=2> </center><br />
 
-<p class="sidebar"><b>Tip:</b> If you use a laptop, you can create a banner or background that includes your contact information. If you lose your laptop and it's found by an honest person, this should facilitate your getting it back. Setting <tt>timeout 0</tt> in <tt>refind.conf</tt> will ensure that the message remains on the screen indefinitely.</p>
+<p class="sidebar"><b>Tip:</b> If you use a laptop, you can create a banner or background that includes your contact information. If you lose your laptop and it's found by an honest person, this should facilitate your getting it back. Setting <tt>timeout 0</tt> in <tt>refind.conf</tt> will ensure that the message remains on the screen indefinitely unless a loader is launched.</p>
 
-<p>Note that in this example, the text immediately below the icons is white, whereas the hint text at the bottom of the screen is black. The text color is determined by the brightness of the background; rEFInd uses black text against light backgrounds and white text against dark backgrounds. This adjustment is done on a line-by-line basis, so it copes better with horizontal lines than with vertical lines.</p>
+<p>Note that in this example, the text immediately below the icons is white, whereas the hint text at the bottom of the screen is black. (The "Rod Smith's Laptop" and other text at the top is part of the image.) The text color is determined by the brightness of the background; rEFInd uses black text against light backgrounds and white text against dark backgrounds. This adjustment is done on a line-by-line basis, so it copes better with horizontal lines than with vertical lines.</p>
 
 <p>If you want to use a full-screen background but also include the rEFInd logo, you can merge the two in a graphics editor by including the <tt>refind_banner-alpha.png</tt> or <tt>refind-banner.svg</tt> image from the <tt>banners</tt> subdirectory of the rEFInd package in your background.</p>
 
@@ -306,12 +300,6 @@ tedious.</p>
 
 <li><a href="http://ecto-plazm.deviantart.com/art/rEFInd-Icon-Theme-296571397">ecto-plazm's theme</a> was one of the first independent themes to be created for rEFInd.</li>
 
-<li><a href="http://www.turnerharris.com/themes/refind.theme.mac.zip">The Mac theme</a> was created by Wesley Turner-Harris, and is a theme with relatively few icons intended for use on Macs. See <a href="http://www.turnerharris.com/my-themes/">Wesley's Web site</a> if you want to contact the creator of this theme.</li>
-
-    <br /><center><a href="mac-theme.png"><img src="mac-theme.png"
-    align="center" width="800" alt="The Mac theme is designed for use on
-    Macs" border=2> </a></center><br />
-
 <li>Evan Purkhiser's <a href="https://github.com/EvanPurkhiser/rEFInd-minimal-theme">Minimal theme</a> uses black icons on a gray background of varied brightness, as shown here:</li>
 
     <br /><center><a
@@ -334,19 +322,19 @@ tedious.</p>
 
 <li>Zhu Qunying has created a <a href="http://zhu-qy.blogspot.com/2014/02/a-slackware-banner-logo-for-refind-boot.html">Slackware-themed banner logo</a> for rEFInd. Although it's not a full theme, I thought I'd mention it.</li>
 
-<li>naymlezwun has created an <a href="http://naymlezwun.deviantart.com/art/rEFInd-OS-X-Theme-469807750">OS X theme</a> for rEFInd.</li>
+<li>naymlezwun has created an <a href="http://naymlezwun.deviantart.com/art/rEFInd-OS-X-Theme-469807750">macOS theme</a> for rEFInd.</li>
 
     <br /><center><a
     href="http://naymlezwun.deviantart.com/art/rEFInd-OS-X-Theme-469807750"><img
     src="http://pre11.deviantart.net/6da5/th/pre/f/2014/202/9/e/refind_os_x_theme_by_naymlezwun-d7rplza.png"
-    align="center" width="750" alt="the rEFInd OS X theme uses Mac-like icons" border=2> </a></center><br />
+    align="center" width="750" alt="the rEFInd macOS theme uses Mac-like icons" border=2> </a></center><br />
 
-<li>jamaladdeen on deviantART has created another <a href="http://jamaladdeen.deviantart.com/art/rEFInd-OSX-Standard-Theme-1-0-492876132?ga_submit_new=10%253A1415269035&ga_type=edit&ga_changes=1&ga_recent=1">OS X theme</a> that resembles the OS X environment.</li>
+<li>jamaladdeen on deviantART has created another <a href="http://jamaladdeen.deviantart.com/art/rEFInd-OSX-Standard-Theme-1-0-492876132?ga_submit_new=10%253A1415269035&ga_type=edit&ga_changes=1&ga_recent=1">macOS theme</a> that resembles the macOS environment.</li>
 
     <br /><center><a
     href="http://jamaladdeen.deviantart.com/art/rEFInd-OSX-Standard-Theme-1-0-492876132?ga_submit_new=10%253A1415269035&ga_type=edit&ga_changes=1&ga_recent=1"><img
     src="http://orig06.deviantart.net/6a20/f/2014/310/3/5/refind_osx_standard_theme_1_0_by_jamaladdeen-d85g1no.png"
-    align="center" width="750" alt="Another OS X-like theme" border=2> </a></center><br />
+    align="center" width="750" alt="Another macOS-like theme" border=2> </a></center><br />
 
 <li>Brian Lechthaler has created an <a href="http://sta.sh/0raifz8774v">alternative rEFInd banner:</a>
 
@@ -359,7 +347,7 @@ tedious.</p>
 
     <br /><center><a
     href="http://munlik.deviantart.com/art/Regular-rEFInd-theme-512091944"><img
-    src="http://orig08.deviantart.net/44bd/f/2015/277/2/d/regular__refind__theme_by_munlik-d8gvwo8.png"
+    src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/a0bb119c-973b-4db8-a589-a27c75e57b9c/d8gvwo8-c60dbd9c-6d8e-4758-9cf5-2756f1c2b5f1.png/v1/fill/w_854,h_480,q_80,strp/refind_theme_by_munlik_d8gvwo8-fullview.jpg"
     align="center" width="750" alt="A clean theme with a purple background"
     border=2> </a></center><br />
 
@@ -385,8 +373,8 @@ tedious.</p>
     for all of AliciaTransmuted's rEFInd themes.</li>
 
     <br /><center><a
-    href="https://orig00.deviantart.net/1b65/f/2018/245/4/4/refind_chalkboard_by_aliciatransmuted-dclswzw.jpg"><img
-    src="https://orig00.deviantart.net/1b65/f/2018/245/4/4/refind_chalkboard_by_aliciatransmuted-dclswzw.jpg"
+    href="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/776e3e1b-262f-4374-b52a-54cc6ff65e3b/dclswzw-59ecacee-8436-452e-a0c6-18e6d34aa70f.png/v1/fill/w_995,h_803,q_70,strp/refind_chalkboard_by_aliciatransmuted_dclswzw-pre.jpg"><img
+    src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/776e3e1b-262f-4374-b52a-54cc6ff65e3b/dclswzw-59ecacee-8436-452e-a0c6-18e6d34aa70f.png/v1/fill/w_995,h_803,q_70,strp/refind_chalkboard_by_aliciatransmuted_dclswzw-pre.jpg"
     align="center" width="800" alt="A theme that emulates the look of
     writing on a chalkboard" border=2> </a></center><br />
 
@@ -449,7 +437,7 @@ tedious.</p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2018 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 
@@ -459,6 +447,6 @@ tedious.</p>
 
 <p><a href="linux.html">Learn about methods of booting Linux with rEFInd</a></p>
 
-  <p><a href="http://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
 </body>
 </html>

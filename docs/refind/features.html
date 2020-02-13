@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-11/12/2018, referencing rEFInd 0.11.4</p>
+2/12/2020, referencing rEFInd 0.11.5</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -141,7 +141,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>Provide the <tt>gptsync</tt> utility for creating hybrid MBRs. Note that rEFInd's version of <tt>gptsync</tt> is significantly updated compared to rEFIt's. Also, this tool should be used only on Macs that dual-boot with a BIOS-based OS, such as Windows; or <i>very</i> rarely on other computers.</li>
 
-<li>Set OS-specific boot options, such as to launch Mac OS X with verbose text-mode debug messages.</li>
+<li>Set OS-specific boot options, such as to launch macOS with verbose text-mode debug messages.</li>
 
 <li>Load EFI drivers for filesystems or hardware devices not supported natively by your firmware. (This feature is absent in some builds of rEFIt and in rEFInd prior to version 0.2.7.)</li>
 
@@ -228,15 +228,11 @@ such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
 
 <li>Beginning with version 0.6.10, a screen saver feature, activated by the <tt>screensaver <tt class="variable">seconds</tt></tt> token in <tt>refind.conf</tt>: Set <tt class="variable">seconds</tt> to the number of seconds before the screen will blank to prevent burn-in.</li>
 
-<li>Workarounds to file detection bugs in at least one type of UEFI firmware.</li>
-
-<li>Improved detection of itself, to keep rEFInd out of its own boot menu.</li>
-
 <li>Detection of a fallback boot loader (<tt>EFI/BOOT/bootx64.efi</tt> or <tt>EFI/BOOT/bootia32.efi</tt>) that's redundant with another boot loader, to keep the fallback boot loader out of menus when it's unnecessary.</li>
 
 <li>An "exit" option (disabled by default), so that you can return to whatever shell or boot manager you used to launch rEFInd, should this ability be desirable. (This feature first appeared in rEFInd 0.2.4.)</li>
 
-<li>Drivers for ISO-9660, NTFS, HFS+, ext4fs, and Btrfs, which are not included in rEFIt. The ISO-9660 driver is based on code from the rEFIt project, but was never completed by its original author. It was completed by Oracle for VirtualBox. The ext4fs driver is derived from the rEFIt ext2fs driver, and the Btrfs and NTFS drivers are derived from the rEFIt and GRUB 2.0 driver code.</li>
+<li>Drivers for ISO-9660, NTFS, HFS+, ext4fs, and Btrfs, which are not included in rEFIt. (The NTFS driver has proven troublesome, and so is not compiled by default.) The ISO-9660 driver is based on code from the rEFIt project, but was never completed by its original author. It was completed by Oracle for VirtualBox. The ext4fs driver is derived from the rEFIt ext2fs driver, and the Btrfs and NTFS drivers are derived from the rEFIt and GRUB 2.0 driver code.</li>
 
 <li>Beginning with version 0.5.0, the ability to "talk" to the <a href="http://mjg59.dreamwidth.org/20303.html">shim boot loader</a> to validate binaries supported by shim or its machine owner key (MOK) list when booting with Secure Boot active.</li>
 
@@ -244,9 +240,9 @@ such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
 
 <li>The ability to set the VMX bit on certain Intel CPUs. This feature is necessary for certain virtualization tools, such as Hyper-V, and not all EFIs enable users to set it.</li>
 
-<li>Beginning with version 0.10.0, the ability to spoof the booting of OS X when booting non-Apple OSes. This changes the way a Mac's EFI initializes hardware, which can get secondary video chipsets working on some Macs. This feature is controlled via the <tt>spoof_osx_version</tt> token in <tt>refind.conf</tt>.</li>
+<li>Beginning with version 0.10.0, the ability to spoof the booting of macOS when booting non-Apple OSes. This changes the way a Mac's EFI initializes hardware, which can get secondary video chipsets working on some Macs. This feature is controlled via the <tt>spoof_osx_version</tt> token in <tt>refind.conf</tt>.</li>
 
-<li>Beginning with version 0.10.0, the ability to adjust Apple System Integrity Protection (SIP; aka "rootless" or "CSR") settings. These settings control what features are off-limits even to <tt>root</tt> in OS X 10.11 (El Capitan) and later. To use this feature, you must set specific CSR values on <tt>refind.conf</tt>'s <tt>csr_values</tt> line <i>and</i> add <tt>csr_rotate</tt> to the <tt>showtools</tt> line.</li>
+<li>Beginning with version 0.10.0, the ability to adjust Apple System Integrity Protection (SIP; aka "rootless" or "CSR") settings. These settings control what features are off-limits even to <tt>root</tt> in macOS 10.11 (El Capitan) and later. To use this feature, you must set specific CSR values on <tt>refind.conf</tt>'s <tt>csr_values</tt> line <i>and</i> add <tt>csr_rotate</tt> to the <tt>showtools</tt> line.</li>
 
 <li>Beginning with version 0.10.1, support for ARM64 (aka AARCH64 or AA64) CPUs. Such systems that boot using UEFI are quite rare, at least in December of 2015.</li>
 
@@ -254,11 +250,11 @@ such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
 
 <p>On the flip side, at least for Mac users, rEFInd comes with less sophisticated Mac installation tools than does rEFIt, in favor of more OS-agnostic packaging.</p>
 
-<p>If these features sound useful, then read on and try rEFInd. If not, you may need to look elsewhere. My <a href="http://www.rodsbooks.com/efi-bootloaders/index.html">Managing EFI Boot Loaders for Linux</a> page may be useful to you in this case.</p>
+<p>If these features sound useful, then read on and try rEFInd. If not, you may need to look elsewhere. My <a href="https://www.rodsbooks.com/efi-bootloaders/index.html">Managing EFI Boot Loaders for Linux</a> page may be useful to you in this case.</p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2018 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 
@@ -268,6 +264,6 @@ such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
 
 <p><a href="getting.html">Learn how to obtain rEFInd</a></p>
 
-  <p><a href="http://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
 </body>
 </html>

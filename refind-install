@@ -925,7 +925,7 @@ CheckForSIP() {
 # Control the OS X installation.
 # Sets Problems=1 if problems found during the installation.
 InstallOnOSX() {
-   echo "Installing rEFInd on OS X...."
+   echo "Installing rEFInd on macOS...."
    if [[ "$InstallToEspOnMac" == "1" && -z "$TargetPart" ]] ; then
       MountOSXESP
    elif [[ "$TargetDir" == "/EFI/BOOT" || "$OwnHfs" == '1' ]] ; then
@@ -1386,11 +1386,11 @@ CheckForFiles
 case "$OSTYPE" in
    darwin*)
         if [[ "$ShimSource" != "none" ]] ; then
-           echo "The --shim option is not supported on OS X! Exiting!"
+           echo "The --shim option is not supported on macOS! Exiting!"
            exit 1
         fi
         if [[ "$LocalKeys" != 0 ]] ; then
-           echo "The --localkeys option is not supported on OS X! Exiting!"
+           echo "The --localkeys option is not supported on macOS! Exiting!"
            exit 1
         fi
         InstallOnOSX $1

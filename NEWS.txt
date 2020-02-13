@@ -4,9 +4,6 @@
 - Fixed bug that caused screen corruption when exiting the EFI shell
   (and perhaps other programs) on some systems.
 
-- Fixed bug that caused hidden tag management to not work reliably when
-  use_nvram was set to false.
-
 - Fixed bug that could cause rescan operations (including after hiding
   or un-hiding loaders or when using a scan delay) to hang rEFInd.
 
@@ -26,6 +23,9 @@
 - No longer build NTFS driver by default; it's just too buggy. The source
   code is still available and can be built by typing "make ntfs" in the
   filesystems subdirectory.
+
+- Documentation scrub: Updated to remove out-of-date references that
+  have accumulated over time.
 
 0.11.4 (11/12/2018):
 --------------------

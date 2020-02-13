@@ -322,6 +322,24 @@ If you're using TianoCore's EDK2, as noted earlier, you may need to adjust
 the TIANOBASE or EDKBASE variable in Makefile.
 
 
+A Note about NTFS
+=================
+
+Over the years, I've received far too many queries from people who've had
+problems with rEFInd hanging because of the NTFS driver. Thus, beginning
+with rEFInd 0.11.5, the NTFS driver is NOT compiled by default. (If using
+Tianocore EDK2, the file is actually compiled, but it's not copied to the
+output directory.) If you need it, you can still compile it manually by
+changing into the filesystems directory and typing "make ntfs_gnuefi" if
+you're using GNU-EFI; or by copying the file from
+Build/Refind/RELEASE_GCC5/X64/ntfs.efi (or the equivalent for other
+architectures) in the Tianocore EDK2 installation location if you're using
+Tianocore EDK2. Alternatively, you can look at the NTFS driver in Pete
+Batard's efifs project (http://efi.akeo.ie). I can't promise this driver
+will be more reliable than rEFInd's, but it might be.
+
+
+
 Compiling rEFInd the TianoCore Way
 ==================================
 

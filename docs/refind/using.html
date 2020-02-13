@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-11/12/2018, referencing rEFInd 0.11.4</p>
+2/12/2020, referencing rEFInd 0.11.5</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -124,12 +124,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <hr />
 
-<div style="float:right; width:55%">
-
-<p>For the most part, rEFInd is easy to use; just use your keyboard's arrow keys to select the OS you want to boot or the utility you want to launch and press the Enter key. A few details aren't entirely intuitive, though, so this page describes them.</p>
-
-</div>
-
 <div class="navbar">
 
 <h4 class="tight">Contents</h4>
@@ -150,6 +144,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </div>
 
+<p>For the most part, rEFInd is easy to use; just use your keyboard's arrow keys to select the OS you want to boot or the utility you want to launch and press the Enter key. A few details aren't entirely intuitive, though, so this page describes them.</p>
+
 <a name="basic">
 <h2>Using Basic rEFInd Features</h2>
 </a>
@@ -164,7 +160,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>If you don't press a key before the timeout expires, the default boot loader will launch. (The timeout is shown beneath the description line until you press a key.) This is normally the item that you launched the last time rEFInd ran, but you can adjust the default by editing the configuration file. (In this example, it's the Ubuntu Linux loader, which is further identified by text as <i>EFI\ubuntu\grubx64.efi from ESP</i>.)</p>
 
-<p>This display is dominated by the central set of OS <i>tags</i> (icons), which in this example includes tags for an unknown Linux distribution, Ubuntu, OS X, and Windows. All but the first of these are on hard disks, but the unknown Linux boot loader is on an optical disc, as revealed by the small icons (known as <i>badges</i>) in the lower-right corner of the OS icons.</p>
+<p>This display is dominated by the central set of OS <i>tags</i> (icons), which in this example includes tags for an unknown Linux distribution, Ubuntu, macOS, and Windows. All but the first of these are on hard disks, but the unknown Linux boot loader is on an optical disc, as revealed by the small icons (known as <i>badges</i>) in the lower-right corners of the OS icons.</p>
 
 <p>In this example, the Ubuntu tag is selected. You can move the selection left by pressing the left arrow key and right by pressing the right arrow key. If your system has many boot loaders, an arrow icon will appear to the right and/or left of the boot loader list, indicating that the boot loader list will scroll when you move off the edge. (Such an arrow is visible to the right in the sample screen.) You can scroll the list by one line full of icons by using the Page Up or Page Down keys to move left and right, respectively. Moving past the final selection or using the down arrow key moves the selection to the second row of small tags, which launch ancillary programs or perform special actions. If you've moved the selection cursor to the second row, pressing the up arrow key or scrolling past the left edge of the second row moves the cursor to the top row. In this figure, these eight tags are present:</p>
 
@@ -182,7 +178,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>Launch a Windows recovery utility</li>
 
-<li>Produce an information page</li>
+<li>Display an information page</li>
 
 <li>Reboot the computer</li>
 
@@ -204,7 +200,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Adjusting Boot Options</h2>
 </a>
 
-<p>If you press the Insert, F2, Tab, or + key, rEFInd will show a menu that may hold additional options, depending on the OS type. (OS X and Linux are most likely to hold interesting options on their submenus.) The following figure shows the submenu for Mac OS X. You can use this menu much like the main menu; move the cursor to select the option you want to use, then press the Enter key to launch the boot loader with the selected options. Press the Esc or Backspace (Delete on Macs) key or select <tt>Return to Main Menu</tt> to return to the main menu. (See the <a href="linux.html">Methods of Booting Linux</a> page for information on what you might see on a Linux submenu page.)</p>
+<p>If you press the Insert, F2, Tab, or + key, rEFInd will show a menu that may hold additional options, depending on the OS type. (MacOS and Linux are most likely to hold interesting options on their submenus.) The following figure shows the submenu for macOS. You can use this menu much like the main menu; move the cursor to select the option you want to use, then press the Enter key to launch the boot loader with the selected options. Press the Esc or Backspace (Delete on Macs) key or select <tt>Return to Main Menu</tt> to return to the main menu. (See the <a href="linux.html">Methods of Booting Linux</a> page for information on what you might see on a Linux submenu page.)</p>
 
     <br /><center><img src="submenu.png" align="center" width="499"
     height="228" alt="rEFInd submenus enable you to set session-specific
@@ -268,19 +264,19 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 </tr>
 <tr>
    <td><i>Delete</i> (on PCs) or minus (<i>-</i>) (<i>Delete</i> on Mac keyboards is <i>Backspace</i> on PC keyboards, and will not work for this)</td>
-   <td>Hides a menu tag. The tag is remembered via the computer's on-board NVRAM.</td>
+   <td>Hides a menu tag. The tag is remembered via the computer's on-board NVRAM or in a disk file, depending on the setting of the <tt>use_nvram</tt> token in <tt>refind.conf</tt>.</td>
 </tr>
 <tr>
    <td><i>Insert</i>, <i>F2</i>, <i>Tab</i>, or <i>+</i></td>
-   <td>From the main menu, opens the selection's submenu, which is most useful with Mac OS X, ELILO, and Linux kernels with EFI stub loader support; in a submenu, opens a line editor enabling editing of boot options</td>
+   <td>From the main menu, opens the selection's submenu, which is most useful with macOS, ELILO, and Linux kernels with EFI stub loader support; in a submenu, opens a line editor enabling editing of boot options</td>
 </tr>
 <tr>
    <td><i>F10</i></td>
-   <td>Saves an image of the current screen in the file <tt>screenshot_<tt class="variable">###</tt>.bmp</tt>, where <tt class="variable">###</tt> is a sequence number starting with <tt>001</tt>, in the EFI System Partition's (ESP's) root directory</td>
+   <td>Saves an image of the current screen in the file <tt>screenshot_<tt class="variable">###</tt>.bmp</tt> in the EFI System Partition's (ESP's) root directory. (<tt class="variable">###</tt> is a sequence number starting with <tt>001</tt>)</td>
 </tr>
 <tr>
    <td><i>F12</i> or (on some keyboards) <i>Eject</i></td>
-   <td>Ejects removable media. This feature only works on some Macs, not on UEFI-based PCs.</td>
+   <td>Ejects removable media. This feature only works on some Macs but not on most UEFI-based PCs.</td>
 </tr>
 <tr>
    <td><i>Enter</i> or <i>spacebar</i></td>
@@ -334,19 +330,19 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p class="sidebar"><b>Note:</b> If you set <tt>timeout = -1</tt> in <tt>refind.conf</tt>, rEFInd will immediately launch the default OS <i>unless</i> you press a key as rEFInd launches. In that case, if the key you pressed is a valid shortcut key, rEFInd will launch the associated entry. If not, rEFInd will show you its main menu.</p>
 
-<p>rEFInd assigns shortcut letters to most OS entries based on the first letter of the directory in which the OS's boot loader is stored. For instance, if you have a boot loader called <tt>/EFI/debian/elilo.efi</tt>, rEFInd attempts to assign it a shortcut letter of <i>D</i>. rEFInd overrides this default for Mac OS X, Windows, and for Linux's GRUB, ELILO, and EFI stub boot loaders if the distribution can't be more precisely identified, as noted in the preceding table. This method works well for many installations, but it can produce conflicts. For instance, if you have a Macintosh that holds both Mac OS X and Mandriva, both OSes would normally use the <tt>M</tt> shortcut key. In practice, which works depends on the order in which rEFInd detects the OSes.</p>
+<p>rEFInd assigns shortcut letters to most OS entries based on the first letter of the directory in which the OS's boot loader is stored. For instance, if you have a boot loader called <tt>/EFI/debian/elilo.efi</tt>, rEFInd attempts to assign it a shortcut letter of <i>D</i>. rEFInd overrides this default for macOS, Windows, and for Linux's GRUB, ELILO, and EFI stub boot loaders if the distribution can't be more precisely identified, as noted in the preceding table. This method works well for many installations, but it can produce conflicts. For instance, if you have a Macintosh that holds both macOS and Mandriva, both OSes would normally use the <tt>M</tt> shortcut key. In practice, which works depends on the order in which rEFInd detects the OSes.</p>
 
 <a name="legacy">
 <h2>Booting Legacy OSes</h2>
 </a>
 
-<p>Sometimes it's necessary to boot a legacy (BIOS-based) OS on an EFI computer. This is especially true on Macs, since this has been the usual method of dual-booting OS X and Windows. (Since the release of Windows 8, though, booting Windows in EFI mode on Macs has become both more practical and more common.) In the past, many Linux distributions installed more easily in BIOS mode on Macs, but many Linux distributions now favor native EFI-mode installation on Macs. (See my <a href="http://www.rodsbooks.com/ubuntu-efi/">EFI-Booting Ubuntu on a Mac</a> page for an in-depth look at this topic.)</p>
+<p>Sometimes it's necessary to boot a legacy (BIOS-based) OS on an EFI computer. This is especially true on Macs, since this has been the usual method of dual-booting macOS and Windows. (Since the release of Windows 8, though, booting Windows in EFI mode on Macs has become both more practical and more common.) In the past, many Linux distributions installed more easily in BIOS mode on Macs, but many Linux distributions now favor native EFI-mode installation on Macs. (See my <a href="https://www.rodsbooks.com/ubuntu-efi/">EFI-Booting Ubuntu on a Mac</a> page for an in-depth look at this topic.)</p>
 
-<p>On UEFI-based PCs, booting some OSes in EFI mode and others in BIOS mode is less often necessary, since it's usually easy to install all your OSes in BIOS mode. If you have a working EFI-mode OS installation, though, and if you want to install an OS that lacks EFI-mode boot support, you may need to boot in both modes. Most of the BSDs (FreeBSD being a notable exception), Haiku, DOS, Windows XP and earlier, and many more obscure OSes still lack EFI support and so must be booted in BIOS mode. You might also want to boot a BIOS-mode emergency recovery CD, such as <a href="http://partedmagic.com">Parted Magic</a> or <a href="http://www.sysresccd.org">System Rescue CD.</a> Note, however, that EFI-mode support is being added to OSes. It's possible that some of those I've mentioned here will support EFI-mode booting by the time you read this!</p>
+<p>On UEFI-based PCs, booting some OSes in EFI mode and others in BIOS mode is less often necessary, since it's usually easy to install all your OSes in one mode or the other. If you have a working EFI-mode OS installation, though, and if you want to install an OS that lacks EFI-mode boot support, you may need to boot in both modes. Most of the BSDs (FreeBSD being a notable exception), Haiku, DOS, Windows XP and earlier, and many more obscure OSes still lack EFI support and so must be booted in BIOS mode. You might also want to boot a BIOS-mode emergency recovery CD, such as <a href="http://partedmagic.com">Parted Magic</a> or <a href="http://www.sysresccd.org">System Rescue CD.</a> Note, however, that EFI-mode support is being added to OSes. It's possible that some of those I've mentioned here will support EFI-mode booting by the time you read this!</p>
 
-<p>To help out when you need to boot in BIOS mode, rEFInd supports booting legacy OSes; however, the details vary between Macs and UEFI PCs. Also, be aware that some UEFI PCs lack the Compatibility Support Module (CSM) that's required for this feature to work. This is true even of some computers that can boot BIOS-based OSes natively. This can happen because the firmware is basically a BIOS with a UEFI implementation tacked on top of it; such systems rely on the native BIOS to boot, and may not provide a way for EFI applications to access the BIOS features via CSM mechanisms. If you have such a computer and if you enable a legacy boot option in the configuration file, rEFInd notifies you of its inability to present legacy boot options when it starts up.</p>
+<p>To help out when you need to boot in BIOS mode, rEFInd supports booting legacy OSes; however, the details vary between Macs and UEFI PCs. Also, be aware that some UEFI PCs lack the Compatibility Support Module (CSM) that's required for this feature to work. This is true even of some computers that can boot BIOS-based OSes natively. This can happen because the firmware is basically a BIOS with a UEFI implementation tacked on top of it; such systems rely on the native BIOS to boot in BIOS mode, and may not provide a way for EFI applications to access the BIOS features via CSM mechanisms. If you have such a computer and if you enable a legacy boot option in the configuration file, rEFInd notifies you of its inability to present legacy boot options when it starts up.</p>
 
-<p>The <tt>scanfor</tt> option, described on the <a href="configfile.html">Configuring the Boot Manager</a> page, controls rEFInd's detection of legacy OSes. On Macs, the default is to scan for such OSes, since a common boot scenario on Macs is dual-booting OS X and Windows, and of course BIOS support is required for this. On UEFI PCs, rEFInd defaults to <i>not</i> scanning for legacy OSes; thus, you must edit the <tt>scanfor</tt> item in the configuration file if you want to boot a legacy OS on a UEFI PC.</p>
+<p>The <tt>scanfor</tt> option, described on the <a href="configfile.html">Configuring the Boot Manager</a> page, controls rEFInd's detection of legacy OSes. On Macs, the default is to scan for such OSes, since a common boot scenario on Macs is dual-booting macOS and Windows installed in BIOS mode, and of course BIOS/CSM/legacy support is required for this. On UEFI PCs, rEFInd defaults to <i>not</i> scanning for legacy OSes; thus, you must edit the <tt>scanfor</tt> item in the configuration file if you want to boot a legacy OS on a UEFI PC.</p>
 
     <img src="os_legacy.png" align="right" width="128" height="128"
     alt="The legacy OS icon is identical for all OSes on UEFI-based PCs."
@@ -354,7 +350,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>On Macs, rEFInd uses a flexible scanning algorithm inherited from rEFIt. This procedure detects most legacy OSes on most disks, although it can sometimes miss an OS. This scanning algorithm can often identify the legacy OS you've installed and present a suitable icon. On UEFI PCs, rEFInd relies on the computer's NVRAM settings to determine which legacy boot loaders to scan, but rEFInd does tell the firmware to find every BIOS-mode boot option and add it to its NVRAM list. On most UEFI PCs, at least one hard disk and your optical drive appear as options. On one computer I tested (a Lenovo laptop), the internal hard disk appears in the rEFInd menu as a removable disk. If you have multiple hard disks, you may need to uncomment the <tt>uefi_deep_legacy_scan</tt> option to get entries for booting all of your disks. If you opt to scan for BIOS-mode optical disks (<tt>scanfor cd</tt>) on UEFI-based PCs, an icon will appear whether or not your drive holds a CD. The UEFI scanning procedure is also incapable of detecting the OS type, so you'll see a generic legacy OS icon, as shown at the right.</p>
 
-<p>On both PCs and Macs, if you see non-functional legacy boot options, you can remove them by using the <tt>dont_scan_volumes</tt> token in <tt>refind.conf</tt>: Add any substring from the description that appears when you highlight the non-functional option to the set of options to have rEFInd ignore that entry. (Note that you must provide a complete volume name when excluding EFI volumes from scanning. The legacy-mode exclusion operation is more flexible in this regard.)</p>
+<p>On both PCs and Macs, if you see non-functional legacy boot options, you can remove them by using the <tt>dont_scan_volumes</tt> token in <tt>refind.conf</tt>: Add any substring from the description that appears when you highlight the non-functional option to the set of options to have rEFInd ignore that entry. (Note that you must provide a complete volume name when excluding EFI volumes from scanning. The legacy-mode exclusion operation is more flexible in this regard.) You can also hide an option by pressing the <i>Delete</i> (on PC keyboards) or minus (<tt>-</tt>) keys.</p>
 
 <a name="delays">
 <h2>Reducing Startup Delays</h2>
@@ -370,9 +366,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li><b>Minimize the number of scanned filesystems</b>&mdash;There's overhead associated with every additional filesystem rEFInd scans. Thus, if you have, say, separate ext4fs root (<tt>/</tt>), <tt>/boot</tt>, <tt>/usr</tt>, <tt>/home</tt>, and <tt>/var</tt> filesystems, and if you install rEFInd's ext4fs driver, rEFInd will end up scanning at least six filesystems (counting the FAT ESP), although only one of those has Linux kernels. You can use FAT for <tt>/boot</tt> and remove the ext4fs driver to speed up the boot process, as just described; but if you prefer to avoid the downsides of that action, you can switch <tt>/boot</tt> to some other filesystem, such as ext2fs or ReiserFS. This plan will reduce the number of filesystems to be scanned and improve boot time. Alternatively, if you re-install Linux, you can reduce the number of partitions or use LVM (which rEFInd can't read) for all of your filesystems except for <tt>/boot</tt>.</li>
 
-<li><b>Use a speedier filesystem</b>&mdash;In my tests, rEFInd's ReiserFS driver is the fastest and ext2fs is the slowest, with Btrfs and ext4fs falling in-between these two. The difference is trivial on some computers but it's noticeable on others. Filesystem speed differences are more likely to be noticeable in the time it takes to boot the OS; rEFInd's own startup time is less likely to be affected by a filesystem change.</li>
+<li><b>Use a speedier filesystem</b>&mdash;In my tests, rEFInd's ReiserFS driver is the fastest and ext2fs is the slowest, with Btrfs and ext4fs falling in-between these two. The difference is trivial on some computers but it's significant on others. Filesystem speed differences are more likely to be noticeable in the time it takes to boot the OS; rEFInd's own startup time is less likely to be affected by a filesystem change.</li>
 
-<li><b>Use a speedier driver</b>&mdash;rEFInd 0.7.0 introduced a read-ahead cache in its filesystem drivers, which greatly improved their speed on some systems. If you're using an older driver, try using a newer one. Pete Batard's <a href="https://github.com/pbatard/efifs">efifs drivers</a> are an alternative to rEFInd's drivers. The efifs drivers are still very new and rapidly changing. My initial impression is that some of them are quite speedy, but others are very slow.</li>
+<li><b>Use a speedier driver</b>&mdash;rEFInd 0.7.0 introduced a read-ahead cache in its filesystem drivers, which greatly improved their speed on some systems. If you're using an older driver, try using a newer one. Pete Batard's <a href="https://github.com/pbatard/efifs">efifs drivers</a> are an alternative to rEFInd's drivers. I've only dabbled with these drivers, but my initial impression is that some of them are quite speedy, but others are very slow.</li>
 
 <li><b>Delete or move files and directories</b>&mdash;By default, rEFInd scans the root (<tt>/</tt>) directory, <tt>/boot</tt>, and most subdirectories of <tt>/EFI</tt> on every partition that it scans. If these locations exist but contain no bootable files, they'll just slow rEFInd down. Likewise, if you use <tt>dont_scan_files</tt> to keep unused boot loaders out of the menu, rEFInd will still do much of the work of scanning those files. In all of these cases, deleting or moving the directories or files that are being scanned but that don't contain bootable options you want to see can speed things up.</li>
 
@@ -388,7 +384,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2018 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 
@@ -398,6 +394,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p><a href="configfile.html">Learn how to Configure rEFInd</a></p>
 
-  <p><a href="http://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
 </body>
 </html>
