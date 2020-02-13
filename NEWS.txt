@@ -1,11 +1,12 @@
-0.11.5 (??/??/2020):
---------------------
+0.11.5 (2/12/2020):
+-------------------
 
 - Fixed bug that caused screen corruption when exiting the EFI shell
   (and perhaps other programs) on some systems.
 
 - Fixed bug that could cause rescan operations (including after hiding
-  or un-hiding loaders or when using a scan delay) to hang rEFInd.
+  or un-hiding loaders or when using a scan delay) to hang rEFInd. This
+  seemed to be a problem mostly with buggy filesystem drivers.
 
 - Cleaned up excessive slashes ("/") in refind-install script
 
@@ -17,8 +18,11 @@
 - Renamed .der certificates to .cer, for better compatibility with
   KeyTool.efi
 
-- Can now use "%v" as part of a Linux kernel options string in
-  refind_linux.conf to refer to the kernel's version number.
+- If "%v" is in the kernel options in refind_linux.conf, do NOT
+  automatically include the auto-detected initrd file. This gives the user
+  greater control of initrd options when specifying them via in
+  refind_linux.conf via "%v", since an inappropriate auto-detected initrd
+  won't be included.
 
 - No longer build NTFS driver by default; it's just too buggy. The source
   code is still available and can be built by typing "make ntfs" in the
@@ -26,6 +30,8 @@
 
 - Documentation scrub: Updated to remove out-of-date references that
   have accumulated over time.
+
+- Updated LodePNG to latest version (20200211).
 
 0.11.4 (11/12/2018):
 --------------------

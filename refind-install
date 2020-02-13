@@ -38,6 +38,7 @@
 
 # Revision history:
 #
+# 0.11.5  -- Remove excessive slashes (/) from some filenames
 # 0.11.4  -- Fixed generation of GUID when automount of ESP in use on Linux
 # 0.11.3  -- Added support for ESP mounted at /efi under Linux
 # 0.11.1  -- In Linux, be less aggressive about replacing existing NVRAM entries
@@ -866,7 +867,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.11.4</string>
+        <string>0.11.5</string>
 </dict>
 </plist>
 ENDOFHERE

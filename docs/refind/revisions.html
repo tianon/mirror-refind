@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 11/12/2018</p>
+<p>Last Web page update: 2/12/2020</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,45 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.11.5 (2/12/2020)</b>&mdash;This release fixes a handful of
+    bugs and makes a few miscellaneous changes:
+    <ul>
+
+    <li>Fixed a bug that caused screen corruption when exiting the EFI
+        shell (and perhaps other programs) on some systems.</li>
+
+    <li>Implemented a workaround for buggy filesystem drivers that
+        could cause rEFInd to hang when re-scanning devices.</li>
+
+    <li>The NTFS driver is no longer built by default because it's produced
+	too many reports of hung systems. The source code is still included
+	and it can still be built, but the binary is now omitted.</li>
+
+    <li>Cleaned up excessive slashes (<tt>/</tt>) in pathname specifications
+	in <tt>refind-install</tt> script.</li>
+
+    <li>Corrected incorrect display of <tt>scanning for boot loaders</tt>
+        message under some circumstances.</li>
+
+    <li>Fine-tune the use of <tt>%v</tt> in <tt>refind_linux.conf</tt>: Do
+	<i>not</i> include the auto-detected initrd file when <tt>%v</tt> is
+	used, to give the user greater control over initrd file
+	specification. <b>Note: <i>Some users may need to adjust their
+	configuration files because of this change!</i></b></li>
+
+    <li>Updated the LodePNG library to the latest version (20200211).</li>
+
+    <li>Renamed <tt>.der</tt> certificate files to use <tt>.cer</tt>
+	extensions, for better compatibility with <tt>KeyTool.efi</tt>.</li>
+
+    <li>Minor man page formatting changes.</li>
+
+    <li>Updated documentation to remove out-of-date references that have
+        accumulated over time.</li>
+
+    </ul>
+</li>
 
 <li><b>0.11.4 (11/12/2018)</b>&mdash;This release fixes a couple of small
     but annoying bugs introduced in version 0.11.3 and improves some
@@ -889,7 +928,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2018 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 
