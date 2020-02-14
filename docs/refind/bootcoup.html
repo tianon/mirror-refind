@@ -299,7 +299,7 @@ Boot0085* ubuntu</pre>
 <p>On a system that uses Debian packages, a similar command is:</p>
 
 <pre class="listing"># <tt class="userinput">dpkg -P grub-efi-amd64 grub-efi-amd64-signed grub-common grub-efi-amd64-bin \
-  grub2-common shim-signed</tt></pre>
+  grub2-common grub-pc-bin shim-signed os-prober</tt></pre>
 
 <p class="sidebar"><b>Warning:</b> I've seen one report that, on an Ubuntu installation, system updates may fail if you remove GRUB because the update may require the <tt>intel-microcode</tt> package, which in turn requires a working GRUB. (If you have an AMD64 CPU, you would instead use the <tt>amd64-microcode</tt> package.) Thus, completely removing GRUB may be impractical, or at least inadvisable. (Keeping up-to-date on CPU microcode updates is highly advisable.) On the other hand, if you never launch GRUB, any updates it manages would never be installed.</p>
 
