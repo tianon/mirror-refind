@@ -10,7 +10,7 @@ Vcs-Git: git://anonscm.debian.org/collab-maint/refind.git
 
 Package: refind
 Architecture: amd64 i386 arm64
-Depends: debconf, efibootmgr, openssl, sbsigntool, parted, util-linux, ${misc:Depends}
+Depends: debconf, efibootmgr, gdisk, openssl, sbsigntool, util-linux, ${misc:Depends}
 Description: boot manager for EFI-based computers
  A graphical boot manager for EFI- and UEFI-based computers, such as all
  Intel-based Macs and recent (most 2011 and later) PCs. rEFInd presents a

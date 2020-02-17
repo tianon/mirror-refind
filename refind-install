@@ -29,7 +29,7 @@
 #           Valid only under Linux.
 #    "--yes" to assume a "yes" response to all prompts
 #
-# This program is copyright (c) 2012-2017 by Roderick W. Smith
+# This program is copyright (c) 2012-2020 by Roderick W. Smith
 #
 # This program is licensed under the terms of the GNU GPL, version 3,
 # or (at your option) any later version.
@@ -38,6 +38,7 @@
 
 # Revision history:
 #
+# 0.11.6  -- Improve code to find ESPs; should help with NVMe drives
 # 0.11.5  -- Remove excessive slashes (/) from some filenames
 # 0.11.4  -- Fixed generation of GUID when automount of ESP in use on Linux
 # 0.11.3  -- Added support for ESP mounted at /efi under Linux
@@ -117,6 +118,7 @@ LocalKeys=0
 EncryptKeys=0
 DeleteRefindDir=0
 AlwaysYes=0
+EspGuid="C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
 
 #
 # Functions used by both OS X and Linux....
@@ -1137,47 +1139,71 @@ ReSignBinaries() {
    DeleteRefindDir=1
 } # ReSignBinaries()
 
-# Locate and mount an ESP, if possible, based on parted output.
-# Should be called only if /boot/efi is NOT an acceptable ESP.
-# Sets InstallDir to the mounted ESP's path ($RootDir/boot/efi)
-# and EspFilesystem the filesystem (always "vfat")
+# Locate and mount an ESP, if possible. Should be called only if /boot/efi
+# is NOT an acceptable ESP. If successful, sets:
+# * InstallDir to the mounted ESP's path ($RootDir/boot/efi)
+# * EspFilesystem to the filesystem (always "vfat")
+# Neither variable is altered if no ESP could be found
 FindLinuxESP() {
-   echo "The ESP doesn't seem to be mounted! Trying to find it...."
-   local Name
-   local Drive
-   local PartNum
-   local TableType
-   local DmStatus
-   local SkipIt
    local Dmraid
-   for Name in `lsblk -r | grep disk | cut -f 1 -d " "` ; do
-      Drive="/dev/$Name"
-      SkipIt=0
-      Dmraid=`which dmraid 2> /dev/null`
-      if [ -x "$Dmraid" ] ; then
-         DmStatus=`dmraid -r | grep $Drive`
-         if [ -n "$DmStatus" ] ; then
-            echo "$Drive seems to be part of a RAID array; skipping!"
-            SkipIt=1
-         fi
-      fi
-      TableType=`parted $Drive print -m -s 2>/dev/null | awk -F: '$1 == "'$Drive'" { print $6 }'`
-      if [[ $TableType == 'gpt' && $SkipIt == 0 ]] ; then # read only GPT disks that aren't part of dmraid array
-         PartNum=`LANG=C parted $Drive print -m -s 2>/dev/null | awk -F: '$7 ~ "(^boot| boot)" { print $1 }' | head -n 1`
-         if [ "$PartNum" -eq "$PartNum" ] 2> /dev/null ; then
-            InstallDir="$RootDir/boot/efi"
-            InstallDir=`echo $InstallDir | sed 's/\/\+/\//g'`
-            mkdir -p $InstallDir
-            mount $Drive$PartNum $InstallDir
-            EspFilesystem=`grep "$Drive$PartNum.*/boot/efi" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3`
-            if [[ $EspFilesystem != 'vfat' ]] ; then
-               umount $InstallDir
-            else
-               echo "Mounting ESP at $InstallDir"
-               break;
+   local DmStatus
+   local FatPart
+   local IsItRaid
+   local ParentDisk
+   local PartNum
+   local PotentialParent
+   local Sgdisk
+   local TypeCode
+
+   echo "The ESP doesn't seem to be mounted! Trying to find it...."
+   Dmraid=`which dmraid 2> /dev/null`
+   Sgdisk=`which sgdisk 2> /dev/null`
+   if [[ ! -x "$Sgdisk" ]] ; then
+      echo "The sgdisk program (part of the gdisk package) is not installed; please"
+      echo "install it and try again."
+      exit 1
+   fi
+   # Iterate through all FAT partitions in the hopes of finding an ESP....
+   # (Note: FatPart with be set to "/dev/{whatever}".)
+   for FatPart in `blkid -t TYPE="vfat" -o device` ; do
+      # For each FAT partition, find its parent disk device, since we need
+      # the disk device and partition number as separate components to feed
+      # to efibootmgr....
+      # (Note: PotentialParent will be lacking "/dev/" prefix.)
+      for PotentialParent in `lsblk | grep disk | cut -f 1 -d " "` ; do
+         IsItRaid=0
+         # Exclude anything that looks like it's on software RAID....
+         if [[ -x "$Dmraid" ]] ; then
+            DmStatus=`dmraid -r | grep $PotentialParent`
+            if [ -n "$DmStatus" ] ; then
+               echo "/dev/$PotentialParent seems to be part of a RAID array; skipping!"
+               IsItRaid=1
             fi
-         fi # $PartNum -eq $PartNum
-      fi # TableType
+         fi # if dmraid utility exists
+         # If FAT partition is in the $PotentialParent disk & it's NOT part
+         # of a software RAID setup, then we've found what we want; set it
+         # and break out of the loop....
+         if [[ $FatPart == *"/dev/$PotentialParent"* && $IsItRaid == 0 ]] ; then
+            ParentDisk=$PotentialParent
+            break
+         fi
+      done
+      if [[ $IsItRaid == 0 ]] ; then
+         PartNum=`grep -Eo '[0-9]{1,4}' <<< $FatPart | tail -n 1`
+         TypeCode=`$Sgdisk -i $PartNum /dev/$ParentDisk | grep "GUID code"`
+         shopt -s nocasematch
+         if [[ $TypeCode == *$EspGuid* ]] ; then
+             InstallDir="$RootDir/boot/efi"
+             InstallDir=`echo $InstallDir | sed 's/\/\+/\//g'`
+             echo "Mounting ESP ($FatPart) at $InstallDir"
+             mkdir -p $InstallDir
+             mount $FatPart $InstallDir
+             EspFilesystem="vfat"
+             shopt -u nocasematch
+             break
+         fi
+         shopt -u nocasematch
+      fi
    done
 } # FindLinuxESP()
 
@@ -1199,15 +1225,15 @@ FindMountedESP() {
    InstallDir=`echo $EspLine | cut -d " " -f 6 | sed 's/\/\+/\//g'`
 
    if [[ -n "$InstallDir" ]] ; then
-      EspFilesystem=`grep -w "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3`
+      EspFilesystem=`grep -w "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3 | uniq`
    fi
    if [[ $EspFilesystem != 'vfat' ]] ; then
       FindLinuxESP
    fi
    if [[ $EspFilesystem != 'vfat' ]] ; then
       echo "$RootDir/$InstallDir doesn't seem to be on a VFAT filesystem. The ESP must be"
-      echo "mounted at $RootDir/boot or $RootDir/boot/efi and it must be VFAT (not msdos)!"
-      echo "Aborting!"
+      echo "mounted at $RootDir/boot, $RootDir/efi, or $RootDir/boot/efi, and it must be"
+      echo "VFAT (not msdos)! Aborting!"
       if [[ -d /sys/firmware/efi ]] ; then
          exit 1
       else
@@ -1234,7 +1260,7 @@ AddBootEntry() {
 
    Efibootmgr=`which efibootmgr 2> /dev/null`
    if [[ "$Efibootmgr" ]] ; then
-      InstallPart=`grep "$InstallDir" /etc/mtab | grep -v autofs | cut -d " " -f 1`
+      InstallPart=`grep "$InstallDir " /etc/mtab | grep -v autofs | cut -d " " -f 1 | tail -n1`
       for Name in `lsblk -r | grep disk | cut -f 1 -d " "` ; do
          if [[ $InstallPart == *"$Name"* ]] ; then
             InstallDisk="/dev/"$Name
