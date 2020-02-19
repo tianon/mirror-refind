@@ -5,7 +5,7 @@ Source: http://www.rodsbooks.com/refind
 
 Files: *
 Copyright: 2006 Christoph Pfisterer
-           2012-2018 Roderick W. Smith
+           2012-2020 Roderick W. Smith
 License: BSD-3-clause and GPL-3+
 
 Files: debian/*
@@ -49,14 +49,14 @@ Copyright: 2006-2010 Christoph Pfisterer
 License: BSD-3-clause
 
 Files: refind.inf
-Copyright: 2012-2018 Roderick W. Smith
+Copyright: 2012-2020 Roderick W. Smith
 License: GPL-3+
 
 Files: refind/*
        libeg/image.c
        libeg/screen.c
 Copyright: 2006-2010 Christoph Pfisterer
-           2012-2018 Roderick W. Smith
+           2012-2020 Roderick W. Smith
 License: BSD-3-clause and GPL-3+
 
 Files: refind/icns.c
@@ -105,7 +105,7 @@ Copyright: 2012-2015 Roderick W. Smith
 License: GPL-3+
 
 Files: libeg/lodepng.[ch]
-Copyright: 2005-2015 Lode Vandevenne
+Copyright: 2005-2020 Lode Vandevenne
 License: zlib
 
 Files: libeg/nanojpeg.c
@@ -452,7 +452,7 @@ Comment: PNG bitmap derived from TrueType font
 
 Files: docs/*
        */README*
-Copyright: 2012-2017 Roderick W. Smith
+Copyright: 2012-2020 Roderick W. Smith
 License: GFDL-1.3
 
 License: BSD-2-clause
