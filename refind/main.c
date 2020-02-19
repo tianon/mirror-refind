@@ -1992,7 +1992,7 @@ static VOID ScanForTools(VOID) {
                 j = 0;
                 while ((FileName = FindCommaDelimited(GPTSYNC_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
-                        AddToolEntry(SelfLoadedImage->DeviceHandle, FileName, L"Hybrid MBR tool", BuiltinIcon(BUILTIN_ICON_TOOL_PART),
+                        AddToolEntry(SelfVolume, FileName, L"Hybrid MBR tool", BuiltinIcon(BUILTIN_ICON_TOOL_PART),
                                      'P', FALSE);
                     } // if
                     MyFreePool(FileName);
