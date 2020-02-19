@@ -448,10 +448,6 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
 
     // re-open file handles
     ReinitRefitLib();
-    if (!IsDriver) {
-        InitScreen();
-        SetupScreen();
-    }
 
 bailout_unload:
     // unload the image, we don't care if it works or not...
@@ -460,6 +456,9 @@ bailout_unload:
 
 bailout:
     MyFreePool(FullLoadOptions);
+    if (!IsDriver)
+        FinishExternalScreen();
+
     return ReturnStatus;
 } /* EFI_STATUS StartEFIImage() */
 
@@ -538,7 +537,6 @@ static VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName)
     StoreLoaderName(SelectionName);
     StartEFIImage(Entry->Volume, Entry->LoaderPath, Entry->LoadOptions,
                   Basename(Entry->LoaderPath), Entry->OSType, !Entry->UseGraphicsMode, FALSE);
-    FinishExternalScreen();
 }
 
 // Locate an initrd or initramfs file that matches the kernel specified by LoaderPath.
@@ -1764,7 +1762,6 @@ static VOID StartTool(IN LOADER_ENTRY *Entry)
     StoreLoaderName(Entry->me.Title);
     StartEFIImage(Entry->Volume, Entry->LoaderPath, Entry->LoadOptions,
                   Basename(Entry->LoaderPath), Entry->OSType, TRUE, FALSE);
-    FinishExternalScreen();
 } /* static VOID StartTool() */
 
 static LOADER_ENTRY * AddToolEntry(REFIT_VOLUME *Volume,IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle,

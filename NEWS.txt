@@ -1,6 +1,14 @@
 0.11.6 (?/??/2020):
 -------------------
 
+- The handling of screen resets on return from a program has been adjusted
+  to avoid problems with program error messages being erased by rEFInd's
+  screen clearing. If a program returns an error code, its output should
+  remain visible until the user presses a key in response to rEFInd's prompt
+  to do so.
+
+- Fixed bug that caused gptsync to sometimes hang on launch.
+
 - Improve identification of the ESP in the refind-install script in Linux.
   Previously, NVMe devices and some corner cases were handled incorrectly.
   This new code should fix these problems. This variant changes from a
