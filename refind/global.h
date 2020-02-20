@@ -156,6 +156,10 @@
 // Minimum horizontal resolution for a screen to be consider high-DPI
 #define HIDPI_MIN 1921
 
+#ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
+#define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
+#endif
+
 // Names of binaries that can manage MOKs....
 #if defined (EFIX64)
 #define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
@@ -382,20 +386,15 @@ extern EFI_GUID gEfiGlobalVariableGuid;
 
 extern BOOLEAN HaveResized;
 
-EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
-                         IN CHAR16 *Filename,
-                         IN CHAR16 *LoadOptions,
-                         IN CHAR16 *ImageTitle,
-                         IN CHAR8 OSType,
-                         IN BOOLEAN Verbose,
-                         IN BOOLEAN IsDriver);
-LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry);
-REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry);
-VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN GenerateReturn);
+extern EFI_GUID GlobalGuid;
+extern EFI_GUID RefindGuid;
+
+extern REFIT_MENU_SCREEN MainMenu;
+extern REFIT_MENU_ENTRY MenuEntryReturn;
+
+VOID AboutrEFInd(VOID);
 EG_IMAGE * GetDiskBadge(IN UINTN DiskType);
 LOADER_ENTRY * MakeGenericLoaderEntry(VOID);
-VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
-LOADER_ENTRY * AddPreparedLoaderEntry(LOADER_ENTRY *Entry);
 VOID StoreLoaderName(IN CHAR16 *Name);
 VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect);
 

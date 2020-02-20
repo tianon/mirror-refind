@@ -29,7 +29,7 @@
 #define BlockIoProtocol gEfiBlockIoProtocolGuid
 #endif
 
-extern GPT_DATA *gPartitions;
+GPT_DATA *gPartitions = NULL;
 
 // Allocate data for the main GPT_DATA structure, as well as the ProtectiveMBR
 // and Header structures it contains. This function does *NOT*, however,

@@ -1,8 +1,8 @@
 /*
- * refind/legacy.h
- * Functions related to BIOS/CSM/legacy booting
+ * refind/launch_efi.h
+ * Function definitions related to launching EFI programs
  *
- * Copyright (c) 2006 Christoph Pfisterer
+ * Copyright (c) 2006-2010 Christoph Pfisterer
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,18 +37,51 @@
  * Modifications copyright (c) 2012-2020 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
- * License (GPL) version 3 (GPLv3), a copy of which must be distributed
- * with this source code or binaries made from it.
+ * License (GPL) version 3 (GPLv3), or (at your option) any later version.
  *
  */
+/*
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
+#ifndef __REFIND_LAUNCH_EFI_H_
+#define __REFIND_LAUNCH_EFI_H_
+
+#ifdef __MAKEWITH_GNUEFI
+#include "efi.h"
+#include "efilib.h"
+#else
+#include "../include/tiano_includes.h"
+#endif
 #include "global.h"
 
-VOID ScanShell(VOID);
-VOID StartLegacy(IN LEGACY_ENTRY *Entry, IN CHAR16 *SelectionName);
-VOID StartLegacyUEFI(LEGACY_ENTRY *Entry, CHAR16 *SelectionName);
-VOID ScanLegacyDisc(VOID);
-VOID ScanLegacyInternal(VOID);
-VOID ScanLegacyExternal(VOID);
-VOID FindLegacyBootType(VOID);
-VOID WarnIfLegacyProblems(VOID);
+#ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
+#define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
+#endif
+
+EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
+                         IN CHAR16 *Filename,
+                         IN CHAR16 *LoadOptions,
+                         IN CHAR16 *ImageTitle,
+                         IN CHAR8 OSType,
+                         IN BOOLEAN Verbose,
+                         IN BOOLEAN IsDriver);
+BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName);
+EFI_STATUS RebootIntoFirmware(VOID);
+VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName);
+VOID StartTool(IN LOADER_ENTRY *Entry);
+
+#endif
+
+/* EOF */

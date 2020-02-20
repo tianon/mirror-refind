@@ -90,6 +90,17 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 #define XFS_SIGNATURE                    "XFSB"
 #define NTFS_SIGNATURE                   "NTFS    "
 
+#if defined (EFIX64)
+EFI_GUID gFreedesktopRootGuid = { 0x4f68bce3, 0xe8cd, 0x4db1, { 0x96, 0xe7, 0xfb, 0xca, 0xf9, 0x84, 0xb7, 0x09 }};
+#elif defined (EFI32)
+EFI_GUID gFreedesktopRootGuid = { 0x44479540, 0xf297, 0x41b2, { 0x9a, 0xf7, 0xd1, 0x31, 0xd5, 0xf0, 0x45, 0x8a }};
+#elif defined (EFIAARCH64)
+EFI_GUID gFreedesktopRootGuid = { 0xb921b045, 0x1df0, 0x41c3, { 0xaf, 0x44, 0x4c, 0x6f, 0x28, 0x0d, 0x3f, 0xae }};
+#else
+// Below is GUID for ARM32
+EFI_GUID gFreedesktopRootGuid = { 0x69dad710, 0x2ce4, 0x4e3c, { 0xb1, 0x6c, 0x21, 0xa1, 0xd4, 0x9a, 0xbe, 0xd3 }};
+#endif
+
 // variables
 
 EFI_HANDLE       SelfImageHandle;
@@ -101,7 +112,6 @@ CHAR16           *SelfDirPath;
 REFIT_VOLUME     *SelfVolume = NULL;
 REFIT_VOLUME     **Volumes = NULL;
 UINTN            VolumesCount = 0;
-extern GPT_DATA *gPartitions;
 extern EFI_GUID RefindGuid;
 
 // Maximum size for disk sectors

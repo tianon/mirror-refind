@@ -64,6 +64,7 @@
 #include "screen.h"
 #include "apple.h"
 #include "mystrings.h"
+#include "scan.h"
 #include "../include/refit_call_wrapper.h"
 #include "../mok/mok.h"
 
@@ -79,7 +80,7 @@
 #define GetTime ST->RuntimeServices->GetTime
 #define LAST_MINUTE 1439 /* Last minute of a day */
 
-extern REFIT_MENU_ENTRY MenuEntryReturn;
+// extern REFIT_MENU_ENTRY MenuEntryReturn;
 //static REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 0, 0, 0, NULL, NULL, NULL };
 
 //
@@ -479,6 +480,12 @@ static VOID SetDefaultByTime(IN CHAR16 **TokenList, OUT CHAR16 **Default) {
       } // if (SetIt)
    } // if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE))
 } // VOID SetDefaultByTime()
+
+static LOADER_ENTRY * AddPreparedLoaderEntry(LOADER_ENTRY *Entry) {
+    AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+
+    return(Entry);
+} // LOADER_ENTRY * AddPreparedLoaderEntry()
 
 // read config file
 VOID ReadConfig(CHAR16 *FileName)

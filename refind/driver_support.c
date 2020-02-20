@@ -73,6 +73,7 @@
 #include "lib.h"
 #include "mystrings.h"
 #include "screen.h"
+#include "launch_efi.h"
 #include "../include/refit_call_wrapper.h"
 
 #if defined (EFIX64)

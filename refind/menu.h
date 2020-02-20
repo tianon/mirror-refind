@@ -102,6 +102,9 @@ typedef struct {
 #define INPUT_TIMEOUT     (2)
 #define INPUT_TIMER_ERROR (3)
 
+// Maximum length of a text string in certain menus
+#define MAX_LINE_LENGTH 65
+
 struct _refit_menu_screen;
 
 VOID AddMenuInfoLine(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);

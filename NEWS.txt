@@ -9,11 +9,15 @@
 
 - Fixed bug that caused gptsync to sometimes hang on launch.
 
-- Improve identification of the ESP in the refind-install script in Linux.
+- Improved identification of the ESP in the refind-install script in Linux.
   Previously, NVMe devices and some corner cases were handled incorrectly.
   This new code should fix these problems. This variant changes from a
   dependency on parted to one on the gdisk package (the sgdisk program,
   specifically).
+
+- Re-structured source code to split former main.c across four files
+  (main.c, launch_efi.c, linux.c, and scan.c), since main.c was getting
+  ridiculously large.
 
 
 0.11.5 (2/12/2020):

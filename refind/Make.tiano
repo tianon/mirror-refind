@@ -35,8 +35,9 @@ ifeq ($(ARCH),aarch64)
   ALL_EFILIBS +=    $(EFILIB)/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckLib.lib
 endif
 
-SOURCE_NAMES     = apple config mystrings line_edit driver_support icns \
-		   lib main menu pointer screen gpt crc32 legacy AutoGen
+SOURCE_NAMES     = apple AutoGen config crc32 driver_support gpt icns \
+                   launch_efi launch_legacy lib line_edit linux main menu \
+                   mystrings pointer scan screen
 OBJS             = $(SOURCE_NAMES:=.obj)
 
 all: $(BUILDME)
