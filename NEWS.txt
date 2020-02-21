@@ -19,6 +19,16 @@
   (main.c, launch_efi.c, linux.c, and scan.c), since main.c was getting
   ridiculously large.
 
+- I'm officially deprecating the ELILO- and XOM-specific code in rEFInd.
+  ELILO hasn't seen development on its Sourceforge page since 2013, and XOM
+  was rendered obsolete by Boot Camp and seems to have faded into
+  non-existence. The deprecated code is located in rEFInd's scan.c file and
+  simply creates sub-menus that pass options to these boot loaders. If
+  anybody wants to experiment with obsolete boot loaders, they can achieve
+  the same effect with manual boot stanzas; and if they don't need to pass
+  options to these boot loaders, they'll still work fine from rEFInd as
+  "generic" boot loaders. For the moment, the code remains in place, but I
+  may remove it on no further notice in the future.
 
 0.11.5 (2/12/2020):
 -------------------
