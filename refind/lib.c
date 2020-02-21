@@ -766,6 +766,9 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
 // Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
 VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume)
 {
+   if (Volume == NULL)
+       return;
+
    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES)
       return;
 
