@@ -2,15 +2,16 @@ Source: refind
 Maintainer: Rod Smith <rod.smith@canonical.com>
 Section: admin
 Priority: optional
-Standards-Version: 3.9.6
+Standards-Version: 4.3.0
 Build-Depends: debhelper (>= 9), gnu-efi
-Homepage: http://www.rodsbooks.com/refind
-Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/refind.git
-Vcs-Git: git://anonscm.debian.org/collab-maint/refind.git
+Homepage: https://www.rodsbooks.com/refind
+Vcs-Browser: https://salsa.debian.org/debian/refind
+Vcs-Git: https://salsa.debian.org/debian/refind.git
 
 Package: refind
-Architecture: amd64 i386 arm64
-Depends: debconf, efibootmgr, gdisk, openssl, sbsigntool, util-linux, ${misc:Depends}
+Architecture: amd64 arm64 i386
+Depends: debconf, efibootmgr, gdisk, openssl, ${misc:Depends}
+Recommends: python3, sbsigntool
 Description: boot manager for EFI-based computers
  A graphical boot manager for EFI- and UEFI-based computers, such as all
  Intel-based Macs and recent (most 2011 and later) PCs. rEFInd presents a
