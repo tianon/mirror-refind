@@ -156,7 +156,6 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
     CHAR16                  ErrorInfo[256];
     CHAR16                  *FullLoadOptions = NULL;
-    CHAR16                  *Temp;
 
     // set load options
     if (LoadOptions != NULL) {
@@ -176,14 +175,6 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     // protect for this condition; but sometimes Volume comes back NULL, so provide
     // an exception. (TODO: Handle this special condition better.)
     if (IsValidLoader(Volume->RootDir, Filename)) {
-        if (Filename) {
-            Temp = PoolPrint(L"\\%s %s", Filename, FullLoadOptions ? FullLoadOptions : L"");
-            if (Temp != NULL) {
-                MyFreePool(FullLoadOptions);
-                FullLoadOptions = Temp;
-            }
-        } // if (Filename)
-
         DevicePath = FileDevicePath(Volume->DeviceHandle, Filename);
         // NOTE: Below commented-out line could be more efficient if file were read ahead of
         // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my

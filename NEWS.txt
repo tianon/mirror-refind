@@ -1,6 +1,19 @@
 0.11.6 (?/??/2020):
 -------------------
 
+- Previous versions of rEFInd have all passed the name of the program being
+  launched as a parameter to that program, just as the EFI shell does. This
+  is causing problems for a new unified kernel image format that combines a
+  Linux kernel, initrd, EFI stub loader, and some other elements into a
+  single file. Thus, I'm changing to NOT passing the follow-on program's
+  filename as an option. (Gummiboot/systemd-boot and GRUB 2 both work this
+  way, and unless you explicitly add the program filename to the options
+  list, so does launching a file directly via an EFI boot manager entry
+  created via efibootmgr.) Note that rEFInd continues adding a space to the
+  end of options lists passed to the macOS boot loader, since it ignores the
+  commands if this is not done. (No space is added to commands passed to
+  other programs, though.)
+
 - The handling of screen resets on return from a program has been adjusted
   to avoid problems with program error messages being erased by rEFInd's
   screen clearing. If a program returns an error code, its output should
