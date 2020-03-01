@@ -78,7 +78,8 @@
 #define TAG_CSR_ROTATE       (18)
 #define TAG_FWUPDATE_TOOL    (19)
 #define TAG_HIDDEN           (20)
-#define NUM_TOOLS            (21)
+#define TAG_INSTALL          (21)
+#define NUM_TOOLS            (22)
 
 #define NUM_SCAN_OPTIONS 10
 
@@ -137,6 +138,7 @@
 #define FS_TYPE_BTRFS          10
 #define FS_TYPE_XFS            11
 #define FS_TYPE_ISO9660        12
+#define NUM_FS_TYPES           13
 
 // How to scale banner images
 #define BANNER_NOSCALE         0
@@ -217,6 +219,7 @@
 
 #define NULL_GUID_VALUE { 0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} };
 #define REFIND_GUID_VALUE { 0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40} };
+#define ESP_GUID_VALUE { 0xc12a7328, 0xf81f, 0x11d2, { 0xba, 0x4b, 0x00, 0xa0, 0xc9, 0x3e, 0xc9, 0x3b } };
 
 // Configuration file variables
 #define KERNEL_VERSION L"%v"
@@ -258,7 +261,6 @@ typedef struct {
    EG_IMAGE            *VolIconImage;
    EG_IMAGE            *VolBadgeImage;
    UINTN               DiskKind;
-//    BOOLEAN             IsAppleLegacy;
    BOOLEAN             HasBootCode;
    CHAR16              *OSIconName;
    CHAR16              *OSName;
@@ -329,6 +331,7 @@ typedef struct {
    BOOLEAN          HiddenTags;
    BOOLEAN          UseNvram;
    BOOLEAN          ShutdownAfterTimeout;
+   BOOLEAN          Install;
    UINTN            RequestedScreenWidth;
    UINTN            RequestedScreenHeight;
    UINTN            BannerBottomEdge;

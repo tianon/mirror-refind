@@ -1,5 +1,16 @@
-0.11.6 (?/??/2020):
+0.12.0 (?/??/2020):
 -------------------
+
+- Added a new self-installation feature. When activated (by setting the
+  "install" token on the "showtools" line in refind.conf), selecting the
+  install icon in the second row on the main rEFInd screen will enable the
+  user to select a target ESP and, once one is selected, rEFInd will be
+  installed to that ESP, an NVRAM variable for it will be created, and that
+  variable will be set to the top of the boot order. This option is disabled
+  by default, except on the USB flash drive and CD-R images I create, and
+  when using the --usedefault option to refind-install. The intent is that
+  this feature can be used on emergency recovery media or to install rEFInd
+  for the first time. It's not likely to be useful in day-to-day use.
 
 - Previous versions of rEFInd have all passed the name of the program being
   launched as a parameter to that program, just as the EFI shell does. This

@@ -43,6 +43,7 @@
   refind/driver_support.c
   refind/gpt.c
   refind/icns.c
+  refind/install.c
   refind/launch_efi.c
   refind/launch_legacy.c
   refind/lib.c

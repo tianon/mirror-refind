@@ -244,6 +244,8 @@ timeout 20
 #                     tool, MokManager.efi, used on Secure Boot systems
 #  csr_rotate       - adjusts Apple System Integrity Protection (SIP)
 #                     policy. Requires "csr_values" to be set.
+#  install          - an option to install rEFInd from the current location
+#                     to another ESP
 #  about            - an "about this program" option
 #  hidden_tags      - manage hidden tags
 #  exit             - a tag to exit from rEFInd

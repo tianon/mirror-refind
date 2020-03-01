@@ -82,7 +82,7 @@
 #define MENU_FUNCTION_PAINT_TIMEOUT   (4)
 #define MENU_FUNCTION_PAINT_HINTS     (5)
 
-typedef VOID (*MENU_STYLE_FUNC)(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);
+// typedef VOID (*MENU_STYLE_FUNC)(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);
 
 static CHAR16 ArrowUp[2] = { ARROW_UP, 0 };
 static CHAR16 ArrowDown[2] = { ARROW_DOWN, 0 };
@@ -383,9 +383,10 @@ static VOID SaveScreen(VOID) {
 //
 // generic menu function
 //
-static UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC StyleFunc, IN OUT INTN *DefaultEntryIndex,
-                            OUT REFIT_MENU_ENTRY **ChosenEntry)
-{
+UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
+                     IN MENU_STYLE_FUNC StyleFunc,
+                     IN OUT INTN *DefaultEntryIndex,
+                     OUT REFIT_MENU_ENTRY **ChosenEntry) {
     SCROLL_STATE State;
     EFI_STATUS Status;
     EFI_INPUT_KEY key;
@@ -678,7 +679,10 @@ static VOID ShowTextInfoLines(IN REFIT_MENU_SCREEN *Screen) {
 } // VOID ShowTextInfoLines()
 
 // Do most of the work for text-based menus....
-static VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText)
+VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen,
+                   IN SCROLL_STATE *State,
+                   IN UINTN Function,
+                   IN CHAR16 *ParamText)
 {
     INTN i;
     UINTN MenuWidth, ItemWidth, MenuHeight;
@@ -956,7 +960,10 @@ static VOID ComputeSubScreenWindowSize(REFIT_MENU_SCREEN *Screen, IN SCROLL_STAT
 } // VOID ComputeSubScreenWindowSize()
 
 // Displays sub-menus
-static VOID GraphicsMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText)
+VOID GraphicsMenuStyle(IN REFIT_MENU_SCREEN *Screen,
+                       IN SCROLL_STATE *State,
+                       IN UINTN Function,
+                       IN CHAR16 *ParamText)
 {
     INTN i;
     UINTN ItemWidth;
@@ -1699,6 +1706,7 @@ static VOID HideTag(REFIT_MENU_ENTRY *ChosenEntry) {
         case TAG_EXIT:
         case TAG_FIRMWARE:
         case TAG_CSR_ROTATE:
+        case TAG_INSTALL:
         case TAG_HIDDEN:
             DisplaySimpleMessage(L"Unable to Comply",
                                  L"To hide an internal tool, edit the 'showtools' line in refind.conf");

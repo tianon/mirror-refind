@@ -158,6 +158,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
    <li class="tight"><a href="#efishell">Installing rEFInd Manually Using an EFI Shell</a></ul></li>
 
+<li class="tight"><a href="#from_refind">Installing rEFInd from within rEFInd</a></li>
+
 <li class="tight"><a href="#naming">Alternative Naming Options</a>
 
    <ul>
@@ -601,6 +603,59 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 </ol>
 
 <p>With any luck, rEFInd will start up at this point. If not, you can check your settings using a shell or an emergency system for your OS of choice. In an EFI shell, you might type <tt class="userinput">bcfg boot dump -b</tt> to view your boot loader entries and verify that rEFInd appears at the top of the list. Be sure to check the pathname for typos. If you continue to have problems, you might look into giving rEFInd a <a href="#naming">fallback filename</a> that your firmware will recognize.</p>
+
+<a name="from_refind">
+<h2>Installing rEFInd from within rEFInd</h2>
+</a>
+
+<p>Beginning with version 0.12.0, rEFInd provides an option to self-install the program. There are several caveats to this approach, though:</p>
+
+<ul>
+
+<li>It doesn't work with Secure Boot (except possibly if you install your own keys, as described on my <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">Controlling Secure Boot</a> page).</li>
+
+<li>There are several limitations about where you can install rEFInd:
+
+    <ul>
+
+    <li>You can install only to an ESP other than the one from which rEFInd booted. You cannot use this feature to install rEFInd to another location on the ESP from which it booted. (See my <a href="https://www.rodsbooks.com/bootcoup.html">boot coup page</a> if a working rEFInd installation has been overridden and one OS has taken control of the boot process. Note that you <i>can</i> use this feature to recover from a boot coup, but only if you boot rEFInd from another disk, such as a USB flash drive or CD-R.)</li>
+
+    <li>You cannot install to an HFS+ or other non-FAT partition. This limitation exists mainly because the only read/write filesystem driver I know of for EFI is the standard FAT driver. Even Apple's HFS+ driver for its EFI is read-only.</li>
+
+    <li>The destination must be an ESP with the ESP's type code (C12A7328-F81F-11D2-BA4B-00A0C93EC93B; EF00 in GPT fdisk or various other identifiers in other programs), not simply a FAT partition.</li>
+
+    <li>rEFInd installs itself to its standard location, <tt>EFI/refind</tt>; you cannot install to another location.</li>
+
+    <li>rEFInd will install only to ESPs on internal disks, not to removable media such as USB flash drives.</li>
+
+    </ul></li>
+
+<li>rEFInd will install Linux filesystem <a href="drivers.html">drivers</a> for filesystems that it has detected, plus the HFS+ driver if it detects HFS+ on non-Apple hardware. rEFInd will not install non-Linux drivers or drivers for filesystem it has not detected. The practical upshot of this is that if you install rEFInd in this way before installing Linux, rEFInd may not be able to load your Linux kernel directly. It's better to install Linux before rEFInd.</li>
+
+</li>
+
+<li>The feature creates a new NVRAM entry for the new installation or <i>might</i> detect and use an existing entry instead. An entry for a previous installation using another method is unlikely to be used, so you might end up with duplicates; but repeated installations from rEFInd are unlikely to produce duplicate entries.</li>
+
+</ul>
+
+<p>The intent of this installation method is that you can boot rEFInd from a CD-R or USB flash drive and use that to install rEFInd to your hard disk or to recover from a damaged installation or from a <a href="bootcoup.html">boot coup.</a></p>
+
+    <img src="func_install.png" align="right" width="48" height="48"
+    alt="The installation icon launches the installation feature"
+    border=2 background="gray"/>
+
+<p>This feature is disabled by default, since it's not likely to be of much use on a working system. It is enabled in the USB flash drive and CD-R images <a href="https://www.rodsbooks.com/refind/getting.html">I distribute.</a> If you want to enable it yourself, you must edit the <tt>refind.conf</tt> file: Locate the <tt>showtools</tt> line, uncomment it if necessary, and add <tt>install</tt> to the list of options. When you reboot, a new installation icon should appear, as shown to the right. Select it and, if rEFInd can locate suitable ESPs on internal hard disks, you'll see a selection menu like this:</p>
+
+    <br /><center><img src="install.png" align="center" width="554"
+    height="201" alt="rEFInd's installation tool enables you to select the ESP to which you want to install." border=2> </center><br />
+
+<p>This example shows several possible target ESPs. Chances are you'll see just one. If you have no ESPs, or if rEFInd is booted from the one ESP on your computer, the program will inform you that no eligible ESPs were found. rEFInd identifies ESPs with their partition GUID values (which you can find with some disk partitioning tools) and with one or two names (the partition name and the filesystem name) or with a volume description if no name can be found. If you see several options and you're not sure which one to use, I recommend booting into an OS and using disk partitioning software or other tools to try to figure out which one is which. The <tt>blkid</tt> tool in Linux can be particularly handy for this.</p>
+
+<p class="sidebar"><b>Note:</b> Under some circumstances, installing in this way can result in redundant rEFInd NVRAM menu entries. This is most likely to happen if rEFInd was previously installed using another method or if you have deleted existing menu entries between your previous installation and the current one. In most cases, repeatedly installing rEFInd via this method will not produce an excessive number of rEFInd entries. You can manage boot entries using tools such as <tt>efibootmgr</tt> in Linux or the commercial <a href="https://www.easyuefi.com/">EasyUEFI</a> in Windows.</p>
+
+<p>Once you select a target partition, rEFInd will copy the currently-booted copy of itself to the new location, under the name <tt>EFI/refind/refind_x64.efi</tt> (or an architecture-appropriate variant of that name). It will also copy the <tt>drivers_x64</tt> (or variant) and <tt>icons</tt> subdirectories, as well as install a <tt>refind.conf</tt> file and a <tt>BOOT.CSV</tt> file. If a copy of rEFInd already exists at this location, the new rEFInd binary and drivers will overwrite the existing ones; but the <tt>refind.conf</tt> file will not be replaced; instead, the new file will be written to <tt>refind.conf-sample</tt> and the old file will be left in place. The old <tt>icons</tt> directory will be renamed to <tt>icons-old</tt>, if possible, and new icons will be installed. If <tt>icons-old</tt> already exists, then new icons will replace the ones in <tt>icons</tt>, but <tt>icons-old</tt> will not be touched. rEFInd will also add itself as the first boot option in the EFI's NVRAM-based boot options list. Thus, when you reboot, the new rEFInd installation should appear.</p>
+
+<p>Installations can end up with too many or too few filesystem drivers. Assuming you run the installation from a USB flash drive or CD-R image with the full set of rEFInd EFI filesystem drivers, rEFInd will install all the drivers for detected filesystems. If you have, say, a <tt>/boot</tt> partition that uses ext4fs and a root (<tt>/</tt>) partition that uses Btrfs, rEFInd will install both the ext4fs and Btrfs drivers, but it will need only the ext4fs driver to boot. On the other hand, if your system uses nothing but XFS, rEFInd won't install that driver, since rEFInd doesn't ship with an XFS driver (although one is available in <a href="http://efi.akeo.ie/">Pete Batard's EFI filesystem driver collection</a>). In most cases, an extra Linux filesystem driver won't cause problems; however, sometimes a bug or filesystem damage will cause rEFInd to hang. Thus, I recommend checking this detail and removing any unnecessary drivers (or adding uninstalled ones you need -- see the <a href="drivers.html">page on drivers</a> for details).</p>
 
 <a name="naming">
 <h2>Alternative Naming Options</h2>

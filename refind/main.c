@@ -61,6 +61,7 @@
 #include "launch_legacy.h"
 #include "lib.h"
 #include "icns.h"
+#include "install.h"
 #include "menu.h"
 #include "mok.h"
 #include "apple.h"
@@ -92,6 +93,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* HiddenTags = */ TRUE,
                               /* UseNvram = */ TRUE,
                               /* ShutdownAfterTimeout = */ FALSE,
+                              /* Install = */ FALSE,
                               /* RequestedScreenWidth = */ 0,
                               /* RequestedScreenHeight = */ 0,
                               /* BannerBottomEdge = */ 0,
@@ -473,6 +475,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
             case TAG_CSR_ROTATE:
                 RotateCsrValue();
+                break;
+
+            case TAG_INSTALL:
+                InstallRefind();
                 break;
 
         } // switch()

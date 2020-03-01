@@ -107,12 +107,26 @@ typedef struct {
 
 struct _refit_menu_screen;
 
+typedef VOID (*MENU_STYLE_FUNC)(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);
+
 VOID AddMenuInfoLine(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuEntry(IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
 UINTN ComputeRow0PosY(VOID);
 VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);
 UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry);
 VOID DisplaySimpleMessage(CHAR16 *Title, CHAR16 *Message);
+VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen,
+                   IN SCROLL_STATE *State,
+                   IN UINTN Function,
+                   IN CHAR16 *ParamText);
+VOID GraphicsMenuStyle(IN REFIT_MENU_SCREEN *Screen,
+                       IN SCROLL_STATE *State,
+                       IN UINTN Function,
+                       IN CHAR16 *ParamText);
+UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
+                     IN MENU_STYLE_FUNC StyleFunc,
+                     IN OUT INTN *DefaultEntryIndex,
+                     OUT REFIT_MENU_ENTRY **ChosenEntry);
 VOID ManageHiddenTags(VOID);
 CHAR16* ReadHiddenTags(CHAR16 *VarName);
 UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN CHAR16** DefaultSelection, OUT REFIT_MENU_ENTRY **ChosenEntry);
