@@ -1,6 +1,10 @@
 0.12.0 (?/??/2020):
 -------------------
 
+- Improved FAT partition discovery by including the FAT serial number, which
+  should prevent two FAT partitions with the same volume name as being
+  mis-identified as RAID mirrors, and thus ignoring one of them.
+
 - Added a new EFI boot order maintenance option. To use it, uncomment the
   "showtools" option in refind.conf and add the "bootorder" option to the
   list. The resulting tool enables you to move any item in the EFI's boot

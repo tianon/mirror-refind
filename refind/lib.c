@@ -89,6 +89,9 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 #define BTRFS_SIGNATURE                  "_BHRfS_M"
 #define XFS_SIGNATURE                    "XFSB"
 #define NTFS_SIGNATURE                   "NTFS    "
+#define FAT12_SIGNATURE                  "FAT12   "
+#define FAT16_SIGNATURE                  "FAT16   "
+#define FAT32_SIGNATURE                  "FAT32   "
 
 #if defined (EFIX64)
 EFI_GUID gFreedesktopRootGuid = { 0x4f68bce3, 0xe8cd, 0x4db1, { 0x96, 0xe7, 0xfb, 0xca, 0xf9, 0x84, 0xb7, 0x09 }};
@@ -506,17 +509,16 @@ static CHAR16 *FSTypeName(IN UINT32 TypeCode) {
 // 4096) bytes of the filesystem. Sets the filesystem type code in Volume->FSType
 // and the UUID/serial number in Volume->VolUuid. Note that the UUID value is
 // recognized differently for each filesystem, and is currently supported only
-// for NTFS, ext2/3/4fs, and ReiserFS (and for NTFS it's really a 64-bit serial
-// number not a UUID or GUID). If the UUID can't be determined, it's set to 0.
-// Also, the UUID is just read directly into memory; it is *NOT* valid when
-// displayed by GuidAsString() or used in other GUID/UUID-manipulating
-// functions. (As I write, it's being used merely to detect partitions that are
-// part of a RAID 1 array.)
+// for NTFS, FAT, ext2/3/4fs, and ReiserFS (and for NTFS and FAT it's really a
+// 64-bit or 32-bit serial number not a UUID or GUID). If the UUID can't be
+// determined, it's set to 0. Also, the UUID is just read directly into memory;
+// it is *NOT* valid when displayed by GuidAsString() or used in other
+// GUID/UUID-manipulating functions. (As I write, it's being used merely to
+// detect partitions that are part of a RAID 1 array.)
 static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFIT_VOLUME *Volume) {
    UINT32       *Ext2Incompat, *Ext2Compat;
    UINT16       *Magic16;
    char         *MagicString;
-   EFI_FILE     *RootDir;
 
    if ((Buffer != NULL) && (Volume != NULL)) {
       SetMem(&(Volume->VolUuid), sizeof(EFI_GUID), 0);
@@ -576,24 +578,24 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
 
       if (BufferSize >= 512) {
          // Search for NTFS, FAT, and MBR/EBR.
-         // These all have 0xAA55 at the end of the first sector, but FAT and
-         // MBR/EBR are not easily distinguished. Thus, we first look for NTFS
-         // "magic"; then check to see if the volume can be mounted, thus
-         // relying on the EFI's built-in FAT driver to identify FAT; and then
-         // check to see if the "volume" is in fact a whole-disk device.
+         // These all have 0xAA55 at the end of the first sector, so we must
+         // also search for NTFS, FAT12, FAT16, and FAT32 signatures to
+         // figure out where to look for the filesystem serial numbers.
          Magic16 = (UINT16*) (Buffer + 510);
          if (*Magic16 == FAT_MAGIC) {
-            MagicString = (char*) (Buffer + 3);
-            if (CompareMem(MagicString, NTFS_SIGNATURE, 8) == 0) {
+            MagicString = (char*) Buffer;
+            if (CompareMem(MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
                Volume->FSType = FS_TYPE_NTFS;
                CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
-            } else {
-               RootDir = LibOpenRoot(Volume->DeviceHandle);
-               if (RootDir != NULL) {
-                  Volume->FSType = FS_TYPE_FAT;
-               } else if (!Volume->BlockIO->Media->LogicalPartition) {
-                  Volume->FSType = FS_TYPE_WHOLEDISK;
-               } // if/elseif/else
+            } else if ((CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
+                       (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0)) {
+                Volume->FSType = FS_TYPE_FAT;
+                CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
+            } else if (CompareMem(MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
+                Volume->FSType = FS_TYPE_FAT;
+                CopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
+            } else if (!Volume->BlockIO->Media->LogicalPartition) {
+                Volume->FSType = FS_TYPE_WHOLEDISK;
             } // if/else
             return;
          } // if
