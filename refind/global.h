@@ -79,7 +79,8 @@
 #define TAG_FWUPDATE_TOOL    (19)
 #define TAG_HIDDEN           (20)
 #define TAG_INSTALL          (21)
-#define NUM_TOOLS            (22)
+#define TAG_BOOTORDER        (22)
+#define NUM_TOOLS            (23)
 
 #define NUM_SCAN_OPTIONS 10
 

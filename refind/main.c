@@ -481,6 +481,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 InstallRefind();
                 break;
 
+            case TAG_BOOTORDER:
+                ManageBootorder();
+                break;
+
         } // switch()
     } // while()
 

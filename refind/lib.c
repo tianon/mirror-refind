@@ -175,7 +175,7 @@ VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName) {
 // input value.
 // If InString contains no ")" character, this function leaves the original input string
 // unmodified and also returns that string. If InString is NULL, this function returns NULL.
-static CHAR16* SplitDeviceString(IN OUT CHAR16 *InString) {
+CHAR16* SplitDeviceString(IN OUT CHAR16 *InString) {
     INTN i;
     CHAR16 *FileName = NULL;
     BOOLEAN Found = FALSE;
@@ -377,16 +377,20 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
     } else {
         l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
         buf = AllocatePool(l);
-        if (!buf)
+        if (!buf) {
+            *buffer = NULL;
             return EFI_OUT_OF_RESOURCES;
+        }
         Status = refit_call5_wrapper(RT->GetVariable, name, vendor, NULL, &l, buf);
     }
     if (EFI_ERROR(Status) == EFI_SUCCESS) {
         *buffer = (CHAR8*) buf;
         if ((size) && ReadFromNvram)
             *size = l;
-    } else
+    } else {
         MyFreePool(buf);
+        *buffer = NULL;
+    }
     return Status;
 } // EFI_STATUS EfivarGetRaw()
 
@@ -1618,7 +1622,7 @@ VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **Devi
         }
         VolumeDeviceString = DevicePathToStr(Volumes[i]->DevicePath);
         Temp = SplitDeviceString(VolumeDeviceString);
-        if (MyStriCmp(DeviceString, VolumeDeviceString)) {
+        if (MyStrStr(VolumeDeviceString, DeviceString)) {
             Found = TRUE;
             *DeviceVolume = Volumes[i];
         }

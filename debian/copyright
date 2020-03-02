@@ -298,6 +298,7 @@ License: GPL-2+
 Files: icons/arrow_left.png
        icons/arrow_right.png
        icons/func_install.png
+       icons/func_bootorder.png
        icons/boot_linux.png
        icons/func_about.png
        icons/func_exit.png

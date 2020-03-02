@@ -645,6 +645,8 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.ShowTools[i - 1] = TAG_SHUTDOWN;
                 } else if (MyStriCmp(FlagName, L"install")) {
                    GlobalConfig.ShowTools[i - 1] = TAG_INSTALL;
+                } else if (MyStriCmp(FlagName, L"bootorder")) {
+                   GlobalConfig.ShowTools[i - 1] = TAG_BOOTORDER;
                 } else if (MyStriCmp(FlagName, L"apple_recovery")) {
                    GlobalConfig.ShowTools[i - 1] = TAG_APPLE_RECOVERY;
                 } else if (MyStriCmp(FlagName, L"windows_recovery")) {

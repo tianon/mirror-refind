@@ -35,10 +35,24 @@
 #define INST_PLATFORM_EXTENSION L".efi"
 #endif
 
+#define EFI_BOOT_OPTION_DO_NOTHING   0
+#define EFI_BOOT_OPTION_MAKE_DEFAULT 1
+#define EFI_BOOT_OPTION_DELETE       2
+
 #ifdef __MAKEWITH_TIANO
 #define DevicePathSize GetDevicePathSize
 #endif
 
+typedef struct {
+    UINT16           BootNum;
+    UINT32           Options;
+    UINT16           Size;
+    CHAR16           *Label;
+    EFI_DEVICE_PATH  *DevPath;
+//     CHAR16           *Arguments; // Part of original data structure, but we don't use
+} EFI_BOOT_ENTRY;
+
 VOID InstallRefind(VOID);
+VOID ManageBootorder(VOID);
 
 #endif

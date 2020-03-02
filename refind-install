@@ -39,7 +39,8 @@
 # Revision history:
 #
 # 0.12.0  -- Improve code to find ESPs; should help with NVMe drives. Also
-#            activate install feature when using --usedefault option.
+#            activate install and bootorder features when using --usedefault
+#            option.
 # 0.11.5  -- Remove excessive slashes (/) from some filenames
 # 0.11.4  -- Fixed generation of GUID when automount of ESP in use on Linux
 # 0.11.3  -- Added support for ESP mounted at /efi under Linux
@@ -742,9 +743,9 @@ CopyRefindFiles() {
       fi
    fi
    # If installing to the fallback/EFI default filename, make a duplicate copy
-   # of refind.conf and edit the main copy to include the "install" option, so
-   # that the system can be used to install rEFInd if it's on a USB flash
-   # drive or CD-R....
+   # of refind.conf and edit the main copy to include the "install" and "bootorder"
+   # options, so that the system can be used to install rEFInd if it's on a USB
+   # flash drive or CD-R....
    if [[ "$TargetDir" == '/EFI/BOOT' ]] ; then
       cp -f "$ConfFile" "$InstallDir/$TargetDir/refind.conf-sample"
       sed -i 's/#showtools shell/showtools install, shell/g' "$InstallDir/$TargetDir/refind.conf"

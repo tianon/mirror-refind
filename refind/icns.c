@@ -60,6 +60,7 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"func_csr_rotate", ICON_SIZE_SMALL },
    { NULL, L"func_hidden", ICON_SIZE_SMALL },
    { NULL, L"func_install", ICON_SIZE_SMALL },
+   { NULL, L"func_bootorder", ICON_SIZE_SMALL },
    { NULL, L"tool_shell", ICON_SIZE_SMALL },
    { NULL, L"tool_part", ICON_SIZE_SMALL },
    { NULL, L"tool_rescue", ICON_SIZE_SMALL },

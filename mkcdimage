@@ -41,7 +41,7 @@ cp ../../refind/refind.conf-sample ./refind.conf-sample
 sed -i '/#showtools/a showtools shell,memtest,gdisk,apple_recovery,csr_rotate,windows_recovery,mok_tool,about,shutdown,reboot,firmware' refind.conf
 sed -i '/#csr_values/a csr_values 10,77' refind.conf
 sed -i '/#csr_values/a csr_values 10,77' refind.conf
-sed -i 's/^showtools shell/showtools install,shell/g' refind.conf
+sed -i 's/^showtools shell/showtools install,bootorder,shell/g' refind.conf
 mkdir icons
 cd icons
 ln ../../../refind/icons/* ./

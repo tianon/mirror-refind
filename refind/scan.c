@@ -131,6 +131,7 @@ static REFIT_MENU_ENTRY MenuEntryRotateCsr = { L"Change SIP Policy", TAG_CSR_ROT
 static REFIT_MENU_ENTRY MenuEntryFirmware = { L"Reboot to Computer Setup Utility", TAG_FIRMWARE, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryManageHidden = { L"Manage Hidden Tags Menu", TAG_HIDDEN, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryInstall = { L"Install rEFInd to Disk", TAG_INSTALL, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryBootorder = { L"Manage EFI boot order", TAG_BOOTORDER, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryExit     = { L"Exit rEFInd", TAG_EXIT, 1, 0, 0, NULL, NULL, NULL };
 
 // Structure used to hold boot loader filenames and time stamps in
@@ -1435,6 +1436,12 @@ VOID ScanForTools(VOID) {
             case TAG_INSTALL:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryInstall);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_INSTALL);
+                AddMenuEntry(&MainMenu, TempMenuEntry);
+                break;
+
+            case TAG_BOOTORDER:
+                TempMenuEntry = CopyMenuEntry(&MenuEntryBootorder);
+                TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_BOOTORDER);
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 

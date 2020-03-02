@@ -166,6 +166,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
   </ul></li>
 
+<li class="tight"><a href="#refind">Recovering from a Coup Using rEFInd</a></li>
+
 <li class="tight"><a href="#firmware">Using Your Firmware to Repair a Boot Coup</a>
 
   <ul class="tight">
@@ -210,7 +212,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <h2>Staging a Counter-Revolution: Re-Installing rEFInd</h2>
 </a>
 
-<p>The most general, and in some cases the easiest, solution to a boot coup is to re-install rEFInd. If you haven't updated rEFInd in a while, this approach has the advantage of providing an update to rEFInd (assuming you first download the latest version). The <a href="installing.html">Installing rEFInd</a> page describes how to install rEFInd from Linux, macOS, Windows, or an EFI shell. The <tt>refind-install</tt> script preserves your existing <tt>refind.conf</tt> configuration file, so an upgrade should not affect your customizations. (The rEFInd icons will be updated to the latest versions, but <tt>refind-install</tt> moves the original icons to a backup directory, so you can restore them if you've customized them or if they've changed and you don't like the new icons.)</p>
+<p>The most general, and in some cases the easiest, solution to a boot coup is to re-install rEFInd. If you haven't updated rEFInd in a while, this approach has the advantage of providing an update to rEFInd (assuming you first download the latest version). The <a href="installing.html">Installing rEFInd</a> page describes how to install rEFInd from Linux, macOS, Windows, an EFI shell, or from rEFInd booted from a removable medium. The <tt>refind-install</tt> script and installing from rEFInd both preserve your existing <tt>refind.conf</tt> configuration file, so an upgrade should not affect your customizations. (The rEFInd icons will be updated to the latest versions, but <tt>refind-install</tt> moves the original icons to a backup directory, so you can restore them if you've customized them or if they've changed and you don't like the new icons.)</p>
 
 <p>One possible complication to this approach is if you're stuck booting in an unfamiliar OS. In such a case, you may be able to boot into your preferred OS on a one-time basis by using your computer's built-in boot manager, as described in <a href="#evade_guards">the previous section.</a> The trouble is that how you do this varies greatly from one computer to another.</p>
 
@@ -432,6 +434,39 @@ Boot0085* ubuntu</pre>
 </ol>
 
 <p>This procedure, unlike the EasyUEFI one, creates a new boot menu item. It requires that you know the exact path to the rEFInd binary. (If you don't know this detail, you can mount your ESP, as described in the <a href="installing.html#windows">Windows installation instructions,</a> and try to find it.) Overall, it's likely to be easier to use EasyUEFI; however, this procedure has one potential advantage: I've seen reports of cases in which Windows changes the default boot program on every boot. This procedure sometimes puts an end to such shenanigans. Thus, it can serve as a preventive measure against at least some future boot coups. I can't promise that it will work in all such cases, though. In particular, some EFIs, especially older ones, are buggy and ignore or forget their entries. Using <tt>bcdedit</tt> will not help protect against this problem.</p>
+
+<a name="refind">
+<h2>Recovering from a Coup Using rEFInd</h2>
+</a>
+
+    <img src="func_bootorder.png" align="right" width="48" height="48"
+    alt="The EFI boot order icon launches the EFI boot order maintenance
+    feature" border=2 background="gray"/>
+
+<p>rEFInd 0.12.0 introduced a new EFI boot order maintenance feature. This feature is primitive compared to some boot order maintenance tools, but it's adequate to recover from a boot coup, provided you can boot rEFInd once. To use it, the <tt>showtools</tt> line in <tt>refind.conf</tt> must include the <tt>bootorder</tt> option. This option is disabled by default, except on the USB flash drive and CD-R images I distribute; but if you regularly encounter boot coups, you may want to enable this feature. When it's active, a boot order icon will appear on the second row of rEFInd icons, as shown at the right. Selecting this option will produce a display of EFI boot options, as shown here:</p>
+
+    <br /><center><img src="bootorder.png" align="center" width="643"
+    height="226" alt="rEFInd's EFI boot order maintenance tool enables you to set a default boot option or delete unwanted options." border=2> </center><br />
+
+<p>The list provides up to four pices of information about each boot entry: its boot number (such as <tt>Boot0004</tt>; its description (such as <tt>rEFInd Boot Manager</tt>, its filename (such as <tt>EFI\refind\refind_x64.efi</tt>, and its volume name (such as <tt>ESP</tt>). Sometimes one or more of these pieces of information can be missing. In the preceding example, for instance, the final four items on the list lack filenames and volume names. (This is common for entries created by the firmware for its own hardware devices.) If you can't figure out which entry you want to delete or elevate to the first position, I recommend booting into Linux or Windows and using <tt>efibootmgr</tt> or the commercial <a href="https://www.easyuefi.com/">EasyUEFI,</a> respectively.</p>
+
+<p>You can use the arrow keys to move up and down in the list to select a boot entry. Once you've picked an option, you can perform either of three actions from this menu:</p>
+
+<ul>
+
+<li>Pressing the Enter key causes the selected item to be moved to the top of the boot order list.</li>
+
+<li>Pressing the Delete or minus (<tt>-</tt>) key completely deletes the entry, both from the boot order list and from the (potentially larger) list of all boot items.</li>
+
+<li>Pressing Esc or certain other unmapped keys returns to the main menu without making any changes.</li>
+
+</ul>
+
+<p>rEFInd's EFI boot maintenance tool does not enable you to fine-tune the order of multiple items all at once. You can do so by making repeated calls to the program, however. For instance, to convert the entries shown earlier to a boot order of <tt>0006</tt>, <tt>0005</tt>, <tt>0004</tt>, you would call the function twice &mdash; once to move <tt>0005</tt> to the top of the list and then to move <tt>0006</tt> there.</p>
+
+<p>As with most of the fixes described on this page, this method of recovering from a boot coup will not protect you from future boot coups. Preparing a USB flash drive or CD-R with rEFInd on it can help you when boot coups occur, though, especially if the boot coup corrupts your boot list so that you can't start rEFInd. If you can boot from the external medium, you can use it to launch rEFInd and adjust the boot order, or even <a href="installing.html#from_refind">completely re-install rEFInd</a> from the external disk.</p>
+
+<p>Note that this feature adjust <i>the EFI's</i> boot order, <i>not</i> the boot order of loaders shown on rEFInd's screen. That order is determined by the order in which rEFInd detects different boot loaders, which is not easy to control.</p>
 
 <a name="firmware">
 <h2>Using Your Firmware to Repair a Boot Coup</h2>

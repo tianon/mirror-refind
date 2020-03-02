@@ -246,6 +246,7 @@ timeout 20
 #                     policy. Requires "csr_values" to be set.
 #  install          - an option to install rEFInd from the current location
 #                     to another ESP
+#  bootorder        - adjust the EFI's (NOT rEFInd's) boot order
 #  about            - an "about this program" option
 #  hidden_tags      - manage hidden tags
 #  exit             - a tag to exit from rEFInd
@@ -259,7 +260,7 @@ timeout 20
 #  netboot          - launch the ipxe.efi tool for network (PXE) booting
 # Default is shell,memtest,gdisk,apple_recovery,windows_recovery,mok_tool,about,hidden_tags,shutdown,reboot,firmware,fwupdate
 #
-#showtools shell, gdisk, memtest, mok_tool, apple_recovery, windows_recovery, about, hidden_tags, reboot, exit, firmware, fwupdate
+#showtools shell, bootorder, gdisk, memtest, mok_tool, apple_recovery, windows_recovery, about, hidden_tags, reboot, exit, firmware, fwupdate
 
 # Tool binaries to be excluded from the tools line, even if the
 # general class is specified in showtools. This enables trimming an

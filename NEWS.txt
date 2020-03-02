@@ -1,6 +1,14 @@
 0.12.0 (?/??/2020):
 -------------------
 
+- Added a new EFI boot order maintenance option. To use it, uncomment the
+  "showtools" option in refind.conf and add the "bootorder" option to the
+  list. The resulting tool enables you to move any item in the EFI's boot
+  list to the top of the list or to delete any item in the list. You cannot
+  create new options from this tool or otherwise edit them. Note that this
+  feature adjusts the *EFI's* boot order, NOT the order of icons shown on
+  rEFInd's screen.
+
 - Added a new self-installation feature. When activated (by setting the
   "install" token on the "showtools" line in refind.conf), selecting the
   install icon in the second row on the main rEFInd screen will enable the
