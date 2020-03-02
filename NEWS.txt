@@ -1,6 +1,10 @@
 0.12.0 (?/??/2020):
 -------------------
 
+- Change identification of rEFInd's volume from a volume name to a Partition
+  GUID, which is more precise and less likely to result in
+  mis-identification for purposes of not scanning rEFInd's own directory.
+
 - Improved FAT partition discovery by including the FAT serial number, which
   should prevent two FAT partitions with the same volume name as being
   mis-identified as RAID mirrors, and thus ignoring one of them.

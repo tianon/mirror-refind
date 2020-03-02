@@ -502,13 +502,8 @@ VOID ReadConfig(CHAR16 *FileName)
        MyFreePool(GlobalConfig.AlsoScan);
        GlobalConfig.AlsoScan = StrDuplicate(ALSO_SCAN_DIRS);
        MyFreePool(GlobalConfig.DontScanDirs);
-       if (SelfVolume) {
-          if (SelfVolume->VolName) {
-             TempStr = SelfVolume->VolName ? StrDuplicate(SelfVolume->VolName) : NULL;
-          } else {
-             TempStr = GuidAsString(&(SelfVolume->PartGuid));
-          } // if/else
-       }
+       if (SelfVolume)
+          TempStr = GuidAsString(&(SelfVolume->PartGuid));
        MergeStrings(&TempStr, SelfDirPath, L':');
        MergeStrings(&TempStr, MEMTEST_LOCATIONS, L',');
        GlobalConfig.DontScanDirs = TempStr;
