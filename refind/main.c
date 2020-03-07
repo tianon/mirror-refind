@@ -189,6 +189,7 @@ VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, L"For more information, see the rEFInd Web site:");
         AddMenuInfoLine(&AboutMenu, L"http://www.rodsbooks.com/refind/");
         AddMenuEntry(&AboutMenu, &MenuEntryReturn);
+        MyFreePool(FirmwareVendor);
     }
 
     RunMenu(&AboutMenu, NULL);
@@ -487,6 +488,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
         } // switch()
     } // while()
+    MyFreePool(SelectionName);
 
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.

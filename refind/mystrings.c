@@ -256,6 +256,7 @@ CHAR16 *FindNumbers(IN CHAR16 *InString) {
             StartOfElement = ExtraFound - InString;
             EndOfElement = StartOfElement + StrLen(LookFor) - 1;
         } // if
+        MyFreePool(LookFor);
     } // while
 
     // Find start & end of target element
@@ -366,6 +367,7 @@ BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
       while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
          if (MyStriCmp(OneElement, SmallString))
             Found = TRUE;
+         MyFreePool(OneElement);
       } // while
    } // if
    return Found;
@@ -383,6 +385,7 @@ BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
          ElementLength = StrLen(OneElement);
          if ((ElementLength <= StrLen(BigString)) && (StriSubCmp(OneElement, BigString)))
             Found = TRUE;
+         MyFreePool(OneElement);
       } // while
    } // if
    return Found;

@@ -1,6 +1,8 @@
 0.12.0 (?/??/2020):
 -------------------
 
+- Plugged several memory leaks -- but many more remain.
+
 - Change identification of rEFInd's volume from a volume name to a Partition
   GUID, which is more precise and less likely to result in
   mis-identification for purposes of not scanning rEFInd's own directory.

@@ -480,7 +480,7 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
                                       (Banner->Height > UGAHeight) ? UGAHeight : Banner->Height);
            } // if/elseif
            if (NewBanner) {
-              MyFreePool(Banner);
+              egFreeImage(Banner);
               Banner = NewBanner;
            }
            MenuBackgroundPixel = Banner->PixelData[0];
@@ -500,6 +500,7 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
             GlobalConfig.BannerBottomEdge = BannerPosY + Banner->Height;
             if (GlobalConfig.ScreensaverTime != -1)
                BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
+            egFreeImage(Banner);
         }
 
     } else { // not showing banner
@@ -560,7 +561,11 @@ VOID BltImageAlpha(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos, IN EG_PIXEL
 //     GraphicsScreenDirty = TRUE;
 // }
 
-VOID BltImageCompositeBadge(IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN EG_IMAGE *BadgeImage, IN UINTN XPos, IN UINTN YPos)
+VOID BltImageCompositeBadge(IN EG_IMAGE *BaseImage,
+                            IN EG_IMAGE *TopImage,
+                            IN EG_IMAGE *BadgeImage,
+                            IN UINTN XPos,
+                            IN UINTN YPos)
 {
      UINTN TotalWidth = 0, TotalHeight = 0, CompWidth = 0, CompHeight = 0, OffsetX = 0, OffsetY = 0;
      EG_IMAGE *CompImage = NULL;

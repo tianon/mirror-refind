@@ -981,7 +981,6 @@ VOID ScanUserConfigured(CHAR16 *FileName)
    REFIT_FILE        File;
    REFIT_VOLUME      *Volume;
    CHAR16            **TokenList;
-   CHAR16            *Title = NULL;
    UINTN             TokenCount, size;
    LOADER_ENTRY      *Entry;
 
@@ -994,7 +993,6 @@ VOID ScanUserConfigured(CHAR16 *FileName)
 
       while ((TokenCount = ReadTokenLine(&File, &TokenList)) > 0) {
          if (MyStriCmp(TokenList[0], L"menuentry") && (TokenCount > 1)) {
-            Title = StrDuplicate(TokenList[1]);
             Entry = AddStanzaEntries(&File, Volume, TokenList[1]);
             if (Entry->Enabled) {
                if (Entry->me.SubScreen == NULL)
@@ -1003,7 +1001,6 @@ VOID ScanUserConfigured(CHAR16 *FileName)
             } else {
                MyFreePool(Entry);
             } // if/else
-            MyFreePool(Title);
 
          } else if (MyStriCmp(TokenList[0], L"include") && (TokenCount == 2) &&
                     MyStriCmp(FileName, GlobalConfig.ConfigFilename)) {
@@ -1057,6 +1054,7 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
                   MyFreePool(Line);
                   Line = PoolPrint(L"\"Boot into single-user mode\"  \"ro root=%s single\"\n", Root);
                   MergeStrings((CHAR16**) &(Options->Buffer), Line, 0);
+                  MyFreePool(Line);
                   Options->BufferSize = StrLen((CHAR16*) Options->Buffer) * sizeof(CHAR16);
                } // if
             } // if

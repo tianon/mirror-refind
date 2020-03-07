@@ -377,6 +377,7 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
         if (Status == EFI_SUCCESS)
             Status = egLoadFile(VarsDir, name, &buf, size);
         ReadFromNvram = FALSE;
+        MyFreePool(VarsDir);
     } else {
         l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
         buf = AllocatePool(l);
@@ -411,6 +412,7 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
         if (Status == EFI_SUCCESS) {
             Status = egSaveFile(VarsDir, name, (UINT8 *) buf, size);
         }
+        MyFreePool(VarsDir);
     } else {
         flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (persistent)
@@ -805,7 +807,7 @@ VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume)
 static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
     UINT64 SizeInIeee;
     UINTN Index = 0, NumPrefixes;
-    CHAR16 *Units, *Prefixes = L" KMGTPEZ";
+    CHAR16 *Units = NULL, *Prefixes = L" KMGTPEZ";
     CHAR16 *TheValue;
 
     TheValue = AllocateZeroPool(sizeof(CHAR16) * 256);
@@ -824,6 +826,7 @@ static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
         } // if/else
         SPrint(TheValue, 255, L"%ld%s", SizeInIeee, Units);
     } // if
+    MyFreePool(Units);
     return TheValue;
 } // CHAR16 *SizeInIEEEUnits()
 
@@ -908,6 +911,7 @@ static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *D
                     GlobalConfig.DiscoveredRoot = Volume;
                 } // if (GUIDs match && automounting OK)
                 Volume->IsMarkedReadOnly = ((PartInfo->attributes & GPT_READ_ONLY) > 0);
+                MyFreePool(PartInfo);
             } // if (PartInfo exists)
         } else {
             // TODO: Better to assign a random GUID to MBR partitions, but I couldn't
@@ -1005,7 +1009,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
             // get the handle for that path
             RemainingDevicePath = DiskDevicePath;
             Status = refit_call3_wrapper(BS->LocateDevicePath, &BlockIoProtocol, &RemainingDevicePath, &WholeDiskHandle);
-            FreePool(DiskDevicePath);
+            MyFreePool(DiskDevicePath);
 
             if (!EFI_ERROR(Status)) {
                 //Print(L"  - original handle: %08x - disk handle: %08x\n", (UINT32)DeviceHandle, (UINT32)WholeDiskHandle);
@@ -1171,6 +1175,7 @@ VOID ScanVolumes(VOID)
         if (Volume->DeviceHandle == SelfLoadedImage->DeviceHandle)
             SelfVolume = Volume;
     }
+    MyFreePool(UuidList);
     MyFreePool(Handles);
 
     if (SelfVolume == NULL)
@@ -1436,6 +1441,7 @@ BOOLEAN DirIterNext(IN OUT REFIT_DIR_ITER *DirIter, IN UINTN FilterMode, IN CHAR
             while (KeepGoing && (OnePattern = FindCommaDelimited(FilePattern, i++)) != NULL) {
                if (MetaiMatch(DirIter->LastFileInfo->FileName, OnePattern))
                    KeepGoing = FALSE;
+               MyFreePool(OnePattern);
             } // while
             // else continue loop
         } else

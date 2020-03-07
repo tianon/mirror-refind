@@ -270,6 +270,7 @@ REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry) {
     } else { // existing subscreen; less initialization, and just add new entry later....
         SubScreen = Entry->me.SubScreen;
     } // if/else
+    MyFreePool(FileName);
     return SubScreen;
 } // REFIT_MENU_SCREEN *InitializeSubScreen()
 
@@ -570,6 +571,8 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
     if (Entry->me.Image == NULL)
         Entry->me.Image = LoadOSIcon(OSIconName, L"unknown", FALSE);
     MyFreePool(PathOnly);
+    MyFreePool(OSIconName);
+    MyFreePool(NoExtension);
 } // VOID SetLoaderDefaults()
 
 // Add a specified EFI boot loader to the list, using automatic settings
@@ -681,7 +684,8 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
     BOOLEAN  ScanIt = TRUE;
 
     VolGuid = GuidAsString(&(Volume->PartGuid));
-    if ((IsIn(Volume->VolName, GlobalConfig.DontScanVolumes)) || (IsIn(Volume->PartName, GlobalConfig.DontScanVolumes)) ||
+    if ((IsIn(Volume->VolName, GlobalConfig.DontScanVolumes)) ||
+        (IsIn(Volume->PartName, GlobalConfig.DontScanVolumes)) ||
         (IsIn(VolGuid, GlobalConfig.DontScanVolumes))) {
         MyFreePool(VolGuid);
         return FALSE;
@@ -751,6 +755,7 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
     } else {
         return FALSE;
     }
+    MyFreePool(FileInfo);
 
     Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FallbackHandle, FALLBACK_FULLNAME, EFI_FILE_MODE_READ, 0);
     if (Status == EFI_SUCCESS) {
@@ -760,6 +765,7 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
         refit_call1_wrapper(FileHandle->Close, FileHandle);
         return FALSE;
     }
+    MyFreePool(FallbackInfo);
 
     if (FallbackSize == FileSize) { // could be identical; do full check....
         FileContents = AllocatePool(FileSize);
@@ -961,13 +967,13 @@ static BOOLEAN ScanMacOsLoader(REFIT_VOLUME *Volume, CHAR16* FullFileName) {
 } // VOID ScanMacOsLoader()
 
 static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
-    EFI_STATUS              Status;
-    REFIT_DIR_ITER          EfiDirIter;
-    EFI_FILE_INFO           *EfiDirEntry;
-    CHAR16                  FileName[256], *Directory = NULL, *MatchPatterns, *VolName = NULL, *SelfPath, *Temp;
-    UINTN                   i, Length;
-    BOOLEAN                 ScanFallbackLoader = TRUE;
-    BOOLEAN                 FoundBRBackup = FALSE;
+    EFI_STATUS       Status;
+    REFIT_DIR_ITER   EfiDirIter;
+    EFI_FILE_INFO    *EfiDirEntry;
+    CHAR16           FileName[256], *Directory = NULL, *MatchPatterns, *VolName = NULL, *SelfPath, *Temp;
+    UINTN            i, Length;
+    BOOLEAN          ScanFallbackLoader = TRUE;
+    BOOLEAN          FoundBRBackup = FALSE;
 
     if (Volume && (Volume->RootDir != NULL) && (Volume->VolName != NULL) && (Volume->IsReadable)) {
         MatchPatterns = StrDuplicate(LOADER_MATCH_PATTERNS);
@@ -1060,6 +1066,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
         CleanUpPathNameSlashes(SelfPath);
         if ((Volume->DeviceHandle == SelfLoadedImage->DeviceHandle) && DuplicatesFallback(Volume, SelfPath))
             ScanFallbackLoader = FALSE;
+        MyFreePool(SelfPath);
 
         // If not a duplicate & if it exists & if it's not us, create an entry
         // for the fallback boot loader
@@ -1067,6 +1074,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             !FilenameIn(Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)) {
                 AddLoaderEntry(FALLBACK_FULLNAME, L"Fallback boot loader", Volume, TRUE);
         }
+        MyFreePool(MatchPatterns);
     } // if
 } // static VOID ScanEfiFiles()
 
@@ -1236,6 +1244,7 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
                 ((DontVolName == NULL) || (VolumeMatchesDescription(BaseVolume, DontVolName)))) {
                 retval = FALSE;
             } // if
+            MyFreePool(DontScanThis);
         } // while
     } else
         retval = FALSE;
@@ -1332,6 +1341,7 @@ VOID ScanForTools(VOID) {
                         TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_FIRMWARE);
                         AddMenuEntry(&MainMenu, TempMenuEntry);
                     } // if
+                    MyFreePool(b);
                 } // if
                 break;
 

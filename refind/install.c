@@ -112,12 +112,11 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
                 Temp = PoolPrint(L"%s - no name", GuidStr);
             }
             MyFreePool(&GuidStr);
-            MenuEntryItem->Title = StrDuplicate(Temp);
+            MenuEntryItem->Title = Temp;
             MenuEntryItem->Tag = TAG_RETURN;
             MenuEntryItem->Row = i++;
             AddMenuEntry(&InstallMenu, MenuEntryItem);
             CurrentESP = CurrentESP->NextESP;
-            MyFreePool(&Temp);
         } // while
         MenuExit = RunGenericMenu(&InstallMenu, Style, &DefaultEntry, &ChosenOption);
         if (MenuExit == MENU_EXIT_ENTER) {
@@ -170,6 +169,9 @@ static EFI_STATUS RenameFile(IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewN
                                          &gEfiFileInfoGuid,
                                          NewInfoSize,
                                          (VOID *) NewInfo);
+            MyFreePool(NewInfo);
+            MyFreePool(FilePtr);
+            MyFreePool(Buffer);
         } else {
             Status = EFI_BUFFER_TOO_SMALL;
         }
@@ -192,6 +194,7 @@ static EFI_STATUS BackupOldFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
     if (!FileExists(BaseDir, NewName)) {
         Status = RenameFile(BaseDir, FileName, NewName);
     }
+    MyFreePool(NewName);
 
     return (Status);
 } // EFI_STATUS BackupOldFile()
@@ -206,6 +209,8 @@ static EFI_STATUS CreateDirectories(IN EFI_FILE *BaseDir) {
         Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &TheDir, FileName,
                                  EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
         Status = refit_call1_wrapper(TheDir->Close, TheDir);
+        MyFreePool(FileName);
+        MyFreePool(TheDir);
     } // while()
     return (Status);
 } // CreateDirectories()
@@ -275,6 +280,7 @@ static EFI_STATUS CopyDirectory(IN EFI_FILE *SourceDirPtr,
         Status = CopyOneFile(SourceDirPtr, SourceFileName, DestDirPtr, DestFileName);
         MyFreePool(DestFileName);
         MyFreePool(SourceFileName);
+        MyFreePool(DirEntry);
     } // while
     return (Status);
 } // EFI_STATUS CopyDirectory()
@@ -360,7 +366,7 @@ static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
 
 // Copy all the files from the source to *TargetDir
 static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
-    REFIT_VOLUME    *SourceVolume = NULL;
+    REFIT_VOLUME    *SourceVolume = NULL; // Do not free
     CHAR16          *SourceFile = NULL, *SourceDir, *ConfFile;
     CHAR16          *SourceDriversDir, *TargetDriversDir, *RefindName;
     UINTN           Status;
@@ -431,9 +437,10 @@ static VOID CreateFallbackCSV(IN EFI_FILE *TargetDir) {
             Status = refit_call3_wrapper(FilePtr->Write, FilePtr, &FileSize, Contents);
             if (Status == EFI_SUCCESS)
                 refit_call1_wrapper(FilePtr->Close, FilePtr);
-        }
-    }
-    MyFreePool(Contents);
+            MyFreePool(FilePtr);
+        } // if
+        MyFreePool(Contents);
+    } // if
 } // VOID CreateFallbackCSV()
 
 static BOOLEAN CopyRefindFiles(IN EFI_FILE *TargetDir) {
