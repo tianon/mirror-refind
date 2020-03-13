@@ -126,6 +126,94 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <ul>
 
+<li><b>0.12.0 (3/13/2020)</b>&mdash;This release sees a couple of major new
+    features and some other more minor changes:
+
+    <ul>
+
+    <li>A new <i>EFI</i> (not rEFInd) boot order maintenance feature is now
+	available, albeit disabled by default. To enable it, uncomment the
+	<tt>showtools</tt> option in <tt>refind.conf</tt> and ensure that
+	<tt>bootorder</tt> is among the options. The new feature will then
+	appear next time rEFInd is launched. This options enables you to
+	adjust the <i>EFI's</i> boot order. Selecting an option and pressing
+	the Enter key moves it to the top of the list. Selecting it and
+	pressing the minus (<tt>-</tt>) key or Delete deletes the entry. The
+	goal is to enable changing the computer's boot order from a rEFInd
+	emergency disk after a boot coup or similar problem. This feature is
+	therefore covered in more detail <a href="bootcoup.html#refind">on
+	the page on boot coups.</a> Although this feature is disabled by
+	default, it's enabled on my USB flash drive and CD-R images.</li>
+
+    <li>A new self-installation option is available, albeit disabled by
+	default. (It's enabled on my USB flash drive and CD-R images.) To
+	enable it, uncomment the <tt>showtools</tt> option in
+	<tt>refind.conf</tt> and add the <tt>install</tt> token to the list.
+	When active, an installation icon appears on the second row,
+	enabling you to install from the booted version of rEFInd to an ESP
+	that you select: Pick the target ESP from among those listed and
+	press Enter to install rEFInd. For more details, see the <a
+	href="installing.html#from_refind">Installing rEFInd page.</a></li>
+
+    <li>Previous versions of rEFInd all passed the rEFInd filename as the
+	first option to all follow-on programs, much as the EFI shell does.
+	This caused problems with a new <a
+	href="https://systemd.io/BOOT_LOADER_SPECIFICATION/#type-2-efi-unified-kernel-images">unified
+	Linux kernel image format,</a> though. (This new format includes the
+	kernel, initrd file, and some other elements into a single file.)
+	Thus, I've switched to passing no options by default, which is the
+	same way GRUB 2 and gummiboot/systemd-boot work.</li>
+
+    <li>Fixed a bug that caused <tt>gptsync</tt> to sometimes hang on
+        launch.</li>
+
+    <li>Changed internal identification of rEFInd's volume to use a GUID
+	rather than a volume name. A GUID is more precise and less likely to
+	result in mis-identification in rEFInd's loader scanning.</li>
+
+    <li>Added FAT serial number data as pseudo-GUIDs, which may help prevent
+	mistaken mis-identification of two FAT partitions with the same name
+	as RAID elements.</li>
+
+    <li>The handling of screen resets on return from a program has been
+	tweaked. Previously, this could result in error messages being
+	erased. This should now be less likely to happen.</li>
+
+    <li>Identification of the ESP in <tt>refind-install</tt> in Linux has
+	been improved. This should make proper identification of the ESP on
+	NVMe disks more reliable. Note that this change also requires that
+	the <tt>sgdisk</tt> program (part of my <a
+	href="https://www.rodsbooks.com/gdisk/">GPT fdisk</a> package) be
+	available; but <tt>parted</tt> is no longer required. I've updated
+	the RPM and Debian package dependencies appropriately.</li>
+
+    <li>I've plugged several memory leaks. This should have no noticeable
+	performance effect, but is good programming practice. Several leaks
+	remain, though.</li>
+
+    <li>I've re-structured the source code to split the former
+	<tt>main.c</tt> across four files (<tt>main.c</tt>,
+	<tt>launch_efi.c</tt>, <tt>linux.c</tt>, and <tt>scan.c</tt>), since
+	the old <tt>main.c</tt> was getting ridiculously large. This change
+	will have no performance effects, but should help development
+	efforts.</li>
+
+    <li>I'm officially deprecating the ELILO- and XOM-specific code in
+	rEFInd. ELILO hasn't seen development on its Sourceforge page since
+	2013, and XOM was rendered obsolete by Boot Camp and seems to have
+	faded into non-existence. The deprecated code is located in rEFInd's
+	<tt>scan.c</tt> file and simply creates sub-menus that pass options
+	to these boot loaders. If anybody wants to experiment with obsolete
+	boot loaders, they can achieve the same effect with manual boot
+	stanzas; and if they don't need to pass options to these boot
+	loaders, they'll still work fine from rEFInd as "generic" boot
+	loaders. For the moment, the code remains in place, but I may remove
+	it on no further notice in the future.</li>
+
+    </ul>
+
+</li>
+
 <li><b>0.11.5 (2/12/2020)</b>&mdash;This release fixes a handful of
     bugs and makes a few miscellaneous changes:
     <ul>

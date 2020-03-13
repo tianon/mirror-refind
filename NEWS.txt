@@ -1,10 +1,10 @@
-0.12.0 (?/??/2020):
+0.12.0 (3/13/2020):
 -------------------
 
 - Plugged several memory leaks -- but many more remain.
 
-- Change identification of rEFInd's volume from a volume name to a Partition
-  GUID, which is more precise and less likely to result in
+- Change internal identification of rEFInd's volume from a volume name to a
+  Partition GUID, which is more precise and less likely to result in
   mis-identification for purposes of not scanning rEFInd's own directory.
 
 - Improved FAT partition discovery by including the FAT serial number, which
@@ -14,10 +14,11 @@
 - Added a new EFI boot order maintenance option. To use it, uncomment the
   "showtools" option in refind.conf and add the "bootorder" option to the
   list. The resulting tool enables you to move any item in the EFI's boot
-  list to the top of the list or to delete any item in the list. You cannot
-  create new options from this tool or otherwise edit them. Note that this
-  feature adjusts the *EFI's* boot order, NOT the order of icons shown on
-  rEFInd's screen.
+  list to the top of the list or to delete any item in the list. (Deleted
+  entries will be removed from the BootOrder list AND their Boot#### entries
+  in NVRAM will be deleted.) You cannot create new options from this tool or
+  otherwise edit them. Note that this feature adjusts the *EFI's* boot
+  order, NOT the order of icons shown on rEFInd's screen.
 
 - Added a new self-installation feature. When activated (by setting the
   "install" token on the "showtools" line in refind.conf), selecting the
