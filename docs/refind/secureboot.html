@@ -148,12 +148,18 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>If you're using a computer that supports Secure Boot, you may run into extra complications. This feature is intended to make it difficult for malware to insert itself early into the computer's boot process. Unfortunately, it also complicates multi-boot configurations such as those that rEFInd is intended to manage. This page describes some <a href="#basic">Secure Boot basics</a> and two specific ways of using rEFInd with Secure Boot: <a href="#shim">Using the Shim program</a> and <a href="#preloader">using the PreLoader program.</a> (My separate <a href="https://www.rodsbooks.com/efi-bootloaders/secureboot.html">EFI Boot Loaders for Linux page on Secure Boot</a> covers the additional topics of <a href="https://www.rodsbooks.com/efi-bootloaders/secureboot.html#disable">disabling Secure Boot</a> and <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">adding keys to the firmware's own set of keys.)</a> This page concludes with a look at <a href="#caveats">known bugs and limitations</a> in rEFInd's Secure Boot features.</p>
 
-<p>Note that Macs don't (yet?) support Secure Boot, but
-as of version 10.11 ("El Capitan"), macOS uses its own new security feature,
-<i>System Integrity Protection (SIP),</i> which creates its own set of
-hoops through which rEFInd users must jump. See the <a
-href="sip.html">rEFInd and System Integrity Protection</a> page for
-details.</p>
+<p>As of version 10.11 ("El Capitan"), macOS uses its own new security
+feature, <i>System Integrity Protection (SIP),</i> which creates its own set
+of hoops through which rEFInd users must jump. See the <a
+href="sip.html">rEFInd and System Integrity Protection</a> page for details.
+Macs that include the <a href="https://support.apple.com/en-us/HT208862">T2
+security chip</a> (introduced in 2018) support a feature that Apple calls
+Secure Boot, but it's unclear to me if this is the same as UEFI Secure Boot.
+See <a href="https://support.apple.com/en-us/HT208330">Apple's Secure Boot
+documentation</a> for details. If it is the same, then this page should
+apply to the latest Macs, although you'll need to adjust Secure Boot through
+Apple's Startup Security Utility rather than through a PC-style firmware
+setup utility outside of the OS.</p>
 
 <a name="basic">
 <h2>Basic Issues</h2>
