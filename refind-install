@@ -1345,8 +1345,8 @@ GenerateRefindLinuxConf() {
    else
       echo "Creating $RLConfFile; edit it to adjust kernel options."
       RootFS=`df "$RootDir" | grep dev | cut -f 1 -d " "`
-      StartOfDevname=`echo "$RootFS" | cut -b 1-7`
-      if [[ "$StartOfDevname" == "/dev/sd" || "$StartOfDevName" == "/dev/hd" ]] ; then
+      StartOfDevName=`echo "$RootFS" | cut -b 1-7`
+      if [[ "$StartOfDevName" == "/dev/sd" || "$StartOfDevName" == "/dev/hd" || "$StartOfDevName" == "/dev/vd" ]] ; then
          # Identify root filesystem by UUID rather than by device node, if possible
          Uuid=`blkid -o export -s UUID "$RootFS" 2> /dev/null | grep UUID=`
          if [[ -n $Uuid ]] ; then
