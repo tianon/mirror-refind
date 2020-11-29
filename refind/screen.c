@@ -500,7 +500,6 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
             GlobalConfig.BannerBottomEdge = BannerPosY + Banner->Height;
             if (GlobalConfig.ScreensaverTime != -1)
                BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
-            egFreeImage(Banner);
         }
 
     } else { // not showing banner
