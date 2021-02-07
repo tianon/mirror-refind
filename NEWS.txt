@@ -17,6 +17,10 @@
 - Fixed memory management bug that could cause rEFInd to hang in some
   situations.
 
+- Imported improvements from RefindPlus
+  (https://github.com/dakanji/refindplus):
+  - Expand list of supported Apple SIP/CSR values
+
 0.12.0 (3/13/2020):
 -------------------
 
