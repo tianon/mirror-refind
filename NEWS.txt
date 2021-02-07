@@ -3,6 +3,9 @@
 
 - Fixed compile problem with GCC version 10.
 
+- Fixed compile problems with GCC 9 and the Btrfs and HFS+ drivers under
+  EDK2.
+
 - Replaced use of "which" with "command -v" in shell scripts.
 
 - Fixed detection of UUID on ext2/3/4 filesystems; old code incorrectly
