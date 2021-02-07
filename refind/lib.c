@@ -538,7 +538,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
             } else { // none of these features; presume it's ext2...
                Volume->FSType = FS_TYPE_EXT2;
             }
-            CopyMem(&(Volume->VolUuid), Buffer + 1024 + 120, sizeof(EFI_GUID));
+            CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
             return;
          }
       } // search for ext2/3/4 magic
