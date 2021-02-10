@@ -401,10 +401,9 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
     EFI.</li>
 
 <li>Optionally, remove the drivers directories for the architectures you're
-    not using&mdash;<tt>/Volumes/ESP/efi/refind/drivers_ia32</tt> or
-    <tt>/Volumes/ESP/efi/refind/drivers_x64</tt>, as appropriate. (No Mac
-    uses an ARM CPU, so you'd also remove
-    <tt>/Volumes/ESP/efi/refind/drivers_aa64</tt>.</li>
+    not using&mdash;<tt>/Volumes/ESP/efi/refind/drivers_aa64</tt>,
+    <tt>/Volumes/ESP/efi/refind/drivers_ia32</tt>, or
+    <tt>/Volumes/ESP/efi/refind/drivers_x64</tt>, as appropriate.</li>
 
 <li>I strongly recommend that you remove some or all of the drivers for the
     architecture you are using; if you don't need them, they'll slow down
