@@ -145,6 +145,7 @@ EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 VOID AboutrEFInd(VOID)
 {
     CHAR16     *FirmwareVendor;
+    CHAR16     *TempStr;
     UINT32     CsrStatus;
 
     if (AboutMenu.EntryCount == 0) {
@@ -176,9 +177,12 @@ VOID AboutrEFInd(VOID)
         }
         FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
         LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor, ST->FirmwareRevision >> 16,
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor,
+                                              ST->FirmwareRevision >> 16,
                                               ST->FirmwareRevision & ((1 << 16) - 1)));
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", egScreenDescription()));
+        TempStr = egScreenDescription();
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", TempStr));
+        MyFreePool(TempStr);
         AddMenuInfoLine(&AboutMenu, L"");
 #if defined(__MAKEWITH_GNUEFI)
         AddMenuInfoLine(&AboutMenu, L"Built with GNU-EFI");

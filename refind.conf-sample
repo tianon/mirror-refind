@@ -160,9 +160,10 @@ timeout 20
 #
 #textmode 2
 
-# Set the screen's video resolution. Pass this option either:
-#  * two values, corresponding to the X and Y resolutions
-#  * one value, corresponding to a GOP (UEFI) video mode
+# Set the screen's video resolution. Pass this option one of the following:
+#  * two integer values, corresponding to the X and Y resolutions
+#  * one integer value, corresponding to a GOP (UEFI) video mode
+#  * the string "max", which sets the maximum available resolution
 # Note that not all resolutions are supported. On UEFI systems, passing
 # an incorrect value results in a message being shown on the screen to
 # that effect, along with a list of supported modes. On EFI 1.x systems
@@ -175,6 +176,7 @@ timeout 20
 #resolution 1024 768
 #resolution 1440 900
 #resolution 3
+#resolution max
 
 # Enable touch screen support. If active, this feature enables use of
 # touch screen controls (as on tablets). Note, however, that not all
