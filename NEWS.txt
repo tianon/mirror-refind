@@ -17,10 +17,18 @@
 - Fixed memory management bug that could cause rEFInd to hang in some
   situations.
 
+- Fixed bug that could cause EFI 1.x (UGA graphics) systems to hang if
+  the refind.conf "resolution" line specified only one parameter. (This
+  is valid for EFI 2.x/GOP graphics systems, but not for UGA graphics.)
+  This misconfiguration, if found, is now ignored.
+
 - Imported improvements from RefindPlus
   (https://github.com/dakanji/refindplus):
   - Expand list of supported Apple SIP/CSR values
   - Add support for EXT4_FEATURE_INCOMPAT_ENCRYPT flag to ext4fs driver
+  - Improved detection of video modes
+  - New "max" option to "resolution" parameter in refind.conf (is
+    default in RefindPlus, but configurable option in rEFInd)
 
 0.12.0 (3/13/2020):
 -------------------

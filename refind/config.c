@@ -719,11 +719,16 @@ VOID ReadConfig(CHAR16 *FileName)
            HandleInt(TokenList, TokenCount, &(GlobalConfig.RequestedTextMode));
 
         } else if (MyStriCmp(TokenList[0], L"resolution") && ((TokenCount == 2) || (TokenCount == 3))) {
-           GlobalConfig.RequestedScreenWidth = Atoi(TokenList[1]);
-           if (TokenCount == 3)
-              GlobalConfig.RequestedScreenHeight = Atoi(TokenList[2]);
-           else
-              GlobalConfig.RequestedScreenHeight = 0;
+           if (MyStriCmp(TokenList[1], L"max")) {
+              GlobalConfig.RequestedScreenWidth = MAX_RES_CODE;
+              GlobalConfig.RequestedScreenHeight = MAX_RES_CODE;
+           } else {
+              GlobalConfig.RequestedScreenWidth = Atoi(TokenList[1]);
+              if (TokenCount == 3)
+                 GlobalConfig.RequestedScreenHeight = Atoi(TokenList[2]);
+              else
+                 GlobalConfig.RequestedScreenHeight = 0;
+           }
 
         } else if (MyStriCmp(TokenList[0], L"screensaver")) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
