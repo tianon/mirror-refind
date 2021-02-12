@@ -1642,6 +1642,27 @@ static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu,
     return TagHidden;
 } // BOOLEAN HideEfiTag()
 
+static BOOLEAN HideFirmwareTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu) {
+    MENU_STYLE_FUNC    Style = TextMenuStyle;
+    REFIT_MENU_ENTRY   *ChosenOption;
+    INTN               DefaultEntry = 1;
+    UINTN              MenuExit;
+    BOOLEAN            TagHidden = FALSE;
+
+    if (AllowGraphicsMode)
+        Style = GraphicsMenuStyle;
+
+    AddMenuInfoLine(HideItemMenu, PoolPrint(L"Really hide '%s'?", Loader->Title));
+    AddMenuEntry(HideItemMenu, &MenuEntryYes);
+    AddMenuEntry(HideItemMenu, &MenuEntryNo);
+    MenuExit = RunGenericMenu(HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+    if (MyStriCmp(ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
+        AddToHiddenTags(L"HiddenTags", Loader->Title);
+        TagHidden = TRUE;
+    } // if
+    return TagHidden;
+} // BOOLEAN HideFirmwareTag()
+
 static BOOLEAN HideLegacyTag(LEGACY_ENTRY *LegacyLoader, REFIT_MENU_SCREEN *HideItemMenu) {
     MENU_STYLE_FUNC    Style = TextMenuStyle;
     REFIT_MENU_ENTRY   *ChosenOption;
@@ -1705,6 +1726,11 @@ static VOID HideTag(REFIT_MENU_ENTRY *ChosenEntry) {
         case TAG_LEGACY_UEFI:
             HideItemMenu.Title = L"Hide Legacy OS Tag";
             if (HideLegacyTag(LegacyLoader, &HideItemMenu))
+                RescanAll(FALSE, FALSE);
+            break;
+        case TAG_FIRMWARE_LOADER:
+            HideItemMenu.Title = L"Hide Firmware Boot Option Tag";
+            if (HideFirmwareTag(Loader, &HideItemMenu))
                 RescanAll(FALSE, FALSE);
             break;
         case TAG_ABOUT:
@@ -1774,7 +1800,10 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
         MenuTitle = StrDuplicate(TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {
-               MenuExit = RunGenericMenu(TempChosenEntry->SubScreen, Style, &DefaultSubmenuIndex, &TempChosenEntry);
+               MenuExit = RunGenericMenu(TempChosenEntry->SubScreen,
+                                         Style,
+                                         &DefaultSubmenuIndex,
+                                         &TempChosenEntry);
                if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN)
                    MenuExit = 0;
                if (MenuExit == MENU_EXIT_DETAILS) {

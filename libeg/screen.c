@@ -302,7 +302,6 @@ BOOLEAN egSetScreenSize(IN OUT UINTN *ScreenWidth, IN OUT UINTN *ScreenHeight) {
     if ((ScreenWidth == NULL) || (ScreenHeight == NULL))
         return FALSE;
 
-    return TRUE;
     if (GraphicsOutput != NULL) { // GOP mode (UEFI)
         CurrentModeNum = GraphicsOutput->Mode->Mode;
 

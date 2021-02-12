@@ -954,6 +954,15 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
       } else if (MyStriCmp(TokenList[0], L"disabled")) {
          Entry->Enabled = FALSE;
 
+      } else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
+         Entry->EfiBootNum = StrToHex(TokenList[1], 0, 16);
+         Entry->EfiLoaderPath = NULL;
+         Entry->LoaderPath = NULL;
+         MyFreePool(Entry->me.Title);
+         Entry->me.Title = StrDuplicate(Title);
+         Entry->me.BadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_EFI);
+         Entry->me.Tag = TAG_FIRMWARE_LOADER;
+
       } else if (MyStriCmp(TokenList[0], L"submenuentry") && (TokenCount > 1)) {
          AddSubmenu(Entry, File, CurrentVolume, TokenList[1]);
          AddedSubmenu = TRUE;

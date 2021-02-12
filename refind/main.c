@@ -361,10 +361,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         return Status;
 
     // read configuration
-    CopyMem(GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
+    CopyMem(GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
     FindLegacyBootType();
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)
-       CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
+       CopyMem(GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
     SetConfigFilename(ImageHandle);
     MokProtocol = SecureBootSetup();
 
@@ -455,6 +455,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
                 StartLegacyUEFI((LEGACY_ENTRY *)ChosenEntry, SelectionName);
+                break;
+
+            case TAG_FIRMWARE_LOADER: // Reboot to a loader defined in the EFI UseNVRAM
+                RebootIntoLoader((LOADER_ENTRY *)ChosenEntry);
                 break;
 
             case TAG_TOOL:     // Start a EFI tool

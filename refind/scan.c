@@ -70,6 +70,7 @@
 #include "launch_legacy.h"
 #include "linux.h"
 #include "scan.h"
+#include "install.h"
 #include "../include/refit_call_wrapper.h"
 
 
@@ -220,12 +221,16 @@ LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry) {
         NewEntry->Enabled         = TRUE;
         NewEntry->UseGraphicsMode = FALSE;
         NewEntry->OSType          = 0;
+        NewEntry->EfiLoaderPath   = NULL;
+        NewEntry->EfiBootNum      = 0;
         if (Entry != NULL) {
             NewEntry->LoaderPath      = (Entry->LoaderPath) ? StrDuplicate(Entry->LoaderPath) : NULL;
             NewEntry->Volume          = Entry->Volume;
             NewEntry->UseGraphicsMode = Entry->UseGraphicsMode;
             NewEntry->LoadOptions     = (Entry->LoadOptions) ? StrDuplicate(Entry->LoadOptions) : NULL;
             NewEntry->InitrdPath      = (Entry->InitrdPath) ? StrDuplicate(Entry->InitrdPath) : NULL;
+            NewEntry->EfiLoaderPath   = (Entry->EfiLoaderPath) ? DuplicateDevicePath(Entry->EfiLoaderPath) : NULL;
+            NewEntry->EfiBootNum      = Entry->EfiBootNum;
         }
     } // if
     return (NewEntry);
@@ -575,6 +580,50 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
     MyFreePool(NoExtension);
 } // VOID SetLoaderDefaults()
 
+// Add an NVRAM-based EFI boot loader entry to the menu.
+static LOADER_ENTRY * AddEfiLoaderEntry(IN EFI_DEVICE_PATH *EfiLoaderPath,
+                                        IN CHAR16 *LoaderTitle,
+                                        IN UINT16 EfiBootNum,
+                                        IN UINTN Row,
+                                        EG_IMAGE *Icon) {
+    LOADER_ENTRY  *Entry;
+    CHAR16        *OSIconName = NULL;
+    CHAR16        *FullTitle = NULL;
+
+    Entry = InitializeLoaderEntry(NULL);
+    if (Entry) {
+        Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
+        if (LoaderTitle)
+            FullTitle = PoolPrint(L"Reboot to %s", LoaderTitle);
+        Entry->me.Title = StrDuplicate((FullTitle) ? FullTitle : L"Unknown");
+        Entry->me.Row = Row;
+        Entry->me.Tag = TAG_FIRMWARE_LOADER;
+        Entry->Title = StrDuplicate((LoaderTitle) ? LoaderTitle : L"Unknown"); // without "Reboot to"
+        Entry->EfiLoaderPath = DuplicateDevicePath(EfiLoaderPath);
+        Entry->EfiBootNum = EfiBootNum;
+        MergeWords(&OSIconName, Entry->me.Title, L',');
+        MergeStrings(&OSIconName, L"unknown", L',');
+        if (Icon) {
+            Entry->me.Image = Icon;
+        } else {
+            Entry->me.Image = LoadOSIcon(OSIconName, NULL, FALSE);
+        }
+        if (Row == 0) {
+            Entry->me.BadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_EFI);
+        } else {
+            Entry->me.BadgeImage = NULL;
+        }
+        MyFreePool(OSIconName);
+        Entry->LoaderPath = NULL;
+        Entry->Volume = NULL;
+        Entry->LoadOptions = NULL;
+        Entry->InitrdPath = NULL;
+        Entry->Enabled = TRUE;
+    } // if (Entry)
+    AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+    return Entry;
+} // LOADER_ENTRY * AddEfiLoaderEntry()
+
 // Add a specified EFI boot loader to the list, using automatic settings
 // for icons, options, etc.
 static LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume, IN BOOLEAN SubScreenReturn) {
@@ -582,8 +631,8 @@ static LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTit
 
     CleanUpPathNameSlashes(LoaderPath);
     Entry = InitializeLoaderEntry(NULL);
-    Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
     if (Entry != NULL) {
+        Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
         Entry->Title = StrDuplicate((LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
         Entry->me.Title = AllocateZeroPool(sizeof(CHAR16) * 256);
         // Extra space at end of Entry->me.Title enables searching on Volume->VolName even if another volume
@@ -1111,6 +1160,64 @@ static VOID ScanOptical(VOID) {
     } // for
 } // static VOID ScanOptical()
 
+// Scan options stored in EFI firmware's boot list. Adds discovered and allowed
+// items to the specified Row.
+// If MatchThis != NULL, only adds items with labels containing any element of
+// the MatchThis comma-delimited string; otherwise, searches for anything that
+// doesn't match GlobalConfig.DontScanFiles.
+// If Icon != NULL, uses the specified icon; otherwise tries to find one to
+// match the label.
+static VOID ScanFirmwareDefined(IN UINTN Row, IN CHAR16 *MatchThis, IN EG_IMAGE *Icon) {
+    BOOT_ENTRY_LIST *BootEntries, *CurrentEntry;
+    BOOLEAN ScanIt = TRUE;
+    CHAR16  *List = NULL;
+    CHAR16  *OneElement = NULL;
+    CHAR16  *DontScanFiles;
+    UINTN   i = 0;
+
+    DontScanFiles = StrDuplicate(GlobalConfig.DontScanFiles);
+    if (Row == 0)
+        MergeStrings(&DontScanFiles, L"shell", L',');
+    BootEntries = FindBootOrderEntries();
+    CurrentEntry = BootEntries;
+    while (CurrentEntry != NULL) {
+        MergeWords(&List, CurrentEntry->BootEntry.Label, L',');
+        if (MatchThis) {
+            ScanIt = FALSE;
+            while (!ScanIt && (OneElement = FindCommaDelimited(MatchThis, i++))) {
+                if (StriSubCmp(OneElement, CurrentEntry->BootEntry.Label))
+                    ScanIt = TRUE;
+                MyFreePool(OneElement);
+            }
+        } else {
+            while (ScanIt && (OneElement = FindCommaDelimited(List, i++))) {
+                if (FilenameIn(NULL, NULL, OneElement, DontScanFiles))
+                    ScanIt = FALSE;
+                MyFreePool(OneElement);
+            } // while()
+            i = 0;
+            if (ScanIt) {
+                if (IsInSubstring(CurrentEntry->BootEntry.Label, DontScanFiles)) {
+                    ScanIt = FALSE;
+                }
+            }
+            i = 0;
+        } // if/else
+        if (ScanIt) {
+            AddEfiLoaderEntry(CurrentEntry->BootEntry.DevPath,
+                              CurrentEntry->BootEntry.Label,
+                              CurrentEntry->BootEntry.BootNum, Row, Icon);
+        }
+        CurrentEntry = CurrentEntry->NextBootEntry;
+        MyFreePool(List);
+        List = NULL;
+        ScanIt = TRUE;
+        i = 0;
+    } // while()
+    MyFreePool(DontScanFiles);
+    DeleteBootOrderEntries(BootEntries);
+} // static VOID ScanFirmwareDefined()
+
 // default volume badge icon based on disk kind
 EG_IMAGE * GetDiskBadge(IN UINTN DiskType) {
     EG_IMAGE * Badge = NULL;
@@ -1215,6 +1322,9 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
                 break;
             case 'n': case 'N':
                 ScanNetboot();
+                break;
+            case 'f': case 'F':
+                ScanFirmwareDefined(0, NULL, NULL);
                 break;
         } // switch()
     } // for
@@ -1354,6 +1464,7 @@ VOID ScanForTools(VOID) {
                     }
                 MyFreePool(FileName);
                 } // while
+                ScanFirmwareDefined(1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
                 break;
 
             case TAG_GPTSYNC:

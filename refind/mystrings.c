@@ -166,7 +166,7 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
 
 // Similar to MergeStrings, but breaks the input string into word chunks and
 // merges each word separately. Words are defined as string fragments separated
-// by ' ', '_', or '-'.
+// by ' ', ':', '_', or '-'.
 VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
     CHAR16 *Temp, *Word, *p;
     BOOLEAN LineFinished = FALSE;
@@ -175,7 +175,7 @@ VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
         Temp = Word = p = StrDuplicate(SourceString);
         if (Temp) {
             while (!LineFinished) {
-                if ((*p == L' ') || (*p == L'_') || (*p == L'-') || (*p == L'\0')) {
+                if ((*p == L' ') || (*p == L':') || (*p == L'_') || (*p == L'-') || (*p == L'\0')) {
                     if (*p == L'\0')
                         LineFinished = TRUE;
                     *p = L'\0';

@@ -302,6 +302,7 @@ timeout 20
 #  biosexternal  - BIOS external boot loaders (USB, eSATA, etc.)
 #  cd            - BIOS optical-disc boot loaders
 #  manual        - use stanzas later in this configuration file
+#  firmware      - boot EFI programs set in the firmware's NVRAM
 # Note that the legacy BIOS options require firmware support, which is
 # not present on all computers.
 # The netboot option is experimental and relies on the ipxe.efi and
@@ -309,7 +310,7 @@ timeout 20
 # On UEFI PCs, default is internal,external,optical,manual
 # On Macs, default is internal,hdbios,external,biosexternal,optical,cd,manual
 #
-#scanfor internal,external,optical,manual
+#scanfor internal,external,optical,manual,firmware
 
 # By default, rEFInd relies on the UEFI firmware to detect BIOS-mode boot
 # devices. This sometimes doesn't detect all the available devices, though.
@@ -647,7 +648,7 @@ menuentry "Windows via shell script" {
     disabled
 }
 
-# Mac OS is normally detected and run automatically; however,
+# MacOS is normally detected and run automatically; however,
 # if you want to do something unusual, a manual boot stanza may
 # be the way to do it. This one does nothing very unusual, but
 # it may serve as a starting point. Note that you'll almost
@@ -658,4 +659,19 @@ menuentry "My macOS" {
     volume "macOS boot"
     loader \System\Library\CoreServices\boot.efi
     disabled
+}
+
+# The firmware_bootnum token takes a HEXADECIMAL value as an option
+# and sets that value using the EFI's BootNext variable and then
+# reboots the computer. This then causes a one-time boot of the
+# computer using this EFI boot option. It can be used for various
+# purposes, but one that's likely to interest some rEFInd users is
+# that some Macs with HiDPI displays produce lower-resolution
+# desktops when booted through rEFInd than when booted via Apple's
+# own boot manager. Booting using the firmware_bootnum option
+# produces the better resolution. Note that no loader option is
+# used in this type of configuration.
+menuentry "macOS via BootNext" {
+    icon /EFI/refind/icons/os_mac.png
+    firmware_bootnum 80
 }
