@@ -674,4 +674,5 @@ menuentry "My macOS" {
 menuentry "macOS via BootNext" {
     icon /EFI/refind/icons/os_mac.png
     firmware_bootnum 80
+    disabled
 }

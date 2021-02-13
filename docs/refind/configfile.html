@@ -140,6 +140,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="#submenu">Creating Submenu Entries</a></li>
 
+<li class="tight"><a href="#bootnext">Using Firmware Boot Options</a></li>
+
 <li class="tight"><a href="#default">Adjusting the Default Boot Option</a></li>
 
 </ul>
@@ -363,8 +365,8 @@ timeout 20
 </tr>
 <tr>
    <td><tt>scanfor</tt></td>
-   <td><tt>internal</tt>, <tt>external</tt>, <tt>optical</tt>, <tt>netboot</tt>, <tt>hdbios</tt>, <tt>biosexternal</tt>, <tt>cd</tt>, and <tt>manual</tt></td>
-   <td>Tells rEFInd what methods to use to locate boot loaders. The <tt>internal</tt>, <tt>external</tt>, and <tt>optical</tt> parameters tell rEFInd to scan for EFI boot loaders on internal, external, and optical (CD, DVD, and Blu-ray) devices, respectively. The <tt>netboot</tt> option relies on the presence of the <tt>ipxe.efi</tt> and <tt>ipxe_discover.efi</tt> program files in the <tt>EFI/tools</tt> directory to assist with network (Preboot Execution Environment, or PXE) booting. Note that <tt>netboot</tt> is experimental. See the <tt>BUILDING.txt</tt> file for information on building the necessary binaries. The <tt>hdbios</tt>, <tt>biosexternal</tt>, and <tt>cd</tt> parameters are similar, but scan for BIOS boot loaders. (Note that the BIOS options scan more thoroughly and actively on Macs than on UEFI-based PCs; for the latter, only options in the firmware's boot list are scanned, as described on the <a href="using.html">Using rEFInd</a> page.) The <tt>manual</tt> parameter tells rEFInd to scan the configuration file for manual settings. You can specify multiple parameters to have the program scan for multiple boot loader types. When you do so, the order determines the order in which the boot loaders appear in the menu. The default is <tt>internal, external, optical, manual</tt> on most systems, but <tt>internal, hdbios, external, biosexternal, optical, cd, manual</tt> on Macs.</td>
+   <td><tt>internal</tt>, <tt>external</tt>, <tt>optical</tt>, <tt>netboot</tt>, <tt>hdbios</tt>, <tt>biosexternal</tt>, <tt>cd</tt>, <tt>manual</tt>, and <tt>firmware</tt></td>
+   <td>Tells rEFInd what methods to use to locate boot loaders. The <tt>internal</tt>, <tt>external</tt>, and <tt>optical</tt> parameters tell rEFInd to scan for EFI boot loaders on internal, external, and optical (CD, DVD, and Blu-ray) devices, respectively. The <tt>hdbios</tt>, <tt>biosexternal</tt>, and <tt>cd</tt> parameters are similar, but scan for BIOS boot loaders. (Note that the BIOS options scan more thoroughly and actively on Macs than on UEFI-based PCs; for the latter, only options in the firmware's boot list are scanned, as described on the <a href="using.html">Using rEFInd</a> page.) The <tt>netboot</tt> option relies on the presence of the <tt>ipxe.efi</tt> and <tt>ipxe_discover.efi</tt> program files in the <tt>EFI/tools</tt> directory to assist with network (Preboot Execution Environment, or PXE) booting. Note that <tt>netboot</tt> is experimental and deprecated. See the <tt>BUILDING.txt</tt> file for information on building the necessary binaries. The <tt>manual</tt> parameter tells rEFInd to scan the configuration file for manual settings. You can specify multiple parameters to have the program scan for multiple boot loader types. When you do so, the order determines the order in which the boot loaders appear in the menu. The <tt>firmware</tt> option tells rEFInd to scan for boot options stored in the EFI's own boot order list; when selected, rEFInd sets the EFI <tt>BootNext</tt> variable and reboots, causing the selected option to run. The upcoming section, <a href="#bootnext">Using Firmware Boot Options,</a> covers this topic in more detail. The default is <tt>internal, external, optical, manual</tt> on most systems, but <tt>internal, hdbios, external, biosexternal, optical, cd, manual</tt> on Macs.</td>
 </tr>
 <tr>
    <td><tt>uefi_deep_legacy_scan</tt></td>
@@ -520,6 +522,10 @@ default_selection elilo
    <td><tt>initrd</tt></td>
    <td>filename</td>
    <td>Sets the filename for a Linux kernel's initial RAM disk (initrd). This option is useful only when booting a Linux kernel that includes an <a href="https://www.rodsbooks.com/efi-bootloaders/efistub.html">EFI stub loader</a>, which enables you to boot a kernel without the benefit of a separate boot loader. When booted in this way, though, you must normally pass an initrd filename to the boot loader. You must specify the complete EFI path to the initrd file with this option, as in <tt>initrd EFI/linux/initrd-3.3.0-rc7.img</tt>. You'll also have to use the <tt>options</tt> line to pass the Linux root filesystem, and perhaps other options (as in <tt>options "root=/dev/sda4 ro"</tt>). The initial RAM disk file must reside on the same volume as the kernel.</td>
+</tr>
+   <td><tt>firmware_bootnum</tt></td>
+   <td>16-bit hexadecimal number (<tt>0000</tt> through <tt>FFFF</tt></td>
+   <td>Sets the EFI boot loader's boot number to be executed. These numbers appear in the output of Linux's <tt>efibootmgr</tt> as <tt>Boot####</tt> values, for instance. When this option is used, most other tokens have no effect, although you can set a name with <tt>menuentry</tt>, set an icon with <tt>icon</tt>, and disable the entry with <tt>disabled</tt>. The upcoming section, <a href="#bootnext">Using Firmware Boot Options,</a> describes this boot method in more detail.</td>
 </tr>
 <tr>
    <td><tt>icon</tt></td>
@@ -688,6 +694,66 @@ menuentry Arch {
 
 </ul>
 
+<a name="bootnext">
+<h2>Using Firmware Boot Options</h2>
+</a>
+
+<p>rEFInd's ability to reboot into a boot program specified via the EFI's own boot manager, introduced with rEFInd 0.12.1, is unusual and requires special elaboration. This option can be used in any of three ways:</p>
+
+<ul>
+
+<li><b>Auto-scanning</b> &mdash; One method is to set <tt>firmware</tt> as an option to the <tt>scanfor</tt> line. This method causes rEFInd to display most or all of the available EFI boot entries (as revealed by Linux's <tt>efibootmgr</tt>, among other methods) as first-line boot options. (One exception is described shortly, and in some cases some options may be omitted.)</li>
+
+<li><b>Manual boot stanzas</b> &mdash; The <tt>firmware-bootnum</tt> token in a manual boot stanza creates an entry that launches the specified <tt>Boot####</tt> entry. This token takes a single hexadecimal number as an option, so you can copy the number specified by <tt>efibootmgr</tt> to create an entry. This is a good way to use this feature if you want to access just one boot option in this way.</li>
+
+<li><b>Built-in EFI shells</b> &mdash; If an option contains the string <tt>shell</tt> (case-insensitive) in its description, it is added to the list of available EFI shell programs and is displayed on the second line of the rEFInd options list, but is <i>omitted</i> from the first line of OS loaders. This second-row option is created only if <tt>shell</tt> is an option to <tt>showtools</tt>, and whether or not you've set <tt>firmware</tt> as an option to <tt>scanfor</tt>. Note that most desktop and laptop computers lack a built-in EFI shell, although they do exist on a few. This feature is more common on server computers.</li>
+
+</ul>
+
+    <img src="firmware-badge.png" align="right" width="128" height="128"
+    alt="The firmware boot option badge identifies boot options that cause
+    rEFInd to reboot the computer" border=2 background="gray"/>
+
+<p>In the rEFInd menu, entries launched in this way are identified by a computer chip badge, as shown to the right (applied there to a macOS loader icon). Their descriptions (which appear when they're highlighted) also begin with the string "Reboot to" (the "Reboot to Computer Setup Utility" second-row option also contains this string, and works in a way that's similar, but not identical, to the firmware reboot options).</p>
+
+<p>No matter how they're created, these options work by setting the EFI's <tt>BootNext</tt> variable to point to the specified boot option and then reboot the computer. In theory, the effect is identical to setting this variable using the <tt>-n</tt> option to <tt>efibootmgr</tt> in Linux and then rebooting. There are several reasons you might want to use this option:</p>
+
+<ul>
+
+<li><b>Overcoming HiDPI limitations in macOS</b> &mdash; On some Macs with HiDPI (aka "Retina") displays, booting macOS from rEFInd 0.12.0 and earlier or using other methods with later versions, produces a lower-than-optimal resolution. For instance, my own iMac, when booted directly, produces a 4096x2304 display; but when booted via rEFInd's normal methods, the display is only 3360x1890. When using this firmware boot method, the full resolution becomes available.</li>
+
+<li><b>Overcoming other macOS problems</b> &mdash; Apple has a history of changing its boot loader location and otherwise making changes that cause problems for rEFInd. In theory, this method of booting should be more robust against such changes.</li>
+
+<li><b>Booting over the network</b> &mdash; Most computers have options to boot over the network using the Pre-Execution Environment (PXE) or the Hypertext Transfer Protocol (HTTP). Although rEFInd has long supported an <i>experimental</i> PXE-boot implementation that relies on a third-party binary called <i>iPXE</i>, this method is limited and has seen little development since it was introduced. Redirecting to a network boot method implemented in the firmware is likely to be more reliable; however, at the time of introducing this feature, this aspect of it has been given limited testing.</li>
+
+<li><b>Booting built-in EFI shells</b> &mdash; As noted earlier, firmware-mediated boot methods enable rEFInd to launch built-in EFI shells, which can be more convenient than installing EFI shell binaries yourself. Also, whatever shell is provided by your EFI <i>should</i> be compatible with the EFI. Random EFI shell binaries downloaded off the Internet might or might not be compatible.</li>
+
+<li><b>Accessing obscure EFI-specific utilities</b> &mdash; Some EFIs provide EFI boot order options to access the firmware setup utility, hardware RAID card configuration tools, and other obscure utilities. Making these tools available via rEFInd can be helpful.</li>
+
+<li><b>Booting strange OSes</b> &mdash; Although rEFInd usually does a good job of auto-detecting and launching boot loaders, some oddball configurations might give it problems. (The macOS issues noted earlier are examples of this.) If you run into such problems, and if existing EFI boot entries can launch your OS, then this rEFInd feature may be a good way to get things working. Creating a more conventional manual boot stanza might also work in some cases.</li>
+
+<li><b>Secure Boot issues</b> &mdash; Sometimes, a boot chain from one boot program to another to another can wreak havoc with Secure Boot checks. Rebooting from rEFInd into another boot chain erases the effects of rEFInd and whatever Shim it uses, which may help with such issues.</li>
+
+</ul>
+
+<p>To be sure, in most cases this new rEFInd feature will provide minimal or no benefits. For this reason, and because the number of useless extra options detected can be quite high, the <tt>firmware</tt> option to <tt>scanfor</tt> is disabled by default. If you try this feature, you may run into several other limitations:</p>
+
+<ul>
+
+<li><b>Speed</b> &mdash; Because this boot method employs a reboot, extra time is added to the boot process. For instance, booting macOS normally on my iMac takes 13 seconds from the moment I press Enter on the macOS option in rEFInd to the time that the macOS login appears. Booting via the firmware reboot feature takes 26 seconds for the same measure.</li>
+
+<li><b>Mac HiDPI video benefits apply only to macOS</b> &mdash; I have not tested every OS or boot method, but in my limited tests so far, Linux booted via a direct EFI stub entry did not gain the video resolution benefits noted above for macOS. (That said, my Ubuntu installations run at 3840x2160, which isn't as bad as macOS on the same hardware booted through a "normal" rEFInd boot chain.) I don't have Windows installed on this computer, so I can't be sure how it would react; but it's my understanding that Windows is affected even when booted via Apple's own boot manager, so I suspect Windows would not be helped, either.</li>
+
+<li><b>Lost rEFInd environment features</b> &mdash; Because this method of booting employs a reboot, any environment options set by rEFInd will be lost. Such options include the video resolution, Shim (if rEFInd was launched via Shim), and any EFI drivers that rEFInd loaded. Thus, you won't be able to launch a Linux kernel stored on an ext4 filesystem using this method; and if you launch an EFI shell in this way, it won't be able to read filesystems handled by your EFI filesystem drivers, either.</li>
+
+<li><b>Some boot options don't work</b> &mdash; For reasons I don't understand, some boot options simply don't work. This boot method seems to be completely useless on an ancient i386-based Mac Mini and on an "early 2014" MacBook Air 6,2, both of which run Apple's EFI 1.10. (My iMac has a UEFI 2.4 implementation.) In my testing, I've also seen other options randomly fail on various non-Apple computers.</li>
+
+<li><b>Boot options can change</b> &mdash; EFIs and OSes can alter the EFI boot option list independently of the contents of the ESP. Thus, options can unexpectedly appear on or disappear from this list. This is most likely to be an issue if you use the <tt>firmware</tt> option to <tt>scanfor</tt>, although it could affect a manual boot stanza definition, too.</li>
+
+</ul>
+
+<p>Overall, I don't recommend relying on this boot method in most cases; it's slow and may not be very reliable. In some cases, though, it can be very useful. This is definitely the case for HiDPI Macs, and may be the case if you need to occasionally boot from a network device. To avoid cluttering your display, you may want to create a manual boot stanza to facilitate such boot methods. You can identify the boot number using <tt>efibootmgr</tt> in Linux or rEFInd's own boot order management tool. (This tool is disabled by default, but can be enabled by adding <tt>bootorder</tt> to the <tt>showtools</tt> line in <tt>refind.conf</tt>.) Alternatively, you can add <tt>firmware</tt> to the <tt>scanfor</tt> line and then hide the options you don't want to see using any of the methods described earlier, in <a href="#hiding">Hiding and Dsiplaying EFI Boot Loaders.</a></p>
+
 <a name="default">
 <h2>Adjusting the Default Boot Option</h2>
 </a>
@@ -702,15 +768,9 @@ menuentry Arch {
 
 <p>If you want to consistently boot a particular OS by default and ignore the previous boot, you can use <tt>default_selection</tt>, but <i>omit</i> the <tt>+</tt> at the start of the line.</p>
 
-<p></p>
-
-<p></p>
-
-<p></p>
-
 <hr />
 
-<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2021 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 
