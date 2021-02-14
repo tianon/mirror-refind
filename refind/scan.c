@@ -1164,44 +1164,38 @@ static VOID ScanOptical(VOID) {
 // items to the specified Row.
 // If MatchThis != NULL, only adds items with labels containing any element of
 // the MatchThis comma-delimited string; otherwise, searches for anything that
-// doesn't match GlobalConfig.DontScanFiles.
+// doesn't match GlobalConfig.DontScanFirmware or the contents of the
+// HiddenFirmware EFI variable.
 // If Icon != NULL, uses the specified icon; otherwise tries to find one to
 // match the label.
 static VOID ScanFirmwareDefined(IN UINTN Row, IN CHAR16 *MatchThis, IN EG_IMAGE *Icon) {
     BOOT_ENTRY_LIST *BootEntries, *CurrentEntry;
     BOOLEAN ScanIt = TRUE;
-    CHAR16  *List = NULL;
     CHAR16  *OneElement = NULL;
-    CHAR16  *DontScanFiles;
-    UINTN   i = 0;
+    CHAR16  *DontScanFirmware;
+    UINTN   i;
 
-    DontScanFiles = StrDuplicate(GlobalConfig.DontScanFiles);
+    DontScanFirmware = ReadHiddenTags(L"HiddenFirmware");
+    MergeStrings(&DontScanFirmware, GlobalConfig.DontScanFirmware, L',');
     if (Row == 0)
-        MergeStrings(&DontScanFiles, L"shell", L',');
+        MergeStrings(&DontScanFirmware, L"shell", L',');
     BootEntries = FindBootOrderEntries();
     CurrentEntry = BootEntries;
     while (CurrentEntry != NULL) {
-        MergeWords(&List, CurrentEntry->BootEntry.Label, L',');
         if (MatchThis) {
             ScanIt = FALSE;
+            i = 0;
             while (!ScanIt && (OneElement = FindCommaDelimited(MatchThis, i++))) {
-                if (StriSubCmp(OneElement, CurrentEntry->BootEntry.Label))
-                    ScanIt = TRUE;
-                MyFreePool(OneElement);
-            }
-        } else {
-            while (ScanIt && (OneElement = FindCommaDelimited(List, i++))) {
-                if (FilenameIn(NULL, NULL, OneElement, DontScanFiles))
-                    ScanIt = FALSE;
+                if (StriSubCmp(OneElement, CurrentEntry->BootEntry.Label) &&
+                    !IsInSubstring(CurrentEntry->BootEntry.Label, DontScanFirmware)) {
+                        ScanIt = TRUE;
+                }
                 MyFreePool(OneElement);
             } // while()
-            i = 0;
-            if (ScanIt) {
-                if (IsInSubstring(CurrentEntry->BootEntry.Label, DontScanFiles)) {
-                    ScanIt = FALSE;
-                }
+        } else {
+            if (IsInSubstring(CurrentEntry->BootEntry.Label, DontScanFirmware)) {
+                ScanIt = FALSE;
             }
-            i = 0;
         } // if/else
         if (ScanIt) {
             AddEfiLoaderEntry(CurrentEntry->BootEntry.DevPath,
@@ -1209,12 +1203,9 @@ static VOID ScanFirmwareDefined(IN UINTN Row, IN CHAR16 *MatchThis, IN EG_IMAGE 
                               CurrentEntry->BootEntry.BootNum, Row, Icon);
         }
         CurrentEntry = CurrentEntry->NextBootEntry;
-        MyFreePool(List);
-        List = NULL;
-        ScanIt = TRUE;
-        i = 0;
+        ScanIt = TRUE; // Assume the next item is to be scanned
     } // while()
-    MyFreePool(DontScanFiles);
+    MyFreePool(DontScanFirmware);
     DeleteBootOrderEntries(BootEntries);
 } // static VOID ScanFirmwareDefined()
 
@@ -1269,6 +1260,7 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     BOOLEAN  ScanForLegacy = FALSE;
     EG_PIXEL BGColor = COLOR_LIGHTBLUE;
     CHAR16   *HiddenTags;
+    CHAR16   *OrigDontScanFiles, *OrigDontScanVolumes;
 
     if (ShowMessage)
         egDisplayMessage(L"Scanning for boot loaders; please wait....", &BGColor, CENTER);
@@ -1286,6 +1278,19 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
         BdsAddNonExistingLegacyBootOptions();
     } // if
 
+    // We temporarily modify GlobalConfig.DontScanFiles and GlobalConfig.DontScanVolumes
+    // to include contents of EFI HiddenTags and HiddenLegacy variables so that we don't
+    // have to re-load these EFI variables in several functions called from this one.
+    // To do this, we must be able to restore the original contents, so back them up
+    // first.
+    // We do *NOT* do this with GlobalConfig.DontScanFirmware and
+    // GlobalConfig.DontScanTools variables because they're used in only one function
+    // each, so it's easier to create a temporary variable for the merged contents
+    // there and not modify the global variable.
+    OrigDontScanFiles = StrDuplicate(GlobalConfig.DontScanFiles);
+    OrigDontScanVolumes = StrDuplicate(GlobalConfig.DontScanVolumes);
+
+    // Add hidden tags to two GlobalConfig.DontScan* variables....
     HiddenTags = ReadHiddenTags(L"HiddenTags");
     if ((HiddenTags) && (StrLen(HiddenTags) > 0)) {
         MergeStrings(&GlobalConfig.DontScanFiles, HiddenTags, L',');
@@ -1294,7 +1299,6 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     if ((HiddenTags) && (StrLen(HiddenTags) > 0)) {
         MergeStrings(&GlobalConfig.DontScanVolumes, HiddenTags, L',');
     }
-    MyFreePool(HiddenTags);
 
     // scan for loaders and tools, add them to the menu
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
@@ -1329,6 +1333,12 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
         } // switch()
     } // for
 
+    // Restore the backed-up GlobalConfig.DontScan* variables....
+    MyFreePool(GlobalConfig.DontScanFiles);
+    GlobalConfig.DontScanFiles = OrigDontScanFiles;
+    MyFreePool(GlobalConfig.DontScanVolumes);
+    GlobalConfig.DontScanVolumes = OrigDontScanVolumes;
+
     // assign shortcut keys
     for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && i < 9; i++)
         MainMenu.Entries[i]->ShortcutDigit = (CHAR16)('1' + i);
@@ -1341,13 +1351,15 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
 // Returns TRUE if it passes all tests, FALSE otherwise
 static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     CHAR16 *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis;
-    CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL;
+    CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools;
     BOOLEAN retval = TRUE;
     UINTN i = 0;
 
+    DontScanTools = ReadHiddenTags(L"HiddenTools");
+    MergeStrings(&DontScanTools, GlobalConfig.DontScanTools, L',');
     if (FileExists(BaseVolume->RootDir, PathName) && IsValidLoader(BaseVolume->RootDir, PathName)) {
         SplitPathName(PathName, &TestVolName, &TestPathName, &TestFileName);
-        while (retval && (DontScanThis = FindCommaDelimited(GlobalConfig.DontScanTools, i++))) {
+        while (retval && (DontScanThis = FindCommaDelimited(DontScanTools, i++))) {
             SplitPathName(DontScanThis, &DontVolName, &DontPathName, &DontFileName);
             if (MyStriCmp(TestFileName, DontFileName) &&
                 ((DontPathName == NULL) || (MyStriCmp(TestPathName, DontPathName))) &&
@@ -1361,6 +1373,7 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     MyFreePool(TestVolName);
     MyFreePool(TestPathName);
     MyFreePool(TestFileName);
+    MyFreePool(DontScanTools);
     return retval;
 } // VOID IsValidTool()
 
@@ -1391,7 +1404,7 @@ static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINT
 // Add the second-row tags containing built-in and external tools (EFI shell,
 // reboot, etc.)
 VOID ScanForTools(VOID) {
-    CHAR16 *FileName = NULL, *VolName = NULL, *MokLocations, Description[256], *HiddenTools;
+    CHAR16 *FileName = NULL, *VolName = NULL, *MokLocations, Description[256];
     REFIT_MENU_ENTRY *TempMenuEntry;
     UINTN i, j, VolumeIndex;
     UINT64 osind;
@@ -1401,12 +1414,6 @@ VOID ScanForTools(VOID) {
     MokLocations = StrDuplicate(MOK_LOCATIONS);
     if (MokLocations != NULL)
         MergeStrings(&MokLocations, SelfDirPath, L',');
-
-    HiddenTools = ReadHiddenTags(L"HiddenTools");
-    if ((HiddenTools) && (StrLen(HiddenTools) > 0)) {
-        MergeStrings(&GlobalConfig.DontScanTools, HiddenTools, L',');
-    }
-    MyFreePool(HiddenTools);
 
     for (i = 0; i < NUM_TOOLS; i++) {
         switch(GlobalConfig.ShowTools[i]) {
@@ -1459,10 +1466,12 @@ VOID ScanForTools(VOID) {
                 j = 0;
                 while ((FileName = FindCommaDelimited(SHELL_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
-                        AddToolEntry(SelfVolume, FileName, L"EFI Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
+                        AddToolEntry(SelfVolume, FileName, L"EFI Shell",
+                                     BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
                                      'S', FALSE);
                     }
-                MyFreePool(FileName);
+                    MyFreePool(FileName);
+                    FileName = NULL;
                 } // while
                 ScanFirmwareDefined(1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
                 break;

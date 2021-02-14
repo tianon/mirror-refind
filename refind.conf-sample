@@ -402,6 +402,17 @@ timeout 20
 #
 #dont_scan_files shim.efi,MokManager.efi
 
+# EFI NVRAM Boot#### variables that should NOT be presented as loaders
+# when "firmware" is an option to "scanfor". The comma-separated list
+# presented here contains strings that are matched against the
+# description field -- if a value here is a case-insensitive substring
+# of the boot option description, then it will be excluded from the
+# boot list. To specify a string that includes a space, enclose it
+# in quotes. Specifying "shell" will counteract the automatic
+# inclusion of built-in EFI shells.
+#
+#dont_scan_firmware HARDDISK,shell,"Removable Device"
+
 # Scan for Linux kernels that lack a ".efi" filename extension. This is
 # useful for better integration with Linux distributions that provide
 # kernels with EFI stub loaders but that don't give those kernels filenames

@@ -383,8 +383,11 @@ BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
    if (BigString && List) {
       while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
          ElementLength = StrLen(OneElement);
-         if ((ElementLength <= StrLen(BigString)) && (StriSubCmp(OneElement, BigString)))
-            Found = TRUE;
+         if ((ElementLength <= StrLen(BigString)) &&
+             (ElementLength > 0) &&
+             (StriSubCmp(OneElement, BigString))) {
+                Found = TRUE;
+         } // if
          MyFreePool(OneElement);
       } // while
    } // if

@@ -511,6 +511,8 @@ VOID ReadConfig(CHAR16 *FileName)
        GlobalConfig.DontScanFiles = StrDuplicate(DONT_SCAN_FILES);
        MyFreePool(GlobalConfig.DontScanTools);
        GlobalConfig.DontScanTools = NULL;
+       MyFreePool(GlobalConfig.DontScanFirmware);
+       GlobalConfig.DontScanFirmware = NULL;
        MergeStrings(&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
        MergeStrings(&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
        MyFreePool(GlobalConfig.DontScanVolumes);
@@ -609,6 +611,9 @@ VOID ReadConfig(CHAR16 *FileName)
 
         } else if (MyStriCmp(TokenList[0], L"don't_scan_files") || MyStriCmp(TokenList[0], L"dont_scan_files")) {
            HandleStrings(TokenList, TokenCount, &(GlobalConfig.DontScanFiles));
+
+        } else if (MyStriCmp(TokenList[0], L"don't_scan_firmware") || MyStriCmp(TokenList[0], L"dont_scan_firmware")) {
+           HandleStrings(TokenList, TokenCount, &(GlobalConfig.DontScanFirmware));
 
         } else if (MyStriCmp(TokenList[0], L"don't_scan_tools") || MyStriCmp(TokenList[0], L"dont_scan_tools")) {
            HandleStrings(TokenList, TokenCount, &(GlobalConfig.DontScanTools));
