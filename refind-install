@@ -267,11 +267,18 @@ DeterminePlatform() {
    case "$OSTYPE" in
    darwin*)
       CpuType=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
-      if [[ "$CpuType" == EFI32 ]] ; then
-         Platform="ia32"
-      else
+      case "$CpuType" in
+      EFI64)
          Platform="x64"
-      fi
+         ;;
+      EFI32)
+         Platform="ia32"
+         ;;
+      *)
+         echo "Unknown CPU type '$CpuType'; aborting!"
+         exit 1
+         ;;
+      esac
       ;;
    linux*)
       CpuType=`uname -m`
