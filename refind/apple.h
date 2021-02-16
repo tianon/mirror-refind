@@ -23,7 +23,7 @@
 
 // The constants related to Apple's System Integrity Protection (SIP)....
 #define CSR_GUID { 0x7c436110, 0xab2a, 0x4bbb, { 0xa8, 0x80, 0xfe, 0x41, 0x99, 0x5c, 0x9f, 0x82 } };
-// These codes are returned in the first byte of the csr-active-config variable
+// These codes are returned in the first two bytes of the csr-active-config variable
 #define CSR_ALLOW_UNTRUSTED_KEXTS            0x01
 #define CSR_ALLOW_UNRESTRICTED_FS            0x02
 #define CSR_ALLOW_TASK_FOR_PID               0x04
