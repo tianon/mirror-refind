@@ -796,6 +796,35 @@ menuentry Arch {
 
 <li><b>Boot options can change</b> &mdash; EFIs and OSes can alter the EFI boot option list independently of the contents of the ESP. Thus, options can unexpectedly appear on or disappear from this list. You might see boot options appear if you insert a removable disk, for instance, even if you've disabled removable devices via a custom <tt>scanfor</tt> line. This is most likely to be an issue if you use the <tt>firmware</tt> option to <tt>scanfor</tt>, although a manual boot stanza definition might stop working if the <tt>Boot####</tt> entry to which it refers were to change or disappear.</li>
 
+<li><b>Boot options can be misleading</b> &mdash; EFI boot options can be mis-labeled. Of particular interest, if you installed rEFInd from macOS, chances are the boot option called <tt>Mac OS X</tt> and numbered <tt>Boot0080</tt> will in fact launch rEFInd. This can make it impossible to launch macOS via this method. This particular problem can be overcome by some juggling of boot options:
+
+    <ol>
+
+    <li>Prepare a USB flash drive or CD-R that holds rEFInd. (You can download images from the <a href="getting.html">Getting rEFInd page.</a>)</li>
+
+    <li>Boot to macOS.</li>
+
+    <li>Use Startup Disk under Control Panel to pick your macOS system for the next boot. This will replace the EFI's <tt>Boot0080</tt> option that points to rEFInd with one that points to macOS.</li>
+
+    <li>Reboot. MacOS should appear directly, bypassing rEFInd.</li>
+
+    <li>Insert the rEFInd-containing USB flash drive or CD-R into your computer.</li>
+
+    <li>Restart and hold down the Option (or Alt) key. You should see Apple's boot manager, showing an option to boot your rEFInd medium.</li>
+
+    <li>Boot the rEFInd external medium.</li>
+
+    <li>From here, you can either install rEFInd from rEFInd (although this approach has some caveats, as described in the <a href="installing.html#from_refind">Installing rEFInd from within rEFInd</a> section of <a href="installing.html">Installing and Uninstalling rEFInd;</a> or boot to Linux and re-install rEFInd from there. (In fact, if you reboot to Linux, you need only create a new EFI boot entry for rEFInd; but it's likely to be easier to re-install it completely.)</li>
+
+    </ol>
+
+    Similar problems can occur when installing rEFInd from Windows, if you
+    don't set the name of the boot loader; or in some other contexts.
+    There's likely to be less need to boot in this way in these situations,
+    though.
+
+</li>
+
 </ul>
 
 <p>Overall, I don't recommend relying on this boot method in most cases; it's slow and may not be very reliable. In some cases, though, it can be very useful. This is definitely the case for HiDPI Macs, and may be the case if you need to occasionally boot from a network device. To avoid cluttering your display, you may want to create a manual boot stanza to support only the boot options you need. You can identify the boot number using <tt>efibootmgr</tt> in Linux or rEFInd's own boot order management tool. (This tool is disabled by default, but can be enabled by adding <tt>bootorder</tt> to the <tt>showtools</tt> line in <tt>refind.conf</tt>.) Alternatively, you can add <tt>firmware</tt> to the <tt>scanfor</tt> line and then hide the options you don't want to see using some of the methods described earlier, in <a href="#hiding">Hiding and Displaying EFI Boot Loaders.</a></p>
