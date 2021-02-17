@@ -19,13 +19,8 @@ use it:
 3) Open the refind.conf file in the rEFInd directory in your favorite
    text editor.
 
-4) Locate and change the following lines in refind.conf:
-   * icons_dir: Uncomment the sample or add a new line that reads "icons_dir
-     snowy".
-   * banner: Uncomment the sample or add a new line that reads
-     "banner-snowy.png".
-   * banner_scale: Uncomment the sample or add a new line that reads
-     "banner_scale fillscreen"
+4) Add the following line to the END of your refind.conf file:
+   include refind-snowy.conf
 
 You can swap out any element, including the banner/background image, as you
 see fit. The banner-snowy.png image is 1920x1080. If your display is

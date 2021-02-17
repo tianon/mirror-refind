@@ -86,6 +86,8 @@ Icons modified from AwOken 2.5:
 
 boot_linux.png -- Aw0ken/clear/128x128/apps/supertux.png
 func_firmware.png -- AwOkenWhite/clear/128x128/status/indicator-cpufreq.png
+os_uefi.png -- AwOkenWhite/clear/128x128/start-here/start-here-umbrella3.png
+vol_efi.png --  AwOkenWhite/clear/128x128/status/indicator-cpufreq.png
 vol_external.png -- AwOkenWhite/clear/128x128/devices/drive-removable-media-usb2.png
 vol_internal.png -- Aw0kenWhite/clear/128/128/drive-harddisk/Internal.png
 vol_net.png -- Aw0kenWhite/clear/128/128/drive-harddisk/Server.png
