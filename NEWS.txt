@@ -1,3 +1,9 @@
+0.13.1 (?/??/2021):
+-------------------
+
+- Removed MyLibLocateProtocol(), based on RefindPlus code, because it
+  caused at least one Mac to hang.
+
 0.13.0 (2/15/2021):
 -------------------
 

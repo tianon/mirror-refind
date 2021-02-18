@@ -192,66 +192,20 @@ VOID egGetScreenSize(OUT UINTN *ScreenWidth, OUT UINTN *ScreenHeight)
         *ScreenHeight = egScreenHeight;
 } // VOID egGetScreenSize()
 
-// Variant on LibLocateProtocol()/EfiLibLocateProtocol() that does a more thorough
-// search for the specified protocol....
-EFI_STATUS MyLibLocateProtocol(IN EFI_GUID *ProtocolGuid, OUT VOID **Interface) {
-    UINTN         i;
-    UINTN         HandleCount;
-    EFI_HANDLE    *HandleBuffer = NULL;
-    EFI_STATUS    Status;
-
-    // First try locating it the way the stock function does....
-    Status = refit_call3_wrapper(gBS->LocateProtocol,
-                                 ProtocolGuid,
-                                 NULL,
-                                 Interface);
-    if (!EFI_ERROR(Status) && (*Interface != NULL))
-        return Status;
-
-    // Second, try searching for a ConsoleOutHandle....
-    Status = refit_call3_wrapper(gBS->HandleProtocol,
-                                 gST->ConsoleOutHandle,
-                                 ProtocolGuid,
-                                 Interface);
-    if (!EFI_ERROR(Status) && (*Interface != NULL))
-        return Status;
-
-    // Finally, try searching handle buffers....
-    Status = refit_call5_wrapper(gBS->LocateHandleBuffer,
-                                 ByProtocol,
-                                 ProtocolGuid,
-                                 NULL,
-                                 &HandleCount,
-                                 &HandleBuffer);
-    if (!EFI_ERROR (Status)) {
-        i = 0;
-        for (i = 0; i < HandleCount; i++) {
-            Status = refit_call3_wrapper(gBS->HandleProtocol,
-                                         HandleBuffer[i],
-                                         ProtocolGuid,
-                                         (VOID*) Interface);
-            if (!EFI_ERROR(Status))
-                break;
-        }
-        FreePool(HandleBuffer);
-    }
-    return Status;
-} // EFI_STATUS MyLibLocateProtocol()
-
 VOID egInitScreen(VOID)
 {
     EFI_STATUS Status = EFI_SUCCESS;
 
     // get protocols
-    Status = MyLibLocateProtocol(&ConsoleControlProtocolGuid, (VOID **) &ConsoleControl);
+    Status = LibLocateProtocol(&ConsoleControlProtocolGuid, (VOID **) &ConsoleControl);
     if (EFI_ERROR(Status))
         ConsoleControl = NULL;
 
-    Status = MyLibLocateProtocol(&UgaDrawProtocolGuid, (VOID **) &UgaDraw);
+    Status = LibLocateProtocol(&UgaDrawProtocolGuid, (VOID **) &UgaDraw);
     if (EFI_ERROR(Status))
         UgaDraw = NULL;
 
-    Status = MyLibLocateProtocol(&GraphicsOutputProtocolGuid, (VOID **) &GraphicsOutput);
+    Status = LibLocateProtocol(&GraphicsOutputProtocolGuid, (VOID **) &GraphicsOutput);
     if (EFI_ERROR(Status))
         GraphicsOutput = NULL;
 
