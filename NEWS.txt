@@ -4,6 +4,10 @@
 - Removed MyLibLocateProtocol(), based on RefindPlus code, because it
   caused at least one Mac to hang.
 
+- Fixed bug that could cause rEFInd to misbehave or hang if a disabled
+  manual boot stanza referenced a volume with a name that existed but was
+  unreadable.
+
 0.13.0 (2/15/2021):
 -------------------
 

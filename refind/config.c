@@ -897,7 +897,7 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
    UINTN        TokenCount;
    LOADER_ENTRY *Entry;
    BOOLEAN      DefaultsSet = FALSE, AddedSubmenu = FALSE;
-   REFIT_VOLUME *CurrentVolume = Volume;
+   REFIT_VOLUME *CurrentVolume = Volume, *PreviousVolume;
 
    // prepare the menu entry
    Entry = InitializeLoaderEntry(NULL);
@@ -923,6 +923,7 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
          DefaultsSet = TRUE;
 
       } else if (MyStriCmp(TokenList[0], L"volume") && (TokenCount > 1)) {
+         PreviousVolume = CurrentVolume;
          if (FindVolume(&CurrentVolume, TokenList[1])) {
             if ((CurrentVolume != NULL) && (CurrentVolume->IsReadable) && (CurrentVolume->RootDir)) {
                MyFreePool(Entry->me.Title);
@@ -930,7 +931,9 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
                SPrint(Entry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", CurrentVolume->VolName);
                Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
                Entry->Volume          = CurrentVolume;
-            } // if volume is readable
+            } else { // It won't work out; reset to previous working volume....
+               CurrentVolume = PreviousVolume;
+            } // if/else volume is readable
          } // if match found
 
       } else if (MyStriCmp(TokenList[0], L"icon") && (TokenCount > 1)) {
@@ -1013,7 +1016,7 @@ VOID ScanUserConfigured(CHAR16 *FileName)
       while ((TokenCount = ReadTokenLine(&File, &TokenList)) > 0) {
          if (MyStriCmp(TokenList[0], L"menuentry") && (TokenCount > 1)) {
             Entry = AddStanzaEntries(&File, Volume, TokenList[1]);
-            if (Entry->Enabled) {
+            if ((Entry) && (Entry->Enabled)) {
                if (Entry->me.SubScreen == NULL)
                   GenerateSubScreen(Entry, Volume, TRUE);
                AddPreparedLoaderEntry(Entry);
