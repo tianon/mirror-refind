@@ -242,7 +242,6 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
         LOG(1, LOG_LINE_NORMAL, L"Setting systemd's LoaderDevicePartUUID variable to %s", EspGUID);
         Status = EfivarSetRaw(&SystemdGuid, L"LoaderDevicePartUUID", (CHAR8 *) EspGUID,
                               StrLen(EspGUID) * 2 + 2, TRUE);
-        Status = EFI_LOAD_ERROR;
         if (EFI_ERROR(Status)) {
             LOG(1, LOG_LINE_NORMAL,
                 L"Error %d when trying to set LoaderDevicePartUUID EFI variable", Status);
