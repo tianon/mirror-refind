@@ -475,6 +475,11 @@ timeout 20
    <td>For the benefit of Linux distributions, such as Arch, that lack version numbers in their kernel filenames but that can provide multiple kernels, you can specify strings that can treated like version numbers. For instance, for Arch you might set this to <tt>linux-lts,linux</tt>; thereafter, the <tt>vmlinuz-linux-lts</tt> kernel will match to an initrd file containing the string <tt>linux-lts</tt> and <tt>vmlinuz-linux</tt> will match an initrd file with a filename that includes <tt>linux</tt>, but not <tt>linux-lts</tt>. Note that, if one specified string is a subset of the other (as in this example), the longer substring <i>must</i> appear first in the list. Also, if a filename includes both a specified string and one or more digits, the match covers both; for instance, <tt>vmlinuz-linux-4.8</tt> would match an initrd file with a name that includes <tt>linux-4.8</tt>. The default is to do no extra matching.</td>
 </tr>
 <tr>
+   <td><tt>write_systemd_vars</tt></td>
+   <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
+   <td>When enabled, and when rEFInd believes it is launching an EFI-stub Linux kernel, ELILO, or GRUB, rEFInd will write the GUID of the partition from which it was launched to the <tt>LoaderDevicePartUUID</tt> EFI variable with a vendor GUID of 4a67b082-0a4c-41cf-b6c7-440b29bb8c4f, as described on the <a href="https://systemd.io/BOOT_LOADER_INTERFACE/">systemd Boot Loader Interface page.</a> This has the effect of communicating to Linux's systemd what ESP is active; systemd will then mount the ESP at <tt>/boot</tt> <i>if</i> that directory is is empty and nothing else is mounted there. (Note that most Linux distributions use other means to mount the ESP at <tt>/boot/efi</tt>.) This option has no effect when launching non-Linux OSes (except via GRUB). It is disabled by default.</td>
+</tr>
+<tr>
    <td><tt>max_tags</tt></td>
    <td>numeric (integer) value</td>
    <td>Limits the number of tags that rEFInd will display at one time. If rEFInd discovers more loaders than this value, they're shown in a scrolling list. The default value is <tt>0</tt>, which imposes no limit.</td>

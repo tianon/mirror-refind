@@ -783,6 +783,9 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (MyStriCmp(TokenList[0], L"csr_values")) {
             HandleHexes(TokenList, TokenCount, CSR_MAX_LEGAL_VALUE, &(GlobalConfig.CsrValues));
 
+        } else if (MyStriCmp(TokenList[0], L"write_systemd_vars")) {
+           GlobalConfig.WriteSystemdVars = HandleBoolean(TokenList, TokenCount);
+
         } else if (MyStriCmp(TokenList[0], L"include") && (TokenCount == 2) && MyStriCmp(FileName, GlobalConfig.ConfigFilename)) {
            if (!MyStriCmp(TokenList[1], FileName)) {
               ReadConfig(TokenList[1]);

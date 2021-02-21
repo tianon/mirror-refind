@@ -159,6 +159,8 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
     CHAR16                  ErrorInfo[256];
     CHAR16                  *FullLoadOptions = NULL;
+    CHAR16                  *EspGUID;
+    EFI_GUID                SystemdGuid = SYSTEMD_GUID_VALUE;
 
     // set load options
     if (LoadOptions != NULL) {
@@ -233,6 +235,20 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof(CHAR16) : 0;
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
+
+    if ((GlobalConfig.WriteSystemdVars) && ((OSType == 'L') || (OSType == 'E') || (OSType == 'G'))) {
+        // Tell systemd what ESP rEFInd used
+        EspGUID = GuidAsString(&(SelfVolume->PartGuid));
+        LOG(1, LOG_LINE_NORMAL, L"Setting systemd's LoaderDevicePartUUID variable to %s", EspGUID);
+        Status = EfivarSetRaw(&SystemdGuid, L"LoaderDevicePartUUID", (CHAR8 *) EspGUID,
+                              StrLen(EspGUID) * 2 + 2, TRUE);
+        Status = EFI_LOAD_ERROR;
+        if (EFI_ERROR(Status)) {
+            LOG(1, LOG_LINE_NORMAL,
+                L"Error %d when trying to set LoaderDevicePartUUID EFI variable", Status);
+        }
+        MyFreePool(EspGUID);
+    } // if write systemd EFI variables
 
     // close open file handles
     LOG(1, LOG_LINE_NORMAL, L"Launching '%s'", ImageTitle);
