@@ -301,14 +301,15 @@ EFI_STATUS RebootIntoFirmware(VOID) {
 VOID RebootIntoLoader(LOADER_ENTRY *Entry) {
     EFI_STATUS Status;
 
-     LOG(1, LOG_LINE_SEPARATOR, L"Rebooting into EFI loader '%s' (Boot%04x)",
-         Entry->Title, Entry->EfiBootNum);
+    LOG(1, LOG_LINE_SEPARATOR, L"Rebooting into EFI loader '%s' (Boot%04x)",
+        Entry->Title, Entry->EfiBootNum);
     Status = EfivarSetRaw(&GlobalGuid, L"BootNext", (CHAR8*) &(Entry->EfiBootNum), sizeof(UINT16), TRUE);
     if (EFI_ERROR(Status)) {
         LOG(1, LOG_LINE_NORMAL, L"Error: %d", Status);
         Print(L"Error: %d\n", Status);
         return;
     }
+    StoreLoaderName(Entry->me.Title);
     LOG(1, LOG_LINE_NORMAL, L"Attempting to reboot....", Entry->Title, Entry->EfiBootNum);
     UninitRefitLib();
     refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);

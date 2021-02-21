@@ -12,6 +12,10 @@
 
 - Updated LodePNG library to version 20201017.
 
+- Fixed bug that caused rEFInd to not record a reboot to an EFI NVRAM-based
+  boot option, thus preventing it from being made the default boot option on
+  the next boot, if "default_selection +" was used.
+
 0.13.0 (2/15/2021):
 -------------------
 
