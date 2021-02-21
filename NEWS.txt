@@ -10,6 +10,8 @@
 
 - Added logging feature, activated by the log_level token in refind.conf.
 
+- Updated LodePNG library to version 20201017.
+
 0.13.0 (2/15/2021):
 -------------------
 
