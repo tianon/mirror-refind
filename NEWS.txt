@@ -8,6 +8,8 @@
   manual boot stanza referenced a volume with a name that existed but was
   unreadable.
 
+- Added logging feature, activated by the log_level token in refind.conf.
+
 0.13.0 (2/15/2021):
 -------------------
 

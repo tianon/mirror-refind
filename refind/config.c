@@ -59,6 +59,7 @@
 #include "global.h"
 #include "lib.h"
 #include "icns.h"
+#include "log.h"
 #include "menu.h"
 #include "config.h"
 #include "screen.h"
@@ -595,6 +596,9 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (MyStriCmp(TokenList[0], L"scan_delay") && (TokenCount == 2)) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.ScanDelay));
 
+        } else if (MyStriCmp(TokenList[0], L"log_level") && (TokenCount == 2)) {
+           HandleInt(TokenList, TokenCount, &(GlobalConfig.LogLevel));
+
         } else if (MyStriCmp(TokenList[0], L"also_scan_dirs")) {
             HandleStrings(TokenList, TokenCount, &(GlobalConfig.AlsoScan));
 
@@ -1006,6 +1010,7 @@ VOID ScanUserConfigured(CHAR16 *FileName)
    UINTN             TokenCount, size;
    LOADER_ENTRY      *Entry;
 
+   LOG(1, LOG_LINE_THIN_SEP, L"Scanning for user-configured boot stanzas");
    if (FileExists(SelfDir, FileName)) {
       Status = ReadFile(SelfDir, FileName, &File, &size);
       if (EFI_ERROR(Status))

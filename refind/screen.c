@@ -62,6 +62,7 @@
 #include "lib.h"
 #include "menu.h"
 #include "mystrings.h"
+#include "log.h"
 #include "../include/refit_call_wrapper.h"
 
 #include "../include/egemb_refind_banner.h"
@@ -106,13 +107,16 @@ static VOID PrepareBlankLine(VOID) {
 
 VOID InitScreen(VOID)
 {
+    LOG(1, LOG_LINE_NORMAL, L"Entering InitScreen()");
     // initialize libeg
     egInitScreen();
 
     if (egHasGraphicsMode()) {
+        LOG(2, LOG_LINE_NORMAL, L"Have graphics mode; setting screen size");
         egGetScreenSize(&UGAWidth, &UGAHeight);
         AllowGraphicsMode = TRUE;
     } else {
+        LOG(2, LOG_LINE_NORMAL, L"No graphics mode detected; setting text mode");
         AllowGraphicsMode = FALSE;
         egSetTextMode(GlobalConfig.RequestedTextMode);
         egSetGraphicsModeEnabled(FALSE);   // just to be sure we are in text mode
@@ -123,7 +127,9 @@ VOID InitScreen(VOID)
     refit_call2_wrapper(ST->ConOut->EnableCursor, ST->ConOut, FALSE);
 
     // get size of text console
-    if (refit_call4_wrapper(ST->ConOut->QueryMode, ST->ConOut, ST->ConOut->Mode->Mode, &ConWidth, &ConHeight) != EFI_SUCCESS) {
+    if (refit_call4_wrapper(ST->ConOut->QueryMode, ST->ConOut,
+                            ST->ConOut->Mode->Mode, &ConWidth,
+                            &ConHeight) != EFI_SUCCESS) {
         // use default values on error
         ConWidth = 80;
         ConHeight = 25;
@@ -141,6 +147,7 @@ VOID SetupScreen(VOID)
 {
     UINTN NewWidth, NewHeight;
 
+    LOG(1, LOG_LINE_NORMAL, L"Setting screen resolution and mode");
     // Convert mode number to horizontal & vertical resolution values
     if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight == 0))
        egGetResFromMode(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
@@ -151,16 +158,22 @@ VOID SetupScreen(VOID)
     if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight > 0)) {
        UGAWidth = (UGAWidth < GlobalConfig.RequestedScreenWidth) ? UGAWidth : GlobalConfig.RequestedScreenWidth;
        UGAHeight = (UGAHeight < GlobalConfig.RequestedScreenHeight) ? UGAHeight : GlobalConfig.RequestedScreenHeight;
+       LOG(2, LOG_LINE_NORMAL, L"Recording current resolution as %dx%d", UGAWidth, UGAHeight);
     }
 
     // Set text mode. If this requires increasing the size of the graphics mode, do so.
+    LOG(1, LOG_LINE_NORMAL, L"Setting text mode %d", GlobalConfig.RequestedTextMode);
     if (egSetTextMode(GlobalConfig.RequestedTextMode)) {
        egGetScreenSize(&NewWidth, &NewHeight);
        if ((NewWidth > UGAWidth) || (NewHeight > UGAHeight)) {
           UGAWidth = NewWidth;
           UGAHeight = NewHeight;
+          LOG(2, LOG_LINE_NORMAL, L"After setting text mode, recording new current resolution as %dx%d",
+              UGAWidth, UGAHeight);
        }
-       if ((UGAWidth > GlobalConfig.RequestedScreenWidth) || (UGAHeight > GlobalConfig.RequestedScreenHeight)) {
+       if ((UGAWidth > GlobalConfig.RequestedScreenWidth) ||
+           (UGAHeight > GlobalConfig.RequestedScreenHeight)) {
+           LOG(2, LOG_LINE_NORMAL, L"Adjusting requested screen size based on actual screen size");
            // Requested text mode forces us to use a bigger graphics mode
            GlobalConfig.RequestedScreenWidth = UGAWidth;
            GlobalConfig.RequestedScreenHeight = UGAHeight;
@@ -168,11 +181,14 @@ VOID SetupScreen(VOID)
     }
 
     if (GlobalConfig.RequestedScreenWidth > 0) {
+       LOG(2, LOG_LINE_NORMAL, L"Setting screen size to %dx%d", GlobalConfig.RequestedScreenWidth,
+           GlobalConfig.RequestedScreenHeight);
        egSetScreenSize(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
        egGetScreenSize(&UGAWidth, &UGAHeight);
     } // if user requested a particular screen resolution
 
     if (GlobalConfig.TextOnly) {
+        LOG(2, LOG_LINE_NORMAL, L"Setting text-only mode");
         // switch to text mode if requested
         AllowGraphicsMode = FALSE;
         SwitchToText(FALSE);
@@ -180,6 +196,7 @@ VOID SetupScreen(VOID)
         // clear screen and show banner
         // (now we know we'll stay in graphics mode)
         if ((UGAWidth >= HIDPI_MIN) && !HaveResized) {
+            LOG(2, LOG_LINE_NORMAL, L"Doubling icon sizes for HiDPI display");
             GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_BIG] *= 2;
@@ -437,6 +454,7 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
+    LOG(1, LOG_LINE_NORMAL, Temp);
     haveError = TRUE;
     MyFreePool(Temp);
 

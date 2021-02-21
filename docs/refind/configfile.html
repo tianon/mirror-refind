@@ -263,6 +263,11 @@ timeout 20
    <td>If set to <tt>false</tt> or one of its synonyms (the default), rEFInd boots the option set via <tt>default_selection</tt> when the timeout period is reached. When set to <tt>true</tt> or one of its synonyms, rEFInd attempts to shut down the computer when the timeout period is reached. <i>Many older EFIs lack software shutdown support. On them, setting this option to <tt>true</tt> will cause a reboot or a hang once the timeout value is reached!</i></td>
 </tr>
 <tr>
+   <td><tt>log_level</tt></td>
+   <td>numeric value (<tt>0</tt> to <tt>3</tt>)</td>
+   <td>Sets the logging level. The default level of <tt>0</tt> performs no logging. Higher values cause rEFInd to log information on its activity to the <tt>refind.log</tt> file, which resides in the directory from which rEFInd launched; or in the root of the first ESP that rEFInd can locate, if rEFInd's launch directory is read-only (as when rEFInd is launched from an HFS+ volume). The resulting log file is in UTF-16 format, so you'll need to read it with a text editor or other tool that can parse UTF-16. This feature is intended to help with debugging problems; the log level should be kept at <tt>0</tt> in normal operation. Increasing the log level, especially above <tt>1</tt>, can degrade rEFInd's performance.</td>
+</tr>
+<tr>
    <td><tt>use_nvram</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
    <td>If set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt> (the default), stores rEFInd-specific variables in NVRAM. If set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, stores these variables in the <tt>vars</tt> subdirectory of rEFInd's home directory, if possible. (Read-only filesystems obviously make this option impossible.) Using NVRAM ties rEFInd's variables to a specific computer and increases wear on the NVRAM, whereas storing them on disk makes the variables move with rEFInd (which is potentially useful on a rEFInd installation on a removable disk).</td>

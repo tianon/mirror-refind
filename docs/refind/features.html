@@ -259,6 +259,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
   <ul>
 
+    <li>For debugging problems, the <tt>log_level</tt> token in <tt>refind.conf</tt> enables activating logging to a log file, <tt>refind.log</tt>, which is stored in rEFInd's main directory (or in the root of the first ESP that rEFInd can find, if rEFInd can't write to its own directory).</li>
+
     <li>You can specify a configuration file to use at program launch time via the <tt>-c <tt class="variable">filename</tt></tt> command-line option. This feature requires manual installation or launching rEFInd from an EFI shell or some other EFI program you can configure.</li>
 
     <li>rEFInd detects a fallback boot loader (<tt>EFI/BOOT/bootx64.efi</tt> or <tt>EFI/BOOT/bootia32.efi</tt>) that's redundant with another boot loader, to keep the fallback boot loader out of menus when it's unnecessary.</li>

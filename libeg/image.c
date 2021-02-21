@@ -63,6 +63,7 @@
 #include "../include/refit_call_wrapper.h"
 #include "lodepng.h"
 #include "libeg.h"
+#include "log.h"
 
 #define MAX_FILE_SIZE (1024*1024*1024)
 
@@ -246,6 +247,7 @@ EFI_STATUS egLoadFile(IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **Fil
     if ((BaseDir == NULL) || (FileName == NULL))
        return EFI_NOT_FOUND;
 
+    LOG(3, LOG_LINE_NORMAL, L"Loading file '%s'", FileName);
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR(Status)) {
         return Status;

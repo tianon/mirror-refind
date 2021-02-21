@@ -351,6 +351,7 @@ typedef struct {
    UINTN            MouseSpeed;
    UINTN            IconSizes[4];
    UINTN            BannerScale;
+   UINTN            LogLevel;
    REFIT_VOLUME     *DiscoveredRoot;
    EFI_DEVICE_PATH  *SelfDevicePath;
    CHAR16           *BannerFileName;
@@ -400,6 +401,8 @@ extern EFI_GUID RefindGuid;
 
 extern REFIT_MENU_SCREEN MainMenu;
 extern REFIT_MENU_ENTRY MenuEntryReturn;
+
+// Global function definitions....
 
 VOID AboutrEFInd(VOID);
 EG_IMAGE * GetDiskBadge(IN UINTN DiskType);

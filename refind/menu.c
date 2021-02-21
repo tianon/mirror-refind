@@ -58,6 +58,7 @@
 #include "global.h"
 #include "screen.h"
 #include "lib.h"
+#include "log.h"
 #include "menu.h"
 #include "config.h"
 #include "libeg.h"
@@ -305,6 +306,7 @@ static VOID UpdateScroll(IN OUT SCROLL_STATE *State, IN UINTN Movement)
 
 VOID AddMenuInfoLine(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine)
 {
+    LOG(3, LOG_LINE_NORMAL, L"Adding menu info line: '%s'", InfoLine);
     AddListElement((VOID ***) &(Screen->InfoLines), &(Screen->InfoLineCount), InfoLine);
 }
 
@@ -401,6 +403,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
     EFI_STATUS PointerStatus = EFI_NOT_READY;
     UINTN Item;
 
+    LOG(2, LOG_LINE_NORMAL, L"Running menu screen: '%s'", Screen->Title);
     if (Screen->TimeoutSeconds > 0) {
         HaveTimeout = TRUE;
         TimeoutCountdown = Screen->TimeoutSeconds * 10;
@@ -657,6 +660,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
     if (ChosenEntry)
         *ChosenEntry = Screen->Entries[State.CurrentSelection];
     *DefaultEntryIndex = State.CurrentSelection;
+    LOG(3, LOG_LINE_NORMAL, L"Returning %d from RunGenericMenu()", MenuExit);
     return MenuExit;
 } /* static UINTN RunGenericMenu() */
 
@@ -1517,6 +1521,7 @@ VOID ManageHiddenTags(VOID) {
     UINTN               MenuExit, i = 0;
     BOOLEAN             SaveTags, SaveTools, SaveLegacy = FALSE, SaveFirmware = FALSE;
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Managing hidden tags");
     HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
     if (AllowGraphicsMode)
         Style = GraphicsMenuStyle;
