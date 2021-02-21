@@ -16,6 +16,12 @@
   boot option, thus preventing it from being made the default boot option on
   the next boot, if "default_selection +" was used.
 
+- Added ability to write to the LoaderDevicePartUUID EFI variable, which
+  systemd uses to identify the ESP that was used to boot the computer, and
+  to mount that partition at /boot if that directory is empty and has
+  nothing else mounted. This rEFInd feature is activated by the
+  write_systemd_vars token in refind.conf, and is disabled by default.
+
 0.13.0 (2/15/2021):
 -------------------
 
