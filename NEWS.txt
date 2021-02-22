@@ -22,6 +22,8 @@
   nothing else mounted. This rEFInd feature is activated by the
   write_systemd_vars token in refind.conf, and is disabled by default.
 
+- Additional replacements of "which" with "command -v" in mvrefind.
+
 0.13.0 (2/15/2021):
 -------------------
 
