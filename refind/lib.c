@@ -1151,6 +1151,16 @@ static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_I
     } // for
 } /* VOID ScanExtendedPartition() */
 
+// Scan volumes to register them in the global Volumes array, which
+// includes volume names, filesystem type information, etc.
+//
+// NOTE: Logging in this function will be effective only when it's called
+// after ReadConfig(); but ReadConfig() needs the volumes discovered in
+// this function, so this function *MUST* be called first, before logging
+// is activated. This function may be called a second time if drivers are
+// loaded or if the user hits the Esc key to re-scan volumes, though.
+// Thus, logging is not useless, but it can't be relied upon to produce
+// results on the first pass.
 VOID ScanVolumes(VOID)
 {
     EFI_STATUS              Status;
@@ -1174,7 +1184,7 @@ VOID ScanVolumes(VOID)
 
     // get all filesystem handles
     Status = LibLocateHandle(ByProtocol, &BlockIoProtocol, NULL, &HandleCount, &Handles);
-    LOG(2, LOG_LINE_NORMAL, L"Found handles for %d filesystems", HandleCount);
+    LOG(2, LOG_LINE_NORMAL, L"Found handles for %d volumes", HandleCount);
     if (Status == EFI_NOT_FOUND) {
         return;  // no filesystems. strange, but true...
     }

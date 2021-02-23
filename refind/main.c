@@ -73,6 +73,12 @@
 #include "log.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/version.h"
+#include "../libeg/efiConsoleControl.h"
+#include "../libeg/efiUgaDraw.h"
+
+#ifndef __MAKEWITH_GNUEFI
+#define LibLocateProtocol EfiLibLocateProtocol
+#endif
 
 //
 // Some built-in menu definitions....
@@ -358,6 +364,9 @@ VOID LogBasicInfo(VOID) {
     UINT64     MaximumVariableSize;
     UINTN      EfiMajorVersion = ST->Hdr.Revision >> 16;
     CHAR16     *TempStr;
+    EFI_GUID   ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
+    EFI_GUID   UgaDrawProtocolGuid = EFI_UGA_DRAW_PROTOCOL_GUID;
+    EFI_GUID   GraphicsOutputProtocolGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 
     LOG(1, LOG_LINE_SEPARATOR, L"System information");
 #if defined(__MAKEWITH_GNUEFI)
@@ -382,6 +391,7 @@ VOID LogBasicInfo(VOID) {
     LOG(1, LOG_LINE_NORMAL, L"EFI Revision %d.%02d", ST->Hdr.Revision >> 16,
         ST->Hdr.Revision & ((1 << 16) - 1));
     LOG(1, LOG_LINE_NORMAL, L"Secure Boot %s", secure_mode() ? L"active" : L"inactive");
+    LOG(1, LOG_LINE_NORMAL, L"Shim is%s available", ShimLoaded() ? L"" : L" not");
     if (EfiMajorVersion > 1) { // QueryVariableInfo() is not supported in EFI 1.x
         LOG(3, LOG_LINE_NORMAL, L"Trying to get variable info....");
         Status = refit_call4_wrapper(RT->QueryVariableInfo, EFI_VARIABLE_NON_VOLATILE,
@@ -398,6 +408,21 @@ VOID LogBasicInfo(VOID) {
     } else {
         LOG(1, LOG_LINE_NORMAL, L"EFI 1.x; EFI non-volatile storage information is unavailable");
     }
+
+    // Report which video output devices are available. We don't actually
+    // use them, so just use TempStr as a throwaway pointer to the protocol.
+    Status = LibLocateProtocol(&ConsoleControlProtocolGuid, (VOID **) &TempStr);
+    LOG(1, LOG_LINE_NORMAL, L"System does%s support text mode",
+        EFI_ERROR(Status) ? L" not" : L"");
+
+    Status = LibLocateProtocol(&UgaDrawProtocolGuid, (VOID **) &TempStr);
+    LOG(1, LOG_LINE_NORMAL, L"System does%s support UGA Draw graphics mode",
+        EFI_ERROR(Status) ? L" not" : L"");
+
+    Status = LibLocateProtocol(&GraphicsOutputProtocolGuid, (VOID **) &TempStr);
+    LOG(1, LOG_LINE_NORMAL, L"System does%s support GOP graphics mode",
+        EFI_ERROR(Status) ? L" not" : L"");
+
 } // VOID LogBasicInfo()
 
 //
@@ -428,16 +453,16 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        CopyMem(GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
     SetConfigFilename(ImageHandle);
 
-    // Scan volumes first to find SelfVolume, which is required by LoadDrivers();
-    // however, if drivers are loaded, a second call to ScanVolumes() is needed
-    // to register the new filesystem(s) accessed by the drivers.
-    // Also, ScanVolumes() must be done before ReadConfig(), which needs
-    // SelfVolume->VolName.
+    // Scan volumes first to find SelfVolume, which is needed by LoadDrivers()
+    // and ReadConfig(); however, if drivers are loaded, a second call to
+    // ScanVolumes() is needed to register the new filesystem(s) accessed
+    // by the drivers.
     ScanVolumes();
     ReadConfig(GlobalConfig.ConfigFilename);
-    StartLogging(FALSE);
-    if (GlobalConfig.LogLevel > 0)
+    if (GlobalConfig.LogLevel > 0) {
+        StartLogging(FALSE);
         LogBasicInfo();
+    }
     if (LoadDrivers())
         ScanVolumes();
 
