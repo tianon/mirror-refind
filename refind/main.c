@@ -352,6 +352,12 @@ static VOID AdjustDefaultSelection() {
 
 // Log basic information (rEFInd version, EFI version, etc.) to the log file.
 VOID LogBasicInfo(VOID) {
+    EFI_STATUS Status;
+    UINT64     MaximumVariableStorageSize;
+    UINT64     RemainingVariableStorageSize;
+    UINT64     MaximumVariableSize;
+    UINTN      EfiMajorVersion = ST->Hdr.Revision >> 16;
+
     LOG(1, LOG_LINE_SEPARATOR, L"System information");
 #if defined(__MAKEWITH_GNUEFI)
     LOG(1, LOG_LINE_NORMAL, L"rEFInd %s built with GNU-EFI", REFIND_VERSION);
@@ -370,8 +376,24 @@ VOID LogBasicInfo(VOID) {
     LOG(1, LOG_LINE_NORMAL, L"EFI Revision %d.%02d", ST->Hdr.Revision >> 16,
         ST->Hdr.Revision & ((1 << 16) - 1));
     LOG(1, LOG_LINE_NORMAL, L"Firmware: %s %d.%02d", ST->FirmwareVendor,
-        ST->FirmwareRevision >> 16, ST->FirmwareRevision & ((1 << 16) - 1));
+        EfiMajorVersion, ST->FirmwareRevision & ((1 << 16) - 1));
     LOG(1, LOG_LINE_NORMAL, L"Secure Boot %s", secure_mode() ? L"active" : L"inactive");
+    if (EfiMajorVersion > 1) { // QueryVariableInfo() is not supported in EFI 1.x
+        LOG(3, LOG_LINE_NORMAL, L"Trying to get variable info....");
+        Status = refit_call4_wrapper(RT->QueryVariableInfo, EFI_VARIABLE_NON_VOLATILE,
+                                     &MaximumVariableStorageSize, &RemainingVariableStorageSize,
+                                     &MaximumVariableSize);
+        if (EFI_ERROR(Status)) {
+            LOG(1, LOG_LINE_NORMAL, L"Error %d; Unable to retrieve EFI variable capacity", Status);
+        } else {
+            LOG(1, LOG_LINE_NORMAL, L"EFI non-volatile storage:");
+            LOG(1, LOG_LINE_NORMAL, L"   Total storage: %ld", MaximumVariableStorageSize);
+            LOG(1, LOG_LINE_NORMAL, L"   Remaining available: %ld", RemainingVariableStorageSize);
+            LOG(1, LOG_LINE_NORMAL, L"   Maximum variable size: %ld", MaximumVariableSize);
+        }
+    } else {
+        LOG(1, LOG_LINE_NORMAL, L"EFI 1.x; EFI non-volatile storage information is unavailable");
+    }
 } // VOID LogBasicInfo()
 
 //
