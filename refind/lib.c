@@ -961,6 +961,8 @@ static BOOLEAN HasWindowsBiosBootFiles(REFIT_VOLUME *Volume) {
     return FilesFound;
 } // static VOID HasWindowsBiosBootFiles()
 
+// Discover basic information about a single volume -- whether it's internal
+// or external, its name, etc.
 VOID ScanVolume(REFIT_VOLUME *Volume)
 {
     EFI_STATUS              Status;
@@ -1164,6 +1166,7 @@ VOID ScanVolumes(VOID)
     EFI_GUID                *UuidList;
     EFI_GUID                NullUuid = NULL_GUID_VALUE;
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Scanning for volumes");
     MyFreePool(Volumes);
     Volumes = NULL;
     VolumesCount = 0;
@@ -1171,6 +1174,7 @@ VOID ScanVolumes(VOID)
 
     // get all filesystem handles
     Status = LibLocateHandle(ByProtocol, &BlockIoProtocol, NULL, &HandleCount, &Handles);
+    LOG(2, LOG_LINE_NORMAL, L"Found handles for %d filesystems", HandleCount);
     if (Status == EFI_NOT_FOUND) {
         return;  // no filesystems. strange, but true...
     }
@@ -1184,6 +1188,7 @@ VOID ScanVolumes(VOID)
         Volume->DeviceHandle = Handles[HandleIndex];
         AddPartitionTable(Volume);
         ScanVolume(Volume);
+        LOG(1, LOG_LINE_NORMAL, L"Identified volume '%s'", Volume->VolName);
         if (UuidList) {
            UuidList[HandleIndex] = Volume->VolUuid;
            for (i = 0; i < HandleIndex; i++) {

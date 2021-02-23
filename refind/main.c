@@ -163,6 +163,11 @@ VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Running on:");
+        FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
+        LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor,
+                                              ST->FirmwareRevision >> 16,
+                                              ST->FirmwareRevision & ((1 << 16) - 1)));
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" EFI Revision %d.%02d", ST->Hdr.Revision >> 16, ST->Hdr.Revision & ((1 << 16) - 1)));
 #if defined(EFI32)
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86 (32 bit); Secure Boot %s",
@@ -180,11 +185,6 @@ VOID AboutrEFInd(VOID)
             RecordgCsrStatus(CsrStatus, FALSE);
             AddMenuInfoLine(&AboutMenu, gCsrStatus);
         }
-        FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
-        LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor,
-                                              ST->FirmwareRevision >> 16,
-                                              ST->FirmwareRevision & ((1 << 16) - 1)));
         TempStr = egScreenDescription();
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", TempStr));
         MyFreePool(TempStr);
@@ -357,6 +357,7 @@ VOID LogBasicInfo(VOID) {
     UINT64     RemainingVariableStorageSize;
     UINT64     MaximumVariableSize;
     UINTN      EfiMajorVersion = ST->Hdr.Revision >> 16;
+    CHAR16     *TempStr;
 
     LOG(1, LOG_LINE_SEPARATOR, L"System information");
 #if defined(__MAKEWITH_GNUEFI)
@@ -364,6 +365,9 @@ VOID LogBasicInfo(VOID) {
 #else
     LOG(1, LOG_LINE_NORMAL, L"rEFInd %s built with TianoCore EDK2", REFIND_VERSION);
 #endif
+    TempStr = GuidAsString(&(SelfVolume->PartGuid));
+    LOG(1, LOG_LINE_NORMAL, L"rEFInd boot partition GUID: %s", TempStr);
+    MyFreePool(TempStr);
 #if defined(EFI32)
     LOG(1, LOG_LINE_NORMAL, L"Platform: x86/IA32/i386 (32-bit)");
 #elif defined(EFIX64)
@@ -373,10 +377,10 @@ VOID LogBasicInfo(VOID) {
 #else
     LOG(1, LOG_LINE_NORMAL, L"Platform: unknown");
 #endif
-    LOG(1, LOG_LINE_NORMAL, L"EFI Revision %d.%02d", ST->Hdr.Revision >> 16,
-        ST->Hdr.Revision & ((1 << 16) - 1));
     LOG(1, LOG_LINE_NORMAL, L"Firmware: %s %d.%02d", ST->FirmwareVendor,
         EfiMajorVersion, ST->FirmwareRevision & ((1 << 16) - 1));
+    LOG(1, LOG_LINE_NORMAL, L"EFI Revision %d.%02d", ST->Hdr.Revision >> 16,
+        ST->Hdr.Revision & ((1 << 16) - 1));
     LOG(1, LOG_LINE_NORMAL, L"Secure Boot %s", secure_mode() ? L"active" : L"inactive");
     if (EfiMajorVersion > 1) { // QueryVariableInfo() is not supported in EFI 1.x
         LOG(3, LOG_LINE_NORMAL, L"Trying to get variable info....");

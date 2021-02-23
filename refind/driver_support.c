@@ -576,7 +576,7 @@ BOOLEAN LoadDrivers(VOID) {
     CHAR16        *Directory, *SelfDirectory;
     UINTN         i = 0, Length, NumFound = 0;
 
-    LOG(1, LOG_LINE_SEPARATOR, L"Load drivers");
+    LOG(1, LOG_LINE_SEPARATOR, L"Loading drivers");
     // load drivers from the subdirectories of rEFInd's home directory specified
     // in the DRIVER_DIRS constant.
     while ((Directory = FindCommaDelimited(DRIVER_DIRS, i++)) != NULL) {

@@ -936,6 +936,7 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
     while (((TokenCount = ReadTokenLine(File, &TokenList)) > 0) && (StrCmp(TokenList[0], L"}") != 0)) {
         if (MyStriCmp(TokenList[0], L"loader") && (TokenCount > 1)) { // set the boot loader filename
             Entry->LoaderPath = StrDuplicate(TokenList[1]);
+            LOG(1, LOG_LINE_NORMAL, L"Adding manual loader for '%s'", Entry->LoaderPath);
             SetLoaderDefaults(Entry, TokenList[1], CurrentVolume);
             MyFreePool(Entry->LoadOptions);
             Entry->LoadOptions = NULL; // Discard default options, if any
@@ -980,6 +981,7 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
             Entry->UseGraphicsMode = MyStriCmp(TokenList[1], L"on");
 
         } else if (MyStriCmp(TokenList[0], L"disabled")) {
+            LOG(1, LOG_LINE_NORMAL, L"Entry is disabled");
             Entry->Enabled = FALSE;
 
         } else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
