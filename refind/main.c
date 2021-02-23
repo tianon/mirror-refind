@@ -387,8 +387,8 @@ VOID LogBasicInfo(VOID) {
     LOG(1, LOG_LINE_NORMAL, L"Platform: unknown");
 #endif
     LOG(1, LOG_LINE_NORMAL, L"Firmware: %s %d.%02d", ST->FirmwareVendor,
-        EfiMajorVersion, ST->FirmwareRevision & ((1 << 16) - 1));
-    LOG(1, LOG_LINE_NORMAL, L"EFI Revision %d.%02d", ST->Hdr.Revision >> 16,
+        ST->FirmwareRevision >> 16, ST->FirmwareRevision & ((1 << 16) - 1));
+    LOG(1, LOG_LINE_NORMAL, L"EFI Revision %d.%02d", EfiMajorVersion,
         ST->Hdr.Revision & ((1 << 16) - 1));
     LOG(1, LOG_LINE_NORMAL, L"Secure Boot %s", secure_mode() ? L"active" : L"inactive");
     LOG(1, LOG_LINE_NORMAL, L"Shim is%s available", ShimLoaded() ? L"" : L" not");
