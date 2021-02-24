@@ -61,6 +61,7 @@
 #include "../refind/mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "libeg.h"
+#include "log.h"
 #include "../include/Handle.h"
 
 #include <efiUgaDraw.h>
@@ -253,8 +254,10 @@ BOOLEAN egSetScreenSize(IN OUT UINTN *ScreenWidth, IN OUT UINTN *ScreenHeight) {
     UINT32                                UGAWidth, UGAHeight, UGADepth, UGARefreshRate;
     BOOLEAN                               ModeSet = FALSE;
 
-    if ((ScreenWidth == NULL) || (ScreenHeight == NULL))
+    if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
+        LOG(1, LOG_LINE_NORMAL, L"Error: ScreenWidth or ScreenHeight is NULL in egSetScreenSize()!");
         return FALSE;
+    }
 
     if (GraphicsOutput != NULL) { // GOP mode (UEFI)
         CurrentModeNum = GraphicsOutput->Mode->Mode;
@@ -266,6 +269,7 @@ BOOLEAN egSetScreenSize(IN OUT UINTN *ScreenWidth, IN OUT UINTN *ScreenHeight) {
             } else if (egGetResFromMode(ScreenWidth, ScreenHeight) &&
                        (refit_call2_wrapper(GraphicsOutput->SetMode,
                                             GraphicsOutput, ModeNum) == EFI_SUCCESS)) {
+                LOG(2, LOG_LINE_NORMAL, L"Setting GOP mode to %d", ModeNum);
                 ModeSet = TRUE;
             }
 
@@ -282,6 +286,8 @@ BOOLEAN egSetScreenSize(IN OUT UINTN *ScreenWidth, IN OUT UINTN *ScreenHeight) {
                     ((ModeNum == CurrentModeNum) ||
                      (refit_call2_wrapper(GraphicsOutput->SetMode,
                                           GraphicsOutput, ModeNum) == EFI_SUCCESS))) {
+                    LOG(2, LOG_LINE_NORMAL, L"Setting GOP mode to %d (%dx%d)",
+                        ModeNum, *ScreenWidth, *ScreenHeight);
                     ModeSet = TRUE;
                 } // if
             } while ((++ModeNum < GraphicsOutput->Mode->MaxMode) && !ModeSet);
@@ -294,6 +300,9 @@ BOOLEAN egSetScreenSize(IN OUT UINTN *ScreenWidth, IN OUT UINTN *ScreenHeight) {
             SwitchToText(FALSE);
             Print(L"Error setting graphics mode %d x %d; using default mode!\nAvailable modes are:\n",
                   *ScreenWidth, *ScreenHeight);
+            LOG(1, LOG_LINE_NORMAL, L"Error setting graphics mode %d x %d; using default mode!",
+                *ScreenWidth, *ScreenHeight)
+            LOG(1, LOG_LINE_NORMAL, L"Available modes are:");
             ModeNum = 0;
             do {
                 Status = refit_call4_wrapper(GraphicsOutput->QueryMode,
@@ -301,6 +310,8 @@ BOOLEAN egSetScreenSize(IN OUT UINTN *ScreenWidth, IN OUT UINTN *ScreenHeight) {
                 if (!EFI_ERROR(Status) && (Info != NULL)) {
                     Print(L"Mode %d: %d x %d\n", ModeNum,
                           Info->HorizontalResolution, Info->VerticalResolution);
+                    LOG(1, LOG_LINE_NORMAL, L"  Mode %d: %d x %d", ModeNum,
+                        Info->HorizontalResolution, Info->VerticalResolution);
                     if (ModeNum == CurrentModeNum) {
                         egScreenWidth = Info->HorizontalResolution;
                         egScreenHeight = Info->VerticalResolution;
@@ -316,6 +327,7 @@ BOOLEAN egSetScreenSize(IN OUT UINTN *ScreenWidth, IN OUT UINTN *ScreenHeight) {
         // in all cases, but I don't know how to probe for alternatives....
         Status = refit_call5_wrapper(UgaDraw->GetMode, UgaDraw, &UGAWidth,
                                      &UGAHeight, &UGADepth, &UGARefreshRate);
+        LOG(1, LOG_LINE_NORMAL, L"Setting UGA Draw mode to %d x %d", *ScreenWidth, *ScreenHeight);
         Status = refit_call5_wrapper(UgaDraw->SetMode, UgaDraw, *ScreenWidth,
                                      *ScreenHeight, UGADepth, UGARefreshRate);
         if (!EFI_ERROR(Status)) {
@@ -326,7 +338,10 @@ BOOLEAN egSetScreenSize(IN OUT UINTN *ScreenWidth, IN OUT UINTN *ScreenHeight) {
             // TODO: Find a list of supported modes and display it.
             // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
             // This is just a placeholder until something better can be done....
-            Print(L"Error setting graphics mode %d x %d; unsupported mode!\n");
+            Print(L"Error setting graphics mode %d x %d; unsupported mode!\n",
+                  *ScreenWidth, *ScreenHeight);
+            LOG(1, LOG_LINE_NORMAL, L"Error setting graphics mode %d x %d; unsupported mode!",
+                *ScreenWidth, *ScreenHeight);
         } // if/else
     } // if/else if (UgaDraw != NULL)
 
@@ -343,18 +358,23 @@ BOOLEAN egSetTextMode(UINT32 RequestedMode) {
     BOOLEAN       ChangedIt = FALSE;
 
     if ((RequestedMode != DONT_CHANGE_TEXT_MODE) && (RequestedMode != ST->ConOut->Mode->Mode)) {
+        LOG(1, LOG_LINE_NORMAL, L"Setting text mode to %d", RequestedMode);
         Status = refit_call2_wrapper(ST->ConOut->SetMode, ST->ConOut, RequestedMode);
         if (Status == EFI_SUCCESS) {
             ChangedIt = TRUE;
         } else {
             SwitchToText(FALSE);
             Print(L"\nError setting text mode %d; available modes are:\n", RequestedMode);
+            LOG(1, LOG_LINE_NORMAL, L"Error setting text mode %d; available modes are:", RequestedMode);
             do {
                 Status = refit_call4_wrapper(ST->ConOut->QueryMode, ST->ConOut, i, &Width, &Height);
-                if (Status == EFI_SUCCESS)
+                if (Status == EFI_SUCCESS) {
                     Print(L"Mode %d: %d x %d\n", i, Width, Height);
+                    LOG(1, LOG_LINE_NORMAL, L"  Mode %d: %d x %d", i, Width, Height);
+                }
             } while (++i < ST->ConOut->Mode->MaxMode);
             Print(L"Mode %d: Use default mode\n", DONT_CHANGE_TEXT_MODE);
+            LOG(1, LOG_LINE_NORMAL, L"  Mode %d: Use default mode", DONT_CHANGE_TEXT_MODE);
 
             PauseForKey();
             SwitchToGraphics();
@@ -612,6 +632,7 @@ VOID egScreenShot(VOID)
     Image = egCopyScreen();
     if (Image == NULL) {
        Print(L"Error: Unable to take screen shot\n");
+       LOG(1, LOG_LINE_NORMAL, L"Error: Unable to take screen shot (Image is NULL)");
        goto bailout_wait;
     }
 
@@ -620,6 +641,7 @@ VOID egScreenShot(VOID)
     egFreeImage(Image);
     if (FileData == NULL) {
         Print(L"Error egEncodeBMP returned NULL\n");
+        LOG(1, LOG_LINE_NORMAL, L"Error: egEncodeBMP returned NULL");
         goto bailout_wait;
     }
 

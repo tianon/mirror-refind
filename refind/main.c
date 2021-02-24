@@ -392,6 +392,21 @@ VOID LogBasicInfo(VOID) {
         ST->Hdr.Revision & ((1 << 16) - 1));
     LOG(1, LOG_LINE_NORMAL, L"Secure Boot %s", secure_mode() ? L"active" : L"inactive");
     LOG(1, LOG_LINE_NORMAL, L"Shim is%s available", ShimLoaded() ? L"" : L" not");
+    switch (GlobalConfig.LegacyType) {
+        case LEGACY_TYPE_MAC:
+            TempStr = L"CSM type: Mac";
+            break;
+        case LEGACY_TYPE_UEFI:
+            TempStr = L"CSM type: UEFI";
+            break;
+        case LEGACY_TYPE_NONE:
+            TempStr = L"CSM is unavailable";
+            break;
+        default: // should never happen; just in case....
+            TempStr = L"CSM type: unknown";
+            break;
+    }
+    LOG(1, LOG_LINE_NORMAL, TempStr);
     if (EfiMajorVersion > 1) { // QueryVariableInfo() is not supported in EFI 1.x
         LOG(3, LOG_LINE_NORMAL, L"Trying to get variable info....");
         Status = refit_call4_wrapper(RT->QueryVariableInfo, EFI_VARIABLE_NON_VOLATILE,

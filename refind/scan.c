@@ -1370,7 +1370,8 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
         MainMenu.Entries[i]->ShortcutDigit = (CHAR16)('1' + i);
 
     // wait for user ACK when there were errors
-    FinishTextScreen(FALSE);
+//     SwitchToText(FALSE);
+//     FinishTextScreen(FALSE);
 } // VOID ScanForBootloaders()
 
 // Checks to see if a specified file seems to be a valid tool.

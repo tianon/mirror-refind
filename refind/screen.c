@@ -88,8 +88,6 @@ static BOOLEAN GraphicsScreenDirty;
 
 // general defines and variables
 
-static BOOLEAN haveError = FALSE;
-
 static VOID PrepareBlankLine(VOID) {
     UINTN i;
 
@@ -162,7 +160,6 @@ VOID SetupScreen(VOID)
     }
 
     // Set text mode. If this requires increasing the size of the graphics mode, do so.
-    LOG(1, LOG_LINE_NORMAL, L"Setting text mode %d", GlobalConfig.RequestedTextMode);
     if (egSetTextMode(GlobalConfig.RequestedTextMode)) {
        egGetScreenSize(&NewWidth, &NewHeight);
        if ((NewWidth > UGAWidth) || (NewHeight > UGAHeight)) {
@@ -241,20 +238,6 @@ VOID BeginTextScreen(IN CHAR16 *Title)
 {
     DrawScreenHeader(Title);
     SwitchToText(FALSE);
-
-    // reset error flag
-    haveError = FALSE;
-}
-
-VOID FinishTextScreen(IN BOOLEAN WaitAlways)
-{
-    if (haveError || WaitAlways) {
-       PauseForKey();
-       SwitchToText(FALSE);
-    }
-
-    // reset error flag
-    haveError = FALSE;
 }
 
 VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
@@ -270,9 +253,6 @@ VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
         DrawScreenHeader(Title);
         SwitchToText(TRUE);
     }
-
-    // reset error flag
-    haveError = FALSE;
 }
 
 VOID FinishExternalScreen(VOID)
@@ -280,16 +260,8 @@ VOID FinishExternalScreen(VOID)
     // make sure we clean up later
     GraphicsScreenDirty = TRUE;
 
-    if (haveError) {
-        SwitchToText(FALSE);
-        PauseForKey();
-    }
-
     // Reset the screen resolution, in case external program changed it....
     SetupScreen();
-
-    // reset error flag
-    haveError = FALSE;
 }
 
 VOID TerminateScreen(VOID)
@@ -388,18 +360,6 @@ VOID PauseSeconds(UINTN Seconds) {
      refit_call1_wrapper(BS->Stall, 1000000 * Seconds);
 } // VOID PauseSeconds()
 
-#if REFIT_DEBUG > 0
-VOID DebugPause(VOID)
-{
-    // show console and wait for key
-    SwitchToText(FALSE);
-    PauseForKey();
-
-    // reset error flag
-    haveError = FALSE;
-}
-#endif
-
 VOID EndlessIdleLoop(VOID)
 {
     UINTN index;
@@ -431,7 +391,7 @@ BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where)
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-    haveError = TRUE;
+    LOG(1, LOG_LINE_NORMAL, Temp);
     MyFreePool(Temp);
 
     return TRUE;
@@ -455,7 +415,6 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
     PrintUglyText(Temp, NEXTLINE);
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
     LOG(1, LOG_LINE_NORMAL, Temp);
-    haveError = TRUE;
     MyFreePool(Temp);
 
     return TRUE;
