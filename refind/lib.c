@@ -422,27 +422,41 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
 // Set an EFI variable. This is normally done to NVRAM; however, rEFInd-specific
 // variables (as determined by the *vendor code) will be saved to a disk file IF
 // GlobalConfig.UseNvram == FALSE.
+// To minimize wear & tear on NVRAM, this function first reads the contents of
+// the variable (if possible), and writes the variable only if its contents
+// have changed (or if the variable is new).
 // Returns EFI status
 EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
-    UINT32 flags;
-    EFI_FILE *VarsDir = NULL;
-    EFI_STATUS Status;
+    UINT32      flags;
+    EFI_FILE    *VarsDir = NULL;
+    EFI_STATUS  Status, OldStatus;
+    CHAR8       *OldBuf;
+    UINTN       OldSize;
 
-    LOG(2, LOG_LINE_NORMAL, L"Setting EFI variable '%s' to %s", name,
+    OldStatus = EfivarGetRaw(vendor, name, &OldBuf, &OldSize);
+    LOG(2, LOG_LINE_NORMAL, L"Saving EFI variable '%s' to %s", name,
         GlobalConfig.UseNvram ? L"NVRAM" : L"disk");
-    if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
-        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
-                                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
-        if (Status == EFI_SUCCESS) {
-            Status = egSaveFile(VarsDir, name, (UINT8 *) buf, size);
-        }
-        MyFreePool(VarsDir);
-    } else {
-        flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
-        if (persistent)
-            flags |= EFI_VARIABLE_NON_VOLATILE;
+    if ((EFI_ERROR(OldStatus)) || (size != OldSize) || (CompareMem(buf, OldBuf, size) != 0)) {
+        if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
+            Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
+                                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
+            if (Status == EFI_SUCCESS) {
+                Status = egSaveFile(VarsDir, name, (UINT8 *) buf, size);
+            }
+            MyFreePool(VarsDir);
+        } else {
+            flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+            if (persistent)
+                flags |= EFI_VARIABLE_NON_VOLATILE;
 
-        Status = refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
+            Status = refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
+        }
+    } else {
+        LOG(2, LOG_LINE_NORMAL, L"Not writing variable '%s'; it's unchanged", name);
+    }
+    if (OldStatus == EFI_SUCCESS) {
+        LOG(3, LOG_LINE_NORMAL, L"Freeing OldBuf");
+        MyFreePool(&OldBuf);
     }
     return Status;
 } // EFI_STATUS EfivarSetRaw()

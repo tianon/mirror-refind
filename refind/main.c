@@ -101,7 +101,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* UseNvram = */ TRUE,
                               /* ShutdownAfterTimeout = */ FALSE,
                               /* Install = */ FALSE,
-                              /* WriteSystemdVars = */ FALSE,
+                              /* WriteSystemdVars = */ TRUE,
                               /* RequestedScreenWidth = */ 0,
                               /* RequestedScreenHeight = */ 0,
                               /* BannerBottomEdge = */ 0,
@@ -213,16 +213,9 @@ VOID AboutrEFInd(VOID)
 // Record the value of the loader's name/description in rEFInd's "PreviousBoot" EFI variable,
 // if it's different from what's already stored there.
 VOID StoreLoaderName(IN CHAR16 *Name) {
-    EFI_STATUS   Status;
-    CHAR16       *OldName = NULL;
-    UINTN        Length;
 
     if (Name) {
-        Status = EfivarGetRaw(&RefindGuid, L"PreviousBoot", (CHAR8**) &OldName, &Length);
-        if ((Status != EFI_SUCCESS) || (StrCmp(OldName, Name) != 0)) {
-            EfivarSetRaw(&RefindGuid, L"PreviousBoot", (CHAR8*) Name, StrLen(Name) * 2 + 2, TRUE);
-        } // if
-        MyFreePool(OldName);
+        EfivarSetRaw(&RefindGuid, L"PreviousBoot", (CHAR8*) Name, StrLen(Name) * 2 + 2, TRUE);
     } // if
 } // VOID StoreLoaderName()
 

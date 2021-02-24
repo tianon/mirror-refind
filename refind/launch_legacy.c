@@ -182,9 +182,9 @@ static EFI_STATUS WriteBootDiskHint(IN EFI_DEVICE_PATH *WholeDiskDevicePath)
 {
    EFI_STATUS          Status;
 
-   Status = refit_call5_wrapper(RT->SetVariable, L"BootCampHD", &AppleVariableVendorID,
-                                EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
-                                GetDevicePathSize(WholeDiskDevicePath), WholeDiskDevicePath);
+   Status = EfivarSetRaw(&AppleVariableVendorID, L"BootCampHD",
+                         (CHAR8*) WholeDiskDevicePath,
+                         GetDevicePathSize(WholeDiskDevicePath), TRUE);
    if (EFI_ERROR(Status))
       return Status;
 

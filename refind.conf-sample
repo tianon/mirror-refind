@@ -468,9 +468,10 @@ timeout 20
 # launching Linux via an EFI stub loader, ELILO, or GRUB. This variable,
 # when present, causes systemd to mount the ESP at /boot *IF* that
 # directory is empty and nothing else is mounted there.
-# Default is to not set this variable.
+# Default is to set this variable (but only if it's changed or not
+# present).
 #
-#write_systemd_vars
+#write_systemd_vars false
 
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, rEFInd shows
