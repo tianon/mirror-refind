@@ -429,7 +429,7 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
 EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
     UINT32      flags;
     EFI_FILE    *VarsDir = NULL;
-    EFI_STATUS  Status, OldStatus;
+    EFI_STATUS  Status = EFI_SUCCESS, OldStatus;
     CHAR8       *OldBuf;
     UINTN       OldSize;
 
