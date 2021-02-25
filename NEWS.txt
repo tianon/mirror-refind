@@ -1,4 +1,4 @@
-0.13.1 (?/??/2021):
+0.13.1 (2/24/2021):
 -------------------
 
 - Removed MyLibLocateProtocol(), based on RefindPlus code, because it
@@ -32,6 +32,14 @@
   (Previously, rEFInd did this with its own PreviousBoot variable, but this
   change expands this functionality to apply to all EFI variables that
   rEFInd might write.)
+
+- Uncommented use_nvram from refind.conf-sample and set it to false. This
+  change will cause new rEFInd installations to save rEFInd's own variables
+  (PreviousBoot, HiddenTags, and others) on disk rather than in NVRAM.
+  Existing installations won't be affected by this change. The point is to
+  try to save wear and tear on NVRAM storage; however, users who install
+  rEFInd to an HFS+ volume will need to comment out use_nvram or set it to
+  true in order to use features that rely on rEFInd's variable storage.
 
 - Additional replacements of "which" with "command -v" in mvrefind.
 

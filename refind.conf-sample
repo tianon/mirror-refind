@@ -46,7 +46,7 @@ timeout 20
 # variables.
 # Default is true
 #
-#use_nvram false
+use_nvram false
 
 # Screen saver timeout; the screen blanks after the specified number of
 # seconds with no keyboard input. The screen returns after most keypresses
@@ -466,12 +466,11 @@ timeout 20
 
 # Write to systemd EFI variables (currently only LoaderDevicePartUUID) when
 # launching Linux via an EFI stub loader, ELILO, or GRUB. This variable,
-# when present, causes systemd to mount the ESP at /boot *IF* that
+# when present, causes systemd to mount the ESP at /boot or /efi *IF* either
 # directory is empty and nothing else is mounted there.
-# Default is to set this variable (but only if it's changed or not
-# present).
+# Default is "false"
 #
-#write_systemd_vars false
+#write_systemd_vars true
 
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, rEFInd shows
