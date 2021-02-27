@@ -471,12 +471,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         StartLogging(FALSE);
         LogBasicInfo();
     }
+    MokProtocol = SecureBootSetup();
     if (LoadDrivers())
         ScanVolumes();
 
     LOG(1, LOG_LINE_SEPARATOR, L"Initializing basic features");
     AdjustDefaultSelection();
-    MokProtocol = SecureBootSetup();
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')
         SetAppleOSInfo();

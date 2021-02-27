@@ -217,7 +217,7 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
         ReturnStatus = EFI_LOAD_ERROR;
     }
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
-        LOG(1, LOG_LINE_NORMAL, L"Secure boot error while loading '%s'", ImageTitle);
+        LOG(1, LOG_LINE_NORMAL, L"Secure boot error while loading '%s'; Status = %d", ImageTitle, Status);
         WarnSecureBootError(ImageTitle, Verbose);
         goto bailout;
     }
