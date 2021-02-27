@@ -1,3 +1,9 @@
+0.13.2 (?/??/2021):
+-------------------
+
+- Fixed bug in mvrefind that would cause it to fail to create a new
+  NVRAM entry to point to the moved rEFInd.
+
 0.13.1 (2/24/2021):
 -------------------
 
