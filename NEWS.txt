@@ -8,6 +8,8 @@
 - Fixed bug in mvrefind that would cause it to fail to create a new
   NVRAM entry to point to the moved rEFInd.
 
+- Fixed bug that caused mountesp script to fail in macOS 11.0 ("Big Sur")
+
 - Improved Secure Boot support in refind-install script: The script can now
   install a Secure Boot key using mokutil, which can slightly simplify the
   MOK setup. It also now creates a backup NVRAM entry to boot directly,

@@ -38,6 +38,8 @@
 
 # Revision history:
 #
+# 0.13.2  -- Add installation of rEFInd Secure Boot key as MOK; if installing
+#            with Shim, add backup direct boot NVRAM option
 # 0.12.0  -- Improve code to find ESPs; should help with NVMe drives. Also
 #            activate install and bootorder features when using --usedefault
 #            option.
