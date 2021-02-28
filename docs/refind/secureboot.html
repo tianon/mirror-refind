@@ -299,42 +299,81 @@ Windows 8 or later, this isn't an option for it. Unfortunately, the PreLoader pr
     ideally to a location with few other files. (The rEFInd installation
     directory should work fine.)</li>
 
-<li>Reboot. With any luck, you'll see a simple text-mode user interface
-    with a label of <tt>Shim UEFI key management</tt>. This is the
-    MokManager program, which Shim launched when rEFInd failed verification
-    because its key is not yet enrolled.</li>
+<li>Optionally, type <tt class="userinput">mokutil -i refind.cer</tt>,
+    adding whatever directory components are needed to access
+    <tt>refind.cer</tt>; or you can substitute your own key file if you
+    re-sign the rEFInd binaries, as described later, in <a
+    href="#mok">Managing Your MOKs.</a> You will be asked to enter a
+    password, which is for temporary use only and need not match your user
+    or <tt>root</tt> password. This action will store the rEFInd public key
+    to the NVRAM, enabling MokManager to access it more easily. In theory,
+    this step obviates the previous one; but it's generally a good idea to
+    have rEFInd's Secure Boot public key on the boot disk so that it can be
+    re-enrolled manually, if necessary.</li>
 
-<li>Press your down arrow key and press Enter to select <tt>Enroll key from
-    disk</tt>. The screen will clear and prompt you to select a key, as
-    shown here:
+<li>Reboot. With any luck, you'll see a simple text-mode user interface with
+    a label of <tt>Shim UEFI key management</tt>. This is the MokManager
+    program, which Shim launched when rEFInd failed verification because its
+    key is not yet enrolled. You may be prompted to press a key to begin MOK
+    management. You have only ten seconds to do so, or the boot will
+    continue without enrolling the MOK, and rEFInd will probably not launch.
+    What happens when you begin MOK management depends of whether you used
+    <tt>mokutil</tt> to install the MOK....</li>
 
-    <br /><img src="MokManager2.png" align="CENTER" width="800"
-    height="345" alt="Recent versions of MokManager provide a somewhat more
-    user-friendly user interface." border=2> <br /> </li>
+<li>If you did <i>not</i> use <tt>mokutil</tt>, then you must locate and
+    enroll the rEFInd key file as follows:
 
-    (Early versions of MokManager used a more primitive user interface with
-    white and yellow text on a black background. If this is what you see,
-    some details will differ, but the program should still work. You might
-    want to find more recent programs for the better user interface and
-    other updated features, though.)
+<ol>
 
-<li>Each of the lines with a long awkward string represents a disk
-    partition. Select one and you'll see a list of files. Continue selecting
-    subdirectories until you find the <tt>refind.cer</tt> or
-    <tt>refind_local.cer</tt> file you copied to the ESP earlier. (Note that
-    in the early user interface the long lines can wrap and hide valid
-    entries on the next line, so you may need to select a disk whose entry
-    is masked by another one!)</li>
+  <li>Press your down arrow key and press Enter to select <tt>Enroll key
+      from disk</tt>; or if you used <tt>mokutil</tt> earlier, instead
+      select <tt>Enroll MOK</tt>. The screen will clear and, if you did
+      <i>not</i> use <tt>mokutil</tt> to install the key, prompt you to
+      select a key, as shown here:
 
-<li>Select <tt>refind.cer</tt> or <tt>refind_local.cer</tt>. You can type
-    <tt class="userinput">1</tt> to view the certificate's details if you
-    like, or skip that and type <tt class="userinput">0</tt> to enroll the
-    key.</li>
+      <br /><img src="MokManager2.png" align="CENTER" width="800"
+      height="345" alt="Recent versions of MokManager provide a somewhat
+      more user-friendly user interface." border=2> <br /> </li>
 
-<li>Back out of any directories you entered and return to the MokManager
-    main menu.</li>
+      (Early versions of MokManager used a more primitive user interface
+      with white and yellow text on a black background. If this is what you
+      see, some details will differ, but the program should still work. You
+      might want to find more recent programs for the better user interface
+      and other updated features, though.)
 
-<li>Select <tt>Continue boot</tt> at the main menu.</li>
+  <li>Each of the lines with a long awkward string represents a disk
+      partition. Select one and you'll see a list of files. Continue
+      selecting subdirectories until you find the <tt>refind.cer</tt> or
+      <tt>refind_local.cer</tt> file you copied to the ESP earlier. (Note
+      that in the early user interface the long lines can wrap and hide
+      valid entries on the next line, so you may need to select a disk whose
+      entry is masked by another one!)</li>
+
+  <li>Select <tt>refind.cer</tt> or <tt>refind_local.cer</tt>. You can type
+      <tt class="userinput">1</tt> to view the certificate's details if you
+      like, or skip that and type <tt class="userinput">0</tt> to enroll the
+      key.</li>
+
+  <li>Back out of any directories you entered and return to the MokManager
+      main menu.</li>
+
+  </ol></li>
+
+<li>If you used <tt>mokutil</tt>, the task is slightly simplified:
+
+  <ol>
+
+  <li>Select <tt>Enroll MOK</tt> from the main menu.</li>
+
+  <li>You may optionally view the key, but to enroll it, you must select
+      <tt>Continue</tt>.</li>
+
+  <li>MokManager will now ask for verification, and then for a password.
+      Enter the password you specified when you used <tt>mokutil</tt>.</li>
+
+  </ol></li>
+
+<li>Select <tt>Reboot</tt> at the main menu.</li>
 
 </ol>
 

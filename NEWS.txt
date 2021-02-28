@@ -8,6 +8,17 @@
 - Fixed bug in mvrefind that would cause it to fail to create a new
   NVRAM entry to point to the moved rEFInd.
 
+- Improved Secure Boot support in refind-install script: The script can now
+  install a Secure Boot key using mokutil, which can slightly simplify the
+  MOK setup. It also now creates a backup NVRAM entry to boot directly,
+  rather than via a Shim, if installed with the --shim option. This should
+  help on systems with custom Secure Boot key sets that don't rely on Shim,
+  but with a stray Shim binary present on the ESP that a package script will
+  detect and pass as a --shim option to rEFInd. If this configuration causes
+  a Secure Boot failure on launching Shim, then it should fail over to the
+  direct boot and be fine. (Some EFIs will hang rather than fail over to the
+  next entry, though, and this change won't help with them.)
+
 - Added icon for Manjaro Linux.
 
 0.13.1 (2/24/2021):
