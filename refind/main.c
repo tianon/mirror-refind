@@ -393,7 +393,7 @@ VOID LogBasicInfo(VOID) {
             TempStr = L"CSM type: UEFI";
             break;
         case LEGACY_TYPE_NONE:
-            TempStr = L"CSM is unavailable";
+            TempStr = L"CSM is not available";
             break;
         default: // should never happen; just in case....
             TempStr = L"CSM type: unknown";
