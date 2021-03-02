@@ -7,7 +7,7 @@ License: GPLv3
 URL: http://www.rodsbooks.com/refind/
 Group: System Environment/Base
 Source: refind-src-%version.tar.gz
-Requires: efibootmgr gdisk
+Requires: efibootmgr gdisk mokutil
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 %define efiarch unknown
