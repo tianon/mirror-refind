@@ -390,11 +390,14 @@ EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer
     EFI_FILE *VarsDir = NULL;
     BOOLEAN ReadFromNvram = TRUE;
 
-    LOG(3, LOG_LINE_NORMAL, L"Getting EFI variable '%s' from %s", name,
-        GlobalConfig.UseNvram ? L"NVRAM" : L"disk");
     if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
+        ReadFromNvram = FALSE;
+    }
+    LOG(3, LOG_LINE_NORMAL, L"Getting EFI variable '%s' from %s", name,
+        ReadFromNvram ? L"NVRAM" : L"disk");
+    if (ReadFromNvram) {
         Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
-                                  EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY);
+                                     EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY);
         if (Status == EFI_SUCCESS)
             Status = egLoadFile(VarsDir, name, &buf, size);
         ReadFromNvram = FALSE;

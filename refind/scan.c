@@ -661,6 +661,7 @@ static LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTit
         SetLoaderDefaults(Entry, LoaderPath, Volume);
         GenerateSubScreen(Entry, Volume, SubScreenReturn);
         AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+        LOG(3, LOG_LINE_NORMAL, L"Have successfully created menu entry for '%s'", Entry->Title);
     } else {
         LOG(1, LOG_LINE_NORMAL, L"Unable to initialize loader entry in AddLoaderEntry!");
     }
@@ -890,6 +891,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
     LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
     BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE, InSelfPath;
 
+    LOG(3, LOG_LINE_NORMAL, L"Beginning to scan directory '%s' for '%s'", Path, Pattern);
     InSelfPath = MyStriCmp(Path, SelfDirPath);
     if ((!SelfDirPath || !Path || (InSelfPath && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
            (!InSelfPath)) && (ShouldScan(Volume, Path))) {
@@ -932,7 +934,8 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
            if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
                AddKernelToSubmenu(FirstKernel, NewLoader->FileName, Volume);
            } else {
-               LatestEntry = AddLoaderEntry(NewLoader->FileName, NULL, Volume, !(IsLinux && GlobalConfig.FoldLinuxKernels));
+               LatestEntry = AddLoaderEntry(NewLoader->FileName, NULL, Volume,
+                                            !(IsLinux && GlobalConfig.FoldLinuxKernels));
                if (IsLinux && (FirstKernel == NULL))
                    FirstKernel = LatestEntry;
            }
@@ -956,6 +959,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
        } // if (Status != EFI_NOT_FOUND)
     } // if not scanning a blacklisted directory
 
+    LOG(3, LOG_LINE_NORMAL, L"Done scanning directory '%s' for '%s'", Path, Pattern);
     return FoundFallbackDuplicate;
 } /* static VOID ScanLoaderDir() */
 

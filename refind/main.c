@@ -379,6 +379,7 @@ VOID LogBasicInfo(VOID) {
 #else
     LOG(1, LOG_LINE_NORMAL, L"Platform: unknown");
 #endif
+    LOG(1, LOG_LINE_NORMAL, L"Log level is %d", GlobalConfig.LogLevel);
     LOG(1, LOG_LINE_NORMAL, L"Firmware: %s %d.%02d", ST->FirmwareVendor,
         ST->FirmwareRevision >> 16, ST->FirmwareRevision & ((1 << 16) - 1));
     LOG(1, LOG_LINE_NORMAL, L"EFI Revision %d.%02d", EfiMajorVersion,
