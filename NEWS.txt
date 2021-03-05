@@ -23,8 +23,16 @@
 
 - More logging improvements.
 
+- Improved separation of filesystem name vs. partition name internally. This
+  can make for more accurate OS icon choices in some situations, such as if
+  both names are set but only the partition name contains useful
+  information.
+
 - Adjusted reporting of SIP values; added back 0x77 as an interpreted value
   for on-screen notification when rotating through values.
+
+- rEFInd can now identify JFS volumes as such, if a third-party JFS driver
+  is installed.
 
 - Added icon for Manjaro Linux.
 

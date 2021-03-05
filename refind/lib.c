@@ -90,6 +90,7 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 #define REISER2FS_JR_SUPER_MAGIC_STRING  "ReIsEr3Fs"
 #define BTRFS_SIGNATURE                  "_BHRfS_M"
 #define XFS_SIGNATURE                    "XFSB"
+#define JFS_SIGNATURE                    "JFS1"
 #define NTFS_SIGNATURE                   "NTFS    "
 #define FAT12_SIGNATURE                  "FAT12   "
 #define FAT16_SIGNATURE                  "FAT16   "
@@ -396,13 +397,6 @@ EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer
     LOG(3, LOG_LINE_NORMAL, L"Getting EFI variable '%s' from %s", name,
         ReadFromNvram ? L"NVRAM" : L"disk");
     if (ReadFromNvram) {
-        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
-                                     EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY);
-        if (Status == EFI_SUCCESS)
-            Status = egLoadFile(VarsDir, name, &buf, size);
-        ReadFromNvram = FALSE;
-        MyFreePool(VarsDir);
-    } else {
         l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
         buf = AllocatePool(l);
         if (!buf) {
@@ -410,6 +404,13 @@ EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer
             return EFI_OUT_OF_RESOURCES;
         }
         Status = refit_call5_wrapper(RT->GetVariable, name, vendor, NULL, &l, buf);
+    } else {
+        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
+                                     EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY);
+        if (Status == EFI_SUCCESS)
+            Status = egLoadFile(VarsDir, name, &buf, size);
+        ReadFromNvram = FALSE;
+        MyFreePool(VarsDir);
     }
     if (EFI_ERROR(Status) == EFI_SUCCESS) {
         *buffer = (CHAR8*) buf;
@@ -445,6 +446,12 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
         WriteToNvram ? L"NVRAM" : L"disk");
     if ((EFI_ERROR(OldStatus)) || (size != OldSize) || (CompareMem(buf, OldBuf, size) != 0)) {
         if (WriteToNvram) {
+            flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+            if (persistent)
+                flags |= EFI_VARIABLE_NON_VOLATILE;
+
+            Status = refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
+        } else {
             Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
                                          EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
                                          EFI_FILE_DIRECTORY);
@@ -452,12 +459,6 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
                 Status = egSaveFile(VarsDir, name, (UINT8 *) buf, size);
             }
             MyFreePool(VarsDir);
-        } else {
-            flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
-            if (persistent)
-                flags |= EFI_VARIABLE_NON_VOLATILE;
-
-            Status = refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
         }
     } else {
         LOG(2, LOG_LINE_NORMAL, L"Not writing variable '%s'; it's unchanged", name);
@@ -542,6 +543,9 @@ static CHAR16 *FSTypeName(IN UINT32 TypeCode) {
         case FS_TYPE_XFS:
             retval = L" XFS";
             break;
+        case FS_TYPE_JFS:
+            retval = L" JFS";
+            break;
         case FS_TYPE_ISO9660:
             retval = L" ISO-9660";
             break;
@@ -554,6 +558,27 @@ static CHAR16 *FSTypeName(IN UINT32 TypeCode) {
     } // switch
     return retval;
 } // CHAR16 *FSTypeName()
+
+// Sets the FsName field of Volume, based on data recorded in the partition's
+// filesystem. This field may remain unchanged if there's no known filesystem
+// or if the name field is empty.
+static VOID SetFilesystemName(REFIT_VOLUME *Volume) {
+    EFI_FILE_SYSTEM_INFO    *FileSystemInfoPtr = NULL;
+
+    if ((Volume) && (Volume->RootDir != NULL)) {
+        FileSystemInfoPtr = LibFileSystemInfo(Volume->RootDir);
+     }
+
+    if ((FileSystemInfoPtr != NULL) && (FileSystemInfoPtr->VolumeLabel != NULL) &&
+        (StrLen(FileSystemInfoPtr->VolumeLabel) > 0)) {
+        if (Volume->FsName) {
+            MyFreePool(Volume->FsName);
+            Volume->FsName = NULL;
+        }
+        Volume->FsName = StrDuplicate(FileSystemInfoPtr->VolumeLabel);
+    }
+    MyFreePool(FileSystemInfoPtr);
+} // VOID *SetFilesystemName()
 
 // Identify the filesystem type and record the filesystem's UUID/serial number,
 // if possible. Expects a Buffer containing the first few (normally at least
@@ -618,6 +643,14 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
                 return;
             }
         } // search for XFS magic
+
+        if (BufferSize >= (32768 + 4)) {
+            MagicString = (char*) (Buffer + 32768);
+            if (CompareMem(MagicString, JFS_SIGNATURE, 4) == 0) {
+                Volume->FSType = FS_TYPE_JFS;
+                return;
+            }
+        } // search for JFS magic
 
         if (BufferSize >= (1024 + 2)) {
             Magic16 = (UINT16*) (Buffer + 1024);
@@ -877,7 +910,7 @@ static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
 } // CHAR16 *SizeInIEEEUnits()
 
 // Return a name for the volume. Ideally this should be the label for the
-// filesystem or volume, but this function falls back to describing the
+// filesystem or partition, but this function falls back to describing the
 // filesystem by size (200 MiB, etc.) and/or type (ext2, HFS+, etc.), if
 // this information can be extracted.
 // The calling function is responsible for freeing the memory allocated
@@ -887,32 +920,34 @@ static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
     CHAR16                  *FoundName = NULL;
     CHAR16                  *SISize, *TypeName;
 
-    if (Volume->RootDir != NULL) {
-        FileSystemInfoPtr = LibFileSystemInfo(Volume->RootDir);
-     }
-
-    if ((FileSystemInfoPtr != NULL) && (FileSystemInfoPtr->VolumeLabel != NULL) &&
-        (StrLen(FileSystemInfoPtr->VolumeLabel) > 0)) {
-        FoundName = StrDuplicate(FileSystemInfoPtr->VolumeLabel);
+    if ((Volume->FsName) && (StrLen(Volume->FsName) > 0)) {
+        FoundName = StrDuplicate(Volume->FsName);
+        LOG(3, LOG_LINE_NORMAL, L"Setting volume name to filesystem name of '%s'", FoundName);
     }
 
     // If no filesystem name, try to use the partition name....
-    if ((FoundName == NULL) && (Volume->PartName != NULL) && (StrLen(Volume->PartName) > 0) &&
+    if ((FoundName == NULL) && (Volume->PartName) && (StrLen(Volume->PartName) > 0) &&
         !IsIn(Volume->PartName, IGNORE_PARTITION_NAMES)) {
         FoundName = StrDuplicate(Volume->PartName);
+        LOG(3, LOG_LINE_NORMAL, L"Setting volume name to partition name of '%s'", FoundName);
     } // if use partition name
 
     // No filesystem or acceptable partition name, so use fs type and size
-    if ((FoundName == NULL) && (FileSystemInfoPtr != NULL)) {
-        FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
-        if (FoundName != NULL) {
-            SISize = SizeInIEEEUnits(FileSystemInfoPtr->VolumeSize);
-            SPrint(FoundName, 255, L"%s%s volume", SISize, FSTypeName(Volume->FSType));
-            MyFreePool(SISize);
-        } // if allocated memory OK
+    if (FoundName == NULL) {
+        if (Volume->RootDir != NULL) {
+            FileSystemInfoPtr = LibFileSystemInfo(Volume->RootDir);
+        }
+        if (FileSystemInfoPtr != NULL) {
+            FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
+            if (FoundName != NULL) {
+                SISize = SizeInIEEEUnits(FileSystemInfoPtr->VolumeSize);
+                SPrint(FoundName, 255, L"%s%s volume", SISize, FSTypeName(Volume->FSType));
+                MyFreePool(SISize);
+                LOG(3, LOG_LINE_NORMAL, L"Setting volume name to filesystem description of '%s'", FoundName);
+            } // if allocated memory OK
+            MyFreePool(FileSystemInfoPtr);
+        }
     } // if (FoundName == NULL)
-
-    MyFreePool(FileSystemInfoPtr);
 
     if (FoundName == NULL) {
         FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
@@ -922,6 +957,7 @@ static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
                 SPrint(FoundName, 255, L"%s volume", TypeName);
             else
                 SPrint(FoundName, 255, L"unknown volume");
+            LOG(3, LOG_LINE_NORMAL, L"Setting volume name to generic description of '%s'", FoundName);
         } // if allocated memory OK
     } // if
 
@@ -1091,6 +1127,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     // open the root directory of the volume
     Volume->RootDir = LibOpenRoot(Volume->DeviceHandle);
 
+    SetFilesystemName(Volume);
     Volume->VolName = GetVolumeName(Volume);
 
     if (Volume->RootDir == NULL) {
@@ -1778,7 +1815,7 @@ BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier) {
     return (Found);
 } // static VOID FindVolume()
 
-// Returns TRUE if Description matches Volume's VolName, PartName, or (once
+// Returns TRUE if Description matches Volume's VolName, PartName, FsName or (once
 // transformed) PartGuid fields, FALSE otherwise (or if either pointer is NULL)
 BOOLEAN VolumeMatchesDescription(REFIT_VOLUME *Volume, CHAR16 *Description) {
     EFI_GUID TargetVolGuid = NULL_GUID_VALUE;
@@ -1789,7 +1826,9 @@ BOOLEAN VolumeMatchesDescription(REFIT_VOLUME *Volume, CHAR16 *Description) {
         TargetVolGuid = StringAsGuid(Description);
         return GuidsAreEqual(&TargetVolGuid, &(Volume->PartGuid));
     } else {
-        return (MyStriCmp(Description, Volume->VolName) || MyStriCmp(Description, Volume->PartName));
+        return (MyStriCmp(Description, Volume->VolName) ||
+                MyStriCmp(Description, Volume->PartName) ||
+                MyStriCmp(Description, Volume->FsName));
     }
 } // BOOLEAN VolumeMatchesDescription()
 

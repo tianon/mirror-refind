@@ -508,10 +508,11 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
             ShortcutLetter = OSIconName[0];
         }
 
-        // Add every "word" in the volume label, delimited by spaces, dashes (-), or
-        // underscores (_), to the list of hints to be used in searching for OS
-        // icons.
-        MergeWords(&OSIconName, Volume->VolName, L',');
+        // Add every "word" in the filesystem and partition names, delimited by
+        // spaces, dashes (-), underscores (_), or colons (:), to the list of
+        // hints to be used in searching for OS icons.
+        MergeWords(&OSIconName, Volume->FsName, L',');
+        MergeWords(&OSIconName, Volume->PartName, L',');
     } // if/else network boot
 
     // detect specific loaders
@@ -743,7 +744,7 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
     BOOLEAN  ScanIt = TRUE;
 
     VolGuid = GuidAsString(&(Volume->PartGuid));
-    if ((IsIn(Volume->VolName, GlobalConfig.DontScanVolumes)) ||
+    if ((IsIn(Volume->FsName, GlobalConfig.DontScanVolumes)) ||
         (IsIn(Volume->PartName, GlobalConfig.DontScanVolumes)) ||
         (IsIn(VolGuid, GlobalConfig.DontScanVolumes))) {
         MyFreePool(VolGuid);
@@ -758,8 +759,9 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
     // See if Path includes an explicit volume declaration that's NOT Volume....
     PathCopy = StrDuplicate(Path);
     if (SplitVolumeAndFilename(&PathCopy, &VolName)) {
-        if (VolName && !MyStriCmp(VolName, Volume->VolName)) {
-            ScanIt = FALSE;
+        if (VolName && (!MyStriCmp(VolName, Volume->FsName) ||
+            !MyStriCmp(VolName, Volume->PartName))) {
+                ScanIt = FALSE;
         } // if
     } // if Path includes volume specification
     MyFreePool(PathCopy);
@@ -1003,7 +1005,7 @@ static VOID ScanNetboot() {
                 CopyMem(NetVolume, SelfVolume, sizeof(REFIT_VOLUME));
                 NetVolume->DiskKind = DISK_KIND_NET;
                 NetVolume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_NET);
-                NetVolume->PartName = NetVolume->VolName = NULL;
+                NetVolume->PartName = NetVolume->VolName = NetVolume->FsName = NULL;
                 AddLoaderEntry(iPXEFileName, Location, NetVolume, TRUE);
                 MyFreePool(NetVolume);
             } // if support files exist and are valid
@@ -1039,7 +1041,8 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
     BOOLEAN          FoundBRBackup = FALSE;
 
     if (Volume && (Volume->RootDir != NULL) && (Volume->VolName != NULL) && (Volume->IsReadable)) {
-        LOG(1, LOG_LINE_NORMAL, L"Scanning EFI files on %s", Volume->PartName ? Volume->PartName : Volume->VolName);
+        LOG(1, LOG_LINE_NORMAL, L"Scanning EFI files on %s",
+            Volume->PartName ? Volume->PartName : Volume->VolName);
         MatchPatterns = StrDuplicate(LOADER_MATCH_PATTERNS);
         if (GlobalConfig.ScanAllLinux)
             MergeStrings(&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
@@ -1515,7 +1518,7 @@ VOID ScanForTools(VOID) {
                 while ((FileName = FindCommaDelimited(SHELL_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
                         LOG(1, LOG_LINE_NORMAL, L"Adding Shell tag for '%s' on '%s'", FileName,
-                            SelfVolume->PartName ? SelfVolume->PartName : SelfVolume->VolName);
+                            SelfVolume->VolName);
                         AddToolEntry(SelfVolume, FileName, L"EFI Shell",
                                      BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
                                      'S', FALSE);
@@ -1531,7 +1534,7 @@ VOID ScanForTools(VOID) {
                 while ((FileName = FindCommaDelimited(GPTSYNC_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
                         LOG(1, LOG_LINE_NORMAL, L"Adding Hybrid MBR tool tag for '%s' on '%s'", FileName,
-                            SelfVolume->PartName ? SelfVolume->PartName : SelfVolume->VolName);
+                            SelfVolume->VolName);
                         AddToolEntry(SelfVolume, FileName, L"Hybrid MBR tool",
                                      BuiltinIcon(BUILTIN_ICON_TOOL_PART),
                                      'P', FALSE);
@@ -1546,7 +1549,7 @@ VOID ScanForTools(VOID) {
                 while ((FileName = FindCommaDelimited(GDISK_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
                         LOG(1, LOG_LINE_NORMAL, L"Adding GPT fdisk tag for '%s' on '%s'", FileName,
-                            SelfVolume->PartName ? SelfVolume->PartName : SelfVolume->VolName);
+                            SelfVolume->VolName);
                         AddToolEntry(SelfVolume, FileName, L"disk partitioning tool",
                                      BuiltinIcon(BUILTIN_ICON_TOOL_PART), 'G', FALSE);
                     } // if
@@ -1560,7 +1563,7 @@ VOID ScanForTools(VOID) {
                 while ((FileName = FindCommaDelimited(NETBOOT_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
                         LOG(1, LOG_LINE_NORMAL, L"Adding Netboot tag for '%s' on '%s'", FileName,
-                            SelfVolume->PartName ? SelfVolume->PartName : SelfVolume->VolName);
+                            SelfVolume->VolName);
                         AddToolEntry(SelfVolume, FileName, L"Netboot",
                                      BuiltinIcon(BUILTIN_ICON_TOOL_NETBOOT), 'N', FALSE);
                     } // if

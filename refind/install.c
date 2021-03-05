@@ -88,7 +88,7 @@ static ESP_LIST * FindAllESPs(VOID) {
 static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
     ESP_LIST            *CurrentESP;
     REFIT_VOLUME        *ChosenVolume = NULL;
-    CHAR16              *Temp = NULL, *GuidStr, *PartName, *VolName;
+    CHAR16              *Temp = NULL, *GuidStr, *PartName, *FsName, *VolName;
     INTN                DefaultEntry = 0, MenuExit = MENU_EXIT_ESCAPE, i = 1;
     MENU_STYLE_FUNC     Style = TextMenuStyle;
     REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
@@ -107,10 +107,15 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
             MenuEntryItem = AllocateZeroPool(sizeof(REFIT_MENU_ENTRY));
             GuidStr = GuidAsString(&(CurrentESP->Volume->PartGuid));
             PartName = CurrentESP->Volume->PartName;
+            FsName = CurrentESP->Volume->FsName;
             VolName = CurrentESP->Volume->VolName;
-            if (PartName && (StrLen(PartName) > 0) && VolName && (StrLen(VolName) > 0) &&
-                !MyStriCmp(VolName, PartName)) {
-                Temp = PoolPrint(L"%s - '%s', aka '%s'", GuidStr, PartName, VolName);
+            if (PartName && (StrLen(PartName) > 0) && FsName && (StrLen(FsName) > 0) &&
+                !MyStriCmp(FsName, PartName)) {
+                Temp = PoolPrint(L"%s - '%s', aka '%s'", GuidStr, PartName, FsName);
+            } else if (FsName && (StrLen(FsName) > 0)) {
+                Temp = PoolPrint(L"%s - '%s'", GuidStr, FsName);
+            } else if (PartName && (StrLen(PartName) > 0)) {
+                Temp = PoolPrint(L"%s - '%s'", GuidStr, PartName);
             } else if (VolName && (StrLen(VolName) > 0)) {
                 Temp = PoolPrint(L"%s - '%s'", GuidStr, VolName);
             } else {

@@ -1647,8 +1647,6 @@ static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu,
 
     if (Loader->Volume->VolName && (StrLen(Loader->Volume->VolName) > 0)) {
         FullPath = StrDuplicate(Loader->Volume->VolName);
-    } else if (Loader->Volume->PartName && (StrLen(Loader->Volume->PartName) > 0)) {
-        FullPath = StrDuplicate(Loader->Volume->PartName);
     }
     MergeStrings(&FullPath, Loader->LoaderPath, L':');
     AddMenuInfoLine(HideItemMenu, PoolPrint(L"Really hide %s?", FullPath));
