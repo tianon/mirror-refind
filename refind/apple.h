@@ -39,13 +39,21 @@
 #define CSR_END_OF_LIST                      0xFFFFFFFF
 // Some summaries....
 #define SIP_ENABLED  CSR_ALLOW_APPLE_INTERNAL
-#define SIP_DISABLED (CSR_ALLOW_UNRESTRICTED_NVRAM | \
-                      CSR_ALLOW_UNRESTRICTED_DTRACE | \
-                      CSR_ALLOW_APPLE_INTERNAL | \
-                      CSR_ALLOW_TASK_FOR_PID | \
-                      CSR_ALLOW_UNRESTRICTED_FS | \
-                      CSR_ALLOW_UNTRUSTED_KEXTS | \
-                      CSR_ALLOW_UNAUTHENTICATED_ROOT)
+// SIP was disabled with a value of 0x77 in macOS 10.x....
+#define SIP_DISABLED_10 (CSR_ALLOW_UNRESTRICTED_NVRAM | \
+                         CSR_ALLOW_UNRESTRICTED_DTRACE | \
+                         CSR_ALLOW_APPLE_INTERNAL | \
+                         CSR_ALLOW_TASK_FOR_PID | \
+                         CSR_ALLOW_UNRESTRICTED_FS | \
+                         CSR_ALLOW_UNTRUSTED_KEXTS)
+// Starting with macOS 11.0, SIP requires 0x877 to be fully disabled....
+#define SIP_DISABLED_11 (CSR_ALLOW_UNRESTRICTED_NVRAM | \
+                         CSR_ALLOW_UNRESTRICTED_DTRACE | \
+                         CSR_ALLOW_APPLE_INTERNAL | \
+                         CSR_ALLOW_TASK_FOR_PID | \
+                         CSR_ALLOW_UNRESTRICTED_FS | \
+                         CSR_ALLOW_UNTRUSTED_KEXTS | \
+                         CSR_ALLOW_UNAUTHENTICATED_ROOT)
 #define CSR_MAX_LEGAL_VALUE (CSR_ALLOW_UNTRUSTED_KEXTS | \
                              CSR_ALLOW_UNRESTRICTED_FS | \
                              CSR_ALLOW_TASK_FOR_PID | \

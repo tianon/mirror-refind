@@ -23,6 +23,9 @@
 
 - More logging improvements.
 
+- Adjusted reporting of SIP values; added back 0x77 as an interpreted value
+  for on-screen notification when rotating through values.
+
 - Added icon for Manjaro Linux.
 
 - Swapped out expired CentOS Secure Boot keys for new ones.

@@ -435,14 +435,19 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
     EFI_STATUS  Status = EFI_SUCCESS, OldStatus;
     CHAR8       *OldBuf;
     UINTN       OldSize;
+    BOOLEAN     WriteToNvram = TRUE;
+
+    if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid))
+        WriteToNvram = FALSE;
 
     OldStatus = EfivarGetRaw(vendor, name, &OldBuf, &OldSize);
     LOG(2, LOG_LINE_NORMAL, L"Saving EFI variable '%s' to %s", name,
-        GlobalConfig.UseNvram ? L"NVRAM" : L"disk");
+        WriteToNvram ? L"NVRAM" : L"disk");
     if ((EFI_ERROR(OldStatus)) || (size != OldSize) || (CompareMem(buf, OldBuf, size) != 0)) {
-        if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
+        if (WriteToNvram) {
             Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
-                                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
+                                         EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+                                         EFI_FILE_DIRECTORY);
             if (Status == EFI_SUCCESS) {
                 Status = egSaveFile(VarsDir, name, (UINT8 *) buf, size);
             }
@@ -461,6 +466,9 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
         LOG(3, LOG_LINE_NORMAL, L"Freeing OldBuf");
         MyFreePool(&OldBuf);
     }
+    if (EFI_ERROR(Status))
+        LOG(1, LOG_LINE_NORMAL, L"Error %d when writing EFI variable '%s'", Status, name);
+
     return Status;
 } // EFI_STATUS EfivarSetRaw()
 
