@@ -28,7 +28,7 @@
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 
-CHAR16 gCsrStatus[256];
+CHAR16 gCsrStatus[512];
 
 // Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
 // Protection [SIP], or "rootless") status information. If the variable is not

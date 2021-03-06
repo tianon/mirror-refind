@@ -889,22 +889,19 @@ static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
     CHAR16 *Units = NULL, *Prefixes = L" KMGTPEZ";
     CHAR16 *TheValue;
 
-    TheValue = AllocateZeroPool(sizeof(CHAR16) * 256);
-    if (TheValue != NULL) {
-        NumPrefixes = StrLen(Prefixes);
-        SizeInIeee = SizeInBytes;
-        while ((SizeInIeee > 1024) && (Index < (NumPrefixes - 1))) {
-            Index++;
-            SizeInIeee /= 1024;
-        } // while
-        if (Prefixes[Index] == ' ') {
-            Units = StrDuplicate(L"-byte");
-        } else {
-            Units = StrDuplicate(L"  iB");
-            Units[1] = Prefixes[Index];
-        } // if/else
-        SPrint(TheValue, 255, L"%ld%s", SizeInIeee, Units);
-    } // if
+    NumPrefixes = StrLen(Prefixes);
+    SizeInIeee = SizeInBytes;
+    while ((SizeInIeee > 1024) && (Index < (NumPrefixes - 1))) {
+        Index++;
+        SizeInIeee /= 1024;
+    } // while
+    if (Prefixes[Index] == ' ') {
+        Units = StrDuplicate(L"-byte");
+    } else {
+        Units = StrDuplicate(L"  iB");
+        Units[1] = Prefixes[Index];
+    } // if/else
+    TheValue = PoolPrint(L"%ld%s", SizeInIeee, Units);
     MyFreePool(Units);
     return TheValue;
 } // CHAR16 *SizeInIEEEUnits()
@@ -938,37 +935,27 @@ static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
             FileSystemInfoPtr = LibFileSystemInfo(Volume->RootDir);
         }
         if (FileSystemInfoPtr != NULL) {
-            FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
-            if (FoundName != NULL) {
-                SISize = SizeInIEEEUnits(FileSystemInfoPtr->VolumeSize);
-                SPrint(FoundName, 255, L"%s%s volume", SISize, FSTypeName(Volume->FSType));
-                MyFreePool(SISize);
-                LOG(3, LOG_LINE_NORMAL, L"Setting volume name to filesystem description of '%s'", FoundName);
-            } // if allocated memory OK
+            SISize = SizeInIEEEUnits(FileSystemInfoPtr->VolumeSize);
+            FoundName = PoolPrint(L"%s%s volume", SISize, FSTypeName(Volume->FSType));
+            MyFreePool(SISize);
+            LOG(3, LOG_LINE_NORMAL, L"Setting volume name to filesystem description of '%s'", FoundName);
             MyFreePool(FileSystemInfoPtr);
         }
     } // if (FoundName == NULL)
 
     if (FoundName == NULL) {
-        FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
-        if (FoundName != NULL) {
-            TypeName = FSTypeName(Volume->FSType); // NOTE: Don't free TypeName; function returns constant
-            if (StrLen(TypeName) > 0)
-                SPrint(FoundName, 255, L"%s volume", TypeName);
-            else
-                SPrint(FoundName, 255, L"unknown volume");
-            LOG(3, LOG_LINE_NORMAL, L"Setting volume name to generic description of '%s'", FoundName);
-        } // if allocated memory OK
+        TypeName = FSTypeName(Volume->FSType); // NOTE: Don't free TypeName; function returns constant
+        if (StrLen(TypeName) > 0)
+            FoundName = PoolPrint(L"%s volume", TypeName);
+        else
+            FoundName = StrDuplicate(L"unknown volume");
+        LOG(3, LOG_LINE_NORMAL, L"Setting volume name to generic description of '%s'", FoundName);
     } // if
 
     // TODO: Above could be improved/extended, in case filesystem name is not found,
     // such as:
     //  - use or add disk/partition number (e.g., "(hd0,2)")
 
-    // Desperate fallback name....
-    if (FoundName == NULL) {
-        FoundName = StrDuplicate(L"unknown volume");
-    }
     return FoundName;
 } // static CHAR16 *GetVolumeName()
 
@@ -1187,8 +1174,7 @@ static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_I
                 Volume->DiskKind = WholeDiskVolume->DiskKind;
                 Volume->IsMbrPartition = TRUE;
                 Volume->MbrPartitionIndex = LogicalPartitionIndex++;
-                Volume->VolName = AllocateZeroPool(256 * sizeof(UINT16));
-                SPrint(Volume->VolName, 255, L"Partition %d", Volume->MbrPartitionIndex + 1);
+                Volume->VolName = PoolPrint(L"Partition %d", Volume->MbrPartitionIndex + 1);
                 Volume->BlockIO = WholeDiskVolume->BlockIO;
                 Volume->BlockIOOffset = ExtCurrent + EMbrTable[i].StartLBA;
                 Volume->WholeDiskBlockIO = WholeDiskVolume->BlockIO;
@@ -1335,8 +1321,7 @@ VOID ScanVolumes(VOID)
                 Volume->IsMbrPartition = TRUE;
                 Volume->MbrPartitionIndex = PartitionIndex;
                 if (Volume->VolName == NULL) {
-                    Volume->VolName = AllocateZeroPool(sizeof(CHAR16) * 256);
-                    SPrint(Volume->VolName, 255, L"Partition %d", PartitionIndex + 1);
+                    Volume->VolName = PoolPrint(L"Partition %d", PartitionIndex + 1);
                 }
                 break;
             }
@@ -1575,7 +1560,7 @@ CHAR16 * Basename(IN CHAR16 *Path)
         }
     }
 
-    return FileName;
+    return StrDuplicate(FileName);
 }
 
 // Remove the .efi extension from FileName -- for instance, if FileName is
