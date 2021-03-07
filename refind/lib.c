@@ -284,14 +284,14 @@ VOID ReinitVolumes(VOID)
             RemainingDevicePath = Volume->DevicePath;
             Status = refit_call3_wrapper(BS->LocateDevicePath, &BlockIoProtocol, &RemainingDevicePath, &DeviceHandle);
 
-            if (!EFI_ERROR(Status)) {
+            if (EFI_ERROR(Status)) {
+                CheckError(Status, L"from LocateDevicePath");
+            } else {
                 Volume->DeviceHandle = DeviceHandle;
 
                 // get the root directory
                 Volume->RootDir = LibOpenRoot(Volume->DeviceHandle);
-
-            } else
-                CheckError(Status, L"from LocateDevicePath");
+            }
         }
 
         if (Volume->WholeDiskDevicePath != NULL) {
@@ -417,6 +417,10 @@ EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer
         if ((size) && ReadFromNvram)
             *size = l;
     } else {
+        // Note: "Errors" here are common because of attempts to read
+        // non-existent variables, like Hidden* variables if they haven't
+        // been set. Hence, log at level 3, not 1.
+        LOG(3, LOG_LINE_NORMAL, L"Error retrieving EFI variable '%s'", name);
         MyFreePool(buf);
         *buffer = NULL;
     }
@@ -716,7 +720,9 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
     Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks,
                                  Volume->BlockIO, Volume->BlockIO->Media->MediaId,
                                  Volume->BlockIOOffset, SAMPLE_SIZE, Buffer);
-    if (!EFI_ERROR(Status)) {
+    if (EFI_ERROR(Status)) {
+        LOG(1, LOG_LINE_NORMAL, L"Error %d reading boot sector of '%s'", Status, Volume->VolName);
+    } else {
         SetFilesystemData(Buffer, SAMPLE_SIZE, Volume);
     }
     if ((Status == EFI_SUCCESS) && (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)) {
@@ -1048,6 +1054,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     if (EFI_ERROR(Status)) {
         Volume->BlockIO = NULL;
         Print(L"Warning: Can't get BlockIO protocol.\n");
+        LOG(1, LOG_LINE_NORMAL, L"Warning: Can't get BlockIO protocol in ScanVolume()");
     } else {
         if (Volume->BlockIO->Media->BlockSize == 2048)
             Volume->DiskKind = DISK_KIND_OPTICAL;
@@ -1094,25 +1101,27 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
                 // get the device path for later
                 Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle,
                                              &DevicePathProtocol, (VOID **) &DiskDevicePath);
-                if (!EFI_ERROR(Status)) {
+                if (EFI_ERROR(Status)) {
+                    LOG(1, LOG_LINE_NORMAL, L"Could not get DiskDevicePath for volume");
+                } else {
                     Volume->WholeDiskDevicePath = DuplicateDevicePath(DiskDevicePath);
                 }
 
                 // look at the BlockIO protocol
                 Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle, &BlockIoProtocol,
                                              (VOID **) &Volume->WholeDiskBlockIO);
-                if (!EFI_ERROR(Status)) {
-
+                if (EFI_ERROR(Status)) {
+                    LOG(1, LOG_LINE_NORMAL, L"Could not get WholeDiskBlockIO for volume");
+                    Volume->WholeDiskBlockIO = NULL;
+                    //CheckError(Status, L"from HandleProtocol");
+                } else {
                     // check the media block size
                     if (Volume->WholeDiskBlockIO->Media->BlockSize == 2048)
                         Volume->DiskKind = DISK_KIND_OPTICAL;
-
-                } else {
-                    Volume->WholeDiskBlockIO = NULL;
-                    //CheckError(Status, L"from HandleProtocol");
                 }
-            } //else
-              //  CheckError(Status, L"from LocateDevicePath");
+            } else {
+                LOG(1, LOG_LINE_NORMAL, L"Could not locate device path for volume");
+            }
         }
 
         DevicePath = NextDevicePath;
@@ -1165,8 +1174,10 @@ static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_I
                                    WholeDiskVolume->BlockIO,
                                    WholeDiskVolume->BlockIO->Media->MediaId,
                                    ExtCurrent, 512, SectorBuffer);
-        if (EFI_ERROR(Status))
+        if (EFI_ERROR(Status)) {
+            LOG(1, LOG_LINE_NORMAL, L"Error %d reading blocks from disk", Status);
             break;
+        }
         if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55)
             break;
         EMbrTable = (MBR_PARTITION_INFO *)(SectorBuffer + 446);
@@ -1251,7 +1262,7 @@ VOID ScanVolumes(VOID)
         Volume->DeviceHandle = Handles[HandleIndex];
         AddPartitionTable(Volume);
         ScanVolume(Volume);
-        LOG(1, LOG_LINE_NORMAL, L"Identified volume '%s'", Volume->VolName);
+        LOG(1, LOG_LINE_NORMAL, L"Identified volume '%s', of type%s", Volume->VolName, FSTypeName(Volume->FSType));
         if (UuidList) {
            UuidList[HandleIndex] = Volume->VolUuid;
            for (i = 0; i < HandleIndex; i++) {
