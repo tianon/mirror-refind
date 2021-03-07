@@ -1473,6 +1473,7 @@ VOID DisplaySimpleMessage(CHAR16* Title, CHAR16 *Message) {
     AddMenuInfoLine(&HideItemMenu, Message);
     AddMenuEntry(&HideItemMenu, &MenuEntryReturn);
     RunGenericMenu(&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+    LOG(1, LOG_LINE_NORMAL, L"%s - %s", Title, Message);
 } // VOID DisplaySimpleMessage()
 
 // Check each filename in FilenameList to be sure it refers to a valid file. If

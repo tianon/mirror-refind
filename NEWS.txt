@@ -8,7 +8,7 @@
 - Fixed bug in mvrefind that would cause it to fail to create a new
   NVRAM entry to point to the moved rEFInd.
 
-- Fixed bug that caused mountesp script to fail in macOS 11.0 ("Big Sur")
+- Fixed bug that caused mountesp script to fail in macOS 11.0 ("Big Sur").
 
 - Improved Secure Boot support in refind-install script: The script can now
   install a Secure Boot key using mokutil, which can slightly simplify the
@@ -27,6 +27,14 @@
   can make for more accurate OS icon choices in some situations, such as if
   both names are set but only the partition name contains useful
   information.
+
+- Made rEFInd's self-install code less finicky about the success of
+  copying configuration, icons, and driver files. Previously it reported a
+  failure and did not modify NVRAM if any of these failed to copy. Now it
+  should register itself, although it does complain on screen and log
+  details (if logging is enabled). This can help if installing from a source
+  that lacks drivers for a detectable Linux filesystem (ext2/3/4fs,
+  ReiserFS, Btrfs, or HFS+).
 
 - Adjusted reporting of SIP values; added back 0x77 as an interpreted value
   for on-screen notification when rotating through values.

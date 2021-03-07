@@ -1345,6 +1345,7 @@ VOID ScanVolumes(VOID)
             MyFreePool(SectorBuffer2);
         }
     } // for
+    LOG(1, LOG_LINE_NORMAL, L"Identified %d volumes", VolumesCount);
 } /* VOID ScanVolumes() */
 
 VOID SetVolumeIcons(VOID) {
