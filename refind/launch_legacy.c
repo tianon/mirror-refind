@@ -333,7 +333,6 @@ static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
     EFI_HANDLE              ChildImageHandle;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
     UINTN                   DevicePathIndex;
-    CHAR16                  ErrorInfo[256];
     CHAR16                  *FullLoadOptions = NULL;
 
     if (ErrorInStep != NULL)
@@ -354,8 +353,7 @@ static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
             break;
         }
     } // for
-    SPrint(ErrorInfo, 255, L"while loading legacy loader");
-    if (CheckError(Status, ErrorInfo)) {
+    if (CheckError(Status, L"while loading legacy loader")) {
         if (ErrorInStep != NULL)
             *ErrorInStep = 1;
         goto bailout;
@@ -379,9 +377,8 @@ static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
     ReturnStatus = Status = refit_call3_wrapper(BS->StartImage, ChildImageHandle, NULL, NULL);
 
     // control returns here when the child image calls Exit()
-    SPrint(ErrorInfo, 255, L"returned from legacy loader");
-    if (CheckError(Status, ErrorInfo)) {
-        LOG(1, LOG_LINE_NORMAL, ErrorInfo);
+    if (CheckError(Status, L"returned from legacy loader")) {
+        LOG(1, LOG_LINE_NORMAL, L"returned from legacy loader");
         if (ErrorInStep != NULL)
             *ErrorInStep = 3;
     }
@@ -475,9 +472,7 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
     else
         VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
 
-    LegacyTitle = AllocateZeroPool(256 * sizeof(CHAR16));
-    if (LegacyTitle != NULL)
-        SPrint(LegacyTitle, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
+    LegacyTitle = PoolPrint(L"Boot %s from %s", LoaderTitle, VolDesc);
     LOG(1, LOG_LINE_NORMAL, L"Adding BIOS/CSM/legacy entry for '%s'", LegacyTitle);
     if (IsInSubstring(LegacyTitle, GlobalConfig.DontScanVolumes)) {
         MyFreePool(LegacyTitle);
@@ -486,7 +481,7 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
 
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    Entry->me.Title = LegacyTitle;
+    Entry->me.Title          = LegacyTitle;
     Entry->me.Tag            = TAG_LEGACY;
     Entry->me.Row            = 0;
     Entry->me.ShortcutLetter = ShortcutLetter;
@@ -498,11 +493,10 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
     Entry->Enabled           = TRUE;
 
     // create the submenu
-    SubScreen = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
-    SubScreen->Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(SubScreen->Title, 255, L"Boot Options for %s on %s", LoaderTitle, VolDesc);
+    SubScreen             = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
+    SubScreen->Title      = PoolPrint(L"Boot Options for %s on %s", LoaderTitle, VolDesc);
     SubScreen->TitleImage = Entry->me.Image;
-    SubScreen->Hint1 = StrDuplicate(SUBSCREEN_HINT1);
+    SubScreen->Hint1      = StrDuplicate(SUBSCREEN_HINT1);
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
         SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2_NO_EDITOR);
     } else {
@@ -510,12 +504,11 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
     } // if/else
 
     // default entry
-    SubEntry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    SubEntry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(SubEntry->me.Title, 255, L"Boot %s", LoaderTitle);
-    SubEntry->me.Tag          = TAG_LEGACY;
-    SubEntry->Volume          = Entry->Volume;
-    SubEntry->LoadOptions     = Entry->LoadOptions;
+    SubEntry              = AllocateZeroPool(sizeof(LEGACY_ENTRY));
+    SubEntry->me.Title    = PoolPrint(L"Boot %s", LoaderTitle);
+    SubEntry->me.Tag      = TAG_LEGACY;
+    SubEntry->Volume      = Entry->Volume;
+    SubEntry->LoadOptions = Entry->LoadOptions;
     AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
 
     AddMenuEntry(SubScreen, &MenuEntryReturn);
@@ -545,8 +538,7 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
 
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    Entry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(Entry->me.Title, 255, L"Boot legacy OS from %s", LegacyDescription);
+    Entry->me.Title          = PoolPrint(L"Boot legacy OS from %s", LegacyDescription);
     LOG(1, LOG_LINE_NORMAL, L"Adding UEFI-style BIOS/CSM/legacy entry for '%s'", Entry->me.Title);
     Entry->me.Tag            = TAG_LEGACY_UEFI;
     Entry->me.Row            = 0;
@@ -560,8 +552,7 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
 
     // create the submenu
     SubScreen = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
-    SubScreen->Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(SubScreen->Title, 255, L"No boot options for legacy target");
+    SubScreen->Title = StrDuplicate(L"No boot options for legacy target");
     SubScreen->TitleImage = Entry->me.Image;
     SubScreen->Hint1 = StrDuplicate(SUBSCREEN_HINT1);
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
@@ -571,9 +562,8 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
     } // if/else
 
     // default entry
-    SubEntry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    SubEntry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(SubEntry->me.Title, 255, L"Boot %s", LegacyDescription);
+    SubEntry                  = AllocateZeroPool(sizeof(LEGACY_ENTRY));
+    SubEntry->me.Title        = PoolPrint(L"Boot %s", LegacyDescription);
     SubEntry->me.Tag          = TAG_LEGACY_UEFI;
     Entry->BdsOption          = BdsOption; 
     AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);

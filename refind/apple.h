@@ -67,7 +67,7 @@
                              CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE | \
                              CSR_ALLOW_UNAUTHENTICATED_ROOT)
 
-extern CHAR16 gCsrStatus[256];
+extern CHAR16 gCsrStatus[512];
 
 EFI_STATUS GetCsrStatus(UINT32 *CsrValue);
 VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage);

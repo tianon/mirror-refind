@@ -419,18 +419,19 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
 // an image based on "myicons/os_linux.icns" or "myicons/os_linux.png", in that
 // order of preference. Returns NULL if no such file is a valid icon file.
 EG_IMAGE * egLoadIconAnyType(IN EFI_FILE *BaseDir, IN CHAR16 *SubdirName, IN CHAR16 *BaseName, IN UINTN IconSize) {
-   EG_IMAGE *Image = NULL;
-   CHAR16 *Extension;
-   CHAR16 FileName[256];
-   UINTN i = 0;
+    EG_IMAGE *Image = NULL;
+    CHAR16 *Extension;
+    CHAR16 *FileName;
+    UINTN i = 0;
 
-   while (((Extension = FindCommaDelimited(ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
-      SPrint(FileName, 255, L"%s\\%s.%s", SubdirName, BaseName, Extension);
-      Image = egLoadIcon(BaseDir, FileName, IconSize);
-      MyFreePool(Extension);
-   } // while()
+    while (((Extension = FindCommaDelimited(ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
+        FileName = PoolPrint(L"%s\\%s.%s", SubdirName, BaseName, Extension);
+        Image = egLoadIcon(BaseDir, FileName, IconSize);
+        MyFreePool(Extension);
+        MyFreePool(FileName);
+    } // while()
 
-   return Image;
+    return Image;
 } // EG_IMAGE *egLoadIconAnyType()
 
 // Returns an icon with any extension in ICON_EXTENSIONS from either the directory

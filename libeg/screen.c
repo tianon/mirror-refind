@@ -385,29 +385,24 @@ BOOLEAN egSetTextMode(UINT32 RequestedMode) {
 
 CHAR16 * egScreenDescription(VOID)
 {
-    CHAR16 *GraphicsInfo, *TextInfo;
-
-    GraphicsInfo = AllocateZeroPool(256 * sizeof(CHAR16));
-    if (GraphicsInfo == NULL)
-        return StrDuplicate(L"memory allocation error");
+    CHAR16 *GraphicsInfo = NULL, *TextInfo;
 
     if (egHasGraphics) {
         if (GraphicsOutput != NULL) {
-            SPrint(GraphicsInfo, 255, L"Graphics Output (UEFI), %dx%d", egScreenWidth, egScreenHeight);
+            GraphicsInfo = PoolPrint(L"Graphics Output (UEFI), %dx%d", egScreenWidth, egScreenHeight);
         } else if (UgaDraw != NULL) {
-            SPrint(GraphicsInfo, 255, L"UGA Draw (EFI 1.10), %dx%d", egScreenWidth, egScreenHeight);
+            GraphicsInfo = PoolPrint(L"UGA Draw (EFI 1.10), %dx%d", egScreenWidth, egScreenHeight);
         } else {
             MyFreePool(GraphicsInfo);
             return StrDuplicate(L"Internal Error");
         }
         if (!AllowGraphicsMode) { // graphics-capable HW, but in text mode
-            TextInfo = AllocateZeroPool(256 * sizeof(CHAR16));
-            SPrint(TextInfo, 255, L"(in %dx%d text mode)", ConWidth, ConHeight);
+            TextInfo = PoolPrint(L"(in %dx%d text mode)", ConWidth, ConHeight);
             MergeStrings(&GraphicsInfo, TextInfo, L' ');
             MyFreePool(TextInfo);
         }
     } else {
-        SPrint(GraphicsInfo, 255, L"Text-only console, %dx%d", ConWidth, ConHeight);
+        GraphicsInfo = PoolPrint(L"Text-only console, %dx%d", ConWidth, ConHeight);
     }
     return GraphicsInfo;
 }
