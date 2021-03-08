@@ -264,7 +264,7 @@ timeout 20
 </tr>
 <tr>
    <td><tt>log_level</tt></td>
-   <td>numeric value (<tt>0</tt> to <tt>3</tt>)</td>
+   <td>numeric value (<tt>0</tt> to <tt>4</tt>)</td>
    <td>Sets the logging level. The default level of <tt>0</tt> performs no logging. Higher values cause rEFInd to log information on its activity to the <tt>refind.log</tt> file, which resides in the directory from which rEFInd launched; or in the root of the first ESP that rEFInd can locate, if rEFInd's launch directory is read-only (as when rEFInd is launched from an HFS+ volume). The resulting log file is in UTF-16 format, so you'll need to read it with a text editor or other tool that can parse UTF-16. This feature is intended to help with debugging problems; the log level should be kept at <tt>0</tt> in normal operation. Increasing the log level, especially above <tt>1</tt>, can degrade rEFInd's performance.</td>
 </tr>
 <tr>

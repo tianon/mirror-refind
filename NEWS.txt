@@ -1,6 +1,9 @@
 0.13.2 (?/??/2021):
 -------------------
 
+- Fixed memory management bug that could cause rEFInd to hang under
+  certain unpredictable circumstances.
+
 - Fixed bug (introduced with version 0.13.1) that caused rEFInd to fail to
   load properly signed EFI drivers when Secure Boot was enabled and used via
   Shim.
@@ -21,7 +24,8 @@
   direct boot and be fine. (Some EFIs will hang rather than fail over to the
   next entry, though, and this change won't help with them.)
 
-- More logging improvements.
+- More logging improvements, including bumping the maximum log_level from 3
+  to 4.
 
 - Improved separation of filesystem name vs. partition name internally. This
   can make for more accurate OS icon choices in some situations, such as if
