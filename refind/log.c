@@ -78,6 +78,7 @@ EFI_STATUS StartLogging(BOOLEAN Restart) {
                 Utf16[1] = 0xFE;
                 BufferSize = 2;
                 refit_call3_wrapper(gLogHandle->Write, gLogHandle, &BufferSize, Utf16);
+                gLogActive = TRUE;
                 LOG(1, LOG_LINE_SEPARATOR, L"Beginning logging");
             } // if/else
             if (Restart) {
