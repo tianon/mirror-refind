@@ -102,7 +102,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     // building the InitrdName later....
     if ((StrLen(Path) > 0) && (Path[StrLen(Path) - 1] != L'\\'))
         MergeStrings(&Path, L"\\", 0);
-    while (DirIterNext(&DirIter, 2, L"init*", &DirEntry)) {
+    while (DirIterNext(&DirIter, 2, L"init*,booster*", &DirEntry)) {
         InitrdVersion = FindNumbers(DirEntry->FileName);
         if (((KernelVersion != NULL) && (MyStriCmp(InitrdVersion, KernelVersion))) ||
             ((KernelVersion == NULL) && (InitrdVersion == NULL))) {

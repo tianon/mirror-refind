@@ -46,6 +46,10 @@
 - rEFInd can now identify JFS volumes as such, if a third-party JFS driver
   is installed.
 
+- Added support for Booster initrd files, which are named "booster*", rather
+  than "init*". See https://github.com/anatol/booster and/or
+  https://wiki.archlinux.org/index.php/Booster for more on Booster.
+
 - Added icon for Manjaro Linux.
 
 - Swapped out expired CentOS Secure Boot keys for new ones.
