@@ -97,12 +97,12 @@ VOID StopLogging(VOID) {
 } // VOID StopLogging()
 
 // Write a message (*Message) to the log file. (This pointer is freed
-// and set to NUL by this function, the point being to keep these
+// and set to NULL by this function, the point being to keep these
 // operations outside of the macro that calls this function.)
 // LogLineType specifies the type of the log line, as specified by the
 // LOG_LINE_* constants defined in log.h.
 VOID WriteToLog(CHAR16 **Message, UINTN LogLineType) {
-    CHAR16   *TimeStr = NULL;
+    CHAR16   *TimeStr;
     CHAR16   *FinalMessage = NULL;
     UINTN    BufferSize;
 
@@ -119,7 +119,6 @@ VOID WriteToLog(CHAR16 **Message, UINTN LogLineType) {
                 FinalMessage = PoolPrint(L"%s - %s\n", TimeStr, *Message);
                 if (TimeStr)
                     FreePool(TimeStr);
-                MyFreePool(TimeStr);
                 break;
         } // switch
 
@@ -127,13 +126,11 @@ VOID WriteToLog(CHAR16 **Message, UINTN LogLineType) {
             BufferSize = StrLen(FinalMessage) * 2;
             refit_call3_wrapper(gLogHandle->Write, gLogHandle, &BufferSize, FinalMessage);
             refit_call1_wrapper(gLogHandle->Flush, gLogHandle);
-            if (FinalMessage)
-                FreePool(FinalMessage);
-            MyFreePool(FinalMessage);
+            FreePool(FinalMessage);
         }
-        if (*Message)
-            FreePool(*Message);
-        MyFreePool(*Message);
     }
-    *Message = NULL;
+    if (*Message) {
+        FreePool(*Message);
+        *Message = NULL;
+    }
 } // VOID WriteToLog()
