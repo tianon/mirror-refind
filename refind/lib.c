@@ -462,6 +462,7 @@ EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer
         LOG(3, LOG_LINE_NORMAL, L"Error retrieving EFI variable '%s'", name);
         MyFreePool(buf);
         *buffer = NULL;
+        *size = 0;
     }
     return Status;
 } // EFI_STATUS EfivarGetRaw()
