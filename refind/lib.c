@@ -118,7 +118,9 @@ CHAR16           *SelfDirPath;
 REFIT_VOLUME     *SelfVolume = NULL;
 REFIT_VOLUME     **Volumes = NULL;
 UINTN            VolumesCount = 0;
-extern EFI_GUID RefindGuid;
+extern EFI_GUID  RefindGuid;
+
+EFI_FILE         *gVarsDir = NULL;
 
 // Maximum size for disk sectors
 #define SECTOR_SIZE 4096
@@ -381,6 +383,41 @@ EFI_STATUS ReinitRefitLib(VOID)
 // EFI variable read and write functions
 //
 
+// Create a directory for holding the rEFInd variables, if they're stored on
+// disk. This will be in the rEFInd install directory if possible, or on the
+// first ESP that rEFInd can identify if not (typically, this means rEFInd is
+// on a read-only filesystem, such as HFS+ on a Mac). If neither location can
+// be used, sets GlobalConfig.UseNvram to TRUE. Sets the pointer to the
+// directory in the file-global gVarsDir variable and returns the success of
+// the operation.
+EFI_STATUS CreateVarsDir(VOID) {
+    EFI_STATUS       Status = EFI_SUCCESS;
+    EFI_FILE_HANDLE  EspRootDir;
+
+    if (gVarsDir == NULL) {
+        LOG(1, LOG_LINE_NORMAL, L"Trying to create a 'vars' directory in which to hold variables");
+        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &gVarsDir, L"vars",
+                                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+                                    EFI_FILE_DIRECTORY);
+        if (EFI_ERROR(Status)) {
+            Status = egFindESP(&EspRootDir);
+            if (Status == EFI_SUCCESS) {
+                LOG(1, LOG_LINE_NORMAL,
+                    L"Trying to create a 'refind-vars' directory on the ESP in which to hold variables");
+                Status = refit_call5_wrapper(EspRootDir->Open, EspRootDir, &gVarsDir, L"refind-vars",
+                                            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+                                            EFI_FILE_DIRECTORY);
+            }
+        }
+    }
+    if (EFI_ERROR(Status)) {
+        GlobalConfig.UseNvram = TRUE;
+        LOG(1, LOG_LINE_NORMAL, L"Unable to create a directory in which to hold variables; error %d", Status);
+        LOG(1, LOG_LINE_NORMAL, L"Falling back to NVRAM-based storage");
+    }
+    return Status;
+} // EFI_STATUS FindVarsDir()
+
 // Retrieve a raw EFI variable, either from NVRAM or from a disk file under
 // rEFInd's "vars" subdirectory, depending on GlobalConfig.UseNvram.
 // Returns EFI status
@@ -388,7 +425,6 @@ EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer
     UINT8 *buf = NULL;
     UINTN l;
     EFI_STATUS Status;
-    EFI_FILE *VarsDir = NULL;
     BOOLEAN ReadFromNvram = TRUE;
 
     if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
@@ -396,6 +432,15 @@ EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer
     }
     LOG(3, LOG_LINE_NORMAL, L"Getting EFI variable '%s' from %s", name,
         ReadFromNvram ? L"NVRAM" : L"disk");
+
+    if (!ReadFromNvram) {
+        Status = CreateVarsDir();
+        if (Status == EFI_SUCCESS) {
+            Status = egLoadFile(gVarsDir, name, &buf, size);
+        } else {
+            ReadFromNvram = TRUE;
+        }
+    }
     if (ReadFromNvram) {
         l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
         buf = AllocatePool(l);
@@ -404,14 +449,8 @@ EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer
             return EFI_OUT_OF_RESOURCES;
         }
         Status = refit_call5_wrapper(RT->GetVariable, name, vendor, NULL, &l, buf);
-    } else {
-        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
-                                     EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY);
-        if (Status == EFI_SUCCESS)
-            Status = egLoadFile(VarsDir, name, &buf, size);
-        ReadFromNvram = FALSE;
-        MyFreePool(VarsDir);
     }
+
     if (EFI_ERROR(Status) == EFI_SUCCESS) {
         *buffer = (CHAR8*) buf;
         if ((size) && ReadFromNvram)
@@ -436,7 +475,6 @@ EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer
 // Returns EFI status
 EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
     UINT32      flags;
-    EFI_FILE    *VarsDir = NULL;
     EFI_STATUS  Status = EFI_SUCCESS, OldStatus;
     CHAR8       *OldBuf;
     UINTN       OldSize;
@@ -449,20 +487,20 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
     LOG(2, LOG_LINE_NORMAL, L"Saving EFI variable '%s' to %s", name,
         WriteToNvram ? L"NVRAM" : L"disk");
     if ((EFI_ERROR(OldStatus)) || (size != OldSize) || (CompareMem(buf, OldBuf, size) != 0)) {
+        if (!WriteToNvram) {
+            Status = CreateVarsDir();
+            if (Status == EFI_SUCCESS) {
+                Status = egSaveFile(gVarsDir, name, (UINT8 *) buf, size);
+            } else {
+                WriteToNvram = TRUE;
+            }
+        }
         if (WriteToNvram) {
             flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
             if (persistent)
                 flags |= EFI_VARIABLE_NON_VOLATILE;
 
             Status = refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
-        } else {
-            Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
-                                         EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
-                                         EFI_FILE_DIRECTORY);
-            if (Status == EFI_SUCCESS) {
-                Status = egSaveFile(VarsDir, name, (UINT8 *) buf, size);
-            }
-            MyFreePool(VarsDir);
         }
     } else {
         LOG(2, LOG_LINE_NORMAL, L"Not writing variable '%s'; it's unchanged", name);

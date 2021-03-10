@@ -32,6 +32,16 @@
   both names are set but only the partition name contains useful
   information.
 
+- Previously, when setting "use_nvram false", rEFInd would use the "vars"
+  subdirectory of its own directory; and if that was unwritable (say, if it
+  was on an HFS+ volume), then rEFInd would not store its own variables,
+  such as PreviousBoot and HiddenTags. With this version, rEFInd will now
+  use the "vars" subdirectory of rEFInd's own directory; if that's not
+  available, it will use a directory called "refind-vars" in the root
+  directory of the first ESP that rEFInd can locate; and if neither is
+  available, rEFInd will use NVRAM storage instead, as if "use_nvram true"
+  had been set.
+
 - Made rEFInd's self-install code less finicky about the success of
   copying configuration, icons, and driver files. Previously it reported a
   failure and did not modify NVRAM if any of these failed to copy. Now it

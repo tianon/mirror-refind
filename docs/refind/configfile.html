@@ -160,7 +160,12 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <ul>
 
-<p class="sidebar"><b>Note:</b> Beginning with rEFInd 0.13.1, the default configuration file causes rEFInd to store its dynamic tags on disk. This works fine in most cases, but if you installed rEFInd on an HFS+ volume, you'll have to comment out the <tt>use_nvram false</tt> option in <tt>refind.conf</tt> or set it to <tt>true</tt> in order to use dynamic tag hiding. If you make this change, be aware that NVRAM is a limited resource, so it's possible to exhaust it, at which point the computer can begin behaving strangely.</p>
+<p class="sidebar"><b>Note:</b> Beginning with rEFInd 0.13.1, the default
+configuration file causes rEFInd to store its dynamic tags on disk. This
+works fine in most cases, but beginning with version 0.13.2, if your ESP is
+read-only, rEFInd will fall back to NVRAM-based variable storage. Be aware
+that NVRAM is a limited resource, so it's possible to exhaust it, at which
+point the computer can begin behaving strangely.</p>
 
 <li><b>Hiding entries dynamically</b>&mdash;rEFInd 0.11.0 introduced a dynamic tag hiding feature. To use it, highlight a tag and hit the Delete (on PCs) or minus (<tt>-</tt>) key. (The Delete key on Macs is the Backspace key on PCs, and will not work for this; however, some Mac keyboards have a key marked Del that will do the job.) rEFInd will ask for confirmation. If you give it, the OS or external tool tag will disappear, and should remain hidden indefinitely. (Note that you cannot hide built-in tools, such as the About/Info display and the reboot-to-firmware option, in this way.) rEFInd stores the list of EFI OS tags so hidden in NVRAM or on disk (as determined by the <tt>use_nvram</tt> token in <tt>refind.conf</tt>) using the <tt>HiddenTags</tt> variable, BIOS/CSM/legacy OS tags as <tt>HiddenLegacy</tt>, hidden firmware reboot tags using the <tt>HiddenFirmware</tt> variable, and tool tags as <tt>HiddenTools</tt>. If you want to recover a tag you've hidden, you can do so by using the hidden tag maintenance function, which appears on the second row of the rEFInd menu as a recycling symbol. You can disable both the ability to hide tags and to recover them by uncommenting the <tt>showtools</tt> item in <tt>refind.conf</tt> and ensuring that <tt>hidden_tags</tt> is <i>not</i> among the options. (Even if you disable this feature, rEFInd continues to honor tags it finds in NVRAM or on disk.)</li>
 
@@ -270,7 +275,7 @@ timeout 20
 <tr>
    <td><tt>use_nvram</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
-   <td>If set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, stores rEFInd-specific variables in NVRAM. If set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, stores these variables in the <tt>vars</tt> subdirectory of rEFInd's home directory, if possible. (Read-only filesystems obviously make this option impossible.) Using NVRAM ties rEFInd's variables to a specific computer and increases wear on the NVRAM, whereas storing them on disk makes the variables move with rEFInd (which is potentially useful on a rEFInd installation on a removable disk). The internal default is <tt>true</tt>; however, <tt>use_nvram false</tt> is set in the default <tt>refind.conf</tt> file, so rEFInd will use disk storage by default on a fresh installation.</td>
+   <td>If set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, stores rEFInd-specific variables in NVRAM. If set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, stores these variables in the <tt>vars</tt> subdirectory of rEFInd's home directory; in the <tt>refind-vars</tt> directory on the first ESP that rEFInd can identify, if rEFInd's own directory cannot be modified (for instance, if it's an HFS+ volume); or in NVRAM, if both disk storage options fail. Using NVRAM ties rEFInd's variables to a specific computer and increases wear on the NVRAM, whereas storing them on disk makes the variables move with rEFInd (which is potentially useful on a rEFInd installation on a removable disk). The internal default is <tt>true</tt>; however, <tt>use_nvram false</tt> is set in the default <tt>refind.conf</tt> file, so rEFInd will use disk storage by default on a fresh installation. This option has no effect on storage of non-rEFInd-specific variables, such as <tt>LoaderDevicePartUUID</tt> (if <tt>write_systemd_vars</tt> is enabled) or <tt>BootNext</tt> (used by the loaders that reboot to EFI-defined boot programs).</td>
 </tr>
 <tr>
    <td><tt>screensaver</tt></td>
