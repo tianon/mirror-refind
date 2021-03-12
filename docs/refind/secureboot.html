@@ -222,6 +222,8 @@ Windows 8 or later, this isn't an option for it. Unfortunately, the PreLoader pr
 
 <p>All three key types are the same in form&mdash;Shim's built-in keys and MOKs are both generated using the same tools used to generate Secure Boot keys. The keys can be generated with the common <tt>openssl</tt> program, but signing EFI binaries requires either of two rarer programs: <tt>sbsign</tt> or <tt>pesign</tt>. If you use Shim with a distribution that doesn't support Secure Boot, you'll need to either sign the kernels yourself, which can be a hassle, or launch the kernels by way of a boot loader that doesn't check for signatures, such as ELILO. (Note, however, that many Linux distributions have begun to enforce a chain of trust beyond the boot loader and kernel. This means that if you try to boot using ELILO or some other tool that doesn't enforce Secure Boot, subsequent parts of the boot process may fail.)</p>
 
+<p>Both Secure Boot and Shim support a sort of anti-authorization key or hash. These keys or hashes identify binaries that must not be launched &mdash; typically, they're known malware, or at least they're known to contain bugs that could be exploited to create security problems.</p>
+
 <p>PreLoader and recent versions of Shim are easier to set up on a distribution that doesn't support Secure Boot because these tools don't require the use of keys; instead, you can tell them which binaries you trust and they will let you launch them. This works well on a system with boot managers, boot loaders, and kernels that seldom change. It's not a good solution for distribution maintainers, though, because it requires that users manually add binaries to the MOK's list of approved binaries when the OS is installed and every time those binaries change. Also, PreLoader relies on a helper program, HashTool, to enroll hashes. ("Hash" is Geek for "tell the computer that a binary is OK.") Unfortunately, the initial (and, as far as I know, only signed) HashTool can enroll hashes only from the partition from which it was launched, so if you want to use rEFInd to launch Linux kernels directly, it's easiest if you mount your EFI System Partition (ESP) at <tt>/boot</tt> in Linux or copy your kernels to the ESP. Another approach is to copy <tt>HashTool.efi</tt> to the partition that holds your kernel and rename it to almost anything else. rEFInd will then treat it like an OS boot loader and create a menu entry for it, enabling you to launch it as needed. Recent versions of Shim's key- and hash-management tool, MokManager, support reading keys and binaries from any partition that the EFI can read.</p>
 
 <p>rEFInd can communicate with the Shim system to authenticate boot loaders. If a boot loader has been signed by a valid UEFI Secure Boot key, a valid Shim key, or a valid MOK, rEFInd will launch it. rEFInd will also launch unsigned boot loaders or those with invalid signatures <i>if</i> Secure Boot is disabled in or unsupported by the firmware. (If that's your situation, you needn't bother reading this page.) PreLoader is designed in such a way that it requires no explicit support in rEFInd to work.</p>
@@ -575,6 +577,24 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     on anything. <a
     href="https://www.rodsbooks.com/efi-bootloaders/secureboot.html#disable">Disabling
     Secure Boot</a> may be the best solution to such problems.</li>
+
+<li>In 2020, a bug in GRUB 2, known as <a
+    href="https://www.zdnet.com/article/boothole-attack-impacts-windows-and-linux-systems-using-grub2-and-secure-boot/">Boot
+    Hole,</a> was discovered. This bug could theoretically enable an
+    attacker to run malicious code in the pre-boot environment. <a
+    href="https://ubuntu.com/blog/grub2-secure-boot-bypass-2021">Subsequent
+    analyses</a> discovered several other potential security bugs in GRUB 2.
+    Because there are so many signed GRUB 2 binaries in distribution, these
+    flaws threatened to overrun the standard Secure Boot storage for
+    forbidden binaries, known as the dbx. (The dbx is held in NVRAM, which
+    is severely limited in size.) Thus, Linux distribution maintainers
+    agreed to implement a dbx-like mechanism within Shim, and Microsoft
+    would add earlier Shim binaries to the UEFI dbx. The upshot of this is
+    that, if you installed rEFInd prior to these events, the Shim binary
+    that it uses may be added to your computer's dbx by Windows updates, and
+    rEFInd may stop working. The solution is to update the
+    <tt>shimx64.efi</tt> file in rEFInd's directory with the latest
+    version.</li>
 
 </ul>
 
