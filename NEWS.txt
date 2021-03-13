@@ -4,6 +4,9 @@
 - Fixed memory management bug that could cause rEFInd to hang under
   certain unpredictable circumstances.
 
+- Fixed potential memory management bugs that could cause HFS+, ext2fs, and
+  ext4fs drivers to misbehave.
+
 - Fixed bug (introduced with version 0.13.1) that caused rEFInd to fail to
   load properly signed EFI drivers when Secure Boot was enabled and used via
   Shim.
