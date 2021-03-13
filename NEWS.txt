@@ -64,6 +64,8 @@
 
 - Swapped out expired CentOS Secure Boot keys for new ones.
 
+- Fixed build problem with GNU-EFI 3.0.13.
+
 0.13.1 (2/24/2021):
 -------------------
 
