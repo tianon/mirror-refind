@@ -1,7 +1,7 @@
-0.13.2 (?/??/2021):
+0.13.2 (3/13/2021):
 -------------------
 
-- Fixed memory management bug that could cause rEFInd to hang under
+- Fixed memory management bugs that could cause rEFInd to hang under
   certain unpredictable circumstances.
 
 - Fixed potential memory management bugs that could cause HFS+, ext2fs, and

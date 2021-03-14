@@ -164,7 +164,7 @@ VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, PoolPrint(L"rEFInd Version %s", REFIND_VERSION));
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
-        AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2020 Roderick W. Smith");
+        AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2021 Roderick W. Smith");
         AddMenuInfoLine(&AboutMenu, L"Portions Copyright (c) Intel Corporation and others");
         AddMenuInfoLine(&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine(&AboutMenu, L"");
