@@ -1,3 +1,11 @@
+0.13.3 (?/??/2021):
+-------------------
+
+- Fixed bug that could cause rEFInd to hang when processing keystrokes
+  in menus.
+
+- Code cleanup in bash scripts.
+
 0.13.2 (3/13/2021):
 -------------------
 

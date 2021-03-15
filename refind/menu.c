@@ -441,6 +441,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
     if (GlobalConfig.ScreensaverTime != -1)
         State.PaintAll = TRUE;
 
+    LOG(3, LOG_LINE_NORMAL, L"About to enter while() loop in RunGenericMenu()");
     while (!MenuExit) {
         // update the screen
         pdClear();
@@ -499,6 +500,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         } else {
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
+                LOG(1, LOG_LINE_NORMAL, L"Menu timeout expired");
                 MenuExit = MENU_EXIT_TIMEOUT;
                 break;
             } else if (HaveTimeout || GlobalConfig.ScreensaverTime > 0) {
@@ -540,6 +542,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         }
 
         if (!PointerActive) { // react to key press
+            LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (ScanCode)....");
             switch (key.ScanCode) {
                 case SCAN_UP:
                     UpdateScroll(&State, SCROLL_LINE_UP);
@@ -583,6 +586,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                         MenuExit = MENU_EXIT_ESCAPE;
                     break;
             }
+            LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (UnicodeChar)....");
             switch (key.UnicodeChar) {
                 case CHAR_LINEFEED:
                 case CHAR_CARRIAGE_RETURN:
@@ -610,6 +614,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                     break;
             }
         } else { //react to pointer event
+            LOG(3, LOG_LINE_NORMAL, L"Processing pointer event");
             if (StyleFunc != MainMenuStyle) {
                 continue; // nothing to find on submenus
             }
@@ -651,9 +656,9 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                         MenuExit = MENU_EXIT_ENTER;
                     }
                     break;
-            }
-        }
-    }
+            } // switch()
+        } // if/else
+    } // while()
 
     pdClear();
     StyleFunc(Screen, &State, MENU_FUNCTION_CLEANUP, NULL);
@@ -663,7 +668,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
     *DefaultEntryIndex = State.CurrentSelection;
     LOG(3, LOG_LINE_NORMAL, L"Returning %d from RunGenericMenu()", MenuExit);
     return MenuExit;
-} /* static UINTN RunGenericMenu() */
+} // UINTN RunGenericMenu()
 
 //
 // text-mode generic style
@@ -1398,10 +1403,11 @@ UINTN WaitForInput(UINTN Timeout) {
     EFI_EVENT TimerEvent;
     EFI_STATUS Status;
 
+    LOG(3, LOG_LINE_NORMAL, L"Entering WaitForInput(), Timeout = %d", Timeout);
+    Status = refit_call5_wrapper(BS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
     if (Timeout == 0) {
         Length--;
     } else {
-        Status = refit_call5_wrapper(BS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
         if(EFI_ERROR(Status)) {
             refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
             return INPUT_TIMER_ERROR;
@@ -1417,9 +1423,9 @@ UINTN WaitForInput(UINTN Timeout) {
     if(EFI_ERROR(Status)) {
         refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
         return INPUT_TIMER_ERROR;
-    } else if(Index == 0) {
+    } else if (Index == 0) {
         return INPUT_KEY;
-    } else if(Index < Length - 1) {
+    } else if (Index < Length - 1) {
         return INPUT_POINTER;
     }
     return INPUT_TIMEOUT;
