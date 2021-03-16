@@ -1589,8 +1589,11 @@ VOID ManageHiddenTags(VOID) {
             SaveHiddenList(HiddenTags, L"HiddenTags");
         if (SaveLegacy)
             SaveHiddenList(HiddenLegacy, L"HiddenLegacy");
-        if (SaveTools)
+        if (SaveTools) {
             SaveHiddenList(HiddenTools, L"HiddenTools");
+            MyFreePool(gHiddenTools);
+            gHiddenTools = NULL;
+        }
         if (SaveFirmware)
             SaveHiddenList(HiddenFirmware, L"HiddenFirmware");
         if (SaveTags || SaveTools || SaveLegacy || SaveFirmware)
@@ -1786,6 +1789,8 @@ static VOID HideTag(REFIT_MENU_ENTRY *ChosenEntry) {
         case TAG_TOOL:
             HideItemMenu.Title = L"Hide Tool Tag";
             HideEfiTag(Loader, &HideItemMenu, L"HiddenTools");
+            MyFreePool(gHiddenTools);
+            gHiddenTools = NULL;
             RescanAll(FALSE, FALSE);
             break;
     } // switch()

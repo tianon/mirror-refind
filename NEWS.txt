@@ -6,6 +6,9 @@
 
 - Code cleanup in bash scripts.
 
+- Minimize reading of HiddenTools variable, which was being read
+  unnecessarily often.
+
 0.13.2 (3/13/2021):
 -------------------
 

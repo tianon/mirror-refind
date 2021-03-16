@@ -146,6 +146,8 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                                                   TAG_FWUPDATE_TOOL, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
                             };
 
+CHAR16 *gHiddenTools = NULL;
+
 EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 
 //

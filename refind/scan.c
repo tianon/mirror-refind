@@ -1414,7 +1414,12 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 
     LOG(3, LOG_LINE_NORMAL, L"Checking validity of tool '%s' on '%s'", PathName,
         BaseVolume->PartName ? BaseVolume->PartName : BaseVolume->VolName);
-    DontScanTools = ReadHiddenTags(L"HiddenTools");
+    if (gHiddenTools == NULL) {
+        DontScanTools = ReadHiddenTags(L"HiddenTools");
+        gHiddenTools = StrDuplicate(DontScanTools);
+    } else {
+        DontScanTools = StrDuplicate(gHiddenTools);
+    }
     MergeStrings(&DontScanTools, GlobalConfig.DontScanTools, L',');
     if (FileExists(BaseVolume->RootDir, PathName) && IsValidLoader(BaseVolume->RootDir, PathName)) {
         SplitPathName(PathName, &TestVolName, &TestPathName, &TestFileName);
