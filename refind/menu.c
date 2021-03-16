@@ -542,7 +542,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         }
 
         if (!PointerActive) { // react to key press
-            LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (ScanCode)....");
+            LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (ScanCode = %d)....", key.ScanCode);
             switch (key.ScanCode) {
                 case SCAN_UP:
                     UpdateScroll(&State, SCROLL_LINE_UP);
@@ -586,7 +586,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                         MenuExit = MENU_EXIT_ESCAPE;
                     break;
             }
-            LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (UnicodeChar)....");
+            LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (UnicodeChar = %d)....", key.UnicodeChar);
             switch (key.UnicodeChar) {
                 case CHAR_LINEFEED:
                 case CHAR_CARRIAGE_RETURN:
