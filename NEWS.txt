@@ -9,6 +9,13 @@
 - Minimize reading of HiddenTools variable, which was being read
   unnecessarily often.
 
+- I am officially deprecating the "tiano" target, which builds with
+  TianoCore UDK2014 using custom Makefile rules rather than the usual
+  TianoCore build process. I'm doing this because it's badly broken in my
+  current build environment (Ubuntu 20.04). Although it may still work in
+  older configurations, I'm not currently using or testing it, and I see
+  no advantage to keeping it working.
+
 0.13.2 (3/13/2021):
 -------------------
 
