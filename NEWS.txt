@@ -6,6 +6,9 @@
 
 - Code cleanup in bash scripts.
 
+- Removed a stray exit command from refind-install, which caused
+  premature termination of the script.
+
 - Minimize reading of HiddenTools variable, which was being read
   unnecessarily often.
 

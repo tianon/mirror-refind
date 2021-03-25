@@ -38,6 +38,7 @@
 
 # Revision history:
 #
+# 0.13.3  -- Remove stray exit from CreateBootCsvFile()
 # 0.13.2  -- Add installation of rEFInd Secure Boot key as MOK; if installing
 #            with Shim, add backup direct boot NVRAM option
 # 0.12.0  -- Improve code to find ESPs; should help with NVMe drives. Also
@@ -806,7 +807,6 @@ CreateBootCsvFile() {
               $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
       fi
    fi
-   exit
 } # CreateBootCsvFile()
 
 #
