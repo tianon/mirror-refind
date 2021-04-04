@@ -4,6 +4,9 @@
 - Fixed bug that could cause rEFInd to hang when processing keystrokes
   in menus.
 
+- Fixed bug that caused option to return from folded Linux kernel submenu to
+  be missing.
+
 - Code cleanup in bash scripts.
 
 - Removed a stray exit command from refind-install, which caused
