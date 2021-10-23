@@ -1,6 +1,9 @@
 0.13.3 (?/??/2021):
 -------------------
 
+- Fixed compile problem introduced somewhere between GNU-EFI 3.0.9 and
+  3.0.13.
+
 - Fixed bug that could cause rEFInd to hang when processing keystrokes
   in menus.
 
