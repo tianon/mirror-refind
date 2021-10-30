@@ -452,7 +452,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     INTN               ShortcutEntry;
     EFI_INPUT_KEY      key;
     REFIT_MENU_ENTRY   *ChosenEntry;
-    UINTN              MenuExit, i;
+    UINTN              MenuExit = MENU_EXIT_ENTER, i;
     CHAR16             *SelectionName = NULL;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
 
