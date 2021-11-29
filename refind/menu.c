@@ -96,10 +96,6 @@ static UINTN TileSizes[2] = { 144, 64 };
 #define TILE_XSPACING (8)
 #define TILE_YSPACING (16)
 
-// Alignment values for PaintIcon()
-#define ALIGN_RIGHT 1
-#define ALIGN_LEFT 0
-
 static EG_IMAGE *SelectionImages[2] = { NULL, NULL };
 static EG_PIXEL SelectionBackgroundPixel = { 0xff, 0xff, 0xff, 0 };
 
@@ -1167,62 +1163,51 @@ static VOID PaintSelection(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State,
     }
 } // static VOID MoveSelection(VOID)
 
-// Display a 48x48 icon at the specified location. Uses the image specified by
-// ExternalFilename if it's available, or BuiltInImage if it's not. The
-// Y position is specified as the center value, and so is adjusted by half
-// the icon's height. The X position is set along the icon's left
-// edge if Alignment == ALIGN_LEFT, and along the right edge if
-// Alignment == ALIGN_RIGHT
-static VOID PaintIcon(IN EG_EMBEDDED_IMAGE *BuiltInIcon,
-                      IN CHAR16 *ExternalFilename,
-                      UINTN PosX, UINTN PosY, UINTN Alignment) {
-    EG_IMAGE *Icon = NULL;
-
-    Icon = egFindIcon(ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
-    if (Icon == NULL)
-        Icon = egPrepareEmbeddedImage(BuiltInIcon, TRUE);
-    if (Icon != NULL) {
-        if (Alignment == ALIGN_RIGHT)
-            PosX -= Icon->Width;
-        egDrawImageWithTransparency(Icon, NULL, PosX, PosY - (Icon->Height / 2), Icon->Width, Icon->Height);
-        egFreeImage(Icon);
-    }
-} // static VOID ()
+// Fetches the image specified by ExternalFilename if it's available, or BuiltInImage if it's not.
+static EG_IMAGE * GetIcon(IN EG_EMBEDDED_IMAGE *BuiltInIcon, IN CHAR16 *ExternalFilename){
+    EG_IMAGE * Icon = egFindIcon(ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
+    if(Icon != NULL) return Icon;
+    return egPrepareEmbeddedImage(BuiltInIcon, TRUE);
+}
 
 UINTN ComputeRow0PosY(VOID) {
     return ((UGAHeight / 2) - TileSizes[0] / 2);
 } // UINTN ComputeRow0PosY()
 
+static VOID ClearWithBackground(UINTN PosX, UINTN PosY, UINTN Width, UINTN Height){
+    EG_IMAGE * TempImage = egCropImage(GlobalConfig.ScreenBackground, PosX, PosY, Width, Height);
+    BltImage(TempImage, PosX, PosY);
+    egFreeImage(TempImage);
+}
+
+// PosY is specified as the center value, PosX is left aligned.
+static VOID PaintArrow(EG_IMAGE * Arrow, UINTN PosX, UINTN PosY, BOOLEAN visible) {
+    UINTN TopY = PosY - (Arrow->Height / 2);
+    if (visible) egDrawImageWithTransparency(Arrow, NULL, PosX, TopY, Arrow->Width, Arrow->Height);
+    else ClearWithBackground(PosX, TopY, Arrow->Width, Arrow->Height);
+}
+
 // Display (or erase) the arrow icons to the left and right of an icon's row,
 // as appropriate.
 static VOID PaintArrows(SCROLL_STATE *State, UINTN PosX, UINTN PosY, UINTN row0Loaders) {
-    EG_IMAGE *TempImage;
-    UINTN Width, Height, RightX, AdjPosY;
+    BOOLEAN HideFlagArrows = GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS;
+    if(!HideFlagArrows){
 
-    // NOTE: Assume that left and right arrows are of the same size....
-    Width = egemb_arrow_left.Width;
-    Height = egemb_arrow_left.Height;
-    RightX = (UGAWidth + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
-    AdjPosY = PosY - (Height / 2);
+        EG_IMAGE * LeftArrow = GetIcon(&egemb_arrow_left, L"arrow_left");
+        if(LeftArrow){
+            UINTN LeftX = PosX - LeftArrow->Width;
+            PaintArrow(LeftArrow, LeftX, PosY, State->FirstVisible > 0);
+            egFreeImage(LeftArrow);
+        }
 
-    // For PaintIcon() calls, the starting Y position is moved to the midpoint
-    // of the surrounding row; PaintIcon() adjusts this back up by half the
-    // icon's height to properly center it.
-    if ((State->FirstVisible > 0) && (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS))) {
-        PaintIcon(&egemb_arrow_left, L"arrow_left", PosX, PosY, ALIGN_RIGHT);
-    } else {
-        TempImage = egCropImage(GlobalConfig.ScreenBackground, PosX - Width, AdjPosY, Width, Height);
-        BltImage(TempImage, PosX - Width, AdjPosY);
-        egFreeImage(TempImage);
-    } // if/else
+        EG_IMAGE * RightArrow = GetIcon(&egemb_arrow_right, L"arrow_right");
+        if(RightArrow){
+            UINTN RightX = (UGAWidth + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
+            PaintArrow(RightArrow, RightX, PosY, State->LastVisible < (row0Loaders - 1));
+            egFreeImage(RightArrow);
+        }
 
-    if ((State->LastVisible < (row0Loaders - 1)) && (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS))) {
-        PaintIcon(&egemb_arrow_right, L"arrow_right", RightX, PosY, ALIGN_LEFT);
-    } else {
-        TempImage = egCropImage(GlobalConfig.ScreenBackground, RightX, AdjPosY, Width, Height);
-        BltImage(TempImage, RightX, AdjPosY);
-        egFreeImage(TempImage);
-    } // if/else
+    }
 } // VOID PaintArrows()
 
 // Display main menu in graphics mode
@@ -1286,9 +1271,6 @@ VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State,
 
         case MENU_FUNCTION_PAINT_ALL:
             PaintAll(Screen, State, itemPosX, row0PosY, row1PosY, textPosY);
-            // For PaintArrows(), the starting Y position is moved to the midpoint
-            // of the surrounding row; PaintIcon() adjusts this back up by half the
-            // icon's height to properly center it.
             PaintArrows(State, row0PosX - TILE_XSPACING, row0PosY + (TileSizes[0] / 2), row0Loaders);
             break;
 

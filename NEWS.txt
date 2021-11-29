@@ -22,6 +22,9 @@
 
 - Fixed handling of timeout == -1 when no keyboard is attached.
 
+- Fixed display of arrow icons when those icons are larger than the stock
+  size because of manual specification of icon size in refind.conf.
+
 - Introduced log file rotation -- if refind.log-old exists and logging is
   enabled, that log file is deleted and the existing log file is renamed to
   refind.log-old. This enables preservation of two log files, which is
