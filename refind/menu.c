@@ -422,9 +422,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
 
     if (Screen->TimeoutSeconds == -1) {
         Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
-        if (Status == EFI_NOT_READY) {
-            MenuExit = MENU_EXIT_TIMEOUT;
-        } else {
+        if (Status == EFI_SUCCESS) {
             KeyAsString[0] = key.UnicodeChar;
             KeyAsString[1] = 0;
             ShortcutEntry = FindMenuShortcutEntry(Screen, KeyAsString);
@@ -435,6 +433,8 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                 WaitForRelease = TRUE;
                 HaveTimeout = FALSE;
             }
+        } else {
+            MenuExit = MENU_EXIT_TIMEOUT;
         }
     }
 

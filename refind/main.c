@@ -495,10 +495,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     if (GlobalConfig.Timeout == -1) {
         Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
-        //Silent = Status == EFI_NOT_READY;
-        if (Status == EFI_NOT_READY) {
-            Silent = TRUE;
-        } else {
+        if (Status == EFI_SUCCESS) {
             KeyAsString[0] = key.UnicodeChar;
             KeyAsString[1] = 0;
             ShortcutEntry = FindMenuShortcutEntry(&MainMenu, KeyAsString);
@@ -509,6 +506,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             } else {
                 GlobalConfig.Timeout = 0;
             }
+        } else {
+            Silent = TRUE;
         }
     }
 
