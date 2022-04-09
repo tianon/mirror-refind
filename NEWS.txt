@@ -1,4 +1,4 @@
-0.13.3 (?/??/2021):
+0.13.3 (?/??/2022):
 -------------------
 
 - Fixed compile problem introduced somewhere between GNU-EFI 3.0.9 and
@@ -15,8 +15,16 @@
 - Removed a stray exit command from refind-install, which caused
   premature termination of the script.
 
-- Minimize reading of HiddenTools variable, which was being read
+- Minimized reading of HiddenTools variable, which was being read
   unnecessarily often.
+
+- Made rEFInd silent when timeout is -1.
+
+- Introduced log file rotation -- if refind.log-old exists and logging is
+  enabled, that log file is deleted and the existing log file is renamed to
+  refind.log-old. This enables preservation of two log files, which is
+  useful in case rEFInd crashes; the crash log file will be available as
+  refind.log-old.
 
 - I am officially deprecating the "tiano" target, which builds with
   TianoCore UDK2014 using custom Makefile rules rather than the usual
