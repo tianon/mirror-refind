@@ -599,6 +599,9 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                 case '-':
                     MenuExit = MENU_EXIT_HIDE;
                     break;
+                case '\\':
+                    egScreenShot();
+                    break;
                 default:
                     KeyAsString[0] = key.UnicodeChar;
                     KeyAsString[1] = 0;
