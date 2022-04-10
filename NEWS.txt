@@ -18,8 +18,6 @@
 - Minimized reading of HiddenTools variable, which was being read
   unnecessarily often.
 
-- Made rEFInd silent when timeout is -1.
-
 - Fixed handling of timeout == -1 when no keyboard is attached.
 
 - Fixed display of arrow icons when those icons are larger than the stock
