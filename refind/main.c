@@ -447,10 +447,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     EFI_STATUS         Status;
     BOOLEAN            MainLoopRunning = TRUE;
     BOOLEAN            MokProtocol;
-    BOOLEAN            Silent = FALSE;
-    CHAR16             KeyAsString[2];
-    INTN               ShortcutEntry;
-    EFI_INPUT_KEY      key;
     REFIT_MENU_ENTRY   *ChosenEntry;
     UINTN              MenuExit = MENU_EXIT_ENTER, i;
     CHAR16             *SelectionName = NULL;
@@ -489,30 +485,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')
         SetAppleOSInfo();
 
-    SetVolumeIcons();
-    ScanForBootloaders(FALSE);
-    ScanForTools();
-
-    if (GlobalConfig.Timeout == -1) {
-        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
-        if (Status == EFI_SUCCESS) {
-            KeyAsString[0] = key.UnicodeChar;
-            KeyAsString[1] = 0;
-            ShortcutEntry = FindMenuShortcutEntry(&MainMenu, KeyAsString);
-            if (ShortcutEntry >= 0) {
-                ChosenEntry = MainMenu.Entries[ShortcutEntry];
-                SelectionName = StrDuplicate(ChosenEntry->Title);
-                Silent = TRUE;
-            } else {
-                GlobalConfig.Timeout = 0;
-            }
-        } else {
-            Silent = TRUE;
-        }
-    }
-
-    if (!Silent)
-        InitScreen();
+    InitScreen();
     WarnIfLegacyProblems();
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
 
@@ -521,9 +494,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     refit_call4_wrapper(BS->SetWatchdogTimer, 0x0000, 0x0000, 0x0000, NULL);
 
     // further bootstrap (now with config available)
+    SetupScreen();
+    SetVolumeIcons();
+    ScanForBootloaders(FALSE);
+    ScanForTools();
 
-    if (!Silent)
-        SetupScreen();
     // SetupScreen() clears the screen; but ScanForBootloaders() may display a
     // message that must be deleted, so do so
     BltClearScreen(TRUE);
@@ -540,17 +515,14 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        BltClearScreen(TRUE);
     } // if
 
-    if (GlobalConfig.DefaultSelection && !SelectionName)
+    if (GlobalConfig.DefaultSelection)
        SelectionName = StrDuplicate(GlobalConfig.DefaultSelection);
     if (GlobalConfig.ShutdownAfterTimeout)
         MainMenu.TimeoutText = L"Shutdown";
 
     LOG(1, LOG_LINE_SEPARATOR, L"Entering main loop");
     while (MainLoopRunning) {
-        if (!Silent)
-            MenuExit = RunMainMenu(&MainMenu, &SelectionName, &ChosenEntry);
-        // Give it a chance to RunMainMenu next loop if it fails
-        Silent = FALSE;
+        MenuExit = RunMainMenu(&MainMenu, &SelectionName, &ChosenEntry);
 
         // The Escape key triggers a re-scan operation....
         if (MenuExit == MENU_EXIT_ESCAPE) {

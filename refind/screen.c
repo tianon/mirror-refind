@@ -79,7 +79,6 @@ UINTN UGAWidth;
 UINTN UGAHeight;
 BOOLEAN AllowGraphicsMode;
 BOOLEAN HaveResized = FALSE;
-BOOLEAN Initialized = FALSE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
@@ -139,17 +138,12 @@ VOID InitScreen(VOID)
     // show the banner if in text mode
     if (GlobalConfig.TextOnly && (GlobalConfig.ScreensaverTime != -1))
        DrawScreenHeader(L"Initializing...");
-
-    Initialized = TRUE;
 }
 
 // Set the screen resolution and mode (text vs. graphics).
 VOID SetupScreen(VOID)
 {
     UINTN NewWidth, NewHeight;
-
-    if (!Initialized)
-        return;
 
     LOG(1, LOG_LINE_NORMAL, L"Setting screen resolution and mode");
     // Convert mode number to horizontal & vertical resolution values
@@ -248,9 +242,6 @@ VOID BeginTextScreen(IN CHAR16 *Title)
 
 VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
 {
-    if (!Initialized)
-        return;
-
     if (!AllowGraphicsMode)
         UseGraphicsMode = FALSE;
 
@@ -446,9 +437,6 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
     EG_IMAGE *NewBanner = NULL;
     INTN BannerPosX, BannerPosY;
     EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
-
-    if (!Initialized)
-        return;
 
     if (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)) {
         // load banner on first call

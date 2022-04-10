@@ -374,7 +374,7 @@ VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
     BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
     StoreLoaderName(SelectionName);
     StartEFIImage(Entry->Volume, Entry->LoaderPath, Entry->LoadOptions,
-                  LoaderPath, Entry->OSType, !Entry->UseGraphicsMode && GlobalConfig.Timeout != -1, FALSE);
+                  LoaderPath, Entry->OSType, !Entry->UseGraphicsMode, FALSE);
     MyFreePool(LoaderPath);
 } // VOID StartLoader()
 
