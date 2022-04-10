@@ -1,10 +1,10 @@
-0.13.3 (?/??/2022):
+0.13.3 (4/10/2022):
 -------------------
 
 - Fixed compile problem introduced somewhere between GNU-EFI 3.0.9 and
   3.0.13.
 
-- Fixed bug that could cause rEFInd to hang when processing keystrokes
+- Fixed bug that could cause rEFInd to freeze when processing keystrokes
   in menus.
 
 - Fixed bug that caused option to return from folded Linux kernel submenu to
@@ -24,6 +24,8 @@
 
 - Fixed display of arrow icons when those icons are larger than the stock
   size because of manual specification of icon size in refind.conf.
+
+- Updated Ubuntu icon for its 22.04 revision.
 
 - Introduced log file rotation -- if refind.log-old exists and logging is
   enabled, that log file is deleted and the existing log file is renamed to
