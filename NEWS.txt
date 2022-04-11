@@ -1,3 +1,9 @@
+0.13.4 (?/??/2022):
+-------------------
+
+- Fixed bug that caused refind-install to not recognize already-mounted
+  ESP.
+
 0.13.3 (4/10/2022):
 -------------------
 

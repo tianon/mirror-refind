@@ -1237,7 +1237,7 @@ FindMountedESP() {
    if [[ -z "$EspLine" ]] ; then
       EspLine=$(df "$RootDir"/boot 2> /dev/null | grep boot)
    fi
-   InstallDir=$(echo "$EspLine" | cut -d " " -f 6 | sed 's/\/\+/\//g')
+   InstallDir=$(echo "$EspLine" | xargs | cut -d " " -f 6 | sed 's/\/\+/\//g')
 
    if [[ -n "$InstallDir" ]] ; then
       EspFilesystem=$(grep -w "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3 | uniq)
