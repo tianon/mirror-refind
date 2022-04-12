@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 4/10/2022</p>
+<p>Last Web page update: 4/12/2022</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.13.3.1 (4/12/2022)</b>&mdash;This is a minor update to address two bugs in the <tt>refind-install</tt> script. The first bug caused it to fail to identify a mounted ESP in Linux. This in turn could cause package installation problems. The second bug caused <tt>refind-install</tt> to fail to re-use an existing EFI boot manager entry for rEFInd when the system was booting through Shim, thus creating duplicated entries. There are no changes to the rEFInd program itself with this version (although it's a fresh build from source).</li>
 
 <li><b>0.13.3 (4/10/2022)</b>&mdash;This version features several minor bug fixes and new features:
 

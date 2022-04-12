@@ -38,6 +38,7 @@
 
 # Revision history:
 #
+# 0.13.3.1-- Fix bug that caused failure to detect mounted ESP in Linux
 # 0.13.3  -- Remove stray exit from CreateBootCsvFile()
 # 0.13.2  -- Add installation of rEFInd Secure Boot key as MOK; if installing
 #            with Shim, add backup direct boot NVRAM option
@@ -1292,7 +1293,7 @@ AddBootEntry() {
       fi
       EntryFilename="$TargetDir/$Refind"
       EfiEntryFilename=`echo ${EntryFilename//\//\\\}`
-      EfiEntryFilename2=$(echo "${EfiEntryFilename}" | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g)
+      EfiEntryFilename2=`echo "${EfiEntryFilename}" | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g`
       InstallPartGuid=$(blkid -s PARTUUID -o value "$InstallPart")
       FirstBoot=$("$Efibootmgr" | grep BootOrder | cut -c 12-15)
       ExistingEntry=$("$Efibootmgr" -v | grep -i "$EfiEntryFilename2" | grep -i "$InstallPartGuid" | head -n 1)

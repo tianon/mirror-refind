@@ -1,8 +1,11 @@
-0.13.4 (?/??/2022):
+0.13.3.1 (4/12/2022):
 -------------------
 
 - Fixed bug that caused refind-install to not recognize already-mounted
-  ESP.
+  ESP in Linux. This was causing installation failures on some systems.
+
+- Fixed bug in refind-install that caused duplicate EFI boot manager
+  entries when updating a rEFInd installation that used Shim.
 
 0.13.3 (4/10/2022):
 -------------------
