@@ -593,6 +593,9 @@ VOID ReadConfig(CHAR16 *FileName)
                     GlobalConfig.ScanFor[i] = ' ';
             }
 
+        } else if (MyStriCmp(TokenList[0], L"follow_symlinks")) {
+            GlobalConfig.FollowSymlinks = HandleBoolean(TokenList, TokenCount);
+
         } else if (MyStriCmp(TokenList[0], L"use_nvram")) {
             GlobalConfig.UseNvram = HandleBoolean(TokenList, TokenCount);
 
@@ -1242,4 +1245,3 @@ CHAR16 * GetFirstOptionsFromFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume)
     } // if
     return Options;
 } // static CHAR16 * GetOptionsFile()
-
