@@ -1074,15 +1074,15 @@ GenerateKeys() {
       fi
       if [[ -f "$PrivateKey" ]] ; then
          echo "Backing up existing $PrivateKey"
-         cp -f "$PrivateKey" "$PrivateKey.backup" 2> /dev/null
+         mv -f "$PrivateKey" "$PrivateKey.backup" 2> /dev/null
       fi
       if [[ -f "$CertKey" ]] ; then
          echo "Backing up existing $CertKey"
-         cp -f "$CertKey" "$CertKey.backup" 2> /dev/null
+         mv -f "$CertKey" "$CertKey.backup" 2> /dev/null
       fi
       if [[ -f "$DerKey" ]] ; then
          echo "Backing up existing $DerKey"
-         cp -f "$DerKey" "$DerKey.backup" 2> /dev/null
+         mv -f "$DerKey" "$DerKey.backup" 2> /dev/null
       fi
       if [[ $EncryptKeys == 1 ]]; then
          KeyEncryptionArgument=""
