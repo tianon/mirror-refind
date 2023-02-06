@@ -1,5 +1,11 @@
-0.13.3.1 (4/12/2022):
+0.13.4 (?/??/2023):
 -------------------
+
+- Fixed bug in mkcdimage that caused USB flash drive image to be
+  damaged.
+
+0.13.3.1 (4/12/2022):
+---------------------
 
 - Fixed bug that caused refind-install to not recognize already-mounted
   ESP in Linux. This was causing installation failures on some systems.
