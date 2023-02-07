@@ -1407,8 +1407,8 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
 // Checks to see if a specified file seems to be a valid tool.
 // Returns TRUE if it passes all tests, FALSE otherwise
 static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
-    CHAR16 *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis;
-    CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools;
+    CHAR16 *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis = NULL;
+    CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools = NULL;
     BOOLEAN retval = TRUE;
     UINTN i = 0;
 
@@ -1416,9 +1416,11 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
         BaseVolume->PartName ? BaseVolume->PartName : BaseVolume->VolName);
     if (gHiddenTools == NULL) {
         DontScanTools = ReadHiddenTags(L"HiddenTools");
-        gHiddenTools = StrDuplicate(DontScanTools);
+        if (DontScanTools)
+            gHiddenTools = StrDuplicate(DontScanTools);
     } else {
-        DontScanTools = StrDuplicate(gHiddenTools);
+        if (gHiddenTools)
+            DontScanTools = StrDuplicate(gHiddenTools);
     }
     MergeStrings(&DontScanTools, GlobalConfig.DontScanTools, L',');
     if (FileExists(BaseVolume->RootDir, PathName) && IsValidLoader(BaseVolume->RootDir, PathName)) {
@@ -1440,6 +1442,7 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
         } // while
     } else
         retval = FALSE;
+    LOG(4, LOG_LINE_NORMAL, L"About to free multiple variables in IsValidTool()");
     MyFreePool(TestVolName);
     MyFreePool(TestPathName);
     MyFreePool(TestFileName);
