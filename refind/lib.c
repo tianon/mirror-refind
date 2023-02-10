@@ -1548,8 +1548,10 @@ BOOLEAN DirIterNext(IN OUT REFIT_DIR_ITER *DirIter, IN UINTN FilterMode, IN CHAR
     CHAR16  *OnePattern;
 
     if (DirIter->LastFileInfo != NULL) {
-       FreePool(DirIter->LastFileInfo);
-       DirIter->LastFileInfo = NULL;
+        // NOTE: rEFIt and rEFInd through 0.13.3 called
+        // FreePool(DirIter->LastFileInfo) here, but I now believe that was
+        // improper. (It causes some systems to freeze.)
+        DirIter->LastFileInfo = NULL;
     }
 
     if (EFI_ERROR(DirIter->LastStatus))

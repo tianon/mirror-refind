@@ -34,7 +34,7 @@ EFI_STATUS DeleteFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
 
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle,
                                  FileName, FileMode, 0);
-    if (Status == 0) {
+    if (!EFI_ERROR(Status)) {
         Status = refit_call1_wrapper(FileHandle->Delete, FileHandle);
     }
     return Status;
@@ -50,11 +50,16 @@ EFI_STATUS StartLogging(BOOLEAN Restart) {
     EFI_STATUS      Status = EFI_SUCCESS;
     UINT64          FileMode;
     UINTN           BufferSize;
+    UINTN           gcLogLevel;
     EFI_FILE_HANDLE FoundEsp;
     EFI_FILE_INFO   *FileInfo;
     UINT8           Utf16[2]; // String to hold ID for UTF-16 file start
 
     if (GlobalConfig.LogLevel > 0) {
+        // store the log level; we set it to 0 globally so called functions don't
+        // try to log while the log file isn't available....
+        gcLogLevel = GlobalConfig.LogLevel;
+        GlobalConfig.LogLevel = 0;
         if (Restart) {
             FileMode = EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE;
         } else {
@@ -81,7 +86,7 @@ EFI_STATUS StartLogging(BOOLEAN Restart) {
             }
         }
         if (EFI_ERROR(Status)) {
-            GlobalConfig.LogLevel = 0;
+            gcLogLevel = 0;
             PrintUglyText(L"Unable to open log file!", CENTER);
             PauseForKey();
         } else {
@@ -110,7 +115,8 @@ EFI_STATUS StartLogging(BOOLEAN Restart) {
             }
             gLogActive = TRUE;
         } // if/else
-    } // if
+        GlobalConfig.LogLevel = gcLogLevel;
+    } // if (GlobalConfig.LogLevel > 0)
     return Status;
 } // EFI_STATUS StartLogging()
 

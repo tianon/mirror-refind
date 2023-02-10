@@ -7,6 +7,9 @@
 - Fixed bug that could cause rEFInd since 0.11.5 to freeze on some
   computers.
 
+- Fixed bugs that could cause rEFInd to freeze when opening a new log file,
+  opening filesystems, or installing itself on some systems.
+
 0.13.3.1 (4/12/2022):
 ---------------------
 
