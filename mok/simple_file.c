@@ -15,11 +15,11 @@ static EFI_GUID SIMPLE_FS_PROTOCOL = SIMPLE_FILE_SYSTEM_PROTOCOL;
 static EFI_GUID FILE_INFO = EFI_FILE_INFO_ID;
 
 EFI_STATUS
-simple_file_open_by_handle(EFI_HANDLE device, CHAR16 *name, EFI_FILE **file, UINT64 mode)
+simple_file_open_by_handle(EFI_HANDLE device, CHAR16 *name, EFI_FILE_PROTOCOL **file, UINT64 mode)
 {
    EFI_STATUS efi_status;
    EFI_FILE_IO_INTERFACE *drive;
-   EFI_FILE *root;
+   EFI_FILE_PROTOCOL *root;
 
    efi_status = uefi_call_wrapper(BS->HandleProtocol, 3, device,
                    &SIMPLE_FS_PROTOCOL, (VOID**) &drive);
@@ -95,7 +95,7 @@ error:
 } // generate_path()
 
 EFI_STATUS
-simple_file_open(EFI_HANDLE image, CHAR16 *name, EFI_FILE **file, UINT64 mode)
+simple_file_open(EFI_HANDLE image, CHAR16 *name, EFI_FILE_PROTOCOL **file, UINT64 mode)
 {
    EFI_STATUS efi_status;
    EFI_HANDLE device;
@@ -127,7 +127,7 @@ simple_file_open(EFI_HANDLE image, CHAR16 *name, EFI_FILE **file, UINT64 mode)
 }
 
 EFI_STATUS
-simple_file_read_all(EFI_FILE *file, UINTN *size, void **buffer)
+simple_file_read_all(EFI_FILE_PROTOCOL *file, UINTN *size, void **buffer)
 {
    EFI_STATUS efi_status;
    EFI_FILE_INFO *fi;
@@ -157,7 +157,7 @@ simple_file_read_all(EFI_FILE *file, UINTN *size, void **buffer)
 }
 
 void
-simple_file_close(EFI_FILE *file)
+simple_file_close(EFI_FILE_PROTOCOL *file)
 {
    uefi_call_wrapper(file->Close, 1, file);
 }

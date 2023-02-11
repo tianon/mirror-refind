@@ -77,7 +77,7 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
                          IN CHAR8 OSType,
                          IN BOOLEAN Verbose,
                          IN BOOLEAN IsDriver);
-BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName);
+BOOLEAN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName);
 EFI_STATUS RebootIntoFirmware(VOID);
 VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName);
 VOID StartTool(IN LOADER_ENTRY *Entry);

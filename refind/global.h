@@ -257,7 +257,7 @@ typedef struct {
 typedef struct {
    EFI_DEVICE_PATH     *DevicePath;
    EFI_HANDLE          DeviceHandle;
-   EFI_FILE            *RootDir;
+   EFI_FILE_PROTOCOL   *RootDir;
    CHAR16              *PartName; // GPT partition name
    CHAR16              *FsName;   // Filesystem name
    CHAR16              *VolName;  // One of the two above OR fs description (e.g., "2 GiB FAT volume")
@@ -384,11 +384,11 @@ typedef struct {
 
 // Global variables
 
-extern EFI_HANDLE       SelfImageHandle;
-extern EFI_LOADED_IMAGE *SelfLoadedImage;
-extern EFI_FILE         *SelfRootDir;
-extern EFI_FILE         *SelfDir;
-extern CHAR16           *SelfDirPath;
+extern EFI_HANDLE         SelfImageHandle;
+extern EFI_LOADED_IMAGE   *SelfLoadedImage;
+extern EFI_FILE_PROTOCOL  *SelfRootDir;
+extern EFI_FILE_PROTOCOL  *SelfDir;
+extern CHAR16             *SelfDirPath;
 
 extern REFIT_VOLUME     *SelfVolume;
 extern REFIT_VOLUME     **Volumes;

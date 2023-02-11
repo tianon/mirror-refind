@@ -199,7 +199,7 @@ static EFI_STATUS RenameFile(IN EFI_FILE_PROTOCOL *BaseDir, CHAR16 *OldName, CHA
 // user wants icons stored there that have been supplanted by new icons.
 // BaseDir = The directory in which the file exists
 // FileName = The name of the file
-EFI_STATUS BackupOldFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
+EFI_STATUS BackupOldFile(IN EFI_FILE_PROTOCOL *BaseDir, CHAR16 *FileName) {
     EFI_STATUS          Status = EFI_SUCCESS;
     CHAR16              *NewName;
 
@@ -217,7 +217,7 @@ EFI_STATUS BackupOldFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
 } // EFI_STATUS BackupOldFile()
 
 // Create directories in which rEFInd will reside....
-static EFI_STATUS CreateDirectories(IN EFI_FILE *BaseDir) {
+static EFI_STATUS CreateDirectories(IN EFI_FILE_PROTOCOL *BaseDir) {
     CHAR16            *FileName = NULL;
     UINTN             i = 0, Status = EFI_SUCCESS;
     EFI_FILE_PROTOCOL *TheDir = NULL; // NOTE: DO NOT FREE!
@@ -231,9 +231,9 @@ static EFI_STATUS CreateDirectories(IN EFI_FILE *BaseDir) {
     return (Status);
 } // CreateDirectories()
 
-static EFI_STATUS CopyOneFile(IN EFI_FILE *SourceDir,
+static EFI_STATUS CopyOneFile(IN EFI_FILE_PROTOCOL *SourceDir,
                               IN CHAR16 *SourceName,
-                              IN EFI_FILE *DestDir,
+                              IN EFI_FILE_PROTOCOL *DestDir,
                               IN CHAR16 *DestName) {
     EFI_FILE_PROTOCOL  *SourceFile = NULL, *DestFile = NULL; // NOTE: DO NOT FREE!
     UINTN              FileSize = 0, Status;
@@ -283,7 +283,7 @@ static EFI_STATUS CopyOneFile(IN EFI_FILE *SourceDir,
 // Copy a single directory (non-recursively)
 static EFI_STATUS CopyDirectory(IN EFI_FILE_PROTOCOL *SourceDirPtr,
                                 IN CHAR16 *SourceDirName,
-                                IN EFI_FILE *DestDirPtr,
+                                IN EFI_FILE_PROTOCOL *DestDirPtr,
                                 IN CHAR16 *DestDirName) {
     REFIT_DIR_ITER  DirIter;
     EFI_FILE_INFO   *DirEntry;
@@ -307,9 +307,9 @@ static EFI_STATUS CopyDirectory(IN EFI_FILE_PROTOCOL *SourceDirPtr,
 // but it DOES copy the HFS+ driver on non-Apple hardware if HFS+ is detected,
 // even though HFS+ is not technically a Linux filesystem, since HFS+ CAN be used
 // as a Linux /boot partition. That's weird, but it does work.
-static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
+static EFI_STATUS CopyDrivers(IN EFI_FILE_PROTOCOL *SourceDirPtr,
                               IN CHAR16 *SourceDirName,
-                              IN EFI_FILE *DestDirPtr,
+                              IN EFI_FILE_PROTOCOL *DestDirPtr,
                               IN CHAR16 *DestDirName) {
     CHAR16          *DestFileName = NULL, *SourceFileName = NULL;
     CHAR16          *DriverName = NULL; // Note: Assign to string constants; do not free.
@@ -388,7 +388,7 @@ static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
 } // EFI_STATUS CopyDrivers()
 
 // Copy all the files from the source to *TargetDir
-static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
+static EFI_STATUS CopyFiles(IN EFI_FILE_PROTOCOL *TargetDir) {
     REFIT_VOLUME    *SourceVolume = NULL; // Do not free
     CHAR16          *SourceFile = NULL, *SourceDir, *ConfFile;
     CHAR16          *SourceDriversDir, *TargetDriversDir, *RefindName;
@@ -457,7 +457,7 @@ static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
 
 // Create the BOOT.CSV file used by the fallback.efi/fbx86.efi program.
 // Success isn't critical, so we don't return a Status value.
-static VOID CreateFallbackCSV(IN EFI_FILE *TargetDir) {
+static VOID CreateFallbackCSV(IN EFI_FILE_PROTOCOL *TargetDir) {
     CHAR16            *Contents = NULL;
     UINTN             FileSize, Status;
     EFI_FILE_PROTOCOL *FilePtr; // NOTE: DO NOT FREE!
@@ -480,7 +480,7 @@ static VOID CreateFallbackCSV(IN EFI_FILE *TargetDir) {
     }
 } // VOID CreateFallbackCSV()
 
-static BOOLEAN CopyRefindFiles(IN EFI_FILE *TargetDir) {
+static BOOLEAN CopyRefindFiles(IN EFI_FILE_PROTOCOL *TargetDir) {
     EFI_STATUS Status = EFI_SUCCESS, Status2;
 
     if (FileExists(TargetDir, L"\\EFI\\refind\\icons")) {

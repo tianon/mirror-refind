@@ -104,7 +104,7 @@ security_policy_authentication (
    EFI_STATUS        Status;
    EFI_DEVICE_PATH   *DevPath, *OrigDevPath;
    EFI_HANDLE        h;
-   EFI_FILE          *f;
+   EFI_FILE_PROTOCOL *f;
    VOID              *FileBuffer;
    UINTN             FileSize;
    CHAR16            *DevPathStr;

@@ -241,7 +241,7 @@ VOID egFreeImage(IN EG_IMAGE *Image)
 // Basic file operations
 //
 
-EFI_STATUS egLoadFile(IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **FileData, OUT UINTN *FileDataLength)
+EFI_STATUS egLoadFile(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *FileName, OUT UINT8 **FileData, OUT UINTN *FileDataLength)
 {
     EFI_STATUS          Status;
     EFI_FILE_HANDLE     FileHandle;
@@ -305,7 +305,7 @@ EFI_STATUS egFindESP(OUT EFI_FILE_HANDLE *RootDir)
     return Status;
 }
 
-EFI_STATUS egSaveFile(IN EFI_FILE* BaseDir OPTIONAL, IN CHAR16 *FileName,
+EFI_STATUS egSaveFile(IN EFI_FILE_PROTOCOL *BaseDir OPTIONAL, IN CHAR16 *FileName,
                       IN UINT8 *FileData, IN UINTN FileDataLength)
 {
     EFI_STATUS          Status;
@@ -379,7 +379,7 @@ EG_IMAGE * egLoadImage(IN EFI_FILE* BaseDir, IN CHAR16 *FileName, IN BOOLEAN Wan
 
 // Load an icon from (BaseDir)/Path, extracting the icon of size IconSize x IconSize.
 // Returns a pointer to the image data, or NULL if the icon could not be loaded.
-EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
+EG_IMAGE * egLoadIcon(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
 {
     EFI_STATUS      Status;
     UINT8           *FileData;
@@ -419,7 +419,7 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
 // SubdirName is "myicons" and BaseName is "os_linux", this function will return
 // an image based on "myicons/os_linux.icns" or "myicons/os_linux.png", in that
 // order of preference. Returns NULL if no such file is a valid icon file.
-EG_IMAGE * egLoadIconAnyType(IN EFI_FILE *BaseDir, IN CHAR16 *SubdirName, IN CHAR16 *BaseName, IN UINTN IconSize) {
+EG_IMAGE * egLoadIconAnyType(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *SubdirName, IN CHAR16 *BaseName, IN UINTN IconSize) {
     EG_IMAGE *Image = NULL;
     CHAR16 *Extension;
     CHAR16 *FileName;

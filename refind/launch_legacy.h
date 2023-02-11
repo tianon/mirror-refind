@@ -41,6 +41,8 @@
  * with this source code or binaries made from it.
  *
  */
+#ifndef __LAUNCH_LEGACY_H
+#define __LAUNCH_LEGACY_H
 
 #include "global.h"
 
@@ -52,3 +54,5 @@ VOID ScanLegacyInternal(VOID);
 VOID ScanLegacyExternal(VOID);
 VOID FindLegacyBootType(VOID);
 VOID WarnIfLegacyProblems(VOID);
+
+#endif

@@ -55,6 +55,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma pack(0)
 #include "global.h"
 #include "lib.h"
 #include "icns.h"
@@ -109,18 +110,18 @@ EFI_GUID gFreedesktopRootGuid = { 0x69dad710, 0x2ce4, 0x4e3c, { 0xb1, 0x6c, 0x21
 
 // variables
 
-EFI_HANDLE       SelfImageHandle;
-EFI_LOADED_IMAGE *SelfLoadedImage;
-EFI_FILE         *SelfRootDir;
-EFI_FILE         *SelfDir;
-CHAR16           *SelfDirPath;
+EFI_HANDLE         SelfImageHandle;
+EFI_LOADED_IMAGE   *SelfLoadedImage;
+EFI_FILE_PROTOCOL  *SelfRootDir;
+EFI_FILE_PROTOCOL  *SelfDir;
+CHAR16             *SelfDirPath;
 
-REFIT_VOLUME     *SelfVolume = NULL;
-REFIT_VOLUME     **Volumes = NULL;
-UINTN            VolumesCount = 0;
-extern EFI_GUID  RefindGuid;
+REFIT_VOLUME       *SelfVolume = NULL;
+REFIT_VOLUME       **Volumes = NULL;
+UINTN              VolumesCount = 0;
+extern EFI_GUID    RefindGuid;
 
-EFI_FILE         *gVarsDir = NULL;
+EFI_FILE_PROTOCOL  *gVarsDir = NULL;
 
 // Maximum size for disk sectors
 #define SECTOR_SIZE 4096
@@ -1408,7 +1409,7 @@ VOID SetVolumeIcons(VOID) {
 // file and dir functions
 //
 
-BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath)
+BOOLEAN FileExists(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *RelativePath)
 {
     EFI_STATUS         Status;
     EFI_FILE_HANDLE    TestFile;
@@ -1423,7 +1424,7 @@ BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath)
     return FALSE;
 }
 
-EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry, IN UINTN FilterMode)
+EFI_STATUS DirNextEntry(IN EFI_FILE_PROTOCOL *Directory, IN OUT EFI_FILE_INFO **DirEntry, IN UINTN FilterMode)
 {
     EFI_STATUS Status;
     VOID *Buffer;
@@ -1487,7 +1488,7 @@ EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry,
     return Status;
 }
 
-VOID DirIterOpen(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath OPTIONAL, OUT REFIT_DIR_ITER *DirIter)
+VOID DirIterOpen(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *RelativePath OPTIONAL, OUT REFIT_DIR_ITER *DirIter)
 {
     if (RelativePath == NULL) {
         DirIter->LastStatus = EFI_SUCCESS;

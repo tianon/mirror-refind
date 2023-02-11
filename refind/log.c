@@ -27,7 +27,7 @@ CHAR16           *gLogTemp = NULL;
 BOOLEAN          gLogActive = FALSE;
 
 
-EFI_STATUS DeleteFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
+EFI_STATUS DeleteFile(IN EFI_FILE_PROTOCOL *BaseDir, CHAR16 *FileName) {
     EFI_FILE_HANDLE FileHandle;
     UINT64          FileMode = EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE;;
     EFI_STATUS      Status;
