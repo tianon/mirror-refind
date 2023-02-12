@@ -10,6 +10,10 @@
 - Fixed bugs that could cause rEFInd to freeze when opening a new log file,
   opening filesystems, or installing itself on some systems.
 
+- The ext4fs driver now ignores the metadata_csum_seed flag, which is being
+  set by default in e2fsprogs 1.47.0 and later. Thanks to Martin Whitaker
+  for the relevant patch.
+
 0.13.3.1 (4/12/2022):
 ---------------------
 
