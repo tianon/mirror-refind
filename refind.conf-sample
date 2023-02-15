@@ -474,6 +474,12 @@ use_nvram false
 #
 #write_systemd_vars true
 
+# Symlinked loaders will be processed when this setting is set to true.
+# These are ignored by default as they may result in undesirable outcomes.
+# This token may however be useful on Linux setups that use symlinked loaders.
+#
+#follow_symlinks true
+
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, rEFInd shows
 # a subset in a scrolling list. If this value is set too high for the

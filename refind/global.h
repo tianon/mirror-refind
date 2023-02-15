@@ -342,6 +342,7 @@ typedef struct {
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    BOOLEAN          WriteSystemdVars;
+   BOOLEAN          FollowSymlinks;
    UINTN            RequestedScreenWidth;
    UINTN            RequestedScreenHeight;
    UINTN            BannerBottomEdge;

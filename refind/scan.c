@@ -919,12 +919,15 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
           FullName = StrDuplicate(Path);
           MergeStrings(&FullName, DirEntry->FileName, L'\\');
           CleanUpPathNameSlashes(FullName);
+
+          if (!GlobalConfig.FollowSymlinks && IsSymbolicLink(Volume, FullName, DirEntry)) {
+              continue;   // is symbolic link ... skip as ignoring such
+          }
           if (DirEntry->FileName[0] == '.' ||
               MyStriCmp(Extension, L".icns") ||
               MyStriCmp(Extension, L".png") ||
               (MyStriCmp(DirEntry->FileName, FALLBACK_BASENAME) && (MyStriCmp(Path, L"EFI\\BOOT"))) ||
               FilenameIn(Volume, Path, DirEntry->FileName, SHELL_NAMES) ||
-              IsSymbolicLink(Volume, FullName, DirEntry) || /* is symbolic link */
               HasSignedCounterpart(Volume, FullName) || /* a file with same name plus ".efi.signed" is present */
               FilenameIn(Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
               !IsValidLoader(Volume->RootDir, FullName)) {
