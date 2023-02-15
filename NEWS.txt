@@ -15,6 +15,9 @@
   set by default in e2fsprogs 1.47.0 and later. Thanks to Martin Whitaker
   for the relevant patch.
 
+- Change to how refind-install manages local keys, which makes accidentally
+  deleting symlinked keys less likely. Thanks to Das Menschy for this fix.
+
 0.13.3.1 (4/12/2022):
 ---------------------
 
