@@ -425,6 +425,11 @@ timeout 20
    <p>You can specify multiple parameters to have the program scan for multiple boot loader types. When you do so, the order determines the order in which the boot loaders appear in the menu, although the order of multiple options within each group is determined by the order in which rEFInd discovers the specific loaders. The default is <tt>internal, external, optical, manual</tt> on most systems, but <tt>internal, hdbios, external, biosexternal, optical, cd, manual</tt> on Macs.</p></td>
 </tr>
 <tr>
+   <td><tt>follow_symlinks</tt></td>
+   <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
+   <td>If enabled, tells rEFInd to follow symbolic links on filesystems that support this feature. This is desirable if a symbolic link is in a scanned directory and references a loader or kernel you want to use, but the link points to a location that rEFInd does not scan. Following symbolic links is undesirable if both files are in scanned locations, as this can result in redundant boot entries. The default is <tt>false</tt>.</td>
+</tr>
+<tr>
    <td><tt>uefi_deep_legacy_scan</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
    <td>Tells rEFInd how aggressively to scan for BIOS/CSM/legacy boot loaders on UEFI-based PCs. Ordinarily or if this option is set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, rEFInd presents only those options that were available in the NVRAM when it launched. When uncommented with no option or with <tt>true</tt>, <tt>on</tt>, or <tt>1</tt> set, rEFInd adds every possible BIOS-mode boot device (of types specified by <tt>scanfor</tt>) as a BIOS/CSM/legacy boot option. This latter behavior is sometimes required to detect USB flash drives or hard disks beyond the first one.</td>

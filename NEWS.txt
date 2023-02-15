@@ -18,6 +18,12 @@
 - Change to how refind-install manages local keys, which makes accidentally
   deleting symlinked keys less likely. Thanks to Das Menschy for this fix.
 
+- Added new follow_symlinks option. This causes rEFInd to read loaders
+  that are symbolic links on filesystems that support this feature. In
+  most cases, these symlinks are redundant; but in some cases they exist
+  where rEFInd scans but point to files elsewhere, so following them may be
+  desirable. Credit to dakanji for adding this feature.
+
 0.13.3.1 (4/12/2022):
 ---------------------
 
