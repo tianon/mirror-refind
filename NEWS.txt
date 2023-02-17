@@ -24,6 +24,9 @@
   where rEFInd scans but point to files elsewhere, so following them may be
   desirable. Credit to dakanji for adding this feature.
 
+- Adrien Destugues submitted a new icon for the Haiku OS, based on an
+  official Haiku OS icon.
+
 0.13.3.1 (4/12/2022):
 ---------------------
 

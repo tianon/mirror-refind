@@ -100,6 +100,9 @@ Icons and graphics:
   https://commons.wikimedia.org/wiki/File:Elementary_logo.svg. I modified
   it to fit the general style set by the AwOken icons.
 
+* The Haiku OS icon is based on an icon for the Haiku OS, as submitted by
+  Adrien Destugues.
+
 * Erik Kemperman provided the original (pre-0.9.3) rEFInd icon, which is a
   combination of the common refresh/reload icon and the search/find icon.
   For version 0.9.3, I created a new icon from Erik's basic design concept,
