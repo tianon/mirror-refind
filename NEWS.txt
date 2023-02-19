@@ -4,6 +4,19 @@
 - Added ability to launch gzip-compressed loaders. This is useful mainly on
   ARM64 platforms.
 
+- Added new follow_symlinks option. This causes rEFInd to read loaders
+  that are symbolic links on filesystems that support this feature. In
+  most cases, these symlinks are redundant; but in some cases they exist
+  where rEFInd scans but point to files elsewhere, so following them may be
+  desirable. Credit to dakanji for adding this feature.
+
+- Adrien Destugues submitted a new icon for the Haiku OS, based on an
+  official Haiku OS icon.
+
+- The ext4fs driver now ignores the metadata_csum_seed flag, which is being
+  set by default in e2fsprogs 1.47.0 and later. Thanks to Martin Whitaker
+  for the relevant patch.
+
 - Fixed bug in mkcdimage that caused USB flash drive image to be
   damaged.
 
@@ -18,21 +31,10 @@
   loader files that are missing, despite being in menus) appearing for a
   fraction of a second and then disappearing.
 
-- The ext4fs driver now ignores the metadata_csum_seed flag, which is being
-  set by default in e2fsprogs 1.47.0 and later. Thanks to Martin Whitaker
-  for the relevant patch.
-
 - Change to how refind-install manages local keys, which makes accidentally
   deleting symlinked keys less likely. Thanks to Das Menschy for this fix.
 
-- Added new follow_symlinks option. This causes rEFInd to read loaders
-  that are symbolic links on filesystems that support this feature. In
-  most cases, these symlinks are redundant; but in some cases they exist
-  where rEFInd scans but point to files elsewhere, so following them may be
-  desirable. Credit to dakanji for adding this feature.
-
-- Adrien Destugues submitted a new icon for the Haiku OS, based on an
-  official Haiku OS icon.
+- Updated LodePNG library to the latest version (20221108).
 
 0.13.3.1 (4/12/2022):
 ---------------------
