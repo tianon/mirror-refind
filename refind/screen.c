@@ -415,6 +415,7 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
     PrintUglyText(Temp, NEXTLINE);
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
     LOG(1, LOG_LINE_NORMAL, Temp);
+    PauseForKey();
     MyFreePool(Temp);
 
     return TRUE;

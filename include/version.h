@@ -10,5 +10,9 @@
  *
  */
 
-#define REFIND_VERSION L"0.13.3.5"
+#ifndef __VERSION_H
+#define __VERSION_H
 
+#define REFIND_VERSION L"0.13.3.6"
+
+#endif
