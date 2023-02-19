@@ -121,6 +121,10 @@ Copyright: 2012 Red Hat, Inc. <mjg@redhat.com>
            2009-2012 Intel Corporation
 License: BSD-2-clause
 
+Files: gzip/*
+Copyright: 1995-2005 Jean-loup Gailly and Mark Adler
+License: zlib and GPL-2+
+
 Files: include/*
 Copyright: 2006-2010 Intel Corporation
 License: BSD-2-clause

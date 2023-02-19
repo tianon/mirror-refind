@@ -438,6 +438,16 @@ use_nvram false
 #
 #scan_all_linux_kernels false
 
+# Support loaders that have been compressed with gzip.
+# On x86 and x86-64 platforms, Linux kernels are self-decompressing.
+# On ARM64, Linux kernel files are typically compressed with gzip,
+# including the EFI stub loader. This makes them unloadable in rEFInd
+# unless rEFInd itself uncompresses them. This option enables rEFInd
+# to do this. This feature is unnecessary on x86 and x86-64 systems.
+# Default is "false" on x86 and x86-64; "true" on ARM64.
+#
+#support_gzipped_loaders true
+
 # Combine all Linux kernels in a given directory into a single entry.
 # When so set, the kernel with the most recent time stamp will be launched
 # by default, and its filename will appear in the entry's description.

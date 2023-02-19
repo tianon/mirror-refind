@@ -107,25 +107,33 @@ static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
     } // if
 } // VOID WarnSecureBootError()
 
-// Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
-BOOLEAN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName) {
-    BOOLEAN         IsValid = TRUE;
+// Returns file type:
+//  LOADER_TYPE_INVALID if the file type is unknown
+//  LOADER_TYPE_EFI if the file is an EFI executable for the current platform
+//  LOADER_TYPE_GZIP if the file is a gzip binary *AND* if GlobalConfig.GzippedLoaders is set
+// Note that gzip files are not further interrogated; they could uncompress
+// into non-executable files and this function would still call them valid
+// gzip loaders.
+UINTN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName) {
+    UINTN           LoaderType = LOADER_TYPE_EFI;
 #if defined (EFIX64) | defined (EFI32) | defined (EFIAARCH64)
+    BOOLEAN         IsValid = TRUE;
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
     CHAR8           Header[512];
+    CHAR16          *TypeDesc = L"a valid";
     UINTN           Size = sizeof(Header);
 
     if ((RootDir == NULL) || (FileName == NULL)) {
         // Assume valid here, because Macs produce NULL RootDir (& maybe FileName)
         // when launching from a Firewire drive. This should be handled better, but
         // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
-        return TRUE;
+        return LOADER_TYPE_EFI;
     } // if
 
     Status = refit_call5_wrapper(RootDir->Open, RootDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR(Status))
-        return FALSE;
+        return LOADER_TYPE_INVALID;
 
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &Size, Header);
     refit_call1_wrapper(FileHandle->Close, FileHandle);
@@ -138,11 +146,19 @@ BOOLEAN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName) {
                Header[Size+2] == 0 && Header[Size+3] == 0 &&
                *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
               (*(UINT32 *)&Header == FAT_ARCH));
-    LOG(1, LOG_LINE_NORMAL, L"'%s' %s a valid loader", FileName,
-        IsValid ? L"is" : L"is NOT");
+    if (!IsValid) {
+        if ((Header[0] == (CHAR8) 0x1F && Header[1] == (CHAR8) 0x8B) && GlobalConfig.GzippedLoaders) {
+            LoaderType = LOADER_TYPE_GZIP;
+            TypeDesc = L"a gzipped";
+        } else {
+            LoaderType = LOADER_TYPE_INVALID;
+            TypeDesc = L"an invalid";
+        }
+    }
+    LOG(1, LOG_LINE_NORMAL, L"'%s' is %s loader file", FileName, TypeDesc);
 #endif
-    return IsValid;
-} // BOOLEAN IsValidLoader()
+    return LoaderType;
+} // UINTN IsValidLoader()
 
 // Launch an EFI binary.
 EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
@@ -160,6 +176,11 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     CHAR16                  *ErrorInfo;
     CHAR16                  *FullLoadOptions = NULL;
     CHAR16                  *EspGUID;
+    UINT8                   *gzData, *ImageData = NULL;
+    UINTN                   gzSize, ImageSize;
+    UINTN                   LoaderType;
+    int                     gzStatus;
+    long                    ReadSize = 0;
     EFI_GUID                SystemdGuid = SYSTEMD_GUID_VALUE;
 
     // set load options
@@ -183,18 +204,42 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     // Some EFIs crash if attempting to load driver for invalid architecture, so
     // protect for this condition; but sometimes Volume comes back NULL, so provide
     // an exception. (TODO: Handle this special condition better.)
-    if (IsValidLoader(Volume->RootDir, Filename)) {
+    LoaderType = IsValidLoader(Volume->RootDir, Filename);
+    if ((LoaderType == LOADER_TYPE_EFI) || (LoaderType == LOADER_TYPE_GZIP)) {
         DevicePath = FileDevicePath(Volume->DeviceHandle, Filename);
         // NOTE: Below commented-out line could be more efficient if file were read ahead of
         // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
         // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
         // kernel returns a "Failed to handle fs_proto" error message.
         // TODO: Track down the cause of this error and fix it, if possible.
-        // ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePath,
-        //                                            ImageData, ImageSize, &ChildImageHandle);
-        ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePath,
-                                                    NULL, 0, &ChildImageHandle);
-        if (secure_mode() && ShimLoaded()) {
+        if (LoaderType == LOADER_TYPE_EFI) {
+            // ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePath,
+            //                                            ImageData, ImageSize, &ChildImageHandle);
+            ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePath,
+                                                        NULL, 0, &ChildImageHandle);
+        } else {
+            Status = egLoadFile(Volume->RootDir, Filename, &gzData, &gzSize);
+            if (!EFI_ERROR(Status)) {
+                // We need to allocate a buffer sufficient to hold the uncompressed loader.
+                // On ARM64 Linux, an uncompressed kernel is about 3-3.5x the size of a
+                // gzip-compressed kernel. To be sure we're well within those limits, go
+                // to a factor of 10x....
+                // Note: Testing shows that it works even with a much-too-small ImageSize,
+                // contrary to my expectation.
+                ImageSize = gzSize * 10;
+                ImageData = AllocateZeroPool(ImageSize);
+                gzStatus = gunzip(gzData, gzSize, NULL, NULL, ImageData, ImageSize, &ReadSize);
+                LOG(1, LOG_LINE_NORMAL, L"gunzip returned '%d'; ReadSize of '%ld'", gzStatus, ReadSize);
+                if (gzStatus == 0) {
+                    ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePath,
+                                                                ImageData, 0x8000000, &ChildImageHandle);
+                } else {
+                    LOG(1, LOG_LINE_NORMAL, L"gunzip failure!");
+                    ReturnStatus = Status = EFI_LOAD_ERROR;
+                }
+            }
+        }
+        if (secure_mode() && ShimLoaded() && !EFI_ERROR(Status)) {
             // Load ourself into memory. This is a trick to work around a bug in Shim 0.8,
             // which ties itself into the BS->LoadImage() and BS->StartImage() functions and
             // then unregisters itself from the EFI system table when its replacement
@@ -278,6 +323,7 @@ bailout_unload:
         Status = refit_call1_wrapper(BS->UnloadImage, ChildImageHandle);
 
 bailout:
+    MyFreePool(ImageData);
     MyFreePool(FullLoadOptions);
     if (!IsDriver)
         FinishExternalScreen();

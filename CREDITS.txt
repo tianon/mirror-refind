@@ -80,6 +80,10 @@ Program (C source code and script) files:
 * Pavel Penev contributed the code to enable encrypting rEFInd's locally
   generated signing keys in refind-install.
 
+* The code to expand gzip-compressed files (in the gzip subdirectory)
+  originates with the Linux kernel, version 6.1.11, which in turn took it
+  from Jean-loup Gailly and Mark Adler's zlib.
+
 * The RefindPkg.dec and RefindPkg.dsc files, used to enable compiling
   rEFInd in the traditional TianoCore way, come from
   https://github.com/snarez/refind-edk2.

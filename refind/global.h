@@ -343,6 +343,7 @@ typedef struct {
    BOOLEAN          Install;
    BOOLEAN          WriteSystemdVars;
    BOOLEAN          FollowSymlinks;
+   BOOLEAN          GzippedLoaders;
    UINTN            RequestedScreenWidth;
    UINTN            RequestedScreenHeight;
    UINTN            BannerBottomEdge;
@@ -416,6 +417,12 @@ EG_IMAGE * GetDiskBadge(IN UINTN DiskType);
 LOADER_ENTRY * MakeGenericLoaderEntry(VOID);
 VOID StoreLoaderName(IN CHAR16 *Name);
 VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect);
+
+int gunzip(unsigned char *buf, long len,
+           long (*fill)(void*, unsigned long),
+           long (*flush)(void*, unsigned long),
+           unsigned char *out_buf, long out_len,
+           long *pos);
 
 #endif
 

@@ -64,7 +64,7 @@ OPTIMFLAGS      = -Os -fno-strict-aliasing -fno-tree-loop-distribute-patterns
 CFLAGS          = $(OPTIMFLAGS) -fno-stack-protector -fshort-wchar -Wall
 
 # ...for GNU-EFI....
-GNUEFI_CFLAGS   = -fpic -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -I../include -I../refind -I../libeg -I../mok
+GNUEFI_CFLAGS   = -fpic -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -I../include -I../refind -I../libeg -I../mok -I../gzip
 
 # ...and for TianoCore....
 TIANO_INCLUDE_DIRS = -I $(TIANOBASE)/MdePkg \
@@ -76,6 +76,7 @@ TIANO_INCLUDE_DIRS = -I $(TIANOBASE)/MdePkg \
                      -I .. \
                      -I ../refind \
                      -I ../libeg \
+                     -I ../gzip \
                      -I ../include \
                      -I ../mok
 #

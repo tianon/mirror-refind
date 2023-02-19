@@ -103,6 +103,11 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* Install = */ FALSE,
                               /* WriteSystemdVars = */ FALSE,
                               /* FollowSymlinks = */ FALSE,
+#ifdef EFIAARCH64
+                              /* GzippedLoaders = */ TRUE,
+#else
+                              /* GzippedLoaders = */ FALSE,
+#endif
                               /* RequestedScreenWidth = */ 0,
                               /* RequestedScreenHeight = */ 0,
                               /* BannerBottomEdge = */ 0,

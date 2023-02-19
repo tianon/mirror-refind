@@ -12,6 +12,7 @@ LOADER_DIR=refind
 FS_DIR=filesystems
 LIBEG_DIR=libeg
 MOK_DIR=mok
+GZIP_DIR=gzip
 GPTSYNC_DIR=gptsync
 EFILIB_DIR=EfiLib
 # Two possible locations for TianoCore toolkit:
@@ -83,6 +84,7 @@ endif
 gnuefi:
 	+make MAKEWITH=GNUEFI -C $(LIBEG_DIR)
 	+make MAKEWITH=GNUEFI -C $(MOK_DIR)
+	+make MAKEWITH=GNUEFI -C $(GZIP_DIR)
 	+make MAKEWITH=GNUEFI -C $(EFILIB_DIR)
 	+make MAKEWITH=GNUEFI -C $(LOADER_DIR)
 	+make MAKEWITH=GNUEFI -C $(GPTSYNC_DIR) gnuefi
@@ -110,6 +112,7 @@ tiano:
 	+make MAKEWITH=TIANO AR_TARGET=EfiLib -C $(EFILIB_DIR) -f Make.tiano
 	+make MAKEWITH=TIANO AR_TARGET=libeg -C $(LIBEG_DIR) -f Make.tiano
 	+make MAKEWITH=TIANO AR_TARGET=mok -C $(MOK_DIR) -f Make.tiano
+	+make MAKEWITH=TIANO AR_TARGET=gzip -C $(GZIP_DIR) -f Make.tiano
 	+make MAKEWITH=TIANO BUILDME=refind DLL_TARGET=refind -C $(LOADER_DIR) -f Make.tiano
 ifneq ($(ARCH),aarch64)
 	+make MAKEWITH=TIANO -C $(GPTSYNC_DIR) -f Make.tiano
@@ -180,6 +183,7 @@ $(EDK2BASE)/RefindPkg:
 clean:
 	make -C $(LIBEG_DIR) clean
 	make -C $(MOK_DIR) clean
+	make -C $(GZIP_DIR) clean
 	make -C $(LOADER_DIR) clean
 	make -C $(EFILIB_DIR) clean
 	make -C $(FS_DIR) clean

@@ -33,8 +33,8 @@ endif
 LOCAL_GNUEFI_CFLAGS  = -I$(SRCDIR) -I$(SRCDIR)/../include \
                        -I$(SRCDIR)/../libeg -I$(SRCDIR)/../mok
 LOCAL_LDFLAGS   = -L$(SRCDIR)/../libeg/ -L$(SRCDIR)/../mok/ \
-                  -L$(SRCDIR)/../EfiLib/
-LOCAL_LIBS      = -leg -lmok -lEfiLib
+                  -L$(SRCDIR)/../EfiLib/ -L$(SRCDIR)/../gzip
+LOCAL_LIBS      = -leg -lmok -lEfiLib -lgzip
 
 OBJS            = apple.o config.o crc32.o driver_support.o gpt.o icns.o \
                   install.o launch_efi.o launch_legacy.o lib.o line_edit.o \
