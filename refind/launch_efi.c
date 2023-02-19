@@ -221,11 +221,10 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
             Status = egLoadFile(Volume->RootDir, Filename, &gzData, &gzSize);
             if (!EFI_ERROR(Status)) {
                 // We need to allocate a buffer sufficient to hold the uncompressed loader.
+                // If the buffer is inadequate, the gunzip() call should fail.
                 // On ARM64 Linux, an uncompressed kernel is about 3-3.5x the size of a
                 // gzip-compressed kernel. To be sure we're well within those limits, go
                 // to a factor of 10x....
-                // Note: Testing shows that it works even with a much-too-small ImageSize,
-                // contrary to my expectation.
                 ImageSize = gzSize * 10;
                 ImageData = AllocateZeroPool(ImageSize);
                 gzStatus = gunzip(gzData, gzSize, NULL, NULL, ImageData, ImageSize, &ReadSize);
