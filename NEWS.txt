@@ -4,11 +4,11 @@
 - Added ability to launch gzip-compressed loaders. This is useful mainly on
   ARM64 platforms.
 
-- Added new follow_symlinks option. This causes rEFInd to read loaders
-  that are symbolic links on filesystems that support this feature. In
-  most cases, these symlinks are redundant; but in some cases they exist
-  where rEFInd scans but point to files elsewhere, so following them may be
-  desirable. Credit to dakanji for adding this feature.
+- Added new follow_symlinks option. This causes rEFInd to read loaders that
+  are symbolic links on filesystems that support this feature. In most
+  cases, these symlinks are redundant; but in some cases (such as on
+  openSUSE) following the symlinks is necessary to read a kernel. Credit to
+  dakanji for adding this feature.
 
 - Adrien Destugues submitted a new icon for the Haiku OS, based on an
   official Haiku OS icon.

@@ -427,7 +427,7 @@ timeout 20
 <tr>
    <td><tt>follow_symlinks</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
-   <td>If enabled, tells rEFInd to follow symbolic links on filesystems that support this feature. This is desirable if a symbolic link is in a scanned directory and references a loader or kernel you want to use, but the link points to a location that rEFInd does not scan. Following symbolic links is undesirable if both files are in scanned locations, as this can result in redundant boot entries. The default is <tt>false</tt>.</td>
+   <td>If enabled, tells rEFInd to follow symbolic links on filesystems that support this feature. This is desirable if a symbolic link is in a scanned directory and references a loader or kernel you want to use, but the link points to a location that rEFInd does not scan. This is common on openSUSE systems that do <i>not</i> use a separate <tt>/boot</tt> partition. Following symbolic links is undesirable if both files are in scanned locations, as this can result in redundant boot entries. The default is <tt>false</tt>.</td>
 </tr>
 <tr>
    <td><tt>uefi_deep_legacy_scan</tt></td>

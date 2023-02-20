@@ -487,7 +487,8 @@ use_nvram false
 # Symlinked loaders will be processed when this setting is set to true.
 # These are ignored by default as they may result in undesirable outcomes.
 # This token may, however, be useful on Linux setups that provide symbolic
-# links in scanned locations that point to kernels in unscanned locations.
+# links in scanned locations that point to kernels in unscanned locations,
+# such as some openSUSE installations.
 #
 #follow_symlinks true
 
