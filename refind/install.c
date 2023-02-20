@@ -2,7 +2,7 @@
  * refind/install.c
  * Functions related to installation of rEFInd and management of EFI boot order
  *
- * Copyright (c) 2020 by Roderick W. Smith
+ * Copyright (c) 2020-2023 by Roderick W. Smith
  *
  * Distributed under the terms of the GNU General Public License (GPL)
  * version 3 (GPLv3), a copy of which must be distributed with this source
