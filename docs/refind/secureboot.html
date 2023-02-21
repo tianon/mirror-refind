@@ -596,6 +596,21 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     <tt>shimx64.efi</tt> file in rEFInd's directory with the latest
     version.</li>
 
+<li>As a follow-on to the preceding point, versions of Shim released since
+    early 2021 require that signed EFI binaries launched by Shim include
+    version information. This is known as the <i>Secure Boot Advanced
+    Targeting</i> (SBAT) system, and the version information is stored in a
+    part of the boot program binary known as <tt>.sbat</tt>. Starting with
+    rEFInd 0.14.0, my own rEFInd binaries include a <tt>.sbat</tt> section,
+    and the <tt>refind-install</tt> script's signing process (for those
+    using local keys) also creates a <tt>.sbat</tt> section. If you're using
+    a version of Shim that was released prior to early 2021, you might want
+    to consider upgrading it to a newer version. Note that the Shim that
+    launches rEFInd is <i>not</i> updated automatically when a new Shim is
+    installed; you must do this manually!</p>
+
+</li>
+
 </ul>
 
 <p>If you launch a boot loader or other program from rEFInd that relies on the EFI's standard program-launching code, that program should take advantage of Shim and its MOKs. For instance, if you launch gummiboot (aka systemd-boot) from rEFInd (and rEFInd from Shim), gummiboot should be able to launch Shim/MOK-signed Linux kernels. In practice, this may not work with all versions of Shim, though. Shim 0.8 and later enables the binary that it launches to launch just one additional binary, not an endless stream of them. (rEFInd employs an internal workaround to this problem to do its own job.)</p>
@@ -606,7 +621,7 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2021 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2023 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

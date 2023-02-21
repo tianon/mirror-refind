@@ -4,6 +4,10 @@
 - Added ability to launch gzip-compressed loaders. This is useful mainly on
   ARM64 platforms.
 
+- Added support for .sbat sections in rEFInd binaries. These are needed
+  for recent versions of Shim to launch follow-on programs, including
+  rEFInd.
+
 - Added new follow_symlinks option. This causes rEFInd to read loaders that
   are symbolic links on filesystems that support this feature. In most
   cases, these symlinks are redundant; but in some cases (such as on
@@ -30,6 +34,9 @@
 - Fixed a bug that would cause important error messages (such as those about
   loader files that are missing, despite being in menus) appearing for a
   fraction of a second and then disappearing.
+
+- Fixed a bug that caused generated RPM file and Debian package derived from
+  it by alien to not be properly signed with a Secure Boot key.
 
 - Change to how refind-install manages local keys, which makes accidentally
   deleting symlinked keys less likely. Thanks to Das Menschy for this fix.

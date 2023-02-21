@@ -25,6 +25,9 @@
 #    "--encryptkeys" password-protects the Secure Boot private key.
 #    "--localkeys" to re-sign x86-64 binaries with a locally-generated key.
 #           Valid only under Linux.
+#    "--nosbat" to NOT add an .sbat section to the installed binaries when
+#           also signing the binaries with local keys. (The binaries are not
+#           modified when they are not (re-)signed.)
 #    "--keepname" to keep refind_x64.efi name as such even when using shim.
 #           Valid only under Linux.
 #    "--yes" to assume a "yes" response to all prompts
@@ -38,6 +41,8 @@
 
 # Revision history:
 #
+# 0.14.0  -- Add support for adding a .sbat section to binaries that are
+#            also signed with a Secure Boot key
 # 0.13.3.1-- Fix bug that caused failure to detect mounted ESP in Linux
 # 0.13.3  -- Remove stray exit from CreateBootCsvFile()
 # 0.13.2  -- Add installation of rEFInd Secure Boot key as MOK; if installing
@@ -116,6 +121,7 @@ TargetDir=/EFI/refind
 LocalKeysBase="refind_local"
 ShimSource="none"
 ShimType="none"
+Sbat=1
 KeepName=0
 TargetShim="default"
 TargetX64="refind_x64.efi"
@@ -164,6 +170,8 @@ GetParams() {
               ShimType=$(basename $ShimSource)
               shift
               ;;
+         --nosbat) Sbat=0
+              ;;
          --keepname) KeepName=1
               ;;
          --drivers | --alldrivers) InstallDrivers="all"
@@ -175,7 +183,8 @@ GetParams() {
          * ) echo "Usage: $0 [--notesp | --usedefault {device-file} | --root {dir} |"
              echo "                     --ownhfs {device-file} ] [--keepname]"
              echo "                  [--nodrivers | --alldrivers] [--shim {shimfile}]"
-             echo "                  [--localkeys [--encryptkeys]] [--keepname] [--yes]"
+             echo "                  [--localkeys [--encryptkeys] [--nosbat]]"
+             echo "                  [--keepname] [--yes]"
              exit 1
       esac
       shift
@@ -1101,12 +1110,15 @@ GenerateKeys() {
 # Sign a single binary. Requires parameters:
 #   $1 = source file
 #   $2 = destination file
-# Also assumes that the SBSign and various key variables are set appropriately.
+# Also assumes that the SBSign, ObjCopy, SbatFile, and various key variables are set appropriately.
 # Aborts script on error
 SignOneBinary() {
    ReadKeyPassphrase --no-confirm
    if [[ "$EncryptKeys" == 1 ]] ; then
       SbSignCommand=$(printf "%q " "$SBSign" --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1")
+      if [[ -x $ObjCopy ]] ; then
+         "$ObjCopy" --set-section-alignment '.sbat=512' --add-section .sbat="$SbatFile" --adjust-section-vma .sbat+10000000 $1
+      fi
       echo "$KeyPassphrase" |
          script -qefc "$SbSignCommand" --force /dev/null 2>&1 | ( \
               head -n 2 >/dev/null # Skip the first two lines (incl. passphrase).
@@ -1114,6 +1126,9 @@ SignOneBinary() {
             )
        local status="${PIPESTATUS[1]}"
    else
+      if [[ -x $ObjCopy ]] ; then
+         "$ObjCopy" --set-section-alignment '.sbat=512' --add-section .sbat="$SbatFile" --adjust-section-vma .sbat+10000000 $1
+      fi
       "$SBSign" --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1" 2>&1 >/dev/null | \
                 grep -v "data remaining.*gaps between PE/COFF sections"
       local status="${PIPESTATUS[0]}"
@@ -1130,11 +1145,23 @@ SignOneBinary() {
 ReSignBinaries() {
    SBSign="$(command -v sbsign 2> /dev/null)"
    echo "Found sbsign at $SBSign"
+   ObjCopy="$(command -v objcopy 2> /dev/null)"
+   echo "Found objcopy at $ObjCopy"
    TempDir="/tmp/refind_local"
    if [[ ! -x "$SBSign" ]] ; then
       echo "Can't find sbsign, which is required to sign rEFInd with your own keys!"
       echo "Aborting!"
       exit 1
+   fi
+   if [[ ! -x "$ObjCopy" ]] ; then
+      echo "Can't find objcopy, which is required to add an .sbat section!"
+      echo "Program will continue, but binaries will have no .sbat section!"
+   else
+      if [[ -f refind-sbat-local.csv ]] ; then
+         SbatFile=refind-sbat-local.csv
+      elif [[ -f /etc/refind.d/refind-sbat-local.csv ]] ; then
+         SbatFile=/etc/refind.d/refind-sbat-local.csv
+      fi
    fi
    GenerateKeys
    mkdir -p "$TempDir/drivers_$Platform"

@@ -258,6 +258,8 @@ $ <tt class="userinput">sudo apt-get install refind</tt></pre></pre>
 
 <li>The <tt>--encryptkeys</tt> option causes rEFInd's local keys stored in <tt>/etc/refind.d/keys</tt> to be encrypted. If you use local keys, use of this option is highly desirable.</li>
 
+<li>The <tt>--nosbat</tt> option causes <tt>refind-install</tt> to <i>not</i> create a <tt>.sbat</tt> section in the binary files when (re-)signing the binaries with <tt>--localkeys</tt>. The <tt>.sbat</tt> section is required by versions of Shim released since early 2021, so <tt>--nosbat</tt> is not normally desirable. It's included in case adding a <tt>.sbat</tt> section causes problems with older Shims (which should probably be updated) or with custom Secure Boot keys (bypassing Shim entirely).</li>
+
 <li>The <tt>--ownhfs <i>device-file</i></tt> option is a macOS-specific option that causes rEFInd to install itself to an HFS+ volume that you specify by device filename, as in <tt class="userinput">./refind-install --ownhfs /dev/disk2s4</tt>. In principle, this type of installation permits selecting between a direct macOS boot and a boot through rEFInd using Apple's own boot manager or macOS's Startup Disk tool. In practice, though, this feature has not been well maintained and so I can't promise it will work. Also, installing to an HFS+ volume will require commenting out the <tt>use_nvram false</tt> line in <tt>refind.conf</tt> if you want to hide boot tags or rely on rEFInd's ability to remember its last-booted OS.</li>
 
 </ul>
