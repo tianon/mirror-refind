@@ -43,6 +43,9 @@
 
 - Updated LodePNG library to the latest version (20221108).
 
+- The ReiserFS driver is now deprecated; see docs/refind/drivers.html for
+  details.
+
 0.13.3.1 (4/12/2022):
 ---------------------
 
