@@ -8,7 +8,7 @@ refind-install \- Install rEFInd to the ESP and create an NVRAM entry
 .BI "refind-install "
 [--notesp | --usedefault \fIdevice-file\fR | --root \fImount-point\fR |
 --ownhfs \fIdevice-file\fR ] [--keepname] [--nodrivers | --alldrivers]
-[--shim \fIshim-filename\fR] [--localkeys] [--encryptkeys] [--nosbat] [--yes]
+[--shim \fIshim-filename\fR] [--localkeys] [--encryptkeys] [--yes]
 
 
 .SH "DESCRIPTION"
@@ -245,17 +245,6 @@ could hijack your boot process. This is obviously a highly desirable option,
 but the downside is that you must remember the password and enter it
 whenever you update rEFInd or any other program signed with your private
 key. This also makes a fully automated update of rEFInd impossible.
-
-.TP
-.B \-\-nosbat
-When re-signing binaries with \-\-localkeys, \fBrefind\-install\fR normally
-attempts to add an \fB.sbat\fR section to the main rEFInd binary and to its
-drivers. This section is required for versions of Shim released since early
-2021 to launch a follow-on binary. If you're certain that you do not want
-this section added to your rEFInd binaries, passing \-\-nosbat will cause it
-to be omitted. To add the \fB.sbat\fR section, \fBrefind\-install\fR reads
-the \fBrefind-sbat-local.csv\fR file in the local directory or in
-\fB/etc/refind.d/\fR and embeds it in the binaries.
 
 .TP
 .B \-\-keepname

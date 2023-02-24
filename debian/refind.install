@@ -4,7 +4,6 @@ drivers_* usr/share/refind/refind
 fonts usr/share/refind
 icons/*.png usr/share/refind/refind/icons
 icons/README usr/share/refind/refind/icons
-refind-sbat-local.csv etc/refind.d
 keys etc/refind.d
 mkrlconf usr/sbin
 mvrefind usr/sbin

@@ -149,6 +149,12 @@ fs_tiano:
 edk2: build_edk2
 	cp $(EDK2_BUILDLOC)/refind.efi ./refind/refind_$(FILENAME_CODE).efi
 	cp $(EDK2_BUILDLOC)/gptsync.efi ./gptsync/gptsync_$(FILENAME_CODE).efi
+ifneq ($(OMIT_SBAT), 1)
+	$(OBJCOPY) --set-section-alignment '.sbat=512' --add-section .sbat=$(REFIND_SBAT_CSV) \
+		--adjust-section-vma .sbat+10000000 ./refind/refind_$(FILENAME_CODE).efi
+	$(OBJCOPY) --set-section-alignment '.sbat=512' --add-section .sbat=$(REFIND_SBAT_CSV) \
+		--adjust-section-vma .sbat+10000000 ./gptsync/gptsync_$(FILENAME_CODE).efi
+endif
 
 all_edk2: build_edk2 fs_edk2
 	cp $(EDK2_BUILDLOC)/refind.efi ./refind/refind_$(FILENAME_CODE).efi
@@ -158,10 +164,19 @@ gptsync_edk2: build_edk2
 	cp $(EDK2_BUILDLOC)/gptsync.efi ./gptsync/gptsync_$(FILENAME_CODE).efi
 
 fs_edk2: build_edk2
+ifeq ($(OMIT_SBAT), 1)
 	for BASENAME in $(EDK2_DRIVER_BASENAMES) ; do \
 		echo "Copying $$BASENAME""_$(FILENAME_CODE).efi" ; \
 		cp "$(EDK2_BUILDLOC)/$$BASENAME.efi" ./drivers_$(FILENAME_CODE)/$$BASENAME\_$(FILENAME_CODE).efi ; \
 	done
+else
+	for BASENAME in $(EDK2_DRIVER_BASENAMES) ; do \
+		echo "Copying $$BASENAME""_$(FILENAME_CODE).efi" ; \
+		cp "$(EDK2_BUILDLOC)/$$BASENAME.efi" ./drivers_$(FILENAME_CODE)/$$BASENAME\_$(FILENAME_CODE).efi ; \
+		$(OBJCOPY) --set-section-alignment '.sbat=512' --add-section .sbat=$(REFIND_SBAT_CSV) \
+		    --adjust-section-vma .sbat+10000000 ./drivers_$(FILENAME_CODE)/$$BASENAME\_$(FILENAME_CODE).efi ; \
+	done
+endif
 
 build_edk2: $(EDK2BASE)/RefindPkg
 	cd $(EDK2BASE) && \

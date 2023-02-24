@@ -61,17 +61,10 @@ mkdir -p $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
 # including signing the binaries if sbsign is installed and a %{keydir}/refind.key file
 # is available
 SBSign=`which sbsign 2> /dev/null`
-ObjCopy=`which objcopy 2> /dev/null`
 if [ -f %{keydir}/refind.key ] && [ -x $SBSign ] ; then
-   if [ -x "$ObjCopy" ] ; then
-      "$ObjCopy" --set-section-alignment '.sbat=512' --add-section .sbat=refind-sbat.csv --adjust-section-vma .sbat+10000000 refind/refind_%{efiarch}.efi
-   fi
    $SBSign --key %{keydir}/refind.key --cert %{keydir}/refind.crt --output $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/refind_%{efiarch}.efi refind/refind_%{efiarch}.efi
    mkdir -p $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/drivers_%{efiarch}
    for File in `ls drivers_%{efiarch}/*_x64.efi` ; do
-      if [ -x "$Objcopy" ] ; then
-         "$ObjCopy" --set-section-alignment '.sbat=512' --add-section .sbat=refind-sbat.csv --adjust-section-vma .sbat+10000000 $File
-      fi
       $SBSign --key %{keydir}/refind.key --cert %{keydir}/refind.crt --output $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/$File $File
    done
    mkdir -p $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/tools_%{efiarch}
@@ -106,10 +99,6 @@ install -Dp -m0644 docs/man/refind-mkdefault.8 $RPM_BUILD_ROOT/usr/share/man/man
 # Copy keys to /etc/refind.d/keys
 mkdir -p $RPM_BUILD_ROOT/etc/refind.d/keys
 install -Dp -m0644 keys/* $RPM_BUILD_ROOT/etc/refind.d/keys
-
-# Copy refind-sbat-local.csv to /etc/refind.d
-mkdir -p $RPM_BUILD_ROOT/etc/refind.d/
-install -Dp -m0644 refind-sbat-local.csv $RPM_BUILD_ROOT/etc/refind.d
 
 # Copy scripts to /usr/sbin
 mkdir -p $RPM_BUILD_ROOT/usr/sbin

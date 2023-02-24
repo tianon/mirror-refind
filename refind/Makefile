@@ -53,6 +53,11 @@ $(TARGET): $(SHLIB_TARGET)
 	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel \
 	           -j .rela -j .rel.* -j .rela.* -j .rel* -j .rela* \
 		   -j .reloc $(FORMAT) $< $@
+ifneq ($(OMIT_SBAT), 1)
+	    $(OBJCOPY) --set-section-alignment '.sbat=512' --add-section \
+		      .sbat=$(SRCDIR)/../$(REFIND_SBAT_CSV) --adjust-section-vma \
+		      .sbat+10000000 $@
+endif
 	chmod a-x $(TARGET)
 
 clean:

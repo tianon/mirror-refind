@@ -601,9 +601,7 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     version information. This is known as the <i>Secure Boot Advanced
     Targeting</i> (SBAT) system, and the version information is stored in a
     part of the boot program binary known as <tt>.sbat</tt>. Starting with
-    rEFInd 0.14.0, my own rEFInd binaries include a <tt>.sbat</tt> section,
-    and the <tt>refind-install</tt> script's signing process (for those
-    using local keys) also creates a <tt>.sbat</tt> section. If you're using
+    rEFInd 0.14.0, rEFInd builds an <tt>.sbat</tt> section. If you're using
     a version of Shim that was released prior to early 2021, you might want
     to consider upgrading it to a newer version. Note that the Shim that
     launches rEFInd is <i>not</i> updated automatically when a new Shim is

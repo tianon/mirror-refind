@@ -31,6 +31,12 @@ EFICRT0         = /usr/lib
 HOSTARCH        = $(shell uname -m | sed s,i[3456789]86,ia32,)
 ARCH            ?= $(HOSTARCH)
 
+# Pointer to SBAT .csv file. First is default; uncomment second (or make your
+# your own) if you build your own binary. If you make changes and build your
+# own binary, creating your own file is the best practice.
+REFIND_SBAT_CSV = refind-sbat.csv
+#REFIND_SBAT_CSV = refind-sbat-local.csv
+
 # Note: TIANOBASE is defined in master Makefile and exported
 GENFW           = $(TIANOBASE)/BaseTools/Source/C/bin/GenFw
 prefix          = /usr/bin/
