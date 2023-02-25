@@ -386,7 +386,9 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
             InitrdName =  FindInitrd(Entry->LoaderPath, Volume);
             TokenCount = ReadTokenLine(File, &TokenList);
             KernelVersion = FindNumbers(Entry->LoaderPath);
-            ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+            if (TokenCount >= 2) {
+                ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+            }
             // first entry requires special processing, since it was initially set
             // up with a default title but correct options by InitializeSubScreen(),
             // earlier....

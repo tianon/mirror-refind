@@ -31,6 +31,9 @@
   opening filesystems, installing itself, or even just scanning for boot
   loaders on some systems.
 
+- Fixed a bug that could cause rEFInd to freeze if refind_linux.conf was
+  of zero length or had certain types of malformed content.
+
 - Fixed a bug that would cause important error messages (such as those about
   loader files that are missing, despite being in menus) appearing for a
   fraction of a second and then disappearing.
