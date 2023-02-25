@@ -614,7 +614,7 @@ static VOID SetFilesystemName(REFIT_VOLUME *Volume) {
         FileSystemInfoPtr = LibFileSystemInfo(Volume->RootDir);
      }
 
-    if ((FileSystemInfoPtr != NULL) && (FileSystemInfoPtr->VolumeLabel != NULL) &&
+    if ((FileSystemInfoPtr != NULL) &&
         (StrLen(FileSystemInfoPtr->VolumeLabel) > 0)) {
         if (Volume->FsName) {
             MyFreePool(Volume->FsName);
