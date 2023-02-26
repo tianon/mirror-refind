@@ -477,7 +477,7 @@ timeout 20
 <tr>
    <td><tt>support_gzipped_loaders</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
-   <td>When uncommented or set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, causes rEFInd to support launching loaders that have been compressed with <tt>gzip</tt>. This feature is useful mainly when booting Linux on ARM64 computers, since those systems compress their whole kernel (including the EFI stub loader) in a single <tt>gzip</tt> archive. On x86 and x86-64 systems, by contrast, the main body of the kernel is compressed, but the EFI stub loader is not; the kernel can uncompress itself on x86 and x86-64, without rEFInd's help. This option is enabled by default on ARM64 and disabled by default on x86 and x86-64.</td>
+   <td>When uncommented or set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, causes rEFInd to support launching loaders that have been compressed with <tt>gzip</tt>. This feature is useful mainly when booting Linux on ARM64 computers, since distributions for ARM64 often compress their whole kernel (including the EFI stub loader) in a single <tt>gzip</tt> archive. On x86 and x86-64 systems, by contrast, the main body of the kernel is compressed, but the EFI stub loader is not; the kernel can uncompress itself on x86 and x86-64, without rEFInd's help. This option is enabled by default on ARM64 and disabled by default on x86 and x86-64.</td>
 </tr>
 <tr>
    <td><tt>fold_linux_kernels</tt></td>
