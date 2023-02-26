@@ -776,7 +776,7 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
     // See if Path includes an explicit volume declaration that's NOT Volume....
     PathCopy = StrDuplicate(Path);
     if (SplitVolumeAndFilename(&PathCopy, &VolName)) {
-        if (VolName && (!MyStriCmp(VolName, Volume->FsName) ||
+        if (VolName && (!MyStriCmp(VolName, Volume->FsName) &&
             !MyStriCmp(VolName, Volume->PartName))) {
                 ScanIt = FALSE;
         } // if
