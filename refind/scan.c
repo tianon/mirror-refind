@@ -895,6 +895,22 @@ static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *FullName, EFI_FILE_I
     return (DirEntry->FileSize != FileSize2);
 } // BOOLEAN IsSymbolicLink()
 
+// Log all the current menu entries. Takes the desired log level as an option
+static VOID LogMenuEntries(UINTN LogLevel) {
+    UINTN i;
+
+    if (LogLevel <= GlobalConfig.LogLevel) {
+        LOG(LogLevel, LOG_LINE_NORMAL, L"MainMenu currently has %ld entries; they are....", MainMenu.EntryCount);
+        for (i = 0; i < MainMenu.EntryCount; i++) {
+            if (MainMenu.Entries[i]) {
+                //LOG(LogLevel, LOG_LINE_NORMAL, L"  --> MainMenu.Entries[%ld] is %lld", i, MainMenu.Entries[i]);
+                //LOG(LogLevel, LOG_LINE_NORMAL, L"  --> Menu item %ld Title address is %lld", i, MainMenu.Entries[i]->Title);
+                LOG(LogLevel, LOG_LINE_NORMAL, L"  --> Menu item %ld is '%s'", i, MainMenu.Entries[i]->Title);
+            }
+        }
+    }
+} // VOID LogMenuEntries()
+
 // Scan an individual directory for EFI boot loader files and, if found,
 // add them to the list. Exception: Ignores FALLBACK_FULLNAME, which is picked
 // up in ScanEfiFiles(). Sorts the entries within the loader directory so that
@@ -965,6 +981,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
        } // while
        if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels)
            AddMenuEntry(FirstKernel->me.SubScreen, &MenuEntryReturn);
+       LogMenuEntries(4);
 
        CleanUpLoaderList(LoaderList);
        Status = DirIterClose(&DirIter);
@@ -1509,28 +1526,24 @@ VOID ScanForTools(VOID) {
             case TAG_SHUTDOWN:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryShutdown);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_SHUTDOWN);
-                LOG(2, LOG_LINE_NORMAL, L"Adding Shutdown tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
             case TAG_REBOOT:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryReset);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_RESET);
-                LOG(2, LOG_LINE_NORMAL, L"Adding Reboot tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
             case TAG_ABOUT:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryAbout);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-                LOG(2, LOG_LINE_NORMAL, L"Adding Info/About tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
             case TAG_EXIT:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryExit);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_EXIT);
-                LOG(2, LOG_LINE_NORMAL, L"Adding Exit tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
@@ -1538,7 +1551,6 @@ VOID ScanForTools(VOID) {
                 if (GlobalConfig.HiddenTags) {
                     TempMenuEntry = CopyMenuEntry(&MenuEntryManageHidden);
                     TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
-                    LOG(2, LOG_LINE_NORMAL, L"Adding Hidden tag");
                     AddMenuEntry(&MainMenu, TempMenuEntry);
                 }
                 break;
@@ -1549,7 +1561,6 @@ VOID ScanForTools(VOID) {
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
                         TempMenuEntry = CopyMenuEntry(&MenuEntryFirmware);
                         TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_FIRMWARE);
-                        LOG(2, LOG_LINE_NORMAL, L"Adding Reboot-to-Firmware tag");
                         AddMenuEntry(&MainMenu, TempMenuEntry);
                     } else {
                         LOG(1, LOG_LINE_NORMAL, L"showtools includes firmware, but EFI lacks support");
@@ -1673,7 +1684,6 @@ VOID ScanForTools(VOID) {
                 if ((GetCsrStatus(&CsrValue) == EFI_SUCCESS) && (GlobalConfig.CsrValues)) {
                     TempMenuEntry = CopyMenuEntry(&MenuEntryRotateCsr);
                     TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_CSR_ROTATE);
-                    LOG(1, LOG_LINE_NORMAL, L"Adding CSR Rotate tag");
                     AddMenuEntry(&MainMenu, TempMenuEntry);
                 } // if
                 break;
@@ -1681,14 +1691,12 @@ VOID ScanForTools(VOID) {
             case TAG_INSTALL:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryInstall);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_INSTALL);
-                LOG(1, LOG_LINE_NORMAL, L"Adding Install tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
             case TAG_BOOTORDER:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryBootorder);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_BOOTORDER);
-                LOG(1, LOG_LINE_NORMAL, L"Adding Boot Order tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 

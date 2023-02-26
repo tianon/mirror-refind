@@ -308,6 +308,7 @@ VOID AddMenuInfoLine(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine)
 
 VOID AddMenuEntry(IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry)
 {
+    LOG(3, LOG_LINE_NORMAL, L"Adding menu entry for '%s'", Entry->Title);
     AddListElement((VOID ***) &(Screen->Entries), &(Screen->EntryCount), Entry);
 }
 

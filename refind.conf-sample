@@ -352,10 +352,14 @@ use_nvram false
 # a volume name and colon before the directory name, as in "myvol:/somedir"
 # to scan the somedir directory only on the filesystem named myvol. If a
 # specified directory doesn't exist, it's ignored (no error condition
-# results). The default is to scan the "boot" directory in addition to
-# various hard-coded directories.
+# results). The "+" symbol denotes appending to the list of scanned
+# directories rather than overwriting that list.
+# The default is to scan the "boot" and "@/boot" directories in addition
+# to various hard-coded directories.
 #
 #also_scan_dirs boot,ESP2:EFI/linux/kernels
+#also_scan_dirs boot,@/boot
+#also_scan_dirs +,@/kernels
 
 # Partitions (or whole disks, for legacy-mode boots) to omit from scans.
 # For EFI-mode scans, you normally specify a volume by its label, which you

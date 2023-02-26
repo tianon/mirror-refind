@@ -528,14 +528,18 @@ VOID AddListElement(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID 
 
     if ((*ElementCount & 15) == 0) {
         AllocateCount = *ElementCount + 16;
-        if (*ElementCount == 0)
+        if (*ElementCount == 0) {
             *ListPtr = AllocatePool(sizeof(VOID *) * AllocateCount);
-        else
+            LOG(2, LOG_LINE_NORMAL, L"Allocating memory in AddListElement()");
+        } else {
+            LOG(2, LOG_LINE_NORMAL, L"Reallocating memory in AddListElement(); *ElementCount is %ld", *ElementCount);
             *ListPtr = EfiReallocatePool(*ListPtr, sizeof(VOID *) * (*ElementCount), sizeof(VOID *) * AllocateCount);
+        }
     }
     (*ListPtr)[*ElementCount] = NewElement;
     (*ElementCount)++;
 } /* VOID AddListElement() */
+
 
 VOID FreeList(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount)
 {
@@ -1435,7 +1439,7 @@ EFI_STATUS DirNextEntry(IN EFI_FILE_PROTOCOL *Directory, IN OUT EFI_FILE_INFO **
 
         // free pointer from last call
         if (*DirEntry != NULL) {
-           FreePool(*DirEntry);
+           MyFreePool(*DirEntry);
            *DirEntry = NULL;
         }
 
@@ -1585,7 +1589,7 @@ BOOLEAN DirIterNext(IN OUT REFIT_DIR_ITER *DirIter, IN UINTN FilterMode, IN CHAR
 EFI_STATUS DirIterClose(IN OUT REFIT_DIR_ITER *DirIter)
 {
     if (DirIter->LastFileInfo != NULL) {
-        FreePool(DirIter->LastFileInfo);
+        MyFreePool(DirIter->LastFileInfo);
         DirIter->LastFileInfo = NULL;
     }
     if ((DirIter->CloseDirHandle) && (DirIter->DirHandle->Close))
@@ -1905,6 +1909,7 @@ BOOLEAN FilenameIn(REFIT_VOLUME *Volume, CHAR16 *Directory, CHAR16 *Filename, CH
 // Implement FreePool the way it should have been done to begin with, so that
 // it doesn't throw an ASSERT message if fed a NULL pointer....
 VOID MyFreePool(IN VOID *Pointer) {
+//     LOG(4, LOG_LINE_NORMAL, L"Freeing %lld", Pointer);
     if (Pointer != NULL)
         FreePool(Pointer);
 }
@@ -1947,7 +1952,7 @@ VOID EraseUint32List(UINT32_LIST **TheList) {
 
     while (*TheList) {
         NextItem = (*TheList)->Next;
-        FreePool(*TheList);
+        MyFreePool(*TheList);
         *TheList = NextItem;
     } // while
 } // EraseUin32List()

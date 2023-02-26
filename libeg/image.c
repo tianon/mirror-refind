@@ -231,9 +231,8 @@ EG_IMAGE * egScaleImage(IN EG_IMAGE *Image, IN UINTN NewWidth, IN UINTN NewHeigh
 VOID egFreeImage(IN EG_IMAGE *Image)
 {
     if (Image != NULL) {
-        if (Image->PixelData != NULL)
-            FreePool(Image->PixelData);
-        FreePool(Image);
+        MyFreePool(Image->PixelData);
+        MyFreePool(Image);
     }
 }
 
@@ -267,7 +266,7 @@ EFI_STATUS egLoadFile(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *FileName, OUT UI
     ReadSize = FileInfo->FileSize;
     if (ReadSize > MAX_FILE_SIZE)
         ReadSize = MAX_FILE_SIZE;
-    FreePool(FileInfo);
+    MyFreePool(FileInfo);
 
     BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool(BufferSize);
@@ -279,12 +278,13 @@ EFI_STATUS egLoadFile(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *FileName, OUT UI
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &BufferSize, Buffer);
     refit_call1_wrapper(FileHandle->Close, FileHandle);
     if (EFI_ERROR(Status)) {
-        FreePool(Buffer);
+        MyFreePool(Buffer);
         return Status;
     }
 
     *FileData = Buffer;
     *FileDataLength = BufferSize;
+    LOG(4, LOG_LINE_NORMAL, L"Done loading file '%s'", FileName);
     return EFI_SUCCESS;
 }
 
@@ -300,7 +300,7 @@ EFI_STATUS egFindESP(OUT EFI_FILE_HANDLE *RootDir)
         *RootDir = LibOpenRoot(Handles[0]);
         if (*RootDir == NULL)
             Status = EFI_NOT_FOUND;
-        FreePool(Handles);
+        MyFreePool(Handles);
     }
     return Status;
 }
@@ -372,7 +372,7 @@ EG_IMAGE * egLoadImage(IN EFI_FILE* BaseDir, IN CHAR16 *FileName, IN BOOLEAN Wan
 
     // decode it
     NewImage = egDecodeAny(FileData, FileDataLength, 128 /* arbitrary value */, WantAlpha);
-    FreePool(FileData);
+    MyFreePool(FileData);
 
     return NewImage;
 }
@@ -396,7 +396,7 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *Path, IN UINTN I
 
     // decode it
     Image = egDecodeAny(FileData, FileDataLength, IconSize, TRUE);
-    FreePool(FileData);
+    MyFreePool(FileData);
     if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
         NewImage = egScaleImage(Image, IconSize, IconSize);
         if (NewImage) {

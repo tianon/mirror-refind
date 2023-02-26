@@ -38,6 +38,10 @@
   loader files that are missing, despite being in menus) appearing for a
   fraction of a second and then disappearing.
 
+- Fixed a bug that could cause directories specified in also_scan_dirs to
+  not be scanned if a filesystem/partition name was used in addition to a
+  directory path.
+
 - Fixed a bug that caused generated RPM file and Debian package derived from
   it by alien to not be properly signed with a Secure Boot key.
 

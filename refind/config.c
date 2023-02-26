@@ -114,7 +114,7 @@ EFI_STATUS ReadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN OUT REFI
         return EFI_LOAD_ERROR;
     }
     ReadSize = FileInfo->FileSize;
-    FreePool(FileInfo);
+    MyFreePool(FileInfo);
 
     File->BufferSize = (UINTN)ReadSize;
     File->Buffer = AllocatePool(File->BufferSize);
@@ -260,7 +260,7 @@ static BOOLEAN KeepReading(IN OUT CHAR16 *p, IN OUT BOOLEAN *IsQuoted) {
             Temp = StrDuplicate(&p[1]);
             if (Temp != NULL) {
                 StrCpy(p, Temp);
-                FreePool(Temp);
+                MyFreePool(Temp);
             }
             MoreToRead = TRUE;
         } else {
@@ -316,7 +316,7 @@ UINTN ReadTokenLine(IN REFIT_FILE *File, OUT CHAR16 ***TokenList)
             AddListElement((VOID ***)TokenList, &TokenCount, (VOID *)StrDuplicate(Token));
         }
 
-        FreePool(Line);
+        MyFreePool(Line);
     }
     return (TokenCount);
 } /* ReadTokenLine() */
@@ -360,7 +360,7 @@ static VOID HandleStrings(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16
     }
 
     if ((*Target != NULL) && !AddMode) {
-        FreePool(*Target);
+        MyFreePool(*Target);
         *Target = NULL;
     } // if
     for (i = 1; i < TokenCount; i++) {
@@ -1087,9 +1087,9 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
         Status = ReadFile(Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
         if (CheckError(Status, L"while reading /etc/fstab")) {
             if (Options != NULL)
-                FreePool(Options);
+                MyFreePool(Options);
             if (Fstab != NULL)
-                FreePool(Fstab);
+                MyFreePool(Fstab);
             Options = NULL;
             Fstab = NULL;
         } else { // File read; locate root fs and create entries
@@ -1206,8 +1206,7 @@ REFIT_FILE * ReadLinuxOptionsFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume
                 File = AllocateZeroPool(sizeof(REFIT_FILE));
                 Status = ReadFile(Volume->RootDir, FullFilename, File, &size);
                 if (CheckError(Status, L"while loading the Linux options file")) {
-                    if (File != NULL)
-                        FreePool(File);
+                    MyFreePool(File);
                     File = NULL;
                 } else {
                     GoOn = FALSE;
@@ -1244,7 +1243,7 @@ CHAR16 * GetFirstOptionsFromFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume)
         if (TokenCount > 1)
             Options = StrDuplicate(TokenList[1]);
         FreeTokenLine(&TokenList, &TokenCount);
-        FreePool(File);
+        MyFreePool(File);
     } // if
     return Options;
 } // static CHAR16 * GetOptionsFile()

@@ -531,9 +531,9 @@ VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
                 } // if
             } // if
         } // for
-        FreePool (OpenInfo);
+        MyFreePool (OpenInfo);
     }
-    FreePool(Handles);
+    MyFreePool(Handles);
 } // VOID ConnectFilesystemDriver()
 
 // Scan a directory for drivers.

@@ -8,6 +8,7 @@
 #include "../include/refit_call_wrapper.h"
 
 #include "simple_file.h"
+#include "../refind/lib.h"
 //#include "execute.h"    /* for generate_path() */
 
 static EFI_GUID IMAGE_PROTOCOL = LOADED_IMAGE_PROTOCOL;
@@ -89,7 +90,7 @@ generate_path(CHAR16* name, EFI_LOADED_IMAGE *li, EFI_DEVICE_PATH **path, CHAR16
         *path = FileDevicePath(li->DeviceHandle, *PathName);
 
 error:
-        FreePool(devpathstr);
+        MyFreePool(devpathstr);
 
         return efi_status;
 } // generate_path()
@@ -120,8 +121,8 @@ simple_file_open(EFI_HANDLE image, CHAR16 *name, EFI_FILE_PROTOCOL **file, UINT6
 
    efi_status = simple_file_open_by_handle(device, PathName, file, mode);
 
-   FreePool(PathName);
-   FreePool(loadpath);
+   MyFreePool(PathName);
+   MyFreePool(loadpath);
 
    return efi_status;
 }
