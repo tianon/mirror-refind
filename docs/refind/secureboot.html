@@ -605,7 +605,11 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     a version of Shim that was released prior to early 2021, you might want
     to consider upgrading it to a newer version. Note that the Shim that
     launches rEFInd is <i>not</i> updated automatically when a new Shim is
-    installed; you must do this manually!</p>
+    installed; you must do this manually! If you <a
+    href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">completely
+    control Secure Boot</a> on your computer, or if you disable Secure Boot,
+    then SBAT is irrelevant; it provides no benefit, and the <tt>.sbat</tt>
+    section in rEFInd does no harm.</p>
 
 </li>
 
