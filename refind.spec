@@ -95,6 +95,7 @@ install -Dp -m0644 docs/man/mvrefind.8 $RPM_BUILD_ROOT/usr/share/man/man8
 install -Dp -m0644 docs/man/mkrlconf.8 $RPM_BUILD_ROOT/usr/share/man/man8
 install -Dp -m0644 docs/man/refind-install.8 $RPM_BUILD_ROOT/usr/share/man/man8
 install -Dp -m0644 docs/man/refind-mkdefault.8 $RPM_BUILD_ROOT/usr/share/man/man8
+install -Dp -m0644 docs/man/refind-sb-healthcheck.8 $RPM_BUILD_ROOT/usr/share/man/man8
 
 # Copy keys to /etc/refind.d/keys
 mkdir -p $RPM_BUILD_ROOT/etc/refind.d/keys
@@ -105,6 +106,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/sbin
 install -Dp -m0755 mkrlconf $RPM_BUILD_ROOT/usr/sbin/
 install -Dp -m0755 mvrefind $RPM_BUILD_ROOT/usr/sbin/
 install -Dp -m0755 refind-mkdefault $RPM_BUILD_ROOT/usr/sbin/
+install -Dp -m0755 refind-sb-healthcheck $RPM_BUILD_ROOT/usr/sbin/
 ln -sr $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind-install $RPM_BUILD_ROOT/usr/sbin
 
 # Copy banners and fonts to /usr/share/refind-%{version}
@@ -122,6 +124,7 @@ cp -a fonts $RPM_BUILD_ROOT/usr/share/refind-%{version}/
 /usr/sbin/mvrefind
 /usr/sbin/refind-install
 /usr/sbin/refind-mkdefault
+/usr/sbin/refind-sb-healthcheck
 /usr/share/refind-%{version}
 /etc/refind.d/
 

@@ -8,6 +8,10 @@
   for recent versions of Shim to launch follow-on programs, including
   rEFInd.
 
+- Added new refind-sb-healthcheck script, which helps manage Secure Boot
+  keys. See the docs/refind/secureboot.html documentation and
+  docs/man/refind-sb-healthcheck.8 man page for details.
+
 - Added new follow_symlinks option. This causes rEFInd to read loaders that
   are symbolic links on filesystems that support this feature. In most
   cases, these symlinks are redundant; but in some cases (such as on

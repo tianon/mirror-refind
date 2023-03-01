@@ -35,6 +35,10 @@ Files: refind-mkdefault
 Copyright: 2016 Roderick W. Smith
 License: GPL-3+
 
+Files: refind-sb-healthcheck
+Copyright: 2023 Roderick W. Smith
+License: GPL-3+
+
 Files: mountesp
 Copyright: 2015 Roderick W. Smith
 License: GPL-3+
