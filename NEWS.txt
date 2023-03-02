@@ -25,6 +25,10 @@
   set by default in e2fsprogs 1.47.0 and later. Thanks to Martin Whitaker
   for the relevant patch.
 
+- Added several new Secure Boot keys for Red Hat in the keys directory.
+  (This doesn't affect rEFInd functionality; they're just there for
+  convenience.)
+
 - Fixed bug in mkcdimage that caused USB flash drive image to be
   damaged.
 
