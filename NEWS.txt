@@ -29,6 +29,10 @@
   (This doesn't affect rEFInd functionality; they're just there for
   convenience.)
 
+- Fixed bug in refind-install that caused it to fail to install the
+  filesystem driver in some Linux distributions. (The output of blkid
+  changed somewhere along the line, breaking refind-install.)
+
 - Fixed bug in mkcdimage that caused USB flash drive image to be
   damaged.
 

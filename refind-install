@@ -38,6 +38,7 @@
 
 # Revision history:
 #
+# 0.14.0  -- Fix bug that caused failure to install filesystem driver in Linux
 # 0.13.3.1-- Fix bug that caused failure to detect mounted ESP in Linux
 # 0.13.3  -- Remove stray exit from CreateBootCsvFile()
 # 0.13.2  -- Add installation of rEFInd Secure Boot key as MOK; if installing
@@ -578,6 +579,14 @@ SetBootFS() {
            if command -v blkid &>/dev/null; then
               BootPart=$(df "$RootDir"/boot | grep dev | cut -f 1 -d " ")
               BootFS=$(blkid -o export "$BootPart" 2> /dev/null | grep TYPE= | cut -f 2 -d =)
+              # The above line fails in Ubuntu 22.04, but is OK in 20.10 and 22.10;
+              # the "-o export" option seems to have temporarily disappeared. In case
+              # it fails, try another approach (which I think uses newer grep features,
+              # so don't rely 100% on it, either; but at least it works in Ubuntu
+              # 22.04)....
+              if [[ -z "$BootFS" ]] ; then
+                 BootFS=$(blkid "$BootPart" 2> /dev/null | grep -Po 'TYPE=\"\K[^\"]*')
+              fi
            fi
            ;;
       darwin*)
