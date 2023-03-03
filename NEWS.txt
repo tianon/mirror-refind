@@ -18,6 +18,8 @@
   openSUSE) following the symlinks is necessary to read a kernel. Credit to
   dakanji for adding this feature.
 
+- Minor cleanup of mkrlconf script; should not affect functionality
+
 - Adrien Destugues submitted a new icon for the Haiku OS, based on an
   official Haiku OS icon.
 
