@@ -1,5 +1,5 @@
-0.14.0 (?/??/2023):
--------------------
+0.14.0 (3/4/2023):
+------------------
 
 - Added ability to launch gzip-compressed loaders. This is useful mainly on
   ARM64 platforms.
