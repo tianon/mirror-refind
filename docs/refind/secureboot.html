@@ -555,6 +555,11 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
 
 <pre class="listing">
 $ <b>sudo refind-sb-healthcheck</b>
+*********************************"
+* Checking Secure Boot status....
+*********************************
+
+Secure Boot is active
 Shim program detected
 *****************************************************
 * Checking for updates to Shim on the ESP and in /usr
@@ -595,7 +600,7 @@ Current date is 2023-03-01
 rEFInd local key's expiration date is 2022-12-07
 
 rEFInd's local Secure Boot key has expired!
-It's HIGHLY recommended to replace this key with a new one!
+Replacing this key with a new one is recommended!
 Do you want to replace the current rEFInd local key (y/N)?
 </pre>
 
@@ -640,8 +645,8 @@ Key # 3 seems OK (expires 2025-02-18)
 Key # 4 seems OK (expires 2034-12-24)
         Issuer: CN=openSUSE Secure Boot CA, C=DE, L=Nuremberg, O=openSUSE Project/emailAddress=build@opensuse.org
 <b>Key # 5 has expired! (Expired on 2021-03-20.)
-        It's HIGHLY recommended to replace this key with a new one!</b>
-        Issuer: C=US, L=SomeCity, O=SomeOrg
+        It's HIGHLY recommended to replace this key with a new one!
+        Issuer: C=US, L=SomeCity, O=SomeOrg</b>
 Key # 6 seems OK (expires 2042-04-11)
         Issuer: C=GB, ST=Isle of Man, L=Douglas, O=Canonical Ltd., CN=Canonical Ltd. Master Certificate Authority
 

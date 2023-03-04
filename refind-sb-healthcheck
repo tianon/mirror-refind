@@ -143,6 +143,11 @@ CheckSbState() {
     local BootLine
     local ShimPresent
 
+    echo "*********************************"
+    echo "* Checking Secure Boot status...."
+    echo "*********************************"
+    echo
+
     if [[ -f /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c ]] ; then
         IsSecureBoot=$(od -An -t u1 /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c | awk '{print substr($0,length,1)}')
     elif [[ -f /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data ]] ; then
@@ -155,6 +160,8 @@ CheckSbState() {
         if [[ "$YN" == "N" ]] ; then
             exit
         fi
+    else
+        echo "Secure Boot is active"
     fi
 
     BootCurrent=$("$EfiBootmgr" | grep BootCurrent | tr -s " " | cut -d " " -f 2)
@@ -170,14 +177,14 @@ CheckSbState() {
             echo "No Shim program detected; assuming a full-control Secure Boot configuration"
         fi
     else
+        # Theoretically should never get here, since if the efibootmgr output
+        # is incomplete or damaged, ParseBootLine should terminate the script;
+        # but just in case....
         echo "Unable to detect the current boot path!"
-        GetYN "Does your installation use the Shim program" "Y"
-        if [[ "$YN" == "Y" ]] ; then
-            SHIM_STATE="SHIM"
-        else
-            SHIM_STATE="NOSHIM"
-        fi
+        echo "Terminating program!"
+        exit 1
     fi
+    echo
 } # CheckSbState()
 
 # Find where the ESP is mounted. Assumes that ESP_GUID is set correctly.
@@ -230,12 +237,11 @@ CheckForShimUpdates() {
             # newEST; and we haven't yet checked for a matching MokManager file
             echo "  --> $CandidateShimDate: $CandidateShimFile"
             if [[ -e "$CandidateShimPath/mm$PLATFORM.efi" && ! -d "$CandidateShimPath/mm$PLATFORM.efi" ]] ; then
-                echo "      --> Found matching mmx64.efi"
+                echo "      --> Found matching mm$PLATFORM.efi"
                 FoundMokManager="1"
             fi
             if [[ "$NewestShimDate" < "$CandidateShimDate" ]] ; then
                 if [[ "$FoundMokManager" -eq "1" ]] ; then
-#                     echo "      --> Found matching mmx64.efi"
                     NewestShimDate="$CandidateShimDate"
                     NewestShimFile="$CandidateShimFile"
                     NewestMokManagerFile="$CandidateShimPath"/mm"$PLATFORM".efi
@@ -356,7 +362,7 @@ CheckRefindLocalKeyExpiration() {
     if [[ "$TimeToExpiration" -lt $((365*24*60*60)) ]] ; then
         if [[ $TimeToExpiration -lt 0 ]] ; then
             echo "rEFInd's local Secure Boot key has expired!"
-            echo "It's HIGHLY recommended to replace this key with a new one!"
+            echo "Replacing this key with a new one is recommended!"
         else
             echo "rEFInd's local Secure Boot key will expire within a year."
             echo "You should consider replacing this key soon."
@@ -411,10 +417,11 @@ CheckKeyExpiration() {
                     echo "${BOLD}Key # $KeyNum will expire within a year (on $ExpirationDate)${NORMAL}"
                     FOUND_SHORT_KEY="1"
                 fi
+                echo "${BOLD}$Issuer${NORMAL}"
             else
                 echo "Key # $KeyNum seems OK (expires $ExpirationDate)"
+                echo "$Issuer"
             fi
-            echo "$Issuer"
             KeyNum=""
             Issuer=""
             ExpirationDate=""
@@ -442,6 +449,23 @@ CheckMokExpiration() {
     fi
     if [[ "$NUM_KEYS" == 0 ]] ; then
         echo "No MOKs found"
+        if [[ "$SHIM_STATE" == "SHIM" ]] ; then
+            echo "Finding no MOKs when Shim is active is highly unusual. Something weird is"
+            echo "going on that may require investigation."
+        else
+            echo "Finding no MOKs with no active Shim is normal."
+        fi
+    else # MOKs are present
+        if [[ "$SHIM_STATE" == "NOSHIM" ]] ; then
+            echo "MOKs are present, but the computer booted without the help of Shim. This is"
+            echo "normal if you've temporarily disabled Secure Boot and booted via some other"
+            echo "means; however, if you've permanently disabled Secure Boot or permanently"
+            echo "reconfigured the computer to use a full-control Secure Boot configuration"
+            echo "without Shim, then you may want to consider using mokutil in Linux or the"
+            echo "MokManager (mm$PLATFORM.efi) program to remove the now-useless MOKs from your"
+            echo "computer's NVRAM. Doing so is not necessary, but will conserve limited NVRAM"
+            echo "storage space."
+        fi
     fi
     PauseForKey
 } # CheckMokExpiration()
