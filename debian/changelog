@@ -1,4 +1,4 @@
-refind (0.14.0-0ppa2) jammy; urgency=medium
+refind (0.14.0.1-0ppa2) jammy; urgency=medium
 
   * Add missing refind-sb-healthcheck script to package
 
