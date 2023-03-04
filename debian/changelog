@@ -1,3 +1,9 @@
+refind (0.14.0-0ppa2) jammy; urgency=medium
+
+  * Add missing refind-sb-healthcheck script to package
+
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Sat, 04 Mar 2023 17:01:38 -0500
+
 refind (0.14.0-0ppa1) jammy; urgency=medium
 
   * Version bump

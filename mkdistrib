@@ -151,7 +151,7 @@ MakeZipBinary() {
     fi
     cp refind-bin-"$Version"/refind/refind_x64.efi "$StartDir"
     cp -a docs keys banners fonts COPYING.txt LICENSE.txt README.txt CREDITS.txt NEWS.txt refind-install \
-       refind-mkdefault mkrlconf mvrefind mountesp refind-bin-"$Version"
+       refind-mkdefault refind-sb-healthcheck mkrlconf mvrefind mountesp refind-bin-"$Version"
 
     # Prepare the final .zip file
     zip -9r ../refind-bin-"$Version".zip refind-bin-"$Version"
