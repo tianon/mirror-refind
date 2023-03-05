@@ -280,6 +280,22 @@ $ <b>sudo apt install refind</b></pre>
 
     </ul></li>
 
+<li><b>Fedora</b>&mdash;rEFInd is available in Fedora's repositories, as of
+    Fedora 36 (maybe earlier). The packaging is a bit odd; there's an
+    overarching package called <tt>rEFInd</tt>, which itself holds no files
+    but describes a dependency on the <tt>rEFInd-tools</tt> package (which
+    holds scripts, documentation, icons, and so on) and an
+    architecture-specific package (<tt>rEFInd-unsigned-x64</tt>,
+    <tt>rEFInd-unsigned-ia32</tt> or <tt>rEFInd-unsigned-aa64</tt>), which
+    holds the EFI binaries. In the end this works much like other
+    distributions, although the package name is mixed-case: You can install
+    rEFInd by typing, <tt>dnf install rEFInd</tt>. This will, however,
+    install rEFInd broken across three packages. As with most other
+    distributions, the rEFInd binaries distributed by Fedora are unsigned.
+    Fedora's RPM package also will <i>not</i> automatically install rEFInd
+    to your ESP, so you must type <tt>refind-install</tt> (as <tt>root</tt>
+    or using <tt>sudo</tt>) to complete the installation.</li>
+
 <li><b>Arch Linux</b>&mdash;You can obtain rEFInd from the Arch
     repositories, in both a stable version (the <tt>refind</tt> package
     installable via <tt>pacman</tt>) and an experimental release built from
