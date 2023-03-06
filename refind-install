@@ -38,6 +38,7 @@
 
 # Revision history:
 #
+# 0.14.0.2-- Fix bug that caused failure to detect mounted ESP in Linux (AGAIN)
 # 0.14.0  -- Fix bug that caused failure to install filesystem driver in Linux
 # 0.13.3.1-- Fix bug that caused failure to detect mounted ESP in Linux
 # 0.13.3  -- Remove stray exit from CreateBootCsvFile()
@@ -1303,7 +1304,9 @@ AddBootEntry() {
       fi
       EntryFilename="$TargetDir/$Refind"
       EfiEntryFilename=$(echo "${EntryFilename}" | tr '/' '\\')
-      EfiEntryFilename2=$(echo "${EfiEntryFilename}" | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g)
+      # DO NOT change the below to use "$(...)" syntax; despite shellcheck's complaint,
+      # such a change will BREAK IT!
+      EfiEntryFilename2=`echo "${EfiEntryFilename}" | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g`
       InstallPartGuid=$(blkid -s PARTUUID -o value "$InstallPart")
       FirstBoot=$("$Efibootmgr" | grep BootOrder | cut -c 12-15)
       ExistingEntry=$("$Efibootmgr" -v | grep -i "$EfiEntryFilename2" | grep -i "$InstallPartGuid" | head -n 1)
