@@ -1,3 +1,13 @@
+0.14.1 (?/?/2023):
+------------------
+
+- Fixed bug that caused JPEG decoding to produce garbled images when rEFInd
+  was compiled with most Linux toolchains. It happened to work fine when
+  compiled with Ubuntu (which I use) or Gentoo, but not with Arch, Debian,
+  Fedora, or openSUSE.
+
+- Fixed a memory leak in JPEG handling code.
+
 0.14.0 (3/4/2023):
 ------------------
 
