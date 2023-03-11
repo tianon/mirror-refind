@@ -8,14 +8,6 @@
 
 - Fixed a memory leak in JPEG handling code.
 
-- Worked around problems with Tow-Boot's micro-UEFI implementation that
-  caused rEFInd to hang when loading drivers or re-scanning boot loaders.
-  The drivers still don't seem to work, but at least rEFInd doesn't crash
-  the system into a reboot loop. One of these changes involved converging
-  the EDK2 and GNU-EFI builds so that they use the same code for
-  ConnectAllDriversToAllControllers(), which is probably good for overall
-  code consistency.
-
 0.14.0 (3/4/2023):
 ------------------
 

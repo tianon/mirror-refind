@@ -232,3 +232,38 @@ Done:
 	FreePool (AllHandleBuffer);
 	return Status;
 }
+
+
+/**
+  Connects all drivers to all controllers.
+  This function make sure all the current system driver will manage
+  the correspoinding controllers if have. And at the same time, make
+  sure all the system controllers have driver to manage it if have.
+
+**/
+VOID
+EFIAPI
+BdsLibConnectAllDriversToAllControllers (
+  VOID
+  )
+{
+  EFI_STATUS  Status;
+
+  do {
+    //
+    // Connect All EFI 1.10 drivers following EFI 1.10 algorithm
+    //
+    //BdsLibConnectAllEfi ();
+    BdsLibConnectMostlyAllEfi ();
+
+    //
+    // Check to see if it's possible to dispatch an more DXE drivers.
+    // The BdsLibConnectAllEfi () may have made new DXE drivers show up.
+    // If anything is Dispatched Status == EFI_SUCCESS and we will try
+    // the connect again.
+    //
+    Status = gDS->Dispatch ();
+
+  } while (!EFI_ERROR (Status));
+
+}

@@ -355,6 +355,7 @@ Error:
   return Status;
 } /* EFI_STATUS LibScanHandleDatabase() */
 
+#ifdef __MAKEWITH_GNUEFI
 /* Modified from EDK2 function of a similar name; original copyright Intel &
  * BSD-licensed; modifications by Roderick Smith are GPLv3. */
 EFI_STATUS ConnectAllDriversToAllControllers(VOID)
@@ -425,6 +426,12 @@ Done:
     MyFreePool (AllHandleBuffer);
     return Status;
 } /* EFI_STATUS ConnectAllDriversToAllControllers() */
+#else
+EFI_STATUS ConnectAllDriversToAllControllers(VOID) {
+    BdsLibConnectAllDriversToAllControllers();
+    return 0;
+}
+#endif
 
 /*
  * ConnectFilesystemDriver() is modified from DisconnectInvalidDiskIoChildDrivers()
