@@ -258,8 +258,8 @@ static VOID InitializeLib(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *System
     gRT = SystemTable->RuntimeServices; // Some BDS functions need gRT to be set
     Status = EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
     if (EFI_ERROR(Status)) {
-        LOG(1, LOG_LINE_NORMAL, L"WARNING: EfiGetSystemConfigurationTable() returned error status %lu!", Status);
-        LOG(1, LOG_LINE_NORMAL, L"Some functionality will be impaired!");
+        // Be sure that gDS isn't pointing to some random place; check it
+        // before each use....
         gDS = 0;
     }
 }
@@ -448,6 +448,12 @@ VOID LogBasicInfo(VOID) {
     LOG(1, LOG_LINE_NORMAL, L"System does%s support GOP graphics mode",
         EFI_ERROR(Status) ? L" not" : L"");
 
+#ifdef __MAKEWITH_TIANO
+    if (gDS == 0) {
+        LOG(1, LOG_LINE_NORMAL, L"WARNING: EfiGetSystemConfigurationTable() returned error status %lu!", Status);
+        LOG(1, LOG_LINE_NORMAL, L"         Some functionality will be impaired!");
+    }
+#endif
 } // VOID LogBasicInfo()
 
 //
