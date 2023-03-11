@@ -323,7 +323,11 @@ VOID UninitRefitLib(VOID)
     // least one I own (with an ASRock FM2A88M Extreme 4+ motherboard)
     // produces 0-length log files if the file is not closed prior to
     // launching a follow-on program. Thus, take care of this here....
-    StopLogging();
+    // EXCEPT on Tow-Boot, where stopping logging can cause the system
+    // to crash!
+    if (StrCmp(ST->FirmwareVendor, L"Das U-Boot") != 0) {
+        StopLogging();
+    }
 
     // This piece of code was made to correspond to weirdness in ReinitRefitLib().
     // See the comment on it there.
