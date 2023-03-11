@@ -86,6 +86,11 @@
 
 #define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
 
+// Amount of a file to read to search for the EFI identifying signatures....
+// I've seen signatures as far in as 3680 (0xE60), so read a bit more than
+// that....
+#define EFI_HEADER_SIZE 3800
+
 static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
     if (Name == NULL)
         Name = L"the loader";
@@ -120,10 +125,16 @@ UINTN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName) {
     BOOLEAN         IsValid = TRUE;
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
-    CHAR8           Header[512];
+    CHAR8           *Header;
     CHAR16          *TypeDesc = L"a valid";
-    UINTN           Size = sizeof(Header);
+    UINTN           LoadedSize = EFI_HEADER_SIZE;
+    UINTN           SignaturePos;
 
+    Header = AllocatePool(EFI_HEADER_SIZE);
+    if (!Header) {
+        LOG(1, LOG_LINE_NORMAL, L"Unable to allocate memory in IsValidLoader()!");
+        return LOADER_TYPE_INVALID;
+    }
     if ((RootDir == NULL) || (FileName == NULL)) {
         // Assume valid here, because Macs produce NULL RootDir (& maybe FileName)
         // when launching from a Firewire drive. This should be handled better, but
@@ -135,18 +146,28 @@ UINTN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName) {
     if (EFI_ERROR(Status))
         return LOADER_TYPE_INVALID;
 
-    Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &Size, Header);
+    Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &LoadedSize, Header);
     refit_call1_wrapper(FileHandle->Close, FileHandle);
 
-    IsValid = !EFI_ERROR(Status) &&
-              Size == sizeof(Header) &&
+    if (EFI_ERROR(Status)) {
+        MyFreePool(Header);
+        LOG(1, LOG_LINE_NORMAL, L"Error reading %s to determine if it's a valid loader!", FileName);
+        return LOADER_TYPE_INVALID;
+    }
+    SignaturePos = *(UINT32 *)&Header[0x3c];
+    LOG(4, LOG_LINE_NORMAL, L"In IsValidLoader(), LoadedSize is %lu, SignaturePos is %lu", LoadedSize, SignaturePos);
+    // Search for the normal signatures for an EFI binary....
+    IsValid = (LoadedSize == EFI_HEADER_SIZE) &&
               ((Header[0] == 'M' && Header[1] == 'Z' &&
-               (Size = *(UINT32 *)&Header[0x3c]) < 0x180 &&
-               Header[Size] == 'P' && Header[Size+1] == 'E' &&
-               Header[Size+2] == 0 && Header[Size+3] == 0 &&
-               *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
+               (SignaturePos < (EFI_HEADER_SIZE - 8)) &&
+               Header[SignaturePos] == 'P' && Header[SignaturePos+1] == 'E' &&
+               Header[SignaturePos+2] == 0 && Header[SignaturePos+3] == 0 &&
+               *(UINT16 *)&Header[SignaturePos+4] == EFI_STUB_ARCH) ||
               (*(UINT32 *)&Header == FAT_ARCH));
     if (!IsValid) {
+        // Search for indications that this is a gzipped file. Note, however,
+        // that we don't dig deeper into gzipped files, so some invalid
+        // gzipped files could be called valid.
         if ((Header[0] == (CHAR8) 0x1F && Header[1] == (CHAR8) 0x8B) && GlobalConfig.GzippedLoaders) {
             LoaderType = LOADER_TYPE_GZIP;
             TypeDesc = L"a gzipped";
@@ -156,6 +177,7 @@ UINTN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName) {
         }
     }
     LOG(1, LOG_LINE_NORMAL, L"'%s' is %s loader file", FileName, TypeDesc);
+    MyFreePool(Header);
 #endif
     return LoaderType;
 } // UINTN IsValidLoader()

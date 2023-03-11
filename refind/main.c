@@ -249,12 +249,19 @@ VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
 
 // Minimal initialization function
 static VOID InitializeLib(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
+    EFI_STATUS Status;
+
     gST            = SystemTable;
     //    gImageHandle   = ImageHandle;
     gBS            = SystemTable->BootServices;
     //    gRS            = SystemTable->RuntimeServices;
     gRT = SystemTable->RuntimeServices; // Some BDS functions need gRT to be set
-    EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
+    Status = EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
+    if (EFI_ERROR(Status)) {
+        LOG(1, LOG_LINE_NORMAL, L"WARNING: EfiGetSystemConfigurationTable() returned error status %lu!", Status);
+        LOG(1, LOG_LINE_NORMAL, L"Some functionality will be impaired!");
+        gDS = 0;
+    }
 }
 
 #endif

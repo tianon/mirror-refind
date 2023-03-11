@@ -247,7 +247,7 @@ BdsLibConnectAllDriversToAllControllers (
   VOID
   )
 {
-  EFI_STATUS  Status;
+  EFI_STATUS  Status = EFI_UNSUPPORTED;
 
   do {
     //
@@ -262,7 +262,8 @@ BdsLibConnectAllDriversToAllControllers (
     // If anything is Dispatched Status == EFI_SUCCESS and we will try
     // the connect again.
     //
-    Status = gDS->Dispatch ();
+    if (gDS)
+        Status = gDS->Dispatch ();
 
   } while (!EFI_ERROR (Status));
 
