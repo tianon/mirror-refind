@@ -11,6 +11,12 @@
 - Fixed a bug that could cause some EFI programs (notably Pete Batard's
   drivers on ARM64 systems) to be incorrectly marked as invalid.
 
+- Improved error checking of log file creation and rotation. Bugs in
+  Tow-Boot (aka Das U-Boot) 8225.40 on a Raspberry Pi were interacting with
+  rEFInd's minimal error checking on log file rotation, causing rEFInd to
+  crash when attempting to rotate the log file. This is now fixed.
+
+
 0.14.0 (3/4/2023):
 ------------------
 

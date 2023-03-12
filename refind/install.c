@@ -156,6 +156,12 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
  *
  ***********************/
 
+// Rename OldName to NewName in BaseDir.
+// CAUTION: On a Raspberry Pi running Tow-Boot (aka Das U-Boot) 8225.40, the
+// attempt to rename the file (specific point called out below) can fail,
+// which results in a subsequent crash if an attempt is made to create a new
+// file using the old (supposedly changed) name. Checking the return value
+// is therefore important for this call!
 static EFI_STATUS RenameFile(IN EFI_FILE_PROTOCOL *BaseDir, CHAR16 *OldName, CHAR16 *NewName) {
     EFI_STATUS        Status;
     EFI_FILE_PROTOCOL *FilePtr = NULL; // DO NOT FREE!
@@ -179,6 +185,7 @@ static EFI_STATUS RenameFile(IN EFI_FILE_PROTOCOL *BaseDir, CHAR16 *OldName, CHA
             CopyMem(NewInfo, Buffer, sizeof(EFI_FILE_INFO));
             NewInfo->FileName[0] = 0;
             StrCat(NewInfo->FileName, NewName);
+            // Note: The below call is where Tow-Boot can error out.
             Status = refit_call4_wrapper(BaseDir->SetInfo,
                                          FilePtr,
                                          &gEfiFileInfoGuid,

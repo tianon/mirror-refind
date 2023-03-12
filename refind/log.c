@@ -21,6 +21,7 @@
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "screen.h"
+#include "menu.h"
 
 EFI_FILE_HANDLE  gLogHandle;
 CHAR16           *gLogTemp = NULL;
@@ -39,6 +40,25 @@ EFI_STATUS DeleteFile(IN EFI_FILE_PROTOCOL *BaseDir, CHAR16 *FileName) {
     }
     return Status;
 } // EFI_STATUS DeleteFile()
+
+// Rename LOGFILE to LOGFILE_OLD. If an error occurs, try to delete LOGFILE
+// instead.
+// Returns success status (claiming success if log file was deleted rather
+// than rotated, or if it doesn't exist to begin with). If unsuccessful,
+// logging should be disabled by the calling function.
+EFI_STATUS RotateLogFile(EFI_FILE_HANDLE Location) {
+    EFI_STATUS Status = EFI_SUCCESS;
+
+    if (FileExists(Location, LOGFILE)) {
+        if (FileExists(Location, LOGFILE_OLD))
+            DeleteFile(Location, LOGFILE_OLD);
+        Status = BackupOldFile(Location, LOGFILE);
+        if (EFI_ERROR(Status)) {
+            Status = DeleteFile(Location, LOGFILE);
+        }
+    }
+    return Status;
+} // EFI_STATUS RotateLogFile()
 
 // Open the logging file (refind.log).
 // Sets the global gLogHandle variable to point to the file.
@@ -64,25 +84,25 @@ EFI_STATUS StartLogging(BOOLEAN Restart) {
             FileMode = EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE;
         } else {
             FileMode = EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE;
-            if (FileExists(SelfDir, LOGFILE)) {
-                if (FileExists(SelfDir, LOGFILE_OLD))
-                    DeleteFile(SelfDir, LOGFILE_OLD);
-                BackupOldFile(SelfDir, LOGFILE);
-            }
+            Status = RotateLogFile(SelfDir);
         }
-        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &gLogHandle, LOGFILE,
-                                     FileMode, 0);
+        if (Status == EFI_SUCCESS) {
+            Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &gLogHandle, LOGFILE,
+                                         FileMode, 0);
+        }
+
         if (EFI_ERROR(Status)) {
+            // Log file could not be opened in the main rEFInd directory, so
+            // try again in the root of the ESP....
             Status = egFindESP(&FoundEsp);
             if (!EFI_ERROR(Status)) {
-                if (!Restart && (FileExists(FoundEsp, LOGFILE))) {
-                    if (FileExists(FoundEsp, LOGFILE_OLD))
-                        DeleteFile(FoundEsp, LOGFILE_OLD);
-                    BackupOldFile(FoundEsp, LOGFILE);
+                if (!Restart) {
+                    Status = RotateLogFile(FoundEsp);
                 }
-                Status = refit_call5_wrapper(FoundEsp->Open, FoundEsp,
-                                             &gLogHandle, LOGFILE,
-                                             FileMode, 0);
+                if (Status == EFI_SUCCESS)
+                    Status = refit_call5_wrapper(FoundEsp->Open, FoundEsp,
+                                                 &gLogHandle, LOGFILE,
+                                                 FileMode, 0);
             }
         }
         if (EFI_ERROR(Status)) {
