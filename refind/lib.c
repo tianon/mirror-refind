@@ -747,13 +747,12 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
     } // if ((Buffer != NULL) && (Volume != NULL))
 } // UINT32 SetFilesystemData()
 
+// Try to identify the filesystem held on Volume, as well as whether it holds
+// any BIOS/CSM/legacy-mode boot code on Macs.
 static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
 {
     EFI_STATUS              Status;
     UINT8                   Buffer[SAMPLE_SIZE];
-    UINTN                   i;
-    MBR_PARTITION_INFO      *MbrTable;
-    BOOLEAN                 MbrTableFound = FALSE;
 
     Volume->HasBootCode = FALSE;
     Volume->OSIconName = NULL;
@@ -774,6 +773,11 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
     } else {
         SetFilesystemData(Buffer, SAMPLE_SIZE, Volume);
     }
+#if defined(EFI32) || defined(EFIX64)
+    MBR_PARTITION_INFO      *MbrTable;
+    BOOLEAN                 MbrTableFound = FALSE;
+    UINTN                   i;
+
     if ((Status == EFI_SUCCESS) && (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)) {
         if ((*((UINT16 *)(Buffer + 510)) == 0xaa55 && Buffer[0] != 0) &&
             (FindMem(Buffer, 512, "EXFAT", 5) == -1)) {
@@ -901,6 +905,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
         }
 
     }
+#endif
 } /* VOID ScanVolumeBootcode() */
 
 // Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind

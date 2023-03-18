@@ -16,6 +16,13 @@
   rEFInd's minimal error checking on log file rotation, causing rEFInd to
   crash when attempting to rotate the log file. This is now fixed.
 
+- Excise most BIOS/CSM/legacy scanning and boot code from builds that are
+  not on x86/IA32 or x86-64/ARM64/X64. This code is useless without a CSM,
+  which is a component that is useful only on x86/x86-64 systems. Removing
+  this useless code reduces binary size and minimizes the risk of
+  BIOS/CSM/legacy-related bugs affecting ARM64/AARCH64 builds (and
+  conceivably others, in the future).
+
 
 0.14.0 (3/4/2023):
 ------------------
