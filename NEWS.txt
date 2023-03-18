@@ -23,6 +23,9 @@
   BIOS/CSM/legacy-related bugs affecting ARM64/AARCH64 builds (and
   conceivably others, in the future).
 
+- Worked around a bug in at least one UEFI that could cause rEFInd to freeze
+  when doing a self-install.
+
 
 0.14.0 (3/4/2023):
 ------------------

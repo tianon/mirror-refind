@@ -423,7 +423,11 @@ static EFI_STATUS CopyFiles(IN EFI_FILE_PROTOCOL *TargetDir) {
         //    copy to refind.conf-sample if refind.conf is present.
         ConfFile = PoolPrint(L"%s\\refind.conf-sample", SourceDir);
         if (FileExists(SourceVolume->RootDir, ConfFile)) {
-            StrCpy(SourceFile, ConfFile);
+            // The following line originally used StrCpy(), but that had a bug
+            // because it didn't allocate SourceFile; but even after fixing
+            // that, one particular UEFI froze when freeing SourceFile later.
+            // Using PoolPrint() rather than StrCpy() works around this issue.
+            SourceFile = PoolPrint(L"%s", ConfFile);
         } else {
             SourceFile = PoolPrint(L"%s\\refind.conf", SourceDir);
         }
@@ -694,7 +698,7 @@ VOID InstallRefind(VOID) {
     REFIT_VOLUME  *SelectedESP; // Do not free
     UINTN         Status;
 
-    LOG(1, LOG_LINE_NORMAL, L"Installing rEFInd to an ESP");
+    LOG(1, LOG_LINE_THIN_SEP, L"Installing rEFInd to an ESP");
     AllESPs = FindAllESPs();
     SelectedESP = PickOneESP(AllESPs);
     if (SelectedESP) {
@@ -708,6 +712,7 @@ VOID InstallRefind(VOID) {
             DisplaySimpleMessage(L"Warning", L"Problems encountered during installation");
         } // if/else
     } // if
+    LOG(1, LOG_LINE_THIN_SEP, L"Done installing rEFInd to an ESP");
 } // VOID InstallRefind()
 
 /***********************
