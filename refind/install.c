@@ -55,7 +55,7 @@ static ESP_LIST * FindAllESPs(VOID) {
     UINTN VolumeIndex;
     EFI_GUID ESPGuid = ESP_GUID_VALUE;
 
-    LOG(2, LOG_LINE_NORMAL, L"Searching for ESPs");
+    LOG(2, LOG_LINE_NORMAL, L"Checking %ld volumes to find ESP(s)", VolumesCount);
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL &&
             GuidsAreEqual(&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid) &&

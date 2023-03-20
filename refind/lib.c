@@ -649,6 +649,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
     UINT16       *Magic16;
     char         *MagicString;
 
+    LOG(2, LOG_LINE_NORMAL, L"Identifying filesystem types....");
     if ((Buffer != NULL) && (Volume != NULL)) {
         SetMem(&(Volume->VolUuid), sizeof(EFI_GUID), 0);
         Volume->FSType = FS_TYPE_UNKNOWN;
@@ -659,10 +660,13 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
                 Ext2Compat = (UINT32*) (Buffer + 1024 + 92);
                 Ext2Incompat = (UINT32*) (Buffer + 1024 + 96);
                 if ((*Ext2Incompat & 0x0040) || (*Ext2Incompat & 0x0200)) { // check for extents or flex_bg
+                    LOG(4, LOG_LINE_NORMAL, L"Found ext4fs");
                     Volume->FSType = FS_TYPE_EXT4;
                 } else if (*Ext2Compat & 0x0004) { // check for journal
+                    LOG(4, LOG_LINE_NORMAL, L"Found ext3fs");
                     Volume->FSType = FS_TYPE_EXT3;
                 } else { // none of these features; presume it's ext2...
+                    LOG(4, LOG_LINE_NORMAL, L"Found ext2fs");
                     Volume->FSType = FS_TYPE_EXT2;
                 }
                 CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
@@ -675,6 +679,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
             if ((CompareMem(MagicString, REISERFS_SUPER_MAGIC_STRING, 8) == 0) ||
                 (CompareMem(MagicString, REISER2FS_SUPER_MAGIC_STRING, 9) == 0) ||
                 (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)) {
+                    LOG(4, LOG_LINE_NORMAL, L"Found ReiserFS");
                     Volume->FSType = FS_TYPE_REISERFS;
                     CopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
                     return;
@@ -684,6 +689,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
         if (BufferSize >= (65536 + 64 + 8)) {
             MagicString = (char*) (Buffer + 65536 + 64);
             if (CompareMem(MagicString, BTRFS_SIGNATURE, 8) == 0) {
+                LOG(4, LOG_LINE_NORMAL, L"Found Btrfs");
                 Volume->FSType = FS_TYPE_BTRFS;
                 return;
             } // if
@@ -692,6 +698,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
         if (BufferSize >= 512) {
             MagicString = (char*) Buffer;
             if (CompareMem(MagicString, XFS_SIGNATURE, 4) == 0) {
+                LOG(4, LOG_LINE_NORMAL, L"Found XFS");
                 Volume->FSType = FS_TYPE_XFS;
                 return;
             }
@@ -700,6 +707,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
         if (BufferSize >= (32768 + 4)) {
             MagicString = (char*) (Buffer + 32768);
             if (CompareMem(MagicString, JFS_SIGNATURE, 4) == 0) {
+                LOG(4, LOG_LINE_NORMAL, L"Found JFS");
                 Volume->FSType = FS_TYPE_JFS;
                 return;
             }
@@ -708,6 +716,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
         if (BufferSize >= (1024 + 2)) {
             Magic16 = (UINT16*) (Buffer + 1024);
             if ((*Magic16 == HFSPLUS_MAGIC1) || (*Magic16 == HFSPLUS_MAGIC2)) {
+                LOG(4, LOG_LINE_NORMAL, L"Found HFS+");
                 Volume->FSType = FS_TYPE_HFSPLUS;
                 return;
             }
@@ -722,16 +731,20 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
            if (*Magic16 == FAT_MAGIC) {
                MagicString = (char*) Buffer;
                if (CompareMem(MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
+                   LOG(4, LOG_LINE_NORMAL, L"Found NTFS");
                    Volume->FSType = FS_TYPE_NTFS;
                    CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
                } else if ((CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
                           (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0)) {
+                   LOG(4, LOG_LINE_NORMAL, L"Found FAT12 or FAT16");
                    Volume->FSType = FS_TYPE_FAT;
                    CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
                } else if (CompareMem(MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
+                   LOG(4, LOG_LINE_NORMAL, L"Found FAT32");
                    Volume->FSType = FS_TYPE_FAT;
                    CopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
                } else if (!Volume->BlockIO->Media->LogicalPartition) {
+                   LOG(4, LOG_LINE_NORMAL, L"Found disk boot sector/MBR");
                    Volume->FSType = FS_TYPE_WHOLEDISK;
                } // if/else
                return;
@@ -741,6 +754,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
         // If no other filesystem is identified and block size is right, assume
         // it's ISO-9660....
         if (Volume->BlockIO->Media->BlockSize == 2048) {
+            LOG(4, LOG_LINE_NORMAL, L"Found ISO-9660");
             Volume->FSType = FS_TYPE_ISO9660;
             return;
         }
@@ -754,6 +768,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
     EFI_STATUS              Status;
     UINT8                   Buffer[SAMPLE_SIZE];
 
+    LOG(2, LOG_LINE_NORMAL, L"Entering ScanVolumeBootcode()");
     Volume->HasBootCode = FALSE;
     Volume->OSIconName = NULL;
     Volume->OSName = NULL;
@@ -1077,6 +1092,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     UINTN                   PartialLength;
     BOOLEAN                 Bootable;
 
+    LOG(2, LOG_LINE_NORMAL, L"Entering ScanVolume()");
     // get device path
     Volume->DevicePath = DuplicateDevicePath(DevicePathFromHandle(Volume->DeviceHandle));
 #if REFIT_DEBUG > 0
