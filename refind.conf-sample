@@ -461,6 +461,15 @@ use_nvram false
 #
 #fold_linux_kernels false
 
+# Filename prefixes that indicate a file is a Linux kernel. Files that
+# begin with any of these strings are treated as Linux kernels, if they
+# are also EFI boot loaders. To include the default string, use "+"
+# Default is "vmlinuz,bzImage,kernel", except on ARM64, where it is
+# "vmlinuz,Image,kernel".
+#
+#linux_prefixes vmlinuz,bzImage,kernel
+#linux_prefixes +,zImage
+
 # Comma-delimited list of strings to treat as if they were numbers for the
 # purpose of kernel version number detection. These strings are matched on a
 # first-found basis; that is, if you want to treat both "linux-lts" and

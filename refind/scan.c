@@ -119,11 +119,6 @@
 #define IPXE_DISCOVER_NAME      L"\\efi\\tools\\ipxe_discover.efi"
 #define IPXE_NAME               L"\\efi\\tools\\ipxe.efi"
 
-// Patterns that identify Linux kernels. Added to the loader match pattern when the
-// scan_all_linux_kernels option is set in the configuration file. Causes kernels WITHOUT
-// a ".efi" extension to be found when scanning for boot loaders.
-#define LINUX_MATCH_PATTERNS    L"vmlinuz*,bzImage*,kernel*"
-
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
 static REFIT_MENU_ENTRY MenuEntryAbout    = { L"About rEFInd", TAG_ABOUT, 1, 0, 'A', NULL, NULL, NULL };
@@ -529,7 +524,8 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
 
     LOG(4, LOG_LINE_NORMAL, L"Adding hints based on specific loaders");
     // detect specific loaders
-    if (StriSubCmp(L"bzImage", NameClues) || StriSubCmp(L"vmlinuz", NameClues) || StriSubCmp(L"kernel", NameClues)) {
+    if (IsInSubstring(NameClues, GlobalConfig.LinuxPrefixes)) {
+//    if (StriSubCmp(L"bzImage", NameClues) || StriSubCmp(L"vmlinuz", NameClues) || StriSubCmp(L"kernel", NameClues)) {
         if (Volume->DiskKind != DISK_KIND_NET) {
             GuessLinuxDistribution(&OSIconName, Volume, LoaderPath);
             Entry->LoadOptions = GetMainLinuxOptions(LoaderPath, Volume);
@@ -966,9 +962,10 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
 
        NewLoader = LoaderList;
        while (NewLoader != NULL) {
-           IsLinux = (StriSubCmp(L"bzImage", NewLoader->FileName) ||
-                      StriSubCmp(L"vmlinuz", NewLoader->FileName) ||
-                      StriSubCmp(L"kernel", NewLoader->FileName));
+           IsLinux = IsInSubstring(NewLoader->FileName, GlobalConfig.LinuxPrefixes);
+//            IsLinux = (StriSubCmp(L"bzImage", NewLoader->FileName) ||
+//                       StriSubCmp(L"vmlinuz", NewLoader->FileName) ||
+//                       StriSubCmp(L"kernel", NewLoader->FileName));
            if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
                AddKernelToSubmenu(FirstKernel, NewLoader->FileName, Volume);
            } else {
@@ -1082,7 +1079,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             Volume->PartName ? Volume->PartName : Volume->VolName);
         MatchPatterns = StrDuplicate(LOADER_MATCH_PATTERNS);
         if (GlobalConfig.ScanAllLinux)
-            MergeStrings(&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
+            MergeStrings(&MatchPatterns, GlobalConfig.LinuxMatchPatterns, L',');
 
         // check for macOS boot loader
         if (ShouldScan(Volume, MACOSX_LOADER_DIR)) {

@@ -494,6 +494,24 @@ static LOADER_ENTRY * AddPreparedLoaderEntry(LOADER_ENTRY *Entry) {
     return(Entry);
 } // LOADER_ENTRY * AddPreparedLoaderEntry()
 
+// Sets GlobalConfig.LinuxMatchPatterns based on the input comma-delimited set
+// of prefixes. An asterisk ("*") is added to each of the input prefixes and
+// GlobalConfig.LinuxMatchPatterns is set to the resulting comma-delimited
+// string.
+static VOID SetLinuxMatchPatterns(CHAR16 *Prefixes) {
+    CHAR16 *Pattern, *PatternSet = NULL;
+    UINTN i = 0;
+
+    while ((Pattern = FindCommaDelimited(Prefixes, i++)) != NULL) {
+        MergeStrings(&Pattern, L"*", 0);
+        MergeStrings(&PatternSet, Pattern, L',');
+        MyFreePool(Pattern);
+    }
+    if (GlobalConfig.LinuxMatchPatterns)
+        MyFreePool(GlobalConfig.LinuxMatchPatterns);
+    GlobalConfig.LinuxMatchPatterns = PatternSet;
+} // VOID SetLinuxMatchPatterns()
+
 // read config file
 VOID ReadConfig(CHAR16 *FileName)
 {
@@ -528,6 +546,7 @@ VOID ReadConfig(CHAR16 *FileName)
         GlobalConfig.MacOSRecoveryFiles = StrDuplicate(MACOS_RECOVERY_FILES);
         MyFreePool(GlobalConfig.DefaultSelection);
         GlobalConfig.DefaultSelection = StrDuplicate(L"+");
+        GlobalConfig.LinuxPrefixes = StrDuplicate(LINUX_PREFIXES);
     } // if
 
     if (!FileExists(SelfDir, FileName)) {
@@ -786,6 +805,9 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (MyStriCmp(TokenList[0], L"fold_linux_kernels")) {
             GlobalConfig.FoldLinuxKernels = HandleBoolean(TokenList, TokenCount);
 
+        } else if (MyStriCmp(TokenList[0], L"linux_prefixes")) {
+            HandleStrings(TokenList, TokenCount, &(GlobalConfig.LinuxPrefixes));
+
         } else if (MyStriCmp(TokenList[0], L"extra_kernel_version_strings")) {
             HandleStrings(TokenList, TokenCount, &(GlobalConfig.ExtraKernelVersionStrings));
 
@@ -836,6 +858,8 @@ VOID ReadConfig(CHAR16 *FileName)
     if ((GlobalConfig.DontScanFiles) && (GlobalConfig.WindowsRecoveryFiles))
         MergeStrings(&(GlobalConfig.DontScanFiles), GlobalConfig.WindowsRecoveryFiles, L',');
     MyFreePool(File.Buffer);
+
+    SetLinuxMatchPatterns(GlobalConfig.LinuxPrefixes);
 
     if (!FileExists(SelfDir, L"icons") && !FileExists(SelfDir, GlobalConfig.IconsDir)) {
         Print(L"Icons directory doesn't exist; setting textonly = TRUE!\n");

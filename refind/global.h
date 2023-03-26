@@ -202,6 +202,15 @@
 // completeness, but that's ridiculous....
 #define LOADER_MATCH_PATTERNS   L"*.efi,*.EFI"
 
+// Patterns that identify Linux kernels. Added to the loader match pattern when the
+// scan_all_linux_kernels option is set in the configuration file. Causes kernels WITHOUT
+// a ".efi" extension to be found when scanning for boot loaders.
+#if defined(EFIAARCH64)
+#define LINUX_PREFIXES          L"vmlinuz,Image,kernel"
+#else
+#define LINUX_PREFIXES          L"vmlinuz,bzImage,kernel"
+#endif
+
 // Definitions for the "hideui" option in refind.conf
 #define HIDEUI_FLAG_NONE       (0x0000)
 #define HIDEUI_FLAG_BANNER     (0x0001)
@@ -377,6 +386,8 @@ typedef struct {
    CHAR16           *MacOSRecoveryFiles;
    CHAR16           *DriverDirs;
    CHAR16           *IconsDir;
+   CHAR16           *LinuxPrefixes;      // Linux prefixes (e.g., L"vmlinuz,bzImage"
+   CHAR16           *LinuxMatchPatterns; // Linux prefixes PLUS wildcards (e.g., L"vmlinuz*,bzImage*")
    CHAR16           *ExtraKernelVersionStrings;
    CHAR16           *SpoofOSXVersion;
    UINT32_LIST      *CsrValues;

@@ -23,6 +23,14 @@
   BIOS/CSM/legacy-related bugs affecting ARM64/AARCH64 builds (and
   conceivably others, in the future).
 
+- Added linux_prefixes token, which specifies string(s) that, when present
+  at the start of a filename, denote a Linux kernel.
+
+- Replaced "bzImage" with "Image" as a kernel identifier on ARM64 systems.
+  (This is unchanged on x86/x86-64 systems.) Some Linux distributions call
+  their Linux kernels Image, Image.gz, or something else that starts with
+  "Image".
+
 - Worked around a bug in at least one UEFI that could cause rEFInd to freeze
   when doing a self-install.
 
