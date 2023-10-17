@@ -373,6 +373,10 @@ Files: icons/boot_win.png
 Copyright: 2015-2017 by Roderick W. Smith
 License: LGPL-3+ or CC-BY-SA-3.0
 
+Files: icons/os_endeavouros.png
+Copyright: 2019 EndeavourOS Team
+License: GPL-3+
+
 Files: icons/os_haiku.png
 Copyright: 2010-2023 Haiku, inc
 License: Expat

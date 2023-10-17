@@ -37,6 +37,7 @@
 - Added code to Btrfs driver to properly detect RAID1C3/4 configurations.
   Code was borrowed from GRUB 2 by Ilya Guterman.
 
+- Added icon for EndeavourOS, as submitted by Jack Rubacha.
 
 0.14.0 (3/4/2023):
 ------------------
