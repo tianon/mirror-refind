@@ -34,6 +34,9 @@
 - Worked around a bug in at least one UEFI that could cause rEFInd to freeze
   when doing a self-install.
 
+- Added code to Btrfs driver to properly detect RAID1C3/4 configurations.
+  Code was borrowed from GRUB 2 by Ilya Guterman.
+
 
 0.14.0 (3/4/2023):
 ------------------
