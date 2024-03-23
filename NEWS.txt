@@ -39,6 +39,8 @@
 
 - Added icon for EndeavourOS, as submitted by Jack Rubacha.
 
+- Fixed bug in refind-install that caused --ownhfs option to fail.
+
 0.14.0 (3/4/2023):
 ------------------
 

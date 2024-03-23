@@ -29,7 +29,7 @@
 #           Valid only under Linux.
 #    "--yes" to assume a "yes" response to all prompts
 #
-# This program is copyright (c) 2012-2020 by Roderick W. Smith
+# This program is copyright (c) 2012-2024 by Roderick W. Smith
 #
 # This program is licensed under the terms of the GNU GPL, version 3,
 # or (at your option) any later version.
@@ -38,6 +38,7 @@
 
 # Revision history:
 #
+# 0.14.1  -- Fix bug that caused --ownhfs option to fail
 # 0.14.0.2-- Fix bug that caused failure to detect mounted ESP in Linux (AGAIN)
 # 0.14.0  -- Fix bug that caused failure to install filesystem driver in Linux
 # 0.13.3.1-- Fix bug that caused failure to detect mounted ESP in Linux
@@ -780,7 +781,9 @@ MountDefaultTarget() {
    if [[ $OSTYPE == darwin* ]] ; then
       if [[ $OwnHfs == '1' ]] ; then
          Temp=$(diskutil info "$TargetPart" | grep "Mount Point")
-         InstallDir=$(echo "$Temp" | cut -f 3-30 -d ' ' | sed 's/\/\+/\//g')
+         # Note: DO NOT enclose "$Temp" in following lines in quotes; it
+         # messes up the following "cut" operation!
+         InstallDir=$(echo $Temp | cut -f 3-30 -d ' ' | sed 's/\/\+/\//g')
          if [[ $InstallDir == '' ]] ; then
             InstallDir=/tmp/refind_install
             mount -t hfs "$TargetPart" "$InstallDir"
