@@ -51,6 +51,12 @@
   launch from some filesystems, with a "not found" error, in either menu
   position; but it launches fine if copied to the ESP.)
 
+- Remove duplicate directory names when scanning for tools. Duplicates can
+  happen because of misconfiguration or because of the new code to find
+  memtest in regular boot loader locations, if they happen to be in matching
+  directories on different disks (as in multiple Linux distributions on one
+  computer, with memtest in the /boot directory on each one).
+
 0.14.0 (3/4/2023):
 ------------------
 

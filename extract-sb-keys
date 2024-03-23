@@ -3,7 +3,7 @@
 """
 Extract Secure Boot public key files from a Shim binary
 
-Copyright (c) 2023 Roderick W. Smith
+Copyright (c) 2023-2024 Roderick W. Smith
 
 Authors:
   Roderick W. Smith <rodsmith@rodsbooks.com>

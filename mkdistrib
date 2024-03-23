@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Script to prepare source code and binary distribution files of rEFInd.
-# Copyright Rod Smith, 2012-2023
+# Copyright Rod Smith, 2012-2024
 # Licensed under the terms of the GNU GPL-3
 #
 # Updated 11/8/2012 to do more things automatically
