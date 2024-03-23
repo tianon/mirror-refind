@@ -1489,29 +1489,36 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINTN Icon) {
     UINTN j = 0, k, VolumeIndex;
     CHAR16 *DirName, *FileName, *PathName, *FullDescription;
+    CHAR16 *ScannedLocations = NULL;
 
     LOG(1, LOG_LINE_NORMAL, L"Scanning for tools '%s' in '%s'", Names, Locations);
     while ((DirName = FindCommaDelimited(Locations, j++)) != NULL) {
-        k = 0;
-        while ((FileName = FindCommaDelimited(Names, k++)) != NULL) {
-            PathName = StrDuplicate(DirName);
-            MergeStrings(&PathName, FileName, MyStriCmp(PathName, L"\\") ? 0 : L'\\');
-            for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], PathName))) {
-                    FullDescription = PoolPrint(L"%s at %s on %s", Description, PathName,
-                                                Volumes[VolumeIndex]->VolName);
-                    LOG(1, LOG_LINE_NORMAL, L"Adding tag for '%s' on '%s'", FileName,
-                        Volumes[VolumeIndex]->VolName);
-                    AddToolEntry(Volumes[VolumeIndex], PathName, FullDescription,
-                                 BuiltinIcon(Icon), 'S', FALSE);
-                    MyFreePool(FullDescription);
-                } // if
-            } // for
-            MyFreePool(PathName);
-            MyFreePool(FileName);
-        } // while Names
+        if (!IsIn(DirName, ScannedLocations)) {
+            MergeStrings(&ScannedLocations, DirName, ',');
+            k = 0;
+            while ((FileName = FindCommaDelimited(Names, k++)) != NULL) {
+                PathName = StrDuplicate(DirName);
+                MergeStrings(&PathName, FileName, MyStriCmp(PathName, L"\\") ? 0 : L'\\');
+                for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+                    if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], PathName))) {
+                        FullDescription = PoolPrint(L"%s at %s on %s", Description, PathName,
+                                                    Volumes[VolumeIndex]->VolName);
+                        LOG(1, LOG_LINE_NORMAL, L"Adding tag for '%s' on '%s'", FileName,
+                            Volumes[VolumeIndex]->VolName);
+                        AddToolEntry(Volumes[VolumeIndex], PathName, FullDescription,
+                                     BuiltinIcon(Icon), 'S', FALSE);
+                        MyFreePool(FullDescription);
+                    } // if
+                } // for
+                MyFreePool(PathName);
+                MyFreePool(FileName);
+            } // while Names
+        } else {
+            LOG(3, LOG_LINE_NORMAL, L"Removed duplicate directory name: '%s'", DirName);
+        }
         MyFreePool(DirName);
     } // while Locations
+    MyFreePool(ScannedLocations);
 } // VOID FindTool()
 
 // Add the second-row tags containing built-in and external tools (EFI shell,
