@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2023 Roderick W. Smith
+ * Modifications copyright (c) 2012-2024 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -85,7 +85,7 @@
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi"
 #define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi"
 #define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"memtest86.efi,memtest86_x64.efi,memtest86x64.efi,bootx64.efi"
+#define MEMTEST_NAMES           L"memtest86.efi,memtest86_x64.efi,memtest86x64.efi,memtest86+x64.efi,bootx64.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
 #elif defined (EFI32)
@@ -93,7 +93,7 @@
 #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi"
 #define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_ia32.efi"
 #define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"memtest86.efi,memtest86_ia32.efi,memtest86ia32.efi,bootia32.efi"
+#define MEMTEST_NAMES           L"memtest86.efi,memtest86_ia32.efi,memtest86ia32.efi,memtest86+ia32.efi,bootia32.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #define FALLBACK_BASENAME       L"bootia32.efi"
 #elif defined (EFIAARCH64)
@@ -130,6 +130,8 @@ static REFIT_MENU_ENTRY MenuEntryManageHidden = { L"Manage Hidden Tags Menu", TA
 static REFIT_MENU_ENTRY MenuEntryInstall = { L"Install rEFInd to Disk", TAG_INSTALL, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryBootorder = { L"Manage EFI boot order", TAG_BOOTORDER, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryExit     = { L"Exit rEFInd", TAG_EXIT, 1, 0, 0, NULL, NULL, NULL };
+
+CHAR16 *MemtestLocations = NULL;
 
 // Structure used to hold boot loader filenames and time stamps in
 // a linked list; used to sort entries within a directory.
@@ -921,6 +923,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
     struct LOADER_LIST      *LoaderList = NULL, *NewLoader;
     LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
     BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE, InSelfPath;
+    BOOLEAN                 FoundMemtest = FALSE;
 
     LOG(3, LOG_LINE_NORMAL, L"Beginning to scan directory '%s' for '%s'", Path, Pattern);
     InSelfPath = MyStriCmp(Path, SelfDirPath);
@@ -942,6 +945,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
               MyStriCmp(Extension, L".png") ||
               (MyStriCmp(DirEntry->FileName, FALLBACK_BASENAME) && (MyStriCmp(Path, L"EFI\\BOOT"))) ||
               FilenameIn(Volume, Path, DirEntry->FileName, SHELL_NAMES) ||
+              FilenameIn(Volume, Path, DirEntry->FileName, MEMTEST_NAMES) ||
               HasSignedCounterpart(Volume, FullName) || /* a file with same name plus ".efi.signed" is present */
               FilenameIn(Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
               !IsValidLoader(Volume->RootDir, FullName)) {
@@ -956,6 +960,13 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
              if (DuplicatesFallback(Volume, FullName))
                 FoundFallbackDuplicate = TRUE;
           } // if
+          if (MemtestLocations == NULL) {
+              MemtestLocations = StrDuplicate(MEMTEST_LOCATIONS);
+          }
+          if ((MemtestLocations != NULL) && !FoundMemtest) {
+              MergeStrings(&MemtestLocations, Path, L',');
+              FoundMemtest = TRUE;
+          }
           MyFreePool(Extension);
           MyFreePool(FullName);
        } // while
@@ -1475,10 +1486,11 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 
 // Locate a single tool from the specified Locations using one of the
 // specified Names and add it to the menu.
-static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINTN Icon) {
+VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINTN Icon) {
     UINTN j = 0, k, VolumeIndex;
     CHAR16 *DirName, *FileName, *PathName, *FullDescription;
 
+    LOG(1, LOG_LINE_NORMAL, L"Scanning for tools '%s' in '%s'", Names, Locations);
     while ((DirName = FindCommaDelimited(Locations, j++)) != NULL) {
         k = 0;
         while ((FileName = FindCommaDelimited(Names, k++)) != NULL) {
@@ -1516,6 +1528,8 @@ VOID ScanForTools(VOID) {
     MokLocations = StrDuplicate(MOK_LOCATIONS);
     if (MokLocations != NULL)
         MergeStrings(&MokLocations, SelfDirPath, L',');
+    if (MemtestLocations == NULL)
+        MemtestLocations = StrDuplicate(MEMTEST_LOCATIONS);
 
     for (i = 0; i < NUM_TOOLS; i++) {
         switch(GlobalConfig.ShowTools[i]) {
@@ -1698,7 +1712,7 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_MEMTEST:
-                FindTool(MEMTEST_LOCATIONS, MEMTEST_NAMES, L"Memory test utility", BUILTIN_ICON_TOOL_MEMTEST);
+                FindTool(MemtestLocations, MEMTEST_NAMES, L"Memory test utility", BUILTIN_ICON_TOOL_MEMTEST);
                 break;
 
         } // switch()

@@ -855,10 +855,12 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
     is a popular tool for performing basic hardware tests, and especially
     memory tests. rEFInd recognizes this program when it is stored in the
     <tt>EFI/tools</tt>, <tt>EFI/tools/memtest</tt>,
-    <tt>EFI/tools/memtest86</tt>, <tt>EFI/memtest</tt>, or
-    <tt>EFI/memtest86</tt> directory, with a program filename of
+    <tt>EFI/tools/memtest86</tt>, <tt>EFI/memtest</tt>,
+    <tt>EFI/memtest86</tt>, or any discovered boot loader's directory, with
+    a program filename of
     <tt>memtest86.efi</tt>, <tt>memtest86_x64.efi</tt>,
-    <tt>memtest86x64.efi</tt>, or <tt>bootx64.efi</tt>. (Change
+    <tt>memtest86x64.efi</tt>, <tt>memtest86+x64.efi</tt>, or
+    <tt>bootx64.efi</tt>. (Change
     <tt>x64</tt> to <tt>ia32</tt> on IA-32 systems.) Be sure to download
     the EFI version of the program. If you get the USB flash drive version,
     you should mount the flash drive's ESP (partition 2) and copy the
@@ -866,7 +868,9 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
     <tt>EFI/tools/memtest</tt> or other Memtest86 directory name, as just
     specified. rEFInd should then recognize it, provided the
     <tt>showtools</tt> line includes the <tt>memtest</tt> or
-    <tt>memtest86</tt> token.</li>
+    <tt>memtest86</tt> token. In my experience, this program often fails to
+    launch, with a <tt>not found</tt> error, from some filesystems; but it
+    should work if launched instead from the ESP.</li>
 
 <li><b><tt>gptsync.efi</tt> or <tt>gptsync_<tt
     class="variable">arch</tt>.efi</tt></b>&mdash;This program creates a <a

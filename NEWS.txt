@@ -41,6 +41,16 @@
 
 - Fixed bug in refind-install that caused --ownhfs option to fail.
 
+- Add memtest86+x64.efi and memtest86+ia32.efi as memtest filenames on AMD64
+  and i386 systems, respectively.
+
+- If memtest is discovered in a boot loader location, move its entry to the
+  tools line, rather than keep it in the boot loader line, if "memtest" is
+  among the "showtools" options. This helps de-clutter the boot loader line
+  with recent versions of Ubuntu. (For some reason, though, it fails to
+  launch from some filesystems, with a "not found" error, in either menu
+  position; but it launches fine if copied to the ESP.)
+
 0.14.0 (3/4/2023):
 ------------------
 
