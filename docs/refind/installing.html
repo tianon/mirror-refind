@@ -476,7 +476,7 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
 
 <p class="sidebar"><b>Warning:</b> Windows 8 and later implement a fast shutdown feature that helps speed up shutdown and startup operations on a single-boot computer. Unfortunately, this feature can cause filesystem corruption if it's used on a multi-boot computer. You can disable the feature by launching an Administrator Command Prompt window and typing <tt class="userinput">powercfg /h off</tt> in it.</p>
 
-<p>I know relatively little about Windows EFI management tools; however, I do know that at least three relevant tools exist: the standard <tt>bcdedit</tt>, the open source text-mode <tt>efibootwin</tt>, and the third-party GUI <i>EasyUEFI.</i> Because Windows is not my primary OS, I'm less familiar with its tools and procedures than I am with those used by Linux. Some third-party documentation, such as <a href="https://schdck.github.io/Installing-refind-from-Windows-10">this blog post,</a> may be of help if you run into problems installing rEFInd in Windows.</p>
+<p>I know relatively little about Windows EFI management tools; however, I do know that at least three relevant tools exist: the standard <tt>bcdedit</tt>, the open source text-mode <tt>efibootwin</tt>, and the third-party GUI <i>EasyUEFI.</i> Because Windows is not my primary OS, I'm less familiar with its tools and procedures than I am with those used by Linux. Some third-party documentation, such as <a href="https://schdck.github.io/Installing-refind-from-Windows-10">this blog post</a> and <a href="https://www.easyuefi.com/resource/set-up-multi-boot-windows-linux-and-mac-using-refind-and-easyuefi.html">this page on installing rEFInd using EasyUEFI,</a> may be of help if you run into problems installing rEFInd in Windows.</p>
 
 <p>The <a href=https://github.com/ju-funk/efibootwin><tt>efibootwin</tt></a> tool is similar to the standard Linux <tt>efibootmgr</tt> tool. As far as I can tell, it is available only as source code files with Microsoft Visual C++ project build files. As I don't use that development environment, I haven't tried building binaries myself and I don't know how well the program, once built, would work. Thus, I do not rely on it in the following procedure, although it might be quite useful. I may look into it in more depth in the future.</p>
 
@@ -859,14 +859,14 @@ $ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
     <tt>EFI/memtest86</tt>, or any discovered boot loader's directory, with
     a program filename of
     <tt>memtest86.efi</tt>, <tt>memtest86_x64.efi</tt>,
-    <tt>memtest86x64.efi</tt>, <tt>memtest86+x64.efi</tt>, or
-    <tt>bootx64.efi</tt>. (Change
+    <tt>memtest86x64.efi</tt>, or <tt>memtest86+x64.efi</tt>. (Change
     <tt>x64</tt> to <tt>ia32</tt> on IA-32 systems.) Be sure to download
     the EFI version of the program. If you get the USB flash drive version,
     you should mount the flash drive's ESP (partition 2) and copy the
     <tt>EFI/BOOT</tt> directory to your own ESP's
     <tt>EFI/tools/memtest</tt> or other Memtest86 directory name, as just
-    specified. rEFInd should then recognize it, provided the
+    specified; and if necessary, rename the file appropriately. rEFInd
+    should then recognize it, provided the
     <tt>showtools</tt> line includes the <tt>memtest</tt> or
     <tt>memtest86</tt> token. In my experience, this program often fails to
     launch, with a <tt>not found</tt> error, from some filesystems; but it

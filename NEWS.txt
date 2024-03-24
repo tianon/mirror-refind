@@ -51,6 +51,12 @@
   launch from some filesystems, with a "not found" error, in either menu
   position; but it launches fine if copied to the ESP.)
 
+- Added memtest86+x64.efi and memtest86+ia32.efi (for AMD64 and IA32
+  architectures, respectively) as valid memtest filenames; and removed
+  bootx64.efi (and related architecture-specific names) as valid names,
+  since the latter conflict with the new option to recognize memtest in a
+  boot loader directory.
+
 - Remove duplicate directory names when scanning for tools. Duplicates can
   happen because of misconfiguration or because of the new code to find
   memtest in regular boot loader locations, if they happen to be in matching
