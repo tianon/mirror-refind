@@ -63,6 +63,8 @@
   directories on different disks (as in multiple Linux distributions on one
   computer, with memtest in the /boot directory on each one).
 
+- Updated LodePNG to the latest (version 20230410).
+
 0.14.0 (3/4/2023):
 ------------------
 
