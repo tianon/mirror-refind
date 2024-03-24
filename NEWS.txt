@@ -1,5 +1,5 @@
-0.14.1 (?/?/2023):
-------------------
+0.14.1 (3/24/2024):
+-------------------
 
 - Fixed bug that caused JPEG decoding to produce garbled images when rEFInd
   was compiled with most Linux toolchains. It happened to work fine when
@@ -17,7 +17,7 @@
   crash when attempting to rotate the log file. This is now fixed.
 
 - Excise most BIOS/CSM/legacy scanning and boot code from builds that are
-  not on x86/IA32 or x86-64/ARM64/X64. This code is useless without a CSM,
+  not on x86/IA32 or x86-64/AMD64/X64. This code is useless without a CSM,
   which is a component that is useful only on x86/x86-64 systems. Removing
   this useless code reduces binary size and minimizes the risk of
   BIOS/CSM/legacy-related bugs affecting ARM64/AARCH64 builds (and
@@ -41,10 +41,7 @@
 
 - Fixed bug in refind-install that caused --ownhfs option to fail.
 
-- Add memtest86+x64.efi and memtest86+ia32.efi as memtest filenames on AMD64
-  and i386 systems, respectively.
-
-- If memtest is discovered in a boot loader location, move its entry to the
+- If Memtest is discovered in a boot loader location, move its entry to the
   tools line, rather than keep it in the boot loader line, if "memtest" is
   among the "showtools" options. This helps de-clutter the boot loader line
   with recent versions of Ubuntu. (For some reason, though, it fails to
@@ -59,9 +56,9 @@
 
 - Remove duplicate directory names when scanning for tools. Duplicates can
   happen because of misconfiguration or because of the new code to find
-  memtest in regular boot loader locations, if they happen to be in matching
+  Memtest in regular boot loader locations, if they happen to be in matching
   directories on different disks (as in multiple Linux distributions on one
-  computer, with memtest in the /boot directory on each one).
+  computer, with Memtest in the /boot directory on each one).
 
 - Updated LodePNG to the latest (version 20230410).
 

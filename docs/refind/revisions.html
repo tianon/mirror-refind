@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 3/6/2023</p>
+<p>Last Web page update: 3/24/2024</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,35 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.14.1 (3/24/2024)</b>&mdash;This version features several bug fixes and new features:
+
+<ul>
+<li>New features in this version are:
+    <ul>
+    <li>Added <tt>linux_prefixes</tt> token, which specifies string(s) that, when present at the start of a filename, denote a Linux kernel.</li>
+    <li>Replaced <tt>bzImage</tt> with <tt>Image</tt> as a kernel identifier on ARM64 systems. (This is unchanged on x86/x86-64 systems.) Some Linux distributions call their Linux kernels <tt>Image</tt>, <tt>Image.gz</tt>, or something else that starts with <tt>Image</tt>.</li>
+    <li>Added code to the Btrfs driver to properly detect RAID1C3/4 configurations. Code was borrowed from GRUB 2 by Ilya Guterman.</li>
+    <li>Added icon for EndeavourOS, as submitted by Jack Rubacha.</li>
+    <li>If Memtest is discovered in a boot loader location, move its entry to the tools line, rather than keep it in the boot loader line, if <tt>memtest</tt> is among the <tt>showtools</tt> options. This helps de-clutter the boot loader line with recent versions of Ubuntu. (For some reason, though, it fails to launch from some filesystems, with a "not found" error, in either menu position; but it launches fine if copied to the ESP.)</li>
+    <li>Added <tt>memtest86+x64.efi</tt> and <tt>memtest86+ia32.efi</tt> as Memtest filenames on AMD64 and i386 systems, respectively; and removed <tt>bootx64.efi</tt> (and similar names for other architectures) as valid names, since the latter causes problems if Memtest is stored in a boot loader directory, especially <tt>EFI/BOOT</tt>.</li>
+    <li>When scanning for tools, rEFInd now removes duplicate directory names from the scan list. Duplicates can happen because of misconfiguration or because of the new code to find Memtest in regular boot loader locations, if they happen to be in matching directories on different disks (as in multiple Linux distributions on one computer, with Memtest in the <tt>/boot</tt> directory on each one).</li>
+</ul></li>
+<li>Bug fixes in this version are:
+    <ul>
+    <li>Fixed a bug that caused JPEG images to become garbled when rEFInd was compiled with most Linux toolchains. It happened to work fine with Ubuntu (which I use) or Gentoo, but not with Arch, Debian, Fedora, or openSUSE.</li>
+    <li>Fixed a memory leak in the JPEG code.</li>
+    <li>Fixed a bug that could cause some EFI programs (notably Pete Batard's drivers on ARM64 systems) to be incorrectly marked as invalid.</li>
+    <li>Improved error checking of log file creation and rotation. Bugs in Tow-Boot (aka Das U-Boot) 8225.40 on a Raspberry Pi were interacting with rEFInd's minimal error checking on log file rotation, causing rEFInd to crash when attempting to rotate the log file. This is now fixed.</li>
+    <li>Worked around a bug in at least one UEFI that could cause rEFInd to freeze when doing a self-install.</li>
+    <li>Fixed bug in <tt>refind-install</tt> that caused the <tt>--ownhfs</tt> option to fail.</li>
+</ul></li>
+<li>Additional miscellaneous changes are:
+    <ul>
+    <li>Removed most BIOS/CSM/legacy scanning and boot code from builds on architectures other than x86/IA32 or x86-64/AMD64/X64. This code is dead weight on other platforms; removing it reduces the binary size and makes it less likely that a hidden bug will affect these platforms.</li>
+    <li>Updated LodePNG to the latest version (20230410).</li>
+</ul></li>
+</ul></li>
 
 <li><b>0.14.0.2 (3/6/2022)</b>&mdash;This is a minor update to address a bug in the <tt>refind-install</tt> script that caused it to fail to identify a mounted ESP in Linux. This in turn could cause package installation problems. This is actually a return of a bug that was fixed in 0.13.3.1, and was caused by bad advice from the <tt>shellcheck</tt> script-checking tool. I've added comments to make it less likely that I'll make the same mistake again.</li>
 
