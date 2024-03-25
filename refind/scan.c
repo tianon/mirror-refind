@@ -527,7 +527,6 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
     LOG(4, LOG_LINE_NORMAL, L"Adding hints based on specific loaders");
     // detect specific loaders
     if (IsInSubstring(NameClues, GlobalConfig.LinuxPrefixes)) {
-//    if (StriSubCmp(L"bzImage", NameClues) || StriSubCmp(L"vmlinuz", NameClues) || StriSubCmp(L"kernel", NameClues)) {
         if (Volume->DiskKind != DISK_KIND_NET) {
             GuessLinuxDistribution(&OSIconName, Volume, LoaderPath);
             Entry->LoadOptions = GetMainLinuxOptions(LoaderPath, Volume);
@@ -974,9 +973,6 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
        NewLoader = LoaderList;
        while (NewLoader != NULL) {
            IsLinux = IsInSubstring(NewLoader->FileName, GlobalConfig.LinuxPrefixes);
-//            IsLinux = (StriSubCmp(L"bzImage", NewLoader->FileName) ||
-//                       StriSubCmp(L"vmlinuz", NewLoader->FileName) ||
-//                       StriSubCmp(L"kernel", NewLoader->FileName));
            if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
                AddKernelToSubmenu(FirstKernel, NewLoader->FileName, Volume);
            } else {
@@ -1432,8 +1428,6 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
         MainMenu.Entries[i]->ShortcutDigit = (CHAR16)('1' + i);
 
     // wait for user ACK when there were errors
-//     SwitchToText(FALSE);
-//     FinishTextScreen(FALSE);
 } // VOID ScanForBootloaders()
 
 // Checks to see if a specified file seems to be a valid tool.
