@@ -1,3 +1,9 @@
+refind (0.14.1.1-0ppa1) jammy; urgency=medium
+
+  * Fixed Secure Boot packaging issues
+
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Mon, 25 Mar 2024 10:22:55 -0400
+
 refind (0.14.1-0ppa1) jammy; urgency=medium
 
   * Version bump

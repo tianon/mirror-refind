@@ -3,14 +3,14 @@ Maintainer: Rod Smith <rod.smith@canonical.com>
 Section: admin
 Priority: optional
 Standards-Version: 4.3.0
-Build-Depends: debhelper (>= 9), gnu-efi
+Build-Depends: debhelper (>= 11), gnu-efi
 Homepage: https://www.rodsbooks.com/refind
 Vcs-Browser: https://salsa.debian.org/debian/refind
 Vcs-Git: https://salsa.debian.org/debian/refind.git
 
 Package: refind
 Architecture: amd64 arm64 i386
-Depends: debconf, efibootmgr, gdisk, mokutil, openssl, ${misc:Depends}
+Depends: debconf, efibootmgr, gawk, gdisk, mokutil, openssl, ${misc:Depends}
 Recommends: python3, sbsigntool
 Description: boot manager for EFI-based computers
  A graphical boot manager for EFI- and UEFI-based computers, such as all
