@@ -1424,16 +1424,16 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 
     LOG(3, LOG_LINE_NORMAL, L"Checking validity of tool '%s' on '%s'", PathName,
         BaseVolume->PartName ? BaseVolume->PartName : BaseVolume->VolName);
-    if (gHiddenTools == NULL) {
-        DontScanTools = ReadHiddenTags(L"HiddenTools");
-        if (DontScanTools)
-            gHiddenTools = StrDuplicate(DontScanTools);
-    } else {
-        if (gHiddenTools)
-            DontScanTools = StrDuplicate(gHiddenTools);
-    }
-    MergeStrings(&DontScanTools, GlobalConfig.DontScanTools, L',');
     if (FileExists(BaseVolume->RootDir, PathName) && IsValidLoader(BaseVolume->RootDir, PathName)) {
+        if (gHiddenTools == NULL) {
+            DontScanTools = ReadHiddenTags(L"HiddenTools");
+            if (DontScanTools)
+                gHiddenTools = StrDuplicate(DontScanTools);
+        } else {
+            DontScanTools = StrDuplicate(gHiddenTools);
+        }
+
+        MergeStrings(&DontScanTools, GlobalConfig.DontScanTools, L',');
         SplitPathName(PathName, &TestVolName, &TestPathName, &TestFileName);
         while (retval && (DontScanThis = FindCommaDelimited(DontScanTools, i++))) {
             SplitPathName(DontScanThis, &DontVolName, &DontPathName, &DontFileName);
@@ -1465,46 +1465,55 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 // Locate a single tool from the specified Locations using one of the
 // specified Names and add it to the menu.
 VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINTN Icon) {
-    UINTN j = 0, k, VolumeIndex;
+    UINTN j, k, VolumeIndex;
     CHAR16 *DirName, *FileName, *PathName, *FullDescription, *VolName = NULL;
     CHAR16 *ScannedLocations = NULL;
     BOOLEAN VolMatch;
 
     LOG(1, LOG_LINE_NORMAL, L"Scanning for tools '%s' in '%s'", Names, Locations);
-    while ((DirName = FindCommaDelimited(Locations, j++)) != NULL) {
-        if (!IsIn(DirName, ScannedLocations)) {
-            MergeStrings(&ScannedLocations, DirName, ',');
-            k = 0;
-            SplitVolumeAndFilename(&DirName, &VolName);
-            while ((FileName = FindCommaDelimited(Names, k++)) != NULL) {
-                PathName = StrDuplicate(DirName);
-                MergeStrings(&PathName, FileName, MyStriCmp(PathName, L"\\") ? 0 : L'\\');
-                for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                    LOG(3, LOG_LINE_NORMAL, L"Checking volume '%s' for '%s'", Volumes[VolumeIndex]->VolName, PathName);
+    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+        LOG(2, LOG_LINE_NORMAL, L"FindTool: Scanning volume '%s'", Volumes[VolumeIndex]->VolName);
+        if (Volumes[VolumeIndex]->RootDir != NULL) {
+            j = 0;
+            while ((DirName = FindCommaDelimited(Locations, j++)) != NULL) {
+                if (!IsIn(DirName, ScannedLocations)) {
+                    MergeStrings(&ScannedLocations, DirName, ',');
+                    SplitVolumeAndFilename(&DirName, &VolName);
                     VolMatch = ((VolName == NULL) ||
                                 (MyStriCmp(VolName, Volumes[VolumeIndex]->FsName)) ||
-                                (MyStriCmp(VolName, Volumes[VolumeIndex]->PartName)));
-                    if (VolMatch && (Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], PathName))) {
-                        FullDescription = PoolPrint(L"%s at %s on %s", Description, PathName,
-                                                    Volumes[VolumeIndex]->VolName);
-                        LOG(1, LOG_LINE_NORMAL, L"Adding tag for '%s' on '%s'", FileName,
-                            Volumes[VolumeIndex]->VolName);
-                        AddToolEntry(Volumes[VolumeIndex], PathName, FullDescription,
-                                     BuiltinIcon(Icon), 'S', FALSE);
-                        MyFreePool(FullDescription);
-                    } // if
-                } // for
-                MyFreePool(PathName);
-                MyFreePool(FileName);
-            } // while Names
-            MyFreePool(VolName);
-            VolName = NULL;
-        } else {
-            LOG(3, LOG_LINE_NORMAL, L"Removed duplicate directory name: '%s'", DirName);
-        }
-        MyFreePool(DirName);
-    } // while Locations
-    MyFreePool(ScannedLocations);
+                                (MyStriCmp(VolName, Volumes[VolumeIndex]->PartName)) ||
+                                (MyStriCmp(VolName, Volumes[VolumeIndex]->VolName)));
+                    if (VolMatch && (FileExists(Volumes[VolumeIndex]->RootDir, DirName))) {
+                        k = 0;
+                        while ((FileName = FindCommaDelimited(Names, k++)) != NULL) {
+                            PathName = StrDuplicate(DirName);
+                            LOG(3, LOG_LINE_NORMAL, L"FindTool: Checking volume '%s' for '%s'",
+                                Volumes[VolumeIndex]->VolName, PathName);
+                            MergeStrings(&PathName, FileName, MyStriCmp(PathName, L"\\") ? 0 : L'\\');
+                            if (IsValidTool(Volumes[VolumeIndex], PathName)) {
+                                FullDescription = PoolPrint(L"%s at %s on %s", Description, PathName,
+                                                            Volumes[VolumeIndex]->VolName);
+                                LOG(1, LOG_LINE_NORMAL, L"Adding tag for '%s' on '%s'", FileName,
+                                    Volumes[VolumeIndex]->VolName);
+                                AddToolEntry(Volumes[VolumeIndex], PathName, FullDescription,
+                                             BuiltinIcon(Icon), 'S', FALSE);
+                                MyFreePool(FullDescription);
+                            MyFreePool(PathName);
+                            MyFreePool(FileName);
+                            } // if
+                        } // while Names
+                    } // if VolMatch....
+                    MyFreePool(VolName);
+                    VolName = NULL;
+                } else {
+                    LOG(3, LOG_LINE_NORMAL, L"Skipping duplicate directory name: '%s'", DirName);
+                }
+                MyFreePool(DirName);
+            } // while Locations
+            MyFreePool(ScannedLocations);
+            ScannedLocations = NULL;
+        } // if RootDir != NULL
+    } // for
 } // VOID FindTool()
 
 // Add the second-row tags containing built-in and external tools (EFI shell,
