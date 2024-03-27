@@ -277,6 +277,13 @@ use_nvram false
 #
 #showtools shell, bootorder, gdisk, memtest, mok_tool, apple_recovery, windows_recovery, about, hidden_tags, reboot, exit, firmware, fwupdate
 
+# Additional directories to scan for tools. You may specify a directory
+# alone or a volume identifier plus pathname. The default is to scan no
+# extra directories, beyond EFI/tools and any directory in which an EFI
+# loader is found.
+#
+#also_scan_tool_dirs EFI/memtest,ESP2:/EFI/tools/memtest86
+
 # Tool binaries to be excluded from the tools line, even if the
 # general class is specified in showtools. This enables trimming an
 # overabundance of tools, as when you see multiple mok_tool entries

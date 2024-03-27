@@ -165,31 +165,31 @@
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
 #endif
 
-// Names of binaries that can manage MOKs....
-#if defined (EFIX64)
-#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
-#elif defined(EFI32)
-#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmia32.efi"
-#elif defined(EFIAARCH64)
-#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmaa64.efi"
-#else
-#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
-#endif
-// Names of binaries that can update firmware....
+// Names of some tool binaries....
 #if defined (EFIX64)
 #define FWUPDATE_NAMES          L"fwupx64.efi"
+#define MEMTEST_NAMES           L"memtest86.efi,memtest86_x64.efi,memtest86x64.efi,memtest86+x64.efi"
+#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
+#define SHELL_NAMES             L"shell.efi,shellx64.efi"
 #elif defined(EFI32)
 #define FWUPDATE_NAMES          L"fwupia32.efi"
+#define MEMTEST_NAMES           L"memtest86.efi,memtest86_ia32.efi,memtest86ia32.efi,memtest86+ia32.efi"
+#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmia32.efi"
+#define SHELL_NAMES             L"shell.efi,shellia32.efi"
 #elif defined(EFIAARCH64)
 #define FWUPDATE_NAMES          L"fwupaa64.efi"
+#define MEMTEST_NAMES           L"memtest86.efi,memtest86_aa64.efi,memtest86aa64.efi"
+#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmaa64.efi"
+#define SHELL_NAMES             L"shell.efi,shellaa64.efi"
 #else
 #define FWUPDATE_NAMES          L"fwup.efi"
+#define MEMTEST_NAMES           L"memtest86.efi"
+#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
+#define SHELL_NAMES             L"shell.efi"
 #endif
-// Directories to search for these MOK-managing programs. Note that SelfDir is
-// searched in addition to these locations....
-#define MOK_LOCATIONS           L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\opensuse,EFI\\altlinux"
-// Directories to search for memtest86....
-#define MEMTEST_LOCATIONS       L"EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
+
+// Directories to search for tools....
+#define TOOL_LOCATIONS       L"EFI\\tools"
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 // Files that may be macOS recovery files
@@ -377,6 +377,8 @@ typedef struct {
    CHAR16           *SelectionBigFileName;
    CHAR16           *DefaultSelection;
    CHAR16           *AlsoScan;
+   CHAR16           *ToolLocations;
+   CHAR16           *ExtraToolLocations;
    CHAR16           *DontScanVolumes;
    CHAR16           *DontScanDirs;
    CHAR16           *DontScanFiles;

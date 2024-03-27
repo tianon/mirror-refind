@@ -81,35 +81,27 @@
 #define MACOSX_LOADER_DIR      L"System\\Library\\CoreServices"
 #define MACOSX_LOADER_PATH      ( MACOSX_LOADER_DIR L"\\boot.efi" )
 #if defined (EFIX64)
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shell.efi,\\shellx64.efi"
-#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi"
-#define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi"
-#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"memtest86.efi,memtest86_x64.efi,memtest86x64.efi,memtest86+x64.efi"
+#define GPTSYNC_NAMES           L"gptsync.efi,gptsync_x64.efi"
+#define GDISK_NAMES             L"gdisk.efi,gdisk_x64.efi"
+#define NETBOOT_NAMES           L"ipxe.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
 #elif defined (EFI32)
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellia32.efi,\\shell.efi,\\shellia32.efi"
-#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi"
-#define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_ia32.efi"
-#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"memtest86.efi,memtest86_ia32.efi,memtest86ia32.efi,memtest86+ia32.efi"
+#define GPTSYNC_NAMES           L"gptsync.efi,gptsync_ia32.efi"
+#define GDISK_NAMES             L"gdisk.efi,gdisk_ia32.efi"
+#define NETBOOT_NAMES           L"ipxe.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #define FALLBACK_BASENAME       L"bootia32.efi"
 #elif defined (EFIAARCH64)
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellaa64.efi,\\shell.efi,\\shellaa64.efi"
-#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_aa64.efi"
-#define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_aa64.efi"
-#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"memtest86.efi,memtest86_aa64.efi,memtest86aa64.efi"
+#define GPTSYNC_NAMES           L"gptsync.efi,gptsync_aa64.efi"
+#define GDISK_NAMES             L"gdisk.efi,gdisk_aa64.efi"
+#define NETBOOT_NAMES           L"ipxe.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootaa64.efi"
 #define FALLBACK_BASENAME       L"bootaa64.efi"
 #else
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\shell.efi"
-#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi"
-#define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi"
-#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"memtest86.efi"
+#define GPTSYNC_NAMES           L"gptsync.efi"
+#define GDISK_NAMES             L"gdisk.efi"
+#define NETBOOT_NAMES           L"ipxe.efi"
 #define DRIVER_DIRS             L"drivers"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" /* Not really correct */
 #define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
@@ -130,8 +122,6 @@ static REFIT_MENU_ENTRY MenuEntryManageHidden = { L"Manage Hidden Tags Menu", TA
 static REFIT_MENU_ENTRY MenuEntryInstall = { L"Install rEFInd to Disk", TAG_INSTALL, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryBootorder = { L"Manage EFI boot order", TAG_BOOTORDER, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY MenuEntryExit     = { L"Exit rEFInd", TAG_EXIT, 1, 0, 0, NULL, NULL, NULL };
-
-CHAR16 *MemtestLocations = NULL;
 
 // Structure used to hold boot loader filenames and time stamps in
 // a linked list; used to sort entries within a directory.
@@ -922,7 +912,6 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
     struct LOADER_LIST      *LoaderList = NULL, *NewLoader;
     LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
     BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE, InSelfPath;
-    BOOLEAN                 FoundMemtest = FALSE;
 
     LOG(3, LOG_LINE_NORMAL, L"Beginning to scan directory '%s' for '%s'", Path, Pattern);
     InSelfPath = MyStriCmp(Path, SelfDirPath);
@@ -943,8 +932,6 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
               MyStriCmp(Extension, L".icns") ||
               MyStriCmp(Extension, L".png") ||
               (MyStriCmp(DirEntry->FileName, FALLBACK_BASENAME) && (MyStriCmp(Path, L"EFI\\BOOT"))) ||
-              FilenameIn(Volume, Path, DirEntry->FileName, SHELL_NAMES) ||
-              FilenameIn(Volume, Path, DirEntry->FileName, MEMTEST_NAMES) ||
               HasSignedCounterpart(Volume, FullName) || /* a file with same name plus ".efi.signed" is present */
               FilenameIn(Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
               !IsValidLoader(Volume->RootDir, FullName)) {
@@ -959,12 +946,9 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
              if (DuplicatesFallback(Volume, FullName))
                 FoundFallbackDuplicate = TRUE;
           } // if
-          if (MemtestLocations == NULL) {
-              MemtestLocations = StrDuplicate(MEMTEST_LOCATIONS);
-          }
-          if ((MemtestLocations != NULL) && !FoundMemtest) {
-              MergeStrings(&MemtestLocations, Path, L',');
-              FoundMemtest = TRUE;
+          if (!IsIn(Path, GlobalConfig.ExtraToolLocations)) {
+              MergeStrings(&GlobalConfig.ExtraToolLocations, Path, L',');
+              LOG(3, LOG_LINE_NORMAL, L"Adding '%s' to ExtraToolLocations", Path);
           }
           MyFreePool(Extension);
           MyFreePool(FullName);
@@ -1482,19 +1466,25 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 // specified Names and add it to the menu.
 VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINTN Icon) {
     UINTN j = 0, k, VolumeIndex;
-    CHAR16 *DirName, *FileName, *PathName, *FullDescription;
+    CHAR16 *DirName, *FileName, *PathName, *FullDescription, *VolName = NULL;
     CHAR16 *ScannedLocations = NULL;
+    BOOLEAN VolMatch;
 
     LOG(1, LOG_LINE_NORMAL, L"Scanning for tools '%s' in '%s'", Names, Locations);
     while ((DirName = FindCommaDelimited(Locations, j++)) != NULL) {
         if (!IsIn(DirName, ScannedLocations)) {
             MergeStrings(&ScannedLocations, DirName, ',');
             k = 0;
+            SplitVolumeAndFilename(&DirName, &VolName);
             while ((FileName = FindCommaDelimited(Names, k++)) != NULL) {
                 PathName = StrDuplicate(DirName);
                 MergeStrings(&PathName, FileName, MyStriCmp(PathName, L"\\") ? 0 : L'\\');
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                    if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], PathName))) {
+                    LOG(3, LOG_LINE_NORMAL, L"Checking volume '%s' for '%s'", Volumes[VolumeIndex]->VolName, PathName);
+                    VolMatch = ((VolName == NULL) ||
+                                (MyStriCmp(VolName, Volumes[VolumeIndex]->FsName)) ||
+                                (MyStriCmp(VolName, Volumes[VolumeIndex]->PartName)));
+                    if (VolMatch && (Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], PathName))) {
                         FullDescription = PoolPrint(L"%s at %s on %s", Description, PathName,
                                                     Volumes[VolumeIndex]->VolName);
                         LOG(1, LOG_LINE_NORMAL, L"Adding tag for '%s' on '%s'", FileName,
@@ -1507,6 +1497,8 @@ VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINTN Icon)
                 MyFreePool(PathName);
                 MyFreePool(FileName);
             } // while Names
+            MyFreePool(VolName);
+            VolName = NULL;
         } else {
             LOG(3, LOG_LINE_NORMAL, L"Removed duplicate directory name: '%s'", DirName);
         }
@@ -1518,7 +1510,7 @@ VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINTN Icon)
 // Add the second-row tags containing built-in and external tools (EFI shell,
 // reboot, etc.)
 VOID ScanForTools(VOID) {
-    CHAR16 *FileName = NULL, *VolName = NULL, *MokLocations, *Description;
+    CHAR16 *FileName = NULL, *VolName = NULL, *Description, *AllToolLocations;
     REFIT_MENU_ENTRY *TempMenuEntry;
     UINTN i, j, VolumeIndex;
     UINT64 osind;
@@ -1526,12 +1518,11 @@ VOID ScanForTools(VOID) {
     UINT32 CsrValue;
 
     LOG(1, LOG_LINE_SEPARATOR, L"Scanning for tools");
-    MokLocations = StrDuplicate(MOK_LOCATIONS);
-    if (MokLocations != NULL)
-        MergeStrings(&MokLocations, SelfDirPath, L',');
-    if (MemtestLocations == NULL)
-        MemtestLocations = StrDuplicate(MEMTEST_LOCATIONS);
+    if (!IsIn(GlobalConfig.ExtraToolLocations, SelfDirPath))
+        MergeStrings(&GlobalConfig.ExtraToolLocations, SelfDirPath, L',');
 
+    AllToolLocations = StrDuplicate(GlobalConfig.ToolLocations);
+    MergeStrings(&AllToolLocations, GlobalConfig.ExtraToolLocations, L',');
     for (i = 0; i < NUM_TOOLS; i++) {
         switch(GlobalConfig.ShowTools[i]) {
             // NOTE: Be sure that FileName is NULL at the end of each case.
@@ -1584,62 +1575,32 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_SHELL:
-                j = 0;
-                while ((FileName = FindCommaDelimited(SHELL_NAMES, j++)) != NULL) {
-                    if (IsValidTool(SelfVolume, FileName)) {
-                        LOG(1, LOG_LINE_NORMAL, L"Adding Shell tag for '%s' on '%s'", FileName,
-                            SelfVolume->VolName);
-                        AddToolEntry(SelfVolume, FileName, L"EFI Shell",
-                                     BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
-                                     'S', FALSE);
-                    }
-                    MyFreePool(FileName);
-                    FileName = NULL;
-                } // while
+                FindTool(AllToolLocations, SHELL_NAMES, L"EFI shell", BUILTIN_ICON_TOOL_SHELL);
                 ScanFirmwareDefined(1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
                 break;
 
             case TAG_GPTSYNC:
-                j = 0;
-                while ((FileName = FindCommaDelimited(GPTSYNC_NAMES, j++)) != NULL) {
-                    if (IsValidTool(SelfVolume, FileName)) {
-                        LOG(1, LOG_LINE_NORMAL, L"Adding Hybrid MBR tool tag for '%s' on '%s'", FileName,
-                            SelfVolume->VolName);
-                        AddToolEntry(SelfVolume, FileName, L"Hybrid MBR tool",
-                                     BuiltinIcon(BUILTIN_ICON_TOOL_PART),
-                                     'P', FALSE);
-                    } // if
-                    MyFreePool(FileName);
-                } // while
-                FileName = NULL;
+                FindTool(AllToolLocations, GPTSYNC_NAMES, L"Hybrid MBR tool", BUILTIN_ICON_TOOL_PART);
                 break;
 
             case TAG_GDISK:
-                j = 0;
-                while ((FileName = FindCommaDelimited(GDISK_NAMES, j++)) != NULL) {
-                    if (IsValidTool(SelfVolume, FileName)) {
-                        LOG(1, LOG_LINE_NORMAL, L"Adding GPT fdisk tag for '%s' on '%s'", FileName,
-                            SelfVolume->VolName);
-                        AddToolEntry(SelfVolume, FileName, L"disk partitioning tool",
-                                     BuiltinIcon(BUILTIN_ICON_TOOL_PART), 'G', FALSE);
-                    } // if
-                    MyFreePool(FileName);
-                } // while
-                FileName = NULL;
+                FindTool(AllToolLocations, GDISK_NAMES, L"Disk partitioning tool", BUILTIN_ICON_TOOL_PART);
                 break;
 
             case TAG_NETBOOT:
-                j = 0;
-                while ((FileName = FindCommaDelimited(NETBOOT_NAMES, j++)) != NULL) {
-                    if (IsValidTool(SelfVolume, FileName)) {
-                        LOG(1, LOG_LINE_NORMAL, L"Adding Netboot tag for '%s' on '%s'", FileName,
-                            SelfVolume->VolName);
-                        AddToolEntry(SelfVolume, FileName, L"Netboot",
-                                     BuiltinIcon(BUILTIN_ICON_TOOL_NETBOOT), 'N', FALSE);
-                    } // if
-                    MyFreePool(FileName);
-                } // while
-                FileName = NULL;
+                FindTool(AllToolLocations, NETBOOT_NAMES, L"Netboot", BUILTIN_ICON_TOOL_NETBOOT);
+                break;
+
+            case TAG_MOK_TOOL:
+                FindTool(AllToolLocations, MOK_NAMES, L"MOK utility", BUILTIN_ICON_TOOL_MOK_TOOL);
+                break;
+
+            case TAG_FWUPDATE_TOOL:
+                FindTool(AllToolLocations, FWUPDATE_NAMES, L"firmware update utility", BUILTIN_ICON_TOOL_FWUPDATE);
+                break;
+
+            case TAG_MEMTEST:
+                FindTool(AllToolLocations, MEMTEST_NAMES, L"Memory test utility", BUILTIN_ICON_TOOL_MEMTEST);
                 break;
 
             case TAG_APPLE_RECOVERY:
@@ -1684,14 +1645,6 @@ VOID ScanForTools(VOID) {
                 FileName = NULL;
                 break;
 
-            case TAG_MOK_TOOL:
-                FindTool(MokLocations, MOK_NAMES, L"MOK utility", BUILTIN_ICON_TOOL_MOK_TOOL);
-                break;
-
-            case TAG_FWUPDATE_TOOL:
-                FindTool(MokLocations, FWUPDATE_NAMES, L"firmware update utility", BUILTIN_ICON_TOOL_FWUPDATE);
-                break;
-
             case TAG_CSR_ROTATE:
                 if ((GetCsrStatus(&CsrValue) == EFI_SUCCESS) && (GlobalConfig.CsrValues)) {
                     TempMenuEntry = CopyMenuEntry(&MenuEntryRotateCsr);
@@ -1712,11 +1665,8 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
-            case TAG_MEMTEST:
-                FindTool(MemtestLocations, MEMTEST_NAMES, L"Memory test utility", BUILTIN_ICON_TOOL_MEMTEST);
-                break;
-
         } // switch()
     } // for
+    MyFreePool(AllToolLocations);
     LOG(2, LOG_LINE_NORMAL, L"Done scanning for tools");
 } // VOID ScanForTools

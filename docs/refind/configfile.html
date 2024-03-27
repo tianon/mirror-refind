@@ -457,7 +457,12 @@ timeout 20
 <tr>
    <td><tt>dont_scan_files</tt> or <tt>don't_scan_files</tt></td>
    <td>filename(s)</td>
-   <td>Adds the specified filename or filenames to a filename "exclusion list" for OS loaders&mdash;these files are <i>not</i> included as boot loader options even if they're found on the disk. This is useful to exclude support programs (such as <tt>shim.efi</tt> and <tt>MokManager.efi</tt>) and drivers from your OS list. The default value is <tt>shim.efi, shim-fedora.efi, shimx64.efi, PreLoader.efi, TextMode.efi, ebounce.efi, GraphicsConsole.efi, MokManager.efi, HashTool.efi, HashTool-signed.efi, fb{arch}.efi</tt> (where <tt>{arch}</tt> is the architecture code, such as <tt>x64</tt>). You can add a pathname and even a volume specification (filesystem name, partition name, or partition unique GUID), as in <tt>ESP:/EFI/BOOT/backup.efi, /boot/vmlinuz-bad</tt>, to block the boot loaders only in those specified locations. To add files to the default list rather than replace the list, specify <tt>+</tt> as the first option, as in <tt>dont_scan_files + badloader.efi</tt>.</td>
+   <td>Adds the specified filename or filenames to a filename "exclusion list" for OS loaders&mdash;these files are <i>not</i> included as boot loader options even if they're found on the disk. This is useful to exclude support programs (such as <tt>shim.efi</tt> and <tt>MokManager.efi</tt>) and drivers from your OS list. The default value can be found in <tt>refind.log</tt> if you set the log level to 3 or above (see <tt>log_level</tt>); it includes many known EFI tools that appear on the tools row of the menu, as well as Shim filenames. You can add a pathname and even a volume specification (filesystem name, partition name, or partition unique GUID), as in <tt>ESP:/EFI/BOOT/backup.efi, /boot/vmlinuz-bad</tt>, to block the boot loaders only in those specified locations. To add files to the default list rather than replace the list, specify <tt>+</tt> as the first option, as in <tt>dont_scan_files + badloader.efi</tt>.</td>
+</tr>
+<tr>
+   <td><tt>also_scan_tool_dirs</tt></td>
+   <td>directory path(s)</td>
+   <td>Additional directories to scan for tools. You may specify a directory alone or a volume identifier plus pathname. The default is to scan no extra directories, beyond <tt>EFI/tools</tt> and any directory in which an EFI loader is found.</td>
 </tr>
 <tr>
    <td><tt>dont_scan_tools</tt> or <tt>don't_scan_tools</tt></td>

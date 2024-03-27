@@ -530,7 +530,9 @@ VOID ReadConfig(CHAR16 *FileName)
         if (SelfVolume)
             TempStr = GuidAsString(&(SelfVolume->PartGuid));
         MergeStrings(&TempStr, SelfDirPath, L':');
-        MergeStrings(&TempStr, MEMTEST_LOCATIONS, L',');
+        if (GlobalConfig.ToolLocations == NULL)
+            GlobalConfig.ToolLocations = StrDuplicate(TOOL_LOCATIONS);
+        MergeStrings(&TempStr, TOOL_LOCATIONS, L',');
         GlobalConfig.DontScanDirs = TempStr;
         MyFreePool(GlobalConfig.DontScanFiles);
         GlobalConfig.DontScanFiles = StrDuplicate(DONT_SCAN_FILES);
@@ -540,6 +542,8 @@ VOID ReadConfig(CHAR16 *FileName)
         GlobalConfig.DontScanFirmware = NULL;
         MergeStrings(&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
         MergeStrings(&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
+        MergeStrings(&(GlobalConfig.DontScanFiles), MEMTEST_NAMES, L',');
+        MergeStrings(&(GlobalConfig.DontScanFiles), SHELL_NAMES, L',');
         MyFreePool(GlobalConfig.DontScanVolumes);
         GlobalConfig.DontScanVolumes = StrDuplicate(DONT_SCAN_VOLUMES);
         GlobalConfig.WindowsRecoveryFiles = StrDuplicate(WINDOWS_RECOVERY_FILES);
@@ -651,6 +655,9 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (MyStriCmp(TokenList[0], L"don't_scan_firmware") ||
                    MyStriCmp(TokenList[0], L"dont_scan_firmware")) {
             HandleStrings(TokenList, TokenCount, &(GlobalConfig.DontScanFirmware));
+
+        } else if (MyStriCmp(TokenList[0], L"also_scan_tool_dirs")) {
+            HandleStrings(TokenList, TokenCount, &(GlobalConfig.ExtraToolLocations));
 
         } else if (MyStriCmp(TokenList[0], L"don't_scan_tools") ||
                    MyStriCmp(TokenList[0], L"dont_scan_tools")) {

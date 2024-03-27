@@ -135,6 +135,8 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* *SelectionBigFileName = */ NULL,
                               /* *DefaultSelection = */ NULL,
                               /* *AlsoScan = */ NULL,
+                              /* ToolLocations = */ NULL,
+                              /* *ExtraToolLocations = */ NULL,
                               /* *DontScanVolumes = */ NULL,
                               /* *DontScanDirs = */ NULL,
                               /* *DontScanFiles = */ NULL,
@@ -496,6 +498,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         StartLogging(FALSE);
         LogBasicInfo();
     }
+    LOG(3, LOG_LINE_NORMAL, L"GlobalConfig.DontScanFiles is '%s'", GlobalConfig.DontScanFiles);
     MokProtocol = SecureBootSetup();
     if (LoadDrivers())
         ScanVolumes();
