@@ -28,9 +28,12 @@
   scan for tools.
 
 - Added indication of whether rEFInd was booted via Shim ("via Shim") or not
-  ("direct") to the Info/About screen, on the "Platform" line. This
-  information was already written to the refind.log file, when log_level is
-  set to 1 or above.
+  ("direct") to the Info/About screen, on the "Platform" line, after the
+  Secure Boot "active" vs. "inactive" indication. Note that "via Shim" may
+  be specified even if Secure Boot is inactive, if the system is configured
+  to boot rEFInd via Shim but Secure Boot is disabled. This information was
+  already written to the refind.log file, when log_level is set to 1 or
+  above.
 
 0.14.1 (3/24/2024):
 -------------------
