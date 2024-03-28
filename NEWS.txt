@@ -27,6 +27,11 @@
 - Added also_scan_tool_dirs token, for specifying additional directories to
   scan for tools.
 
+- Added indication of whether rEFInd was booted via Shim ("via Shim") or not
+  ("direct") to the Info/About screen, on the "Platform" line. This
+  information was already written to the refind.log file, when log_level is
+  set to 1 or above.
+
 0.14.1 (3/24/2024):
 -------------------
 

@@ -13,6 +13,6 @@
 #ifndef __VERSION_H
 #define __VERSION_H
 
-#define REFIND_VERSION L"0.14.1.3"
+#define REFIND_VERSION L"0.14.1.4"
 
 #endif

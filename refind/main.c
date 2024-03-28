@@ -188,14 +188,17 @@ VOID AboutrEFInd(VOID)
                                               ST->FirmwareRevision & ((1 << 16) - 1)));
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" EFI Revision %d.%02d", ST->Hdr.Revision >> 16, ST->Hdr.Revision & ((1 << 16) - 1)));
 #if defined(EFI32)
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86 (32 bit); Secure Boot %s",
-                                              secure_mode() ? L"active" : L"inactive"));
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86 (32 bit); Secure Boot %s %s",
+                                              secure_mode() ? L"active" : L"inactive",
+                                              ShimLoaded() ? L"(via Shim)" : L"(direct)"));
 #elif defined(EFIX64)
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86_64 (64 bit); Secure Boot %s",
-                                              secure_mode() ? L"active" : L"inactive"));
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86_64 (64 bit); Secure Boot %s %s",
+                                              secure_mode() ? L"active" : L"inactive",
+                                              ShimLoaded() ? L"(via Shim)" : L"(direct)"));
 #elif defined(EFIAARCH64)
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: ARM (64 bit); Secure Boot %s",
-                                              secure_mode() ? L"active" : L"inactive"));
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: ARM (64 bit); Secure Boot %s %s",
+                                              secure_mode() ? L"active" : L"inactive",
+                                              ShimLoaded() ? L"(via Shim)" : L"(direct)"));
 #else
         AddMenuInfoLine(&AboutMenu, L" Platform: unknown");
 #endif
