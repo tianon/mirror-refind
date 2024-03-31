@@ -12,6 +12,7 @@
 
 # Revision history
 #
+# 0.14.2 -- Fixed trivial typo
 # 0.14.0 -- Initial release
 
 FOUND_EXPIRED_KEY="0"
@@ -550,7 +551,7 @@ PauseForKey
 CheckAllKeysExpiration
 if [[ "$REBOOT_AFTER" -eq 1 ]] ; then
     echo
-    echo "You must reboot the computer to finish key management. you can do so yourself,"
+    echo "You must reboot the computer to finish key management. You can do so yourself,"
     echo "or this program can reboot right now."
     GetYN "Do you want to reboot IMMEDIATELY" "N"
     if [[ "$YN" == "Y" ]] ; then

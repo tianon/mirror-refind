@@ -35,6 +35,8 @@
   already written to the refind.log file, when log_level is set to 1 or
   above.
 
+- Fixed a typo in a message in refind-sb-healthcheck.
+
 0.14.1 (3/24/2024):
 -------------------
 
