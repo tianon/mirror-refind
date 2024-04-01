@@ -76,20 +76,21 @@
 #endif
 
 #if defined (EFIX64)
-#define EFI_STUB_ARCH           0x8664
+#define EFI_STUB_ARCH           0x0000866400004550
 #elif defined (EFI32)
-#define EFI_STUB_ARCH           0x014c
+#define EFI_STUB_ARCH           0x0000014c00004550
 #elif defined (EFIAARCH64)
-#define EFI_STUB_ARCH           0xaa64
+#define EFI_STUB_ARCH           0x0000aa6400004550
 #else
 #endif
+UINT64 PESig = EFI_STUB_ARCH;
 
 #define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
 
 // Amount of a file to read to search for the EFI identifying signatures....
-// I've seen signatures as far in as 3680 (0xE60), so read a bit more than
-// that....
-#define EFI_HEADER_SIZE 3800
+// I've seen signatures as far in as 3680 (0xE60; on EFI filesystem drivers
+// on ARM64), so read a bit more than that....
+#define EFI_HEADER_SIZE 4096
 
 static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
     if (Name == NULL)
@@ -122,7 +123,7 @@ static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
 UINTN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName) {
     UINTN           LoaderType = LOADER_TYPE_EFI;
 #if defined (EFIX64) | defined (EFI32) | defined (EFIAARCH64)
-    BOOLEAN         IsValid = TRUE;
+    BOOLEAN         IsValid;
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
     CHAR8           *Header;
@@ -155,14 +156,13 @@ UINTN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName) {
         return LOADER_TYPE_INVALID;
     }
     SignaturePos = *(UINT32 *)&Header[0x3c];
-    LOG(4, LOG_LINE_NORMAL, L"In IsValidLoader(), LoadedSize is %lu, SignaturePos is %lu", LoadedSize, SignaturePos);
+    LOG(4, LOG_LINE_NORMAL, L"In IsValidLoader(), LoadedSize is %llu, SignaturePos is %llu",
+        (UINT64) LoadedSize, (UINT64) SignaturePos);
     // Search for the normal signatures for an EFI binary....
     IsValid = (LoadedSize == EFI_HEADER_SIZE) &&
               ((Header[0] == 'M' && Header[1] == 'Z' &&
                (SignaturePos < (EFI_HEADER_SIZE - 8)) &&
-               Header[SignaturePos] == 'P' && Header[SignaturePos+1] == 'E' &&
-               Header[SignaturePos+2] == 0 && Header[SignaturePos+3] == 0 &&
-               *(UINT16 *)&Header[SignaturePos+4] == EFI_STUB_ARCH) ||
+               (CompareMem(&Header[SignaturePos], &PESig, 6) == 0)) ||
               (*(UINT32 *)&Header == FAT_ARCH));
     if (!IsValid) {
         // Search for indications that this is a gzipped file. Note, however,
