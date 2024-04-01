@@ -163,7 +163,7 @@ UINTN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName) {
               ((Header[0] == 'M' && Header[1] == 'Z' &&
                (SignaturePos < (EFI_HEADER_SIZE - 8)) &&
                (CompareMem(&Header[SignaturePos], &PESig, 6) == 0)) ||
-              (*(UINT32 *)&Header == FAT_ARCH));
+              (*(UINT32 *)Header == FAT_ARCH));
     if (!IsValid) {
         // Search for indications that this is a gzipped file. Note, however,
         // that we don't dig deeper into gzipped files, so some invalid

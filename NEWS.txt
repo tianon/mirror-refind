@@ -41,6 +41,10 @@
   IsValidLoader() on IA32/x86. (The variables needed explicit casts on the
   32-bit architecture.)
 
+- Fixed a bug that presented Apple-specific "fat" EFI binaries (those with
+  both 32- and 64-bit binaries in one file) from showing up in rEFInd's
+  menu.
+
 0.14.1 (3/24/2024):
 -------------------
 
