@@ -50,7 +50,7 @@ $(SHLIB_TARGET): $(OBJS)
 	      -o $@ $(LOCAL_LIBS) $(GNUEFI_LIBS)
 
 $(TARGET): $(SHLIB_TARGET)
-	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel \
+	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rodata -j .rel \
 	           -j .rela -j .rel.* -j .rela.* -j .rel* -j .rela* \
 		   -j .reloc $(FORMAT) $< $@
 ifneq ($(OMIT_SBAT), 1)

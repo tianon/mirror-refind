@@ -669,7 +669,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
                     LOG(4, LOG_LINE_NORMAL, L"Found ext2fs");
                     Volume->FSType = FS_TYPE_EXT2;
                 }
-                CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
+                MyCopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
                 return;
             }
         } // search for ext2/3/4 magic
@@ -681,7 +681,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
                 (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)) {
                     LOG(4, LOG_LINE_NORMAL, L"Found ReiserFS");
                     Volume->FSType = FS_TYPE_REISERFS;
-                    CopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
+                    MyCopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
                     return;
             } // if
         } // search for ReiserFS magic
@@ -733,16 +733,16 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
                if (CompareMem(MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
                    LOG(4, LOG_LINE_NORMAL, L"Found NTFS");
                    Volume->FSType = FS_TYPE_NTFS;
-                   CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
+                   MyCopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
                } else if ((CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
                           (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0)) {
                    LOG(4, LOG_LINE_NORMAL, L"Found FAT12 or FAT16");
                    Volume->FSType = FS_TYPE_FAT;
-                   CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
+                   MyCopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
                } else if (CompareMem(MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
                    LOG(4, LOG_LINE_NORMAL, L"Found FAT32");
                    Volume->FSType = FS_TYPE_FAT;
-                   CopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
+                   MyCopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
                } else if (!Volume->BlockIO->Media->LogicalPartition) {
                    LOG(4, LOG_LINE_NORMAL, L"Found disk boot sector/MBR");
                    Volume->FSType = FS_TYPE_WHOLEDISK;
@@ -915,7 +915,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
                     MbrTableFound = FALSE;
             if (MbrTableFound) {
                 Volume->MbrPartitionTable = AllocatePool(4 * 16);
-                CopyMem(Volume->MbrPartitionTable, MbrTable, 4 * 16);
+                MyCopyMem(Volume->MbrPartitionTable, MbrTable, 4 * 16);
             }
         }
 
@@ -1049,7 +1049,7 @@ static VOID SetPartGuidAndName(REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *D
             PartInfo = FindPartWithGuid(&(Volume->PartGuid));
             if (PartInfo) {
                 Volume->PartName = StrDuplicate(PartInfo->name);
-                CopyMem(&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof(EFI_GUID));
+                MyCopyMem(&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof(EFI_GUID));
                 if (GuidsAreEqual(&(Volume->PartTypeGuid), &gFreedesktopRootGuid) &&
                         ((PartInfo->attributes & GPT_NO_AUTOMOUNT) == 0)) {
                     GlobalConfig.DiscoveredRoot = Volume;
@@ -1145,8 +1145,8 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
             // make a device path for the whole device
             PartialLength = (UINT8 *)NextDevicePath - (UINT8 *)(Volume->DevicePath);
             DiskDevicePath = (EFI_DEVICE_PATH *)AllocatePool(PartialLength + sizeof(EFI_DEVICE_PATH));
-            CopyMem(DiskDevicePath, Volume->DevicePath, PartialLength);
-            CopyMem((UINT8 *)DiskDevicePath + PartialLength, EndDevicePath, sizeof(EFI_DEVICE_PATH));
+            MyCopyMem(DiskDevicePath, Volume->DevicePath, PartialLength);
+            MyCopyMem((UINT8 *)DiskDevicePath + PartialLength, EndDevicePath, sizeof(EFI_DEVICE_PATH));
 
             // get the handle for that path
             RemainingDevicePath = DiskDevicePath;
@@ -1938,6 +1938,17 @@ VOID MyFreePool(IN VOID *Pointer) {
     if (Pointer != NULL)
         FreePool(Pointer);
 }
+
+// When using GNU-EFI, call the EFI's built-in MyCopyMem() function, because
+// GNU-EFI 3.0.18 changed its MyCopyMem() definition in a way that broke
+// rEFInd.
+// VOID MyCopyMem (IN VOID *Dest, IN CONST VOID *Src, IN UINTN len) {
+// #ifdef __MAKEWITH_GNUEFI
+//     refit_call3_wrapper(gBS->CopyMem, Dest, Src, len);
+// #else
+//     CopyMem(Dest, Src, len);
+// #endif
+// } // VOID MyCopyMem()
 
 static EFI_GUID AppleRemovableMediaGuid = APPLE_REMOVABLE_MEDIA_PROTOCOL_GUID;
 
