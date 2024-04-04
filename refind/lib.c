@@ -402,16 +402,16 @@ EFI_STATUS CreateVarsDir(VOID) {
     if (gVarsDir == NULL) {
         LOG(1, LOG_LINE_NORMAL, L"Trying to create a 'vars' directory in which to hold variables");
         Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &gVarsDir, L"vars",
-                                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
-                                    EFI_FILE_DIRECTORY);
+                                     EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+                                     EFI_FILE_DIRECTORY);
         if (EFI_ERROR(Status)) {
             Status = egFindESP(&EspRootDir);
             if (Status == EFI_SUCCESS) {
                 LOG(1, LOG_LINE_NORMAL,
                     L"Trying to create a 'refind-vars' directory on the ESP in which to hold variables");
                 Status = refit_call5_wrapper(EspRootDir->Open, EspRootDir, &gVarsDir, L"refind-vars",
-                                            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
-                                            EFI_FILE_DIRECTORY);
+                                             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+                                             EFI_FILE_DIRECTORY);
             }
         }
     }
@@ -1095,14 +1095,6 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     LOG(2, LOG_LINE_NORMAL, L"Entering ScanVolume()");
     // get device path
     Volume->DevicePath = DuplicateDevicePath(DevicePathFromHandle(Volume->DeviceHandle));
-#if REFIT_DEBUG > 0
-    if (Volume->DevicePath != NULL) {
-        Print(L"* %s\n", DevicePathToStr(Volume->DevicePath));
-#if REFIT_DEBUG >= 2
-        DumpHex(1, 0, DevicePathSize(Volume->DevicePath), Volume->DevicePath);
-#endif
-    }
-#endif
 
     Volume->DiskKind = DISK_KIND_INTERNAL;  // default
 
@@ -1934,21 +1926,9 @@ BOOLEAN FilenameIn(REFIT_VOLUME *Volume, CHAR16 *Directory, CHAR16 *Filename, CH
 // Implement FreePool the way it should have been done to begin with, so that
 // it doesn't throw an ASSERT message if fed a NULL pointer....
 VOID MyFreePool(IN VOID *Pointer) {
-//     LOG(4, LOG_LINE_NORMAL, L"Freeing %lld", Pointer);
     if (Pointer != NULL)
         FreePool(Pointer);
 }
-
-// When using GNU-EFI, call the EFI's built-in MyCopyMem() function, because
-// GNU-EFI 3.0.18 changed its MyCopyMem() definition in a way that broke
-// rEFInd.
-// VOID MyCopyMem (IN VOID *Dest, IN CONST VOID *Src, IN UINTN len) {
-// #ifdef __MAKEWITH_GNUEFI
-//     refit_call3_wrapper(gBS->CopyMem, Dest, Src, len);
-// #else
-//     CopyMem(Dest, Src, len);
-// #endif
-// } // VOID MyCopyMem()
 
 static EFI_GUID AppleRemovableMediaGuid = APPLE_REMOVABLE_MEDIA_PROTOCOL_GUID;
 
