@@ -251,11 +251,8 @@ override it on the command line, as in:
 
 make REFIND_SBAT_CSV=foo.csv all
 
-Incorporating the .sbat section requires a version of objcopy that supports
-certain features that are fairly modern. I don't know the precise version
-where this support was added, but I believe it was added around 2019. If you
-don't care about SBAT support and want to compile rEFInd with an earlier
-toolchain, you can set the OMIT_SBAT variable to 1, as in:
+If you don't care about SBAT support and compiling rEFInd fails when adding
+the SBAT section, you can set the OMIT_SBAT variable to 1, as in:
 
 make OMIT_SBAT=1
 
