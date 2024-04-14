@@ -1,5 +1,11 @@
-0.14.2 (?/??/2024):
+0.14.3 (?/??/2024):
 -------------------
+
+- Fixed bug in refind-mkdefault that would cause it to crash if the
+  BootOrder variable contained a pointer to a non-exitent Boot#### entry.
+
+0.14.2 (4/6/2024):
+------------------
 
 - Fixed bugs in RPM & Debian packaging related to Secure Boot:
   - The post-install script would sometimes fail to detect that Secure
