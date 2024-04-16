@@ -129,6 +129,7 @@ def set_refind_first(boot_entries, boot_order, label):
                     first_refind_number = i
         except KeyError:
             print("Warning: BootOrder value {} is invalid!".format(entry))
+            boot_order.remove(entry)
     if first_refind_number == -1:
         if not add_unordered_entry(boot_entries, boot_order, label):
             print("{} was not found in the boot options list!".format(label))
