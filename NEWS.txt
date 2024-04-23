@@ -4,6 +4,8 @@
 - Fixed bug in refind-mkdefault that would cause it to crash if the
   BootOrder variable contained a pointer to a non-exitent Boot#### entry.
 
+- Added icon for ArcaOS (icons/os_aos.png).
+
 0.14.2 (4/6/2024):
 ------------------
 
