@@ -6,6 +6,9 @@
 
 - Added icon for ArcaOS (icons/os_aos.png).
 
+- Make writes of LoaderDevicePartUUID EFI variable non-persistent, to
+  minimize wear-and-tear on NVRAM.
+
 0.14.2 (4/6/2024):
 ------------------
 
