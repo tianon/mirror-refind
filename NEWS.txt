@@ -1,4 +1,4 @@
-0.14.3 (?/??/2024):
+0.14.3 (?/??/2026):
 -------------------
 
 - Fixed bug in refind-mkdefault that would cause it to crash if the
@@ -8,6 +8,11 @@
 
 - Make writes of LoaderDevicePartUUID EFI variable non-persistent, to
   minimize wear-and-tear on NVRAM.
+
+- Somewhere between versions 2.45 and 2.45.50.20251209 of objcopy, the
+  --target option to objcopy changed subtly, which broke the GNU-EFI build
+  process. I've worked around this by using --output-target instead.
+
 
 0.14.2 (4/6/2024):
 ------------------
